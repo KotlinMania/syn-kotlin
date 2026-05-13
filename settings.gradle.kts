@@ -18,3 +18,14 @@ dependencyResolutionManagement {
 
 rootProject.name = "syn-kotlin"
 
+includeBuild("../proc-macro2-kotlin") {
+    dependencySubstitution {
+        substitute(module("io.github.kotlinmania:proc-macro2-kotlin")).using(project(":"))
+    }
+}
+
+includeBuild("../quote-kotlin") {
+    dependencySubstitution {
+        substitute(module("io.github.kotlinmania:quote-kotlin")).using(project(":"))
+    }
+}
