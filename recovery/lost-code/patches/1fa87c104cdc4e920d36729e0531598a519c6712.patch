@@ -1,0 +1,45 @@
+commit 1fa87c104cdc4e920d36729e0531598a519c6712
+Author: Sydney Renee <sydney@solace.ofharmony.ai>
+Date:   Sat May 9 23:14:58 2026 -0700
+
+    untracked files on chore/conform-starlark-template: 438aa0c Document automation stopping rule
+---
+ .../kotlin/io/github/kotlinmania/syn/Print.kt           | 17 +++++++++++++++++
+ .../kotlin/io/github/kotlinmania/syn/Sealed.kt          |  6 ++++++
+ 2 files changed, 23 insertions(+)
+
+diff --git a/src/commonMain/kotlin/io/github/kotlinmania/syn/Print.kt b/src/commonMain/kotlin/io/github/kotlinmania/syn/Print.kt
+new file mode 100644
+index 0000000..f787e7f
+--- /dev/null
++++ b/src/commonMain/kotlin/io/github/kotlinmania/syn/Print.kt
+@@ -0,0 +1,17 @@
++// port-lint: source src/print.rs
++package io.github.kotlinmania.syn
++
++import io.github.kotlinmania.procmacro2.TokenStream
++import io.github.kotlinmania.quote.ToTokens
++
++internal class TokensOrDefault<T : ToTokens>(
++    private val value: T?,
++    private val default: () -> T,
++) : ToTokens {
++    override fun toTokens(tokens: TokenStream) {
++        when (val v = value) {
++            null -> default().toTokens(tokens)
++            else -> v.toTokens(tokens)
++        }
++    }
++}
+diff --git a/src/commonMain/kotlin/io/github/kotlinmania/syn/Sealed.kt b/src/commonMain/kotlin/io/github/kotlinmania/syn/Sealed.kt
+new file mode 100644
+index 0000000..fd4a5e0
+--- /dev/null
++++ b/src/commonMain/kotlin/io/github/kotlinmania/syn/Sealed.kt
+@@ -0,0 +1,6 @@
++// port-lint: source src/sealed.rs
++package io.github.kotlinmania.syn
++
++internal object Lookahead {
++    internal interface Sealed
++}
