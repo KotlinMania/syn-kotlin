@@ -309,7 +309,7 @@ be dual licensed as above, without any additional terms or conditions.
 
 ```kotlin
 dependencies {
-    implementation("io.github.kotlinmania:syn-kotlin:0.1.0")
+    implementation("io.github.kotlinmania:syn-kotlin:0.1.0-SNAPSHOT")
 }
 ```
 
@@ -319,12 +319,6 @@ dependencies {
 ./gradlew build
 ./gradlew test
 ```
-
-This project depends on `io.github.kotlinmania:proc-macro2-kotlin:0.1.0` and
-`io.github.kotlinmania:quote-kotlin:0.1.0`. Builds resolve those dependencies
-from Maven repositories (not a Gradle composite build). If you are building
-locally before those artifacts are available in a remote repository, publish
-them to `mavenLocal()` first.
 
 ### Targets
 
