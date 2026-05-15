@@ -3,6 +3,9 @@ package io.github.kotlinmania.syn
 
 public typealias Ident = io.github.kotlinmania.procmacro2.Ident
 
+public fun Ident.copy(): Ident =
+    Ident.new(toString(), span())
+
 internal fun xidOk(symbol: String): Boolean {
     val first = symbol.first()
     if (first != '_' && !isXidStart(first)) {
