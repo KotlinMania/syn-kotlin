@@ -320,21 +320,25 @@ dependencies {
 ./gradlew test
 ```
 
-This project depends on `io.github.kotlinmania:proc-macro2-kotlin:0.1.0` and
-`io.github.kotlinmania:quote-kotlin:0.1.0`. Builds resolve those dependencies
-from Maven repositories (not a Gradle composite build). If you are building
-locally before those artifacts are available in a remote repository, publish
-them to `mavenLocal()` first.
+This project depends on `io.github.kotlinmania:proc-macro2-kotlin:0.1.2` and
+`io.github.kotlinmania:quote-kotlin:0.1.2`. Builds resolve Kotlinmania
+dependencies from published Maven repositories, not Gradle composite builds or
+local Maven repositories.
 
 ### Targets
 
 - macOS arm64
-- Linux x64
+- Linux x64 / arm64
 - Windows mingw-x64
 - iOS arm64 / simulator-arm64 (Swift export + XCFramework)
+- tvOS arm64 / simulator-arm64
+- watchOS arm32 / arm64 / device-arm64 / simulator-arm64
+- Android Native arm32 / arm64 / x86 / x64
 - JS (browser + Node.js)
 - Wasm-JS (browser + Node.js)
+- Wasm-WASI (Node.js)
 - Android (API 24+)
+- JVM
 
 ### Porting guidelines
 
