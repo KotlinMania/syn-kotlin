@@ -94,9 +94,8 @@ For files that have no single Rust counterpart (re-homed from a `mod.rs`, or pur
 ./gradlew test
 ```
 
-Targets: macOS arm64/x64, Linux x64, mingw-x64, iOS arm64/x64/simulator-arm64, JS, Wasm-JS, Android.
-
-There is no JVM-only target. `./gradlew jvmTest` is **not** valid.
+Targets: macOS arm64, Linux x64/arm64, mingw-x64, iOS arm64/x64/simulator-arm64,
+tvOS, watchOS, Android Native, JS, Wasm-JS, Wasm-WASI, Android, and JVM.
 
 ## Forbidden
 
