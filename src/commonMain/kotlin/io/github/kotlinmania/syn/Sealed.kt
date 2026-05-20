@@ -1,16 +1,13 @@
 // port-lint: source sealed.rs
 package io.github.kotlinmania.syn
 
-/**
- * Private lookahead sealing surface. Implementing this marker is restricted to
- * Syn's own token marker types.
- */
-internal object Lookahead {
+public object Lookahead {
     /**
-     * Marker for lookahead tokens that are copyable value tokens in the
-     * upstream parser.
+     * Marker interface used to seal the [Peek] hierarchy. The upstream Rust
+     * declares this trait as `pub(crate)` so that downstream crates cannot
+     * implement [Peek]. Kotlin has no crate-private visibility, so the
+     * sealing is enforced by [Peek] itself being a `sealed interface` — all
+     * implementations must live inside this module.
      */
-    internal interface Sealed<T : Sealed<T>> {
-        fun copy(): T
-    }
+    public interface Sealed
 }

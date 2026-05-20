@@ -18,6 +18,85 @@ public class Punctuated<T, P> private constructor(
     public companion object {
         public fun <T, P> new(): Punctuated<T, P> =
             Punctuated()
+
+        /**
+         * Parses zero or more occurrences of [T] separated by punctuation of
+         * type P, with optional trailing punctuation.
+         *
+         * Parsing continues until the end of this parse stream. The entire
+         * content of this parse stream must consist of [T] and P.
+         */
+        public fun <T, P> parseTerminated(
+            input: ParseStream,
+            valueParse: Parse<T>,
+            punctParse: Parse<P>,
+        ): Result<Punctuated<T, P>> =
+            parseTerminatedWith(input, valueParse::parse, punctParse)
+
+        /**
+         * Parses zero or more occurrences of [T] using the given parse
+         * function, separated by punctuation of type P, with optional
+         * trailing punctuation.
+         */
+        public fun <T, P> parseTerminatedWith(
+            input: ParseStream,
+            parser: (ParseStream) -> Result<T>,
+            punctParse: Parse<P>,
+        ): Result<Punctuated<T, P>> {
+            val punctuated = Punctuated<T, P>()
+
+            while (true) {
+                if (input.isEmpty()) break
+                val value = parser(input).getOrElse { return Result.failure(it) }
+                punctuated.pushValue(value)
+                if (input.isEmpty()) break
+                val punct = punctParse.parse(input).getOrElse { return Result.failure(it) }
+                punctuated.pushPunct(punct)
+            }
+
+            return Result.success(punctuated)
+        }
+
+        /**
+         * Parses one or more occurrences of [T] separated by punctuation of
+         * type P, not accepting trailing punctuation.
+         *
+         * Parsing continues as long as punctuation P is present at the head
+         * of the stream. This method returns upon parsing a [T] and observing
+         * that it is not followed by a P, even if there are remaining tokens
+         * in the stream.
+         */
+        public fun <T, P> parseSeparatedNonempty(
+            input: ParseStream,
+            valueParse: Parse<T>,
+            punctParse: Parse<P>,
+            punctPeek: Peek,
+        ): Result<Punctuated<T, P>> =
+            parseSeparatedNonemptyWith(input, valueParse::parse, punctParse, punctPeek)
+
+        /**
+         * Parses one or more occurrences of [T] using the given parse
+         * function, separated by punctuation of type P, not accepting
+         * trailing punctuation.
+         */
+        public fun <T, P> parseSeparatedNonemptyWith(
+            input: ParseStream,
+            parser: (ParseStream) -> Result<T>,
+            punctParse: Parse<P>,
+            punctPeek: Peek,
+        ): Result<Punctuated<T, P>> {
+            val punctuated = Punctuated<T, P>()
+
+            while (true) {
+                val value = parser(input).getOrElse { return Result.failure(it) }
+                punctuated.pushValue(value)
+                if (!punctPeek.peek(input.cursor())) break
+                val punct = punctParse.parse(input).getOrElse { return Result.failure(it) }
+                punctuated.pushPunct(punct)
+            }
+
+            return Result.success(punctuated)
+        }
     }
 
     public fun isEmpty(): Boolean =
@@ -159,7 +238,7 @@ public class Punctuated<T, P> private constructor(
 
 public sealed class PunctuatedPair<out T, out P> {
     public data class Punctuated<T, P>(val value: T, val punctuation: P) : PunctuatedPair<T, P>()
-    public data class End<T>(val value: T) : PunctuatedPair<T, Nothing>()
+    public data class End<T>(val value: T) : PunctuatedPair<T, kotlin.Nothing>()
 }
 
 public fun <T> emptyPunctuatedIter(): Iterator<T> =

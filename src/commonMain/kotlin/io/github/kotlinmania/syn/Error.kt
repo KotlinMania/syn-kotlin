@@ -178,3 +178,11 @@ private data class SpanRange(
     val start: Span,
     val end: Span,
 )
+
+internal fun errorNewAt(scope: Span, cursor: Cursor, message: Any): Error =
+    if (cursor.eof()) {
+        Error.new(scope, "unexpected end of input, $message")
+    } else {
+        val span = openSpanOfGroup(cursor)
+        Error.new(span, message)
+    }
