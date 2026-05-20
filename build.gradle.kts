@@ -629,3 +629,16 @@ val fullTargetBuildTasks = listOf(
 tasks.named("build") {
     dependsOn(fullTargetBuildTasks)
 }
+
+afterEvaluate {
+    tasks.named("build") {
+        dependsOn(
+            tasks.matching {
+                name.endsWith("MainClasses") ||
+                    name.endsWith("TestClasses") ||
+                    name.endsWith("Binaries") ||
+                    name.endsWith("XCFramework")
+            },
+        )
+    }
+}
