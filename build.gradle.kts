@@ -538,16 +538,31 @@ tasks.register("setupAndroidSdk") {
 tasks.register("test") {
     group = "verification"
     description =
-        "Runs the host-portable test suite (macOS + JS + WasmJS + Android unit). " +
-        "Non-host native targets (mingwX64, linuxX64) only run on their own host."
+        "Runs every test target that can execute on this macOS host: JVM, " +
+        "JS (browser + Node), Wasm-JS (browser + Node), Wasm-WASI (Node), " +
+        "Android host unit, macOS-arm64 native, and the Apple simulators " +
+        "(iOS, tvOS, watchOS). Non-host native targets (linuxX64, " +
+        "linuxArm64, mingwX64) run on their own platform workflows in CI; " +
+        "the Apple device targets (iosArm64, tvosArm64, watchosArm32/Arm64/" +
+        "DeviceArm64) are linked by `build` but only execute on real " +
+        "hardware via CI."
 
     val defaultTestTasks = listOf(
-        "macosArm64Test",
+        // JVM + Android host JVM
         "jvmTest",
+        "testAndroidHostTest",
+        // JS + Wasm-JS + Wasm-WASI
+        "jsBrowserTest",
         "jsNodeTest",
+        "wasmJsBrowserTest",
         "wasmJsNodeTest",
-        "compileAndroidMain",
-        "assembleUnitTest",
+        "wasmWasiNodeTest",
+        // macOS native + Apple simulators (runnable on macOS host)
+        "macosArm64Test",
+        "iosSimulatorArm64Test",
+        "iosX64Test",
+        "tvosSimulatorArm64Test",
+        "watchosSimulatorArm64Test",
     )
 
     dependsOn(defaultTestTasks.mapNotNull { taskName -> tasks.findByName(taskName) })
