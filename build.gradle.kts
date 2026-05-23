@@ -214,10 +214,18 @@ kotlin {
         binaries.framework { baseName = "Syn"; xcf.add(this) }
     }
     iosSimulatorArm64 {
-        binaries.framework { baseName = "Syn"; xcf.add(this) }
+        binaries.framework {
+            baseName = "Syn"
+            isStatic = true
+            xcf.add(this)
+        }
     }
     iosX64 {
-        binaries.framework { baseName = "Syn"; xcf.add(this) }
+        binaries.framework {
+            baseName = "Syn"
+            isStatic = true
+            xcf.add(this)
+        }
     }
 
     tvosArm64 {
