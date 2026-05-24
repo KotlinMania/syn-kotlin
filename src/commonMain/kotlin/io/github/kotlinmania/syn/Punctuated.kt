@@ -1,5 +1,9 @@
 // port-lint: source punctuated.rs
+@file:OptIn(kotlin.experimental.ExperimentalObjCRefinement::class)
+
 package io.github.kotlinmania.syn
+
+import kotlin.native.HiddenFromObjC
 
 /**
  * A punctuated sequence of syntax tree nodes of type [T] separated by
@@ -8,7 +12,14 @@ package io.github.kotlinmania.syn
  * Rust syntax uses this shape for struct fields, path segments, generic
  * arguments, function inputs, and many other comma- or operator-separated
  * lists. Every node except possibly the final one is paired with punctuation.
+ *
+ * Hidden from the Objective-C / Swift Export bridge: the bridge erases
+ * `Punctuated<T, P>` type parameters to `Punctuated<Any?, Any?>` and the
+ * generated `Syn.kt` re-compile fails with
+ * `actual type is 'Punctuated<Any?, Any?>', but 'Punctuated<…, …>' was
+ * expected` against every strongly-typed call site (~10+ occurrences).
  */
+@HiddenFromObjC
 public class Punctuated<T, P> private constructor(
     private val inner: MutableList<Pair<T, P>>,
     private var last: T?,
@@ -236,6 +247,7 @@ public class Punctuated<T, P> private constructor(
         )
 }
 
+@HiddenFromObjC
 public sealed class PunctuatedPair<out T, out P> {
     public data class Punctuated<T, P>(val value: T, val punctuation: P) : PunctuatedPair<T, P>()
     public data class End<T>(val value: T) : PunctuatedPair<T, kotlin.Nothing>()
