@@ -8,14 +8,11 @@ import io.github.kotlinmania.procmacro2.TokenTree
 import kotlin.test.Test
 import kotlin.test.assertFailsWith
 
-// Identifier strings that the upstream `syn::Ident` parser rejects even
-// though `proc_macro2::Ident::new` accepts them at the lexer level. Includes
-// strict and reserved keywords plus the bare underscore (which the lexer
-// tokenizes as an Ident but the parser reserves as a pattern placeholder).
-// Kept inline here so this test file's `parse` mirrors
-// `syn::parse2::<Ident>(...)` for the invariants the upstream test
-// exercises. When a full `syn::Ident` parser is ported, this set moves
-// there.
+// Identifier strings that the upstream parser rejects even though the token
+// constructor accepts them at the lexer level. Includes strict and reserved
+// keywords plus the bare underscore, which the lexer tokenizes as an Ident but
+// the parser reserves as a pattern placeholder. Kept inline here until the full
+// Syn identifier parser is ported.
 private val RESERVED_IDENTIFIERS: Set<String> = setOf(
     "_",
     "abstract", "as", "async", "await", "become", "box", "break",
@@ -27,15 +24,19 @@ private val RESERVED_IDENTIFIERS: Set<String> = setOf(
     "use", "virtual", "where", "while", "yield",
 )
 
-private fun parse(s: String): Result<Ident> = runCatching {
-    val stream: TokenStream = TokenStream.fromString(s).getOrThrow()
-    val tokens = stream.toList()
-    if (tokens.size != 1) error("expected exactly one identifier, found ${tokens.size} tokens")
-    val first = tokens.single()
-    if (first !is TokenTree.Ident) error("expected identifier, found $first")
-    val ident = first.value
-    if (ident.toString() in RESERVED_IDENTIFIERS) error("expected identifier, found reserved keyword")
-    ident
+private fun parse(s: String): Result<Ident> {
+    return try {
+        val stream: TokenStream = TokenStream.fromString(s).getOrThrow()
+        val tokens = stream.toList()
+        if (tokens.size != 1) error("expected exactly one identifier, found ${tokens.size} tokens")
+        val first = tokens.single()
+        if (first !is TokenTree.Ident) error("expected identifier, found $first")
+        val ident = first.value
+        if (ident.toString() in RESERVED_IDENTIFIERS) error("expected identifier, found reserved keyword")
+        Result.success(ident)
+    } catch (cause: Throwable) {
+        Result.failure(Error.new(Span.callSite(), cause.message ?: cause.toString()))
+    }
 }
 
 private fun new(s: String): Ident = Ident.new(s, Span.callSite())

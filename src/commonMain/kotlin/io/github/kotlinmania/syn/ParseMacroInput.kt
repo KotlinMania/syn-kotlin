@@ -72,9 +72,8 @@ public fun <T> parseMacroInput(tokens: TokenStream, parser: Parse<T>): ParseMacr
     if (result.isSuccess) {
         return ParseMacroResult.Success(result.getOrThrow())
     }
-    val err = result.exceptionOrNull()
-    val syntaxError = err as? Error
-        ?: error("parseMacroInput parser returned non-Error failure: $err")
+    val syntaxError = result.exceptionOrNull()
+        ?: error("parseMacroInput parser returned no failure error")
     return ParseMacroResult.CompileError(syntaxError.toCompileError())
 }
 
@@ -87,8 +86,7 @@ public fun <T> parseMacroInputWith(
     if (result.isSuccess) {
         return ParseMacroResult.Success(result.getOrThrow())
     }
-    val err = result.exceptionOrNull()
-    val syntaxError = err as? Error
-        ?: error("parseMacroInputWith parser returned non-Error failure: $err")
+    val syntaxError = result.exceptionOrNull()
+        ?: error("parseMacroInputWith parser returned no failure error")
     return ParseMacroResult.CompileError(syntaxError.toCompileError())
 }

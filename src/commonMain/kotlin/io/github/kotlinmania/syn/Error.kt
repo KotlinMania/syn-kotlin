@@ -33,7 +33,7 @@ public sealed class Result<out T> {
     public class Success<out T>(public val value: T) : Result<T>()
 
     /** Failed parse result carrying a syn [Error]. */
-    public class Failure(public val error: Error) : Result<Nothing>()
+    public class Failure<out T>(public val error: Error) : Result<T>()
 
     /** `true` when this is a [Success]. */
     public val isSuccess: Boolean
@@ -57,7 +57,7 @@ public sealed class Result<out T> {
     public fun getOrNull(): T? = (this as? Success)?.value
 
     /** Returns the carried [Error] if this is a [Failure], or `null` if this is a [Success]. */
-    public fun exceptionOrNull(): Error? = (this as? Failure)?.error
+    public fun exceptionOrNull(): Error? = (this as? Failure<*>)?.error
 
     /** Returns the parsed value if this is a [Success], or [onFailure]'s value for a [Failure]. */
     public inline fun getOrElse(onFailure: (Error) -> @UnsafeVariance T): T = when (this) {
@@ -80,21 +80,14 @@ public sealed class Result<out T> {
      */
     public inline fun <R> map(transform: (T) -> R): Result<R> = when (this) {
         is Success -> Success(transform(value))
-        is Failure -> this
+        is Failure -> Failure(error)
     }
 
     public companion object {
         /** Constructs a [Success] wrapping [value]. */
         public fun <T> success(value: T): Result<T> = Success(value)
 
-        /**
-         * Constructs a [Failure] wrapping [error].
-         *
-         * [Result] is declared `<out T>` (covariant), so the concrete
-         * `Failure : Result<Nothing>` flows up to any `Result<T>` without
-         * an unchecked cast — `Nothing` is the bottom type and
-         * `Result<Nothing>` is a subtype of `Result<T>` for every T.
-         */
+        /** Constructs a [Failure] wrapping [error]. */
         public fun <T> failure(error: Error): Result<T> = Failure(error)
     }
 }
