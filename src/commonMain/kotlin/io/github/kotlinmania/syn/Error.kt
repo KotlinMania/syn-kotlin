@@ -14,8 +14,83 @@ import io.github.kotlinmania.procmacro2.TokenTree
 import io.github.kotlinmania.quote.ToTokens
 import io.github.kotlinmania.quote.append
 
-/** The result of a Syn parser. */
-public typealias Result<T> = kotlin.Result<T>
+/**
+ * The result of a Syn parser.
+ *
+ * Upstream parser results carry [Error] as the dedicated failure type. This
+ * sealed result keeps that typed failure in the Kotlin API instead of erasing
+ * it behind a generic throwable. It also avoids the unchecked-cast bridge that
+ * Swift export generates for the standard library result type under
+ * warnings-as-errors builds.
+ *
+ * The companion-object factories [Result.success] / [Result.failure], the
+ * `isSuccess` / `isFailure` properties, and the `getOrThrow` /
+ * `getOrNull` / `exceptionOrNull` / `getOrElse` / `fold` / `map` operations
+ * match the standard result idioms used throughout this port.
+ */
+public sealed class Result<out T> {
+    /** Successful parse result carrying the parsed value. */
+    public class Success<out T>(public val value: T) : Result<T>()
+
+    /** Failed parse result carrying a syn [Error]. */
+    public class Failure<out T>(public val error: Error) : Result<T>()
+
+    /** `true` when this is a [Success]. */
+    public val isSuccess: Boolean
+        get() = this is Success
+
+    /** `true` when this is a [Failure]. */
+    public val isFailure: Boolean
+        get() = this is Failure
+
+    /**
+     * Returns the parsed value if this is a [Success], or throws the
+     * carried [Error] if this is a [Failure]. `Error` extends
+     * `IllegalArgumentException`, so the throw is well-typed.
+     */
+    public fun getOrThrow(): T = when (this) {
+        is Success -> value
+        is Failure -> throw error
+    }
+
+    /** Returns the parsed value if this is a [Success], or `null` if this is a [Failure]. */
+    public fun getOrNull(): T? = (this as? Success)?.value
+
+    /** Returns the carried [Error] if this is a [Failure], or `null` if this is a [Success]. */
+    public fun exceptionOrNull(): Error? = (this as? Failure<*>)?.error
+
+    /** Returns the parsed value if this is a [Success], or [onFailure]'s value for a [Failure]. */
+    public inline fun getOrElse(onFailure: (Error) -> @UnsafeVariance T): T = when (this) {
+        is Success -> value
+        is Failure -> onFailure(error)
+    }
+
+    /**
+     * Applies [onSuccess] to a [Success] value or [onFailure] to a
+     * [Failure] error and returns the result.
+     */
+    public inline fun <R> fold(onSuccess: (T) -> R, onFailure: (Error) -> R): R = when (this) {
+        is Success -> onSuccess(value)
+        is Failure -> onFailure(error)
+    }
+
+    /**
+     * Returns a [Result] containing the [transform]-mapped value if
+     * this is a [Success], or this [Failure] unchanged.
+     */
+    public inline fun <R> map(transform: (T) -> R): Result<R> = when (this) {
+        is Success -> Success(transform(value))
+        is Failure -> Failure(error)
+    }
+
+    public companion object {
+        /** Constructs a [Success] wrapping [value]. */
+        public fun <T> success(value: T): Result<T> = Success(value)
+
+        /** Constructs a [Failure] wrapping [error]. */
+        public fun <T> failure(error: Error): Result<T> = Failure(error)
+    }
+}
 
 /**
  * Error returned when a Syn parser cannot parse the input tokens.

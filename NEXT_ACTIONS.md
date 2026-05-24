@@ -4,14 +4,14 @@ Based on AST analysis, here are the concrete next steps.
 
 ## Summary
 
-- **Files Present:** 21/55 (38.2%)
-- **Function parity:** 55/2571 matched (target 494) — 2.1%
-- **Class/type parity:** 15/121 matched (target 272) — 12.4%
-- **Combined symbol parity:** 70/2692 matched (target 766) — 2.6%
-- **Average inline-code cosine:** 0.25 (function body across 21 matched files)
-- **Average documentation cosine:** 0.33 (doc text across 21 matched files)
-- **Cheat-zeroed Files:** 2
-- **Critical Issues:** 18 files with <0.60 function similarity
+- **Files Present:** 32/55 (58.2%)
+- **Function parity:** 126/2541 matched (target 625) — 5.0%
+- **Class/type parity:** 33/121 matched (target 313) — 27.3%
+- **Combined symbol parity:** 159/2662 matched (target 938) — 6.0%
+- **Average inline-code cosine:** 0.17 (function body across 32 matched files)
+- **Average documentation cosine:** 0.38 (doc text across 32 matched files)
+- **Cheat-zeroed Files:** 12
+- **Critical Issues:** 29 files with <0.60 function similarity
 
 ## Priority 1: Fix Incomplete High-Dependency Files
 
@@ -38,14 +38,14 @@ Based on AST analysis, here are the concrete next steps.
 - **Action:** Deep review - likely missing major functionality
 
 ### 3. punctuated
-- **Similarity:** 0.11 (needs 74% improvement)
+- **Similarity:** 0.14 (needs 71% improvement)
 - **Dependencies:** 13
-- **Priority Score:** 13506809.0
-- **Functions:** 17/54 matched (target 22)
-- **Missing functions:** `first_mut`, `last_mut`, `get_mut`, `iter`, `iter_mut`, `pairs_mut`, `into_pairs`, `parse_terminated`, `parse_terminated_with`, `parse_separated_nonempty`, `parse_separated_nonempty_with`, `clone`, `clone_from`, `eq`, `hash`, `fmt`, `from_iter`, `extend`, `do_extend`, `into_iter`, `default`, `next`, `size_hint`, `next_back`, `clone_box`, `empty_punctuated_iter_mut`, `into_value`, `value`, `value_mut`, `punct`, `punct_mut`, `into_tuple`, `cloned`, `index`, `index_mut`, `fold`, `to_tokens`
+- **Priority Score:** 13466809.0
+- **Functions:** 21/54 matched (target 26)
+- **Missing functions:** `first_mut`, `last_mut`, `get_mut`, `iter`, `iter_mut`, `pairs_mut`, `into_pairs`, `clone`, `clone_from`, `eq`, `hash`, `fmt`, `from_iter`, `extend`, `do_extend`, `into_iter`, `default`, `next`, `size_hint`, `next_back`, `clone_box`, `empty_punctuated_iter_mut`, `into_value`, `value`, `value_mut`, `punct`, `punct_mut`, `into_tuple`, `cloned`, `index`, `index_mut`, `fold`, `to_tokens`
 - **Types:** 1/14 matched (target 3)
 - **Missing types:** `Item`, `IntoIter`, `Pairs`, `PairsMut`, `IntoPairs`, `Iter`, `IterTrait`, `PrivateIter`, `IterMut`, `IterMutTrait`, `PrivateIterMut`, `Pair`, `Output`
-- **Symbol Deficit:** 50 (functions: 37, types: 13)
+- **Symbol Deficit:** 46 (functions: 33, types: 13)
 - **Action:** Deep review - likely missing major functionality
 
 ### 4. expr
@@ -94,11 +94,11 @@ Every matched file is listed below with function and type symbol parity.
 ### 3. punctuated
 
 - **Target:** `syn.Punctuated`
-- **Similarity:** 0.11
+- **Similarity:** 0.14
 - **Dependents:** 13
-- **Priority Score:** 13506809.0
-- **Functions:** 17/54 matched (target 22)
-- **Missing functions:** `first_mut`, `last_mut`, `get_mut`, `iter`, `iter_mut`, `pairs_mut`, `into_pairs`, `parse_terminated`, `parse_terminated_with`, `parse_separated_nonempty`, `parse_separated_nonempty_with`, `clone`, `clone_from`, `eq`, `hash`, `fmt`, `from_iter`, `extend`, `do_extend`, `into_iter`, `default`, `next`, `size_hint`, `next_back`, `clone_box`, `empty_punctuated_iter_mut`, `into_value`, `value`, `value_mut`, `punct`, `punct_mut`, `into_tuple`, `cloned`, `index`, `index_mut`, `fold`, `to_tokens`
+- **Priority Score:** 13466809.0
+- **Functions:** 21/54 matched (target 26)
+- **Missing functions:** `first_mut`, `last_mut`, `get_mut`, `iter`, `iter_mut`, `pairs_mut`, `into_pairs`, `clone`, `clone_from`, `eq`, `hash`, `fmt`, `from_iter`, `extend`, `do_extend`, `into_iter`, `default`, `next`, `size_hint`, `next_back`, `clone_box`, `empty_punctuated_iter_mut`, `into_value`, `value`, `value_mut`, `punct`, `punct_mut`, `into_tuple`, `cloned`, `index`, `index_mut`, `fold`, `to_tokens`
 - **Types:** 1/14 matched (target 3)
 - **Missing types:** `Item`, `IntoIter`, `Pairs`, `PairsMut`, `IntoPairs`, `Iter`, `IterTrait`, `PrivateIter`, `IterMut`, `IterMutTrait`, `PrivateIterMut`, `Pair`, `Output`
 
@@ -135,7 +135,18 @@ Every matched file is listed below with function and type symbol parity.
 - **Types:** 1/1 matched
 - **Missing types:** _none_
 
-### 7. lit
+### 7. verbatim
+
+- **Target:** `syn.Verbatim`
+- **Similarity:** 0.00
+- **Dependents:** 7
+- **Priority Score:** 7010110.0
+- **Functions:** 0/1 matched
+- **Missing functions:** `between`
+- **Types:** 0/0 matched
+- **Missing types:** _none_
+
+### 8. lit
 
 - **Target:** `syn.Lit`
 - **Similarity:** 0.02
@@ -146,7 +157,18 @@ Every matched file is listed below with function and type symbol parity.
 - **Types:** 0/4 matched (target 16)
 - **Missing types:** `LitRepr`, `LitIntRepr`, `LitFloatRepr`, `StrStyle`
 
-### 8. span
+### 9. lookahead
+
+- **Target:** `syn.Lookahead [ZERO]`
+- **Similarity:** 0.00
+- **Dependents:** 5
+- **Priority Score:** 5061410.0
+- **Functions:** 4/8 matched (target 6)
+- **Missing functions:** `new`, `peek_impl`, `fmt`, `clone`
+- **Types:** 4/6 matched (target 4)
+- **Missing types:** `CommaSeparated`, `Token`
+
+### 10. span
 
 - **Target:** `syn.Span`
 - **Similarity:** 0.00
@@ -157,18 +179,18 @@ Every matched file is listed below with function and type symbol parity.
 - **Types:** 1/1 matched
 - **Missing types:** _none_
 
-### 9. error
+### 11. error
 
 - **Target:** `syn.Error`
 - **Similarity:** 0.35
 - **Dependents:** 3
 - **Priority Score:** 3102206.5
-- **Functions:** 8/14 matched (target 13)
+- **Functions:** 8/14 matched (target 22)
 - **Missing functions:** `new_at`, `fmt`, `clone`, `into_iter`, `next`, `extend`
-- **Types:** 4/8 matched (target 4)
+- **Types:** 4/8 matched (target 6)
 - **Missing types:** `_Test`, `Item`, `IntoIter`, `Iter`
 
-### 10. generics
+### 12. generics
 
 - **Target:** `syn.Generics [ZERO]`
 - **Similarity:** 0.00
@@ -179,7 +201,7 @@ Every matched file is listed below with function and type symbol parity.
 - **Types:** 0/10 matched (target 12)
 - **Missing types:** `Lifetimes`, `Item`, `LifetimesMut`, `TypeParams`, `TypeParamsMut`, `ConstParams`, `ConstParamsMut`, `ImplGenerics`, `TypeGenerics`, `Turbofish`
 
-### 11. precedence
+### 13. precedence
 
 - **Target:** `syn.Precedence`
 - **Similarity:** 0.13
@@ -190,7 +212,7 @@ Every matched file is listed below with function and type symbol parity.
 - **Types:** 1/1 matched
 - **Missing types:** _none_
 
-### 12. attr
+### 14. attr
 
 - **Target:** `syn.Attr`
 - **Similarity:** 0.08
@@ -201,7 +223,7 @@ Every matched file is listed below with function and type symbol parity.
 - **Types:** 0/4 matched (target 11)
 - **Missing types:** `FilterAttrs`, `Ret`, `DisplayAttrStyle`, `DisplayPath`
 
-### 13. ty
+### 15. ty
 
 - **Target:** `syn.Type`
 - **Similarity:** 0.00
@@ -212,7 +234,7 @@ Every matched file is listed below with function and type symbol parity.
 - **Types:** 0/0 matched (target 23)
 - **Missing types:** _none_
 
-### 14. bigint
+### 16. bigint
 
 - **Target:** `syn.BigInt`
 - **Similarity:** 0.32
@@ -223,7 +245,18 @@ Every matched file is listed below with function and type symbol parity.
 - **Types:** 1/1 matched
 - **Missing types:** _none_
 
-### 15. spanned
+### 17. group
+
+- **Target:** `syn.Group [ZERO]`
+- **Similarity:** 0.00
+- **Dependents:** 1
+- **Priority Score:** 1010910.0
+- **Functions:** 5/5 matched (target 8)
+- **Missing functions:** _none_
+- **Types:** 3/4 matched
+- **Missing types:** `Group`
+
+### 18. spanned
 
 - **Target:** `syn.Spanned`
 - **Similarity:** 0.97
@@ -234,7 +267,7 @@ Every matched file is listed below with function and type symbol parity.
 - **Types:** 1/2 matched (target 1)
 - **Missing types:** `Sealed`
 
-### 16. sealed
+### 19. sealed
 
 - **Target:** `syn.Sealed`
 - **Similarity:** 1.00
@@ -245,7 +278,7 @@ Every matched file is listed below with function and type symbol parity.
 - **Types:** 1/1 matched (target 2)
 - **Missing types:** _none_
 
-### 17. data
+### 20. data
 
 - **Target:** `syn.Data`
 - **Similarity:** 0.06
@@ -256,7 +289,52 @@ Every matched file is listed below with function and type symbol parity.
 - **Types:** 0/3 matched (target 16)
 - **Missing types:** `Item`, `IntoIter`, `Members`
 
-### 18. restriction
+### 21. ext
+
+- **Target:** `syn.Ext [ZERO]`
+- **Similarity:** 0.00
+- **Dependents:** 0
+- **Priority Score:** 111410.0
+- **Functions:** 3/7 matched (target 6)
+- **Missing functions:** `parse_any`, `append`, `new_spanned`, `clone`
+- **Types:** 0/7 matched (target 1)
+- **Missing types:** `IdentExt`, `Token`, `TokenStreamExt`, `PunctExt`, `Sealed`, `PeekFn`, `IdentAny`
+
+### 22. parse
+
+- **Target:** `syn.Parse [ZERO]`
+- **Similarity:** 0.00
+- **Dependents:** 0
+- **Priority Score:** 104210.0
+- **Functions:** 25/33 matched (target 54)
+- **Missing functions:** `drop`, `fmt`, `deref`, `default`, `cell_clone`, `to_tokens`, `eq`, `hash`
+- **Types:** 7/9 matched (target 16)
+- **Missing types:** `Target`, `Output`
+- **Lint issues:** 1
+
+### 23. buffer
+
+- **Target:** `syn.Buffer [ZERO]`
+- **Similarity:** 0.00
+- **Dependents:** 0
+- **Priority Score:** 53510.0
+- **Functions:** 27/31 matched (target 29)
+- **Missing functions:** `new`, `clone`, `eq`, `partial_cmp`
+- **Types:** 3/4 matched (target 9)
+- **Missing types:** `UnsafeSyncEntry`
+
+### 24. tt
+
+- **Target:** `syn.Tt [ZERO]`
+- **Similarity:** 0.00
+- **Dependents:** 0
+- **Priority Score:** 40410.0
+- **Functions:** 0/2 matched (target 5)
+- **Missing functions:** `eq`, `hash`
+- **Types:** 0/2 matched (target 0)
+- **Missing types:** `TokenTreeHelper`, `TokenStreamHelper`
+
+### 25. restriction
 
 - **Target:** `syn.Restriction [ZERO]`
 - **Similarity:** 0.00
@@ -267,7 +345,7 @@ Every matched file is listed below with function and type symbol parity.
 - **Types:** 0/0 matched (target 8)
 - **Missing types:** _none_
 
-### 19. thread
+### 26. thread
 
 - **Target:** `syn.Thread`
 - **Similarity:** 0.30
@@ -278,7 +356,29 @@ Every matched file is listed below with function and type symbol parity.
 - **Types:** 1/1 matched
 - **Missing types:** _none_
 
-### 20. op
+### 27. discouraged
+
+- **Target:** `syn.Discouraged [ZERO]`
+- **Similarity:** 0.00
+- **Dependents:** 0
+- **Priority Score:** 20410.0
+- **Functions:** 2/2 matched
+- **Missing functions:** _none_
+- **Types:** 0/2 matched (target 1)
+- **Missing types:** `Speculative`, `AnyDelimiter`
+
+### 28. whitespace
+
+- **Target:** `syn.Whitespace [ZERO]`
+- **Similarity:** 0.00
+- **Dependents:** 0
+- **Priority Score:** 20210.0
+- **Functions:** 0/2 matched
+- **Missing functions:** `skip`, `is_whitespace`
+- **Types:** 0/0 matched
+- **Missing types:** _none_
+
+### 29. op
 
 - **Target:** `syn.Op`
 - **Similarity:** 0.37
@@ -289,7 +389,18 @@ Every matched file is listed below with function and type symbol parity.
 - **Types:** 0/0 matched (target 33)
 - **Missing types:** _none_
 
-### 21. print
+### 30. parse_quote
+
+- **Target:** `syn.ParseQuote [ZERO]`
+- **Similarity:** 0.00
+- **Dependents:** 0
+- **Priority Score:** 210.0
+- **Functions:** 1/1 matched (target 3)
+- **Missing functions:** _none_
+- **Types:** 1/1 matched
+- **Missing types:** _none_
+
+### 31. print
 
 - **Target:** `syn.Print`
 - **Similarity:** 0.86
@@ -298,6 +409,17 @@ Every matched file is listed below with function and type symbol parity.
 - **Functions:** 1/1 matched (target 2)
 - **Missing functions:** _none_
 - **Types:** 1/1 matched (target 2)
+- **Missing types:** _none_
+
+### 32. parse_macro_input
+
+- **Target:** `syn.ParseMacroInput [ZERO]`
+- **Similarity:** 0.00
+- **Dependents:** 0
+- **Priority Score:** 10.0
+- **Functions:** 0/0 matched (target 2)
+- **Missing functions:** _none_
+- **Types:** 0/0 matched (target 3)
 - **Missing types:** _none_
 
 ## Success Criteria
@@ -309,16 +431,6 @@ For each file to be considered "complete":
 - Documentation ported
 - port-lint header present
 
-## Next Commands
-
-```bash
-# Initialize task queue for systematic porting
-cd tools/ast_distance
-./ast_distance --init-tasks ../../tmp/syn/src rust ../../src/commonMain/kotlin/io/github/kotlinmania/syn kotlin tasks.json ../../AGENTS.md
-
-# Get next high-priority task
-./ast_distance --assign tasks.json <agent-id>
-```
 ## Reexport / Wiring Modules
 
 These files match `reexport_modules` patterns in `.ast_distance_config.json`. They are filtered out of
