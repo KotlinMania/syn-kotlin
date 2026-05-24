@@ -398,6 +398,7 @@ public fun <T : Any> Parse<T>.optional(peek: Peek): Parse<T?> = object : Parse<T
 }
 
 /** Parser strategy that consumes the remainder of the stream as a [TokenStream]. */
+@HiddenFromObjC
 public object TokenStreamParse : Parse<TokenStream> {
     override fun parse(input: ParseStream): Result<TokenStream> =
         input.step { cursor ->
@@ -406,6 +407,7 @@ public object TokenStreamParse : Parse<TokenStream> {
 }
 
 /** Parser strategy for [TokenTree]. */
+@HiddenFromObjC
 public object TokenTreeParse : Parse<TokenTree> {
     override fun parse(input: ParseStream): Result<TokenTree> =
         input.step { cursor ->
@@ -415,6 +417,7 @@ public object TokenTreeParse : Parse<TokenTree> {
 }
 
 /** Parser strategy for [Group]. */
+@HiddenFromObjC
 public object GroupParse : Parse<Group> {
     override fun parse(input: ParseStream): Result<Group> =
         input.step { cursor ->
@@ -428,6 +431,7 @@ public object GroupParse : Parse<Group> {
 }
 
 /** Parser strategy for [Punct]. */
+@HiddenFromObjC
 public object PunctParse : Parse<Punct> {
     override fun parse(input: ParseStream): Result<Punct> =
         input.step { cursor ->
@@ -437,6 +441,7 @@ public object PunctParse : Parse<Punct> {
 }
 
 /** Parser strategy for [Literal]. */
+@HiddenFromObjC
 public object LiteralParse : Parse<Literal> {
     override fun parse(input: ParseStream): Result<Literal> =
         input.step { cursor ->
@@ -553,6 +558,7 @@ private fun errUnexpectedToken(span: Span, delimiter: Delimiter): Error {
  * This is useful for attribute macros that want to ensure they are not
  * provided any attribute args.
  */
+@HiddenFromObjC
 public object Nothing : Parse<Nothing> {
     override fun parse(input: ParseStream): Result<Nothing> = Result.success(Nothing)
     override fun toString(): String = "Nothing"
