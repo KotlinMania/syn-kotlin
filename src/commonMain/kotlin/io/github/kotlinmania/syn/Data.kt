@@ -1,4 +1,6 @@
 // port-lint: source data.rs
+@file:OptIn(kotlin.experimental.ExperimentalObjCRefinement::class)
+
 package io.github.kotlinmania.syn
 
 import io.github.kotlinmania.syn.token.Brace
@@ -7,8 +9,18 @@ import io.github.kotlinmania.syn.token.Comma
 import io.github.kotlinmania.syn.token.Eq
 import io.github.kotlinmania.syn.token.Paren
 import io.github.kotlinmania.syn.token.Semi
+import kotlin.native.HiddenFromObjC
 
-/** An enum variant. */
+/**
+ * An enum variant.
+ *
+ * Hidden from the Objective-C / Swift Export bridge: the `discriminant`
+ * field of type `kotlin.Pair<Eq, Expr>?` is bridged with type-parameters
+ * erased to `Pair<Any?, Any?>?`, and the auto-generated `Syn.kt` then
+ * fails to re-pass the value through the typed call site. Same shape as
+ * the [Punctuated] erasure.
+ */
+@HiddenFromObjC
 public data class Variant(
     public val attrs: List<Attribute>,
     public val ident: Ident,

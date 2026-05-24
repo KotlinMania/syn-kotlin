@@ -1,4 +1,6 @@
 // port-lint: source token.rs
+@file:OptIn(kotlin.experimental.ExperimentalObjCRefinement::class)
+
 package io.github.kotlinmania.syn.token
 
 import io.github.kotlinmania.procmacro2.DelimSpan
@@ -12,6 +14,7 @@ import io.github.kotlinmania.procmacro2.TokenStream
 import io.github.kotlinmania.quote.ToTokens
 import io.github.kotlinmania.quote.append
 import io.github.kotlinmania.syn.intoDelimSpan
+import kotlin.native.HiddenFromObjC
 
 /**
  * Tokens representing Rust punctuation, keywords, and delimiters.
@@ -594,6 +597,15 @@ class Try private constructor(span: Span) : KeywordToken(span) {
     }
 }
 
+/**
+ * The Rust `type` keyword token.
+ *
+ * Hidden from the Objective-C / Swift Export bridge: Swift forbids a type
+ * member named `Type` because it collides with the `foo.Type` metatype
+ * expression (`error: type member must not be named 'Type'`). The Kotlin API
+ * stays intact; only the Swift bridge skips this token.
+ */
+@HiddenFromObjC
 class Type private constructor(span: Span) : KeywordToken(span) {
     override val text: String = "type"
     companion object {

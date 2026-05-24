@@ -1,4 +1,6 @@
 // port-lint: source error.rs
+@file:OptIn(kotlin.experimental.ExperimentalObjCRefinement::class)
+
 package io.github.kotlinmania.syn
 
 import io.github.kotlinmania.procmacro2.Delimiter
@@ -13,6 +15,7 @@ import io.github.kotlinmania.procmacro2.TokenStream
 import io.github.kotlinmania.procmacro2.TokenTree
 import io.github.kotlinmania.quote.ToTokens
 import io.github.kotlinmania.quote.append
+import kotlin.native.HiddenFromObjC
 
 /**
  * The result of a Syn parser.
@@ -28,6 +31,7 @@ import io.github.kotlinmania.quote.append
  * `getOrNull` / `exceptionOrNull` / `getOrElse` / `fold` / `map` operations
  * match the standard result idioms used throughout this port.
  */
+@HiddenFromObjC
 public sealed class Result<out T> {
     /** Successful parse result carrying the parsed value. */
     public class Success<out T>(public val value: T) : Result<T>()
@@ -109,6 +113,7 @@ public sealed class Result<out T> {
  * `toCompileError` or `intoCompileError` methods can be used to perform an
  * explicit conversion to `compileError`.
  */
+@HiddenFromObjC
 public class Error private constructor(
     private val messages: MutableList<ErrorMessage>,
 ) : IllegalArgumentException(messages.first().message), Iterable<Error> {
