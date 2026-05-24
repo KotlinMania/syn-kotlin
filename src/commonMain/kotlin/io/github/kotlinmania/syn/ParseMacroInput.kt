@@ -71,6 +71,7 @@ public sealed class ParseMacroResult<out T> {
 }
 
 /** Parse the macro input via the supplied [Parse] strategy. */
+@HiddenFromObjC
 public fun <T> parseMacroInput(tokens: TokenStream, parser: Parse<T>): ParseMacroResult<T> {
     val result = parse2(parser, tokens)
     if (result.isSuccess) {
@@ -82,6 +83,7 @@ public fun <T> parseMacroInput(tokens: TokenStream, parser: Parse<T>): ParseMacr
 }
 
 /** Parse the macro input via the supplied closure-style parser. */
+@HiddenFromObjC
 public fun <T> parseMacroInputWith(
     tokens: TokenStream,
     parser: (ParseStream) -> Result<T>,

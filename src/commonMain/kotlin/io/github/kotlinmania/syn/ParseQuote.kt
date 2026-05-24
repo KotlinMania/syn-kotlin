@@ -1,7 +1,10 @@
 // port-lint: source parse_quote.rs
+@file:OptIn(kotlin.experimental.ExperimentalObjCRefinement::class)
+
 package io.github.kotlinmania.syn
 
 import io.github.kotlinmania.procmacro2.TokenStream
+import kotlin.native.HiddenFromObjC
 
 // Quasi-quotation helper that accepts input like the `quote` macro but uses
 // type inference to figure out a return type for those tokens.
@@ -56,6 +59,7 @@ import io.github.kotlinmania.procmacro2.TokenStream
  * are syntactically valid; downstream parser failures are unrecoverable from
  * a [parseQuote] call site by design.
  */
+@HiddenFromObjC
 public fun <T> parseQuote(tokenStream: TokenStream, parser: ParseQuote<T>): T {
     val result = parserFromFunction(parser::parse).parse2(tokenStream)
     return result.getOrElse { err -> error(err.message ?: err.toString()) }
@@ -68,11 +72,13 @@ public fun <T> parseQuote(tokenStream: TokenStream, parser: ParseQuote<T>): T {
  * `Attribute`, `Field`, `List<Stmt>`) provide a custom [ParseQuote] in their
  * own port file.
  */
+@HiddenFromObjC
 public interface ParseQuote<T> {
     public fun parse(input: ParseStream): Result<T>
 }
 
 /** Adapts any [Parse] implementation into a [ParseQuote] implementation. */
+@HiddenFromObjC
 public fun <T> parseQuoteFromParse(parse: Parse<T>): ParseQuote<T> = object : ParseQuote<T> {
     override fun parse(input: ParseStream): Result<T> = parse.parse(input)
 }

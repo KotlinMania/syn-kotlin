@@ -1,4 +1,6 @@
 // port-lint: source parse.rs
+@file:OptIn(kotlin.experimental.ExperimentalObjCRefinement::class)
+
 package io.github.kotlinmania.syn
 
 import io.github.kotlinmania.procmacro2.Delimiter
@@ -8,6 +10,7 @@ import io.github.kotlinmania.procmacro2.Punct
 import io.github.kotlinmania.procmacro2.Span
 import io.github.kotlinmania.procmacro2.TokenStream
 import io.github.kotlinmania.procmacro2.TokenTree
+import kotlin.native.HiddenFromObjC
 
 // Parsing interface for parsing a token stream into a syntax tree node.
 //
@@ -61,6 +64,7 @@ import io.github.kotlinmania.procmacro2.TokenTree
  * and implementations live on companion objects of the parsed type (or on
  * stand-alone parser strategy objects).
  */
+@HiddenFromObjC
 public interface Parse<T> {
     public fun parse(input: ParseStream): Result<T>
 }
@@ -375,12 +379,14 @@ private fun spanOfUnexpectedIgnoringNones(initial: Cursor): Pair<Span, Delimiter
  * `Parse<T>.boxed()` extension keeps callers source-compatible with
  * Rust-shaped sites that wrap a parsed node.
  */
+@HiddenFromObjC
 public fun <T : Any> Parse<T>.boxed(): Parse<T> = this
 
 /**
  * Parser strategy for `Option<T>` in upstream — emits a `null` rather than
  * an error if the peek target does not match.
  */
+@HiddenFromObjC
 public fun <T : Any> Parse<T>.optional(peek: Peek): Parse<T?> = object : Parse<T?> {
     override fun parse(input: ParseStream): Result<T?> {
         return if (peek.peek(input.cursor())) {
@@ -444,6 +450,7 @@ public object LiteralParse : Parse<Literal> {
  *
  * Refer to the module documentation for details about parsing in Syn.
  */
+@HiddenFromObjC
 public interface Parser<T> {
     /**
      * Parse a proc-macro2 token stream into the chosen syntax tree node.
@@ -490,6 +497,7 @@ private fun tokensToParseBuffer(tokens: TokenBuffer): ParseBuffer {
  * Parser for F where F: FnOnce(ParseStream) -> Result<T>` — Kotlin has no
  * blanket impls so this helper performs the same wrapping explicitly.
  */
+@HiddenFromObjC
 public fun <T> parserFromFunction(function: (ParseStream) -> Result<T>): Parser<T> = object : Parser<T> {
     override fun parse2(tokens: TokenStream): Result<T> {
         val buf = TokenBuffer.new2(tokens)
@@ -559,6 +567,7 @@ public object Nothing : Parse<Nothing> {
  * Parse a [TokenStream] into the chosen syntax tree node, enforcing that the
  * entire stream is consumed. Mirrors `syn::parse2<T>`.
  */
+@HiddenFromObjC
 public fun <T> parse2(parser: Parse<T>, tokens: TokenStream): Result<T> =
     parserFromFunction(parser::parse).parse2(tokens)
 
@@ -566,5 +575,6 @@ public fun <T> parse2(parser: Parse<T>, tokens: TokenStream): Result<T> =
  * Parse a string of source code into the chosen syntax tree node. Mirrors
  * `syn::parse_str<T>`.
  */
+@HiddenFromObjC
 public fun <T> parseStr(parser: Parse<T>, s: String): Result<T> =
     parserFromFunction(parser::parse).parseStr(s)

@@ -253,5 +253,6 @@ public sealed class PunctuatedPair<out T, out P> {
     public data class End<T>(val value: T) : PunctuatedPair<T, kotlin.Nothing>()
 }
 
+@HiddenFromObjC
 public fun <T> emptyPunctuatedIter(): Iterator<T> =
     emptyList<T>().iterator()
