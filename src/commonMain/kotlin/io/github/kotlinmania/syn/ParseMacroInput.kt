@@ -1,7 +1,10 @@
 // port-lint: source parse_macro_input.rs
+@file:OptIn(kotlin.experimental.ExperimentalObjCRefinement::class)
+
 package io.github.kotlinmania.syn
 
 import io.github.kotlinmania.procmacro2.TokenStream
+import kotlin.native.HiddenFromObjC
 
 /**
  * Parse the input [TokenStream] of a macro, returning either the parsed
@@ -61,6 +64,7 @@ import io.github.kotlinmania.procmacro2.TokenStream
  * }
  * ```
  */
+@HiddenFromObjC
 public sealed class ParseMacroResult<out T> {
     public data class Success<T>(public val value: T) : ParseMacroResult<T>()
     public data class CompileError<T>(public val tokens: TokenStream) : ParseMacroResult<T>()
