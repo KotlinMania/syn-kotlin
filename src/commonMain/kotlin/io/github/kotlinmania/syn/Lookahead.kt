@@ -1,8 +1,11 @@
 // port-lint: source lookahead.rs
+@file:OptIn(kotlin.experimental.ExperimentalObjCRefinement::class)
+
 package io.github.kotlinmania.syn
 
 import io.github.kotlinmania.procmacro2.Delimiter
 import io.github.kotlinmania.procmacro2.Span
+import kotlin.native.HiddenFromObjC
 
 /**
  * Support for checking the next token in a stream to decide how to parse.
@@ -181,6 +184,7 @@ public object End : Peek {
  * [Nothing], so this exists as a sealed class with no subclasses and a
  * private constructor that cannot be reached.
  */
+@HiddenFromObjC
 public sealed class TokenMarker private constructor() : IntoSpans<Any?> {
     override fun intoSpans(): Any? {
         throw IllegalStateException("TokenMarker has no inhabitants")

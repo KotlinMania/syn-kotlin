@@ -1,4 +1,6 @@
 // port-lint: source span.rs
+@file:OptIn(kotlin.experimental.ExperimentalObjCRefinement::class)
+
 package io.github.kotlinmania.syn
 
 import io.github.kotlinmania.procmacro2.DelimSpan
@@ -6,7 +8,9 @@ import io.github.kotlinmania.procmacro2.Delimiter
 import io.github.kotlinmania.procmacro2.Group
 import io.github.kotlinmania.procmacro2.Span
 import io.github.kotlinmania.procmacro2.TokenStream
+import kotlin.native.HiddenFromObjC
 
+@HiddenFromObjC
 interface IntoSpans<S> {
     fun intoSpans(): S
 }
