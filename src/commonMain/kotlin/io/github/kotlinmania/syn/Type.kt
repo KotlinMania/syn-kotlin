@@ -1,11 +1,25 @@
 // port-lint: source ty.rs
+@file:OptIn(kotlin.experimental.ExperimentalObjCRefinement::class)
+
 package io.github.kotlinmania.syn
 
 import io.github.kotlinmania.procmacro2.TokenStream
 import io.github.kotlinmania.syn.token.Paren
 import io.github.kotlinmania.syn.token.RArrow
+import kotlin.native.HiddenFromObjC
 
-/** A type syntax tree node. */
+/**
+ * A type syntax tree node.
+ *
+ * Hidden from the Objective-C / Swift Export bridge: `Type` collides with
+ * Swift's built-in `Type` metatype, so the bridge emits `Type` as a non-class
+ * typealias and then can't make its nested data classes (`Array`, `BareFn`,
+ * `Group`, `ImplTrait`, `Infer`, …) inherit from it, producing
+ * `inheritance from non-protocol, non-class type 'io.github.kotlinmania.syn.Type'`
+ * during `:macosArm64DebugBuildSPMPackage`. The Kotlin API stays intact; only
+ * the Swift bridge skips this hierarchy.
+ */
+@HiddenFromObjC
 public sealed class Type {
     public data class Array(val elem: Type, val len: Expr) : Type()
     public data class BareFn(val inputs: Punctuated<BareFnArg, io.github.kotlinmania.syn.token.Comma>, val output: ReturnType) : Type()
