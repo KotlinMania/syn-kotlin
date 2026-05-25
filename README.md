@@ -323,7 +323,7 @@ dependencies {
 This project depends on `io.github.kotlinmania:proc-macro2-kotlin:0.1.2` and
 `io.github.kotlinmania:quote-kotlin:0.1.2`. Builds resolve Kotlinmania
 dependencies from published Maven repositories, not Gradle composite builds or
-local Maven repositories.
+developer-machine repositories.
 
 ### Targets
 
