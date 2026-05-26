@@ -86,8 +86,8 @@ public fun ParseBuffer.parseAnyDelimiter(): Result<AnyDelimiterResult> =
             val nested = advanceStepCursor(cursor, any.inside)
             val unexpected = getUnexpected(this)
             val content = newParseBuffer(scope, nested, unexpected)
-            Result.success(AnyDelimiterResult(any.delimiter, any.delimSpan, content) to any.after)
+            SynResult.success(AnyDelimiterResult(any.delimiter, any.delimSpan, content) to any.after)
         } else {
-            Result.failure(cursor.error("expected any delimiter"))
+            SynResult.failure(cursor.error("expected any delimiter"))
         }
     }

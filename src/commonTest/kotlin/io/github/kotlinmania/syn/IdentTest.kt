@@ -33,9 +33,9 @@ private fun parse(s: String): Result<Ident> {
         if (first !is TokenTree.Ident) error("expected identifier, found $first")
         val ident = first.value
         if (ident.toString() in RESERVED_IDENTIFIERS) error("expected identifier, found reserved keyword")
-        Result.success(ident)
+        SynResult.success(ident)
     } catch (cause: Throwable) {
-        Result.failure(Error.new(Span.callSite(), cause.message ?: cause.toString()))
+        SynResult.failure(SynError.new(Span.callSite(), cause.message ?: cause.toString()))
     }
 }
 

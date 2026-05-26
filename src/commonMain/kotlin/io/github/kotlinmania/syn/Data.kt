@@ -87,7 +87,7 @@ public data class Field(
 
 private fun Field.tySpan(): io.github.kotlinmania.procmacro2.Span =
     when (val t = ty) {
-        is Type.Path -> t.path.getIdent()?.span() ?: io.github.kotlinmania.procmacro2.Span.callSite()
+        is SynType.Path -> t.path.getIdent()?.span() ?: io.github.kotlinmania.procmacro2.Span.callSite()
         else -> io.github.kotlinmania.procmacro2.Span.callSite()
     }
 

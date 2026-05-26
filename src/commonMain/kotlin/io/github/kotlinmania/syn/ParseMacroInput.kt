@@ -57,8 +57,8 @@ import kotlin.native.HiddenFromObjC
  *
  * ```kotlin
  * when (val result = parse2(T, variable)) {
- *     is Result.Success -> ParseMacroResult.Success(result.value)
- *     is Result.Failure -> ParseMacroResult.CompileError(
+ *     is SynResult.Success -> ParseMacroResult.Success(result.value)
+ *     is SynResult.Failure -> ParseMacroResult.CompileError(
  *         (result.exception as Error).toCompileError(),
  *     )
  * }

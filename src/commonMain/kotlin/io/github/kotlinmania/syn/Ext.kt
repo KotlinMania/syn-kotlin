@@ -52,8 +52,8 @@ import io.github.kotlinmania.procmacro2.TokenTree
 public fun identParseAny(input: ParseStream): Result<Ident> =
     input.step { cursor ->
         val pair = cursor.ident()
-            ?: return@step Result.failure(cursor.error("expected ident"))
-        Result.success(pair)
+            ?: return@step SynResult.failure(cursor.error("expected ident"))
+        SynResult.success(pair)
     }
 
 /**
