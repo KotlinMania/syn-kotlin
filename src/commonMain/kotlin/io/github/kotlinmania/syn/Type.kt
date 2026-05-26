@@ -12,12 +12,12 @@ import kotlin.native.ObjCName
  * A type syntax tree node.
  *
  * Renamed to `SynType` in the Objective-C / Swift Export bridge via
- * `@ObjCName("SynType")`: the Kotlin name `Type` collides with Swift's
+ * `@ObjCName(swiftName = "SynType")`: the Kotlin name `Type` collides with Swift's
  * built-in `Type` metatype expression (`foo.Type`), which the Swift
  * compiler rejects as `error: type member must not be named 'Type'`.
  * The Kotlin API name stays `Type`; only the Swift-facing name changes.
  */
-@ObjCName("SynType")
+@ObjCName(swiftName = "SynType")
 public sealed class Type {
     public data class Array(val elem: Type, val len: Expr) : Type()
     public data class BareFn(val inputs: Punctuated<BareFnArg, io.github.kotlinmania.syn.token.Comma>, val output: ReturnType) : Type()
