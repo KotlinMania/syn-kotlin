@@ -13,7 +13,7 @@ public sealed class Expr {
     public fun copy(): Expr =
         when (this) {
             is Lit -> copy(attrs = attrs.map { it.deepCopy() })
-            is Path -> copy(attrs = attrs.map { it.deepCopy() }, path = path.copy())
+            is Path -> copy(attrs = attrs.map { it.deepCopy() }, path = path.deepCopy())
             is Verbatim -> copy()
         }
 }

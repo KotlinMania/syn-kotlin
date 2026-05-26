@@ -3,11 +3,7 @@
 
 package io.github.kotlinmania.syn
 
-import io.github.kotlinmania.procmacro2.Group
-import io.github.kotlinmania.procmacro2.Delimiter
 import io.github.kotlinmania.procmacro2.Literal
-import io.github.kotlinmania.procmacro2.Punct
-import io.github.kotlinmania.procmacro2.Spacing
 import io.github.kotlinmania.procmacro2.Span
 import io.github.kotlinmania.procmacro2.TokenStream
 import io.github.kotlinmania.procmacro2.TokenTree
@@ -97,10 +93,10 @@ public class LitByteStr(
             LitByteStr(value, span)
     }
 
-    public fun toTokens(tokens: TokenStream) {
+    override fun toTokens(tokens: TokenStream) {
         val literal = Literal.string(bytes.map { it.toInt().toChar() }.joinToString(""))
         literal.setSpan(span)
-        tokens.append(io.github.kotlinmania.procmacro2.TokenTree.Literal(literal))
+        tokens.append(TokenTree.Literal(literal))
     }
 
     public fun copy(): LitByteStr = LitByteStr(bytes, span)
@@ -118,10 +114,10 @@ public class LitByte(
             LitByte(value, span)
     }
 
-    public fun toTokens(tokens: TokenStream) {
+    override fun toTokens(tokens: TokenStream) {
         val literal = Literal.string(value.toInt().toChar().toString())
         literal.setSpan(span)
-        tokens.append(io.github.kotlinmania.procmacro2.TokenTree.Literal(literal))
+        tokens.append(TokenTree.Literal(literal))
     }
 
     public fun copy(): LitByte = LitByte(value, span)
@@ -137,10 +133,10 @@ public class LitChar(
             LitChar(value, span)
     }
 
-    public fun toTokens(tokens: TokenStream) {
+    override fun toTokens(tokens: TokenStream) {
         val literal = Literal.character(value)
         literal.setSpan(span)
-        tokens.append(io.github.kotlinmania.procmacro2.TokenTree.Literal(literal))
+        tokens.append(TokenTree.Literal(literal))
     }
 
     public fun copy(): LitChar = LitChar(value, span)
@@ -157,7 +153,7 @@ public class LitInt(
             LitInt(digits, suffix, span)
     }
 
-    public fun base10Digits(): String = digits.trim { it == '_'[0] }.replace("_", "")
+    public fun base10Digits(): String = digits.replace("_", "")
 
     public fun base10Parse(): Long = base10Digits().toLong()
 
@@ -167,8 +163,10 @@ public class LitInt(
         return token
     }
 
-    public fun toTokens(tokens: TokenStream) {
-        tokens.append(Literal.string(digits + suffix).also { it.setSpan(span) })
+    override fun toTokens(tokens: TokenStream) {
+        val literal = Literal.string(digits + suffix)
+        literal.setSpan(span)
+        tokens.append(TokenTree.Literal(literal))
     }
 
     public fun copy(): LitInt = LitInt(digits, suffix, span)
@@ -187,7 +185,7 @@ public class LitFloat(
             LitFloat(digits, suffix, span)
     }
 
-    public fun base10Digits(): String = digits.trim { it == '_'[0] }.replace("_", "")
+    public fun base10Digits(): String = digits.replace("_", "")
 
     public fun token(): Literal {
         val token = Literal.string(digits + suffix)
@@ -195,8 +193,10 @@ public class LitFloat(
         return token
     }
 
-    public fun toTokens(tokens: TokenStream) {
-        tokens.append(Literal.string(digits + suffix).also { it.setSpan(span) })
+    override fun toTokens(tokens: TokenStream) {
+        val literal = Literal.string(digits + suffix)
+        literal.setSpan(span)
+        tokens.append(TokenTree.Literal(literal))
     }
 
     public fun copy(): LitFloat = LitFloat(digits, suffix, span)
@@ -209,7 +209,7 @@ public data class LitBool(
     public val value: Boolean,
     public val span: Span,
 ) : ToTokens {
-    public fun toTokens(tokens: TokenStream) {
+    override fun toTokens(tokens: TokenStream) {
         tokens.append(Ident.new(if (value) "true" else "false", span))
     }
 
@@ -223,10 +223,22 @@ public object LitParse : Parse<Lit> {
             val (lit, rest) = cursor.literal()
                 ?: return@step SynResult.failure(cursor.error("expected literal"))
             val span = lit.span()
-            val suffix = lit.suffix()
+            val text = lit.toString()
             val result: Lit = when {
-                lit.isString() -> Lit.Str(LitStr.new(lit.toString().removeSurrounding("\""), span))
-                else -> Lit.Int(LitInt(lit.toString(), suffix ?: "", span))
+                text.startsWith('"') || text.startsWith("r\"") || text.startsWith("r#") ->
+                    Lit.Str(LitStr.new(text.removeSurrounding("\""), span))
+                text.startsWith('\'') ->
+                    Lit.Char(io.github.kotlinmania.syn.LitChar(text.trim('\'')[0], span))
+                text.startsWith("b\"") ->
+                    Lit.ByteStr(LitByteStr(text.drop(2).dropLast(1).map { it.code.toUByte() }, span))
+                text == "true" ->
+                    Lit.Bool(LitBool(true, span))
+                text == "false" ->
+                    Lit.Bool(LitBool(false, span))
+                text.contains('.') || text.contains("f32") || text.contains("f64") ->
+                    Lit.Float(LitFloat(text, "", span))
+                else ->
+                    Lit.Int(LitInt(text, "", span))
             }
             SynResult.success(result to rest)
         }
@@ -237,7 +249,7 @@ public object LitStrParse : Parse<LitStr> {
     override fun parse(input: ParseStream): SynResult<LitStr> {
         val result = LitParse.parse(input)
         if (result is SynResult.Success && result.value is Lit.Str) {
-            return SynResult.success((result.value as Lit.Str).value)
+            return SynResult.success(result.value.value)
         }
         return SynResult.failure(input.error("expected string literal"))
     }
@@ -248,7 +260,7 @@ public object LitIntParse : Parse<LitInt> {
     override fun parse(input: ParseStream): SynResult<LitInt> {
         val result = LitParse.parse(input)
         if (result is SynResult.Success && result.value is Lit.Int) {
-            return SynResult.success((result.value as Lit.Int).value)
+            return SynResult.success(result.value.value)
         }
         return SynResult.failure(input.error("expected integer literal"))
     }
@@ -259,7 +271,7 @@ public object LitFloatParse : Parse<LitFloat> {
     override fun parse(input: ParseStream): SynResult<LitFloat> {
         val result = LitParse.parse(input)
         if (result is SynResult.Success && result.value is Lit.Float) {
-            return SynResult.success((result.value as Lit.Float).value)
+            return SynResult.success(result.value.value)
         }
         return SynResult.failure(input.error("expected float literal"))
     }
@@ -271,7 +283,7 @@ public object LitBoolParse : Parse<LitBool> {
         val lookahead = input.lookahead1()
         return when {
             lookahead.peek(IdentPeek) -> {
-                val ident = input.parse<io.github.kotlinmania.procmacro2.Ident>().getOrElse { return SynResult.failure(it) }
+                val ident = input.parse(IdentParse).getOrElse { return SynResult.failure(it) }
                 when (ident.toString()) {
                     "true" -> SynResult.success(LitBool(true, ident.span()))
                     "false" -> SynResult.success(LitBool(false, ident.span()))

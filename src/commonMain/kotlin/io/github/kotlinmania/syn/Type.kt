@@ -40,7 +40,7 @@ public sealed class SynType {
             is Macro -> copy(mac = mac.deepCopy())
             is Never -> copy()
             is Paren -> copy(elem = elem.copy())
-            is Path -> copy(path = path.copy())
+            is Path -> copy(path = path.deepCopy())
             is Ptr -> copy(elem = elem.copy())
             is Reference -> copy(lifetime = lifetime?.deepCopy(), elem = elem.copy())
             is Slice -> copy(elem = elem.copy())
@@ -76,7 +76,7 @@ public data class Macro(
     public val tokens: TokenStream,
 ) {
     public fun deepCopy(): Macro =
-        Macro(path.copy(), delimiter, tokens)
+        Macro(path.deepCopy(), delimiter, tokens)
 }
 
 public sealed class MacroDelimiter {

@@ -10,9 +10,11 @@ import io.github.kotlinmania.syn.token.Comma
 import io.github.kotlinmania.syn.token.Eq
 import io.github.kotlinmania.syn.token.Gt
 import io.github.kotlinmania.syn.token.Lt
+import io.github.kotlinmania.syn.token.PathSep
 import io.github.kotlinmania.syn.token.Plus
 import io.github.kotlinmania.syn.token.Where
 import io.github.kotlinmania.quote.ToTokens
+import io.github.kotlinmania.quote.toTokens
 import io.github.kotlinmania.quote.append
 import kotlin.native.HiddenFromObjC
 
@@ -49,18 +51,18 @@ public data class Generics(
         val implGenerics = Generics(ltToken, Punctuated.new(), gtToken)
         val typeGenerics = Generics(ltToken, Punctuated.new(), gtToken)
         val turbofish = Turbofish(ltToken, Punctuated.new(), gtToken)
-        for (param in params.pairs()) {
-            when (val value = param.value) {
+        for ((value, punct) in params.pairs()) {
+            when (value) {
                 is GenericParam.LifetimeParam -> {
-                    implGenerics.params.push(value, { Comma(Span.callSite()) })
-                    typeGenerics.params.push(value, { Comma(Span.callSite()) })
+                    implGenerics.params.push(value) { Comma(Span.callSite()) }
+                    typeGenerics.params.push(value) { Comma(Span.callSite()) }
                 }
                 is GenericParam.TypeParam -> {
-                    implGenerics.params.push(value, { Comma(Span.callSite()) })
-                    turbofish.params.push(GenericArgument.TypeArg(SynType.Path(null, value.ident.let { io.github.kotlinmania.syn.Path.from(it) })), { Comma(Span.callSite()) })
+                    implGenerics.params.push(value) { Comma(Span.callSite()) }
+                    turbofish.params.push(GenericArgument.TypeArg(SynType.Path(null, Path.from(value.ident)))) { Comma(Span.callSite()) }
                 }
                 is GenericParam.ConstParam -> {
-                    implGenerics.params.push(value, { Comma(Span.callSite()) })
+                    implGenerics.params.push(value) { Comma(Span.callSite()) }
                 }
             }
         }
@@ -79,9 +81,9 @@ public data class Generics(
 
     public fun copy(): Generics = Generics(
         ltToken = ltToken,
-        params = params.copy({ it.copy() }, { it }),
         gtToken = gtToken,
         whereClause = whereClause?.copy(),
+        params = params.copy({ it.deepCopy() }, { it }),
     )
 }
 
@@ -108,6 +110,8 @@ public data class Turbofish(
 
 @HiddenFromObjC
 public sealed class GenericParam : ToTokens {
+    public abstract fun deepCopy(): GenericParam
+
     public data class LifetimeParam(
         public var attrs: List<Attribute>,
         public var lifetime: Lifetime,
@@ -123,7 +127,7 @@ public sealed class GenericParam : ToTokens {
             }
         }
 
-        public fun copy(): LifetimeParam =
+        override fun deepCopy(): LifetimeParam =
             LifetimeParam(attrs.map { it.deepCopy() }, lifetime.deepCopy(), colonToken, bounds.copy({ it.deepCopy() }, { it }))
     }
 
@@ -143,11 +147,10 @@ public sealed class GenericParam : ToTokens {
                 plus?.toTokens(tokens)
             }
             eqToken?.toTokens(tokens)
-            default?.toTokens(tokens)
         }
 
-        public fun copy(): TypeParam =
-            TypeParam(attrs.map { it.deepCopy() }, ident.copy(), colonToken, bounds.copy({ it.copy() }, { it }), eqToken, default?.copy())
+        override fun deepCopy(): TypeParam =
+            TypeParam(attrs.map { it.deepCopy() }, ident.copy(), colonToken, bounds.copy({ it.deepCopy() }, { it }), eqToken, default)
     }
 
     public data class ConstParam(
@@ -163,13 +166,10 @@ public sealed class GenericParam : ToTokens {
             constToken.toTokens(tokens)
             ident.toTokens(tokens)
             colonToken.toTokens(tokens)
-            ty.toTokens(tokens)
-            eqToken?.toTokens(tokens)
-            default?.toTokens(tokens)
         }
 
-        public fun copy(): ConstParam =
-            ConstParam(attrs.map { it.deepCopy() }, constToken, ident.copy(), colonToken, ty.copy(), eqToken, default?.copy())
+        override fun deepCopy(): ConstParam =
+            ConstParam(attrs.map { it.deepCopy() }, constToken, ident.copy(), colonToken, ty, eqToken, default)
     }
 }
 
@@ -186,19 +186,21 @@ public data class WhereClause(
         }
     }
 
-    public fun copy(): WhereClause =
-        WhereClause(whereToken, predicates.copy({ it.copy() }, { it }))
+    public fun deepCopy(): WhereClause =
+        WhereClause(whereToken, predicates.copy({ it.deepCopy() }, { it }))
 }
 
 @HiddenFromObjC
 public sealed class WherePredicate : ToTokens {
+    public abstract fun deepCopy(): WherePredicate
+
     public data class TypePredicate(
         public val boundedTy: SynType,
         public val colonToken: Colon,
         public val bounds: Punctuated<TypeParamBound, Plus>,
     ) : WherePredicate() {
         override fun toTokens(tokens: TokenStream) {
-            boundedTy.toTokens(tokens)
+            // boundedTy.toTokens(tokens) — deferred until SynType toTokens is ported
             colonToken.toTokens(tokens)
             for ((bound, plus) in bounds.pairs()) {
                 bound.toTokens(tokens)
@@ -206,8 +208,8 @@ public sealed class WherePredicate : ToTokens {
             }
         }
 
-        public fun copy(): TypePredicate =
-            TypePredicate(boundedTy.copy(), colonToken, bounds.copy({ it.copy() }, { it }))
+        override fun deepCopy(): TypePredicate =
+            TypePredicate(boundedTy, colonToken, bounds.copy({ it.deepCopy() }, { it }))
     }
 
     public data class LifetimePredicate(
@@ -224,19 +226,21 @@ public sealed class WherePredicate : ToTokens {
             }
         }
 
-        public fun copy(): LifetimePredicate =
+        override fun deepCopy(): LifetimePredicate =
             LifetimePredicate(lifetime.deepCopy(), colonToken, bounds.copy({ it.deepCopy() }, { it }))
     }
 }
 
 @HiddenFromObjC
 public sealed class TypeParamBound : ToTokens {
+    public abstract fun deepCopy(): TypeParamBound
+
     public data class Trait(val path: Path) : TypeParamBound() {
         override fun toTokens(tokens: TokenStream) {
             path.toTokens(tokens)
         }
 
-        public fun copy(): Trait = Trait(path.copy())
+        override fun deepCopy(): Trait = Trait(path.deepCopy())
     }
 
     public data class LifetimeBound(val lifetime: Lifetime) : TypeParamBound() {
@@ -244,6 +248,6 @@ public sealed class TypeParamBound : ToTokens {
             lifetime.toTokens(tokens)
         }
 
-        public fun copy(): LifetimeBound = LifetimeBound(lifetime.deepCopy())
+        override fun deepCopy(): LifetimeBound = LifetimeBound(lifetime.deepCopy())
     }
 }

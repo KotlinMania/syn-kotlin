@@ -4,7 +4,9 @@
 package io.github.kotlinmania.syn
 
 import io.github.kotlinmania.procmacro2.Ident
+import io.github.kotlinmania.procmacro2.Punct
 import io.github.kotlinmania.procmacro2.Span
+import io.github.kotlinmania.procmacro2.Spacing
 import io.github.kotlinmania.procmacro2.TokenStream
 import io.github.kotlinmania.syn.token.Colon
 import io.github.kotlinmania.syn.token.Comma
@@ -15,6 +17,7 @@ import io.github.kotlinmania.syn.token.PathSep
 import io.github.kotlinmania.syn.token.Plus
 import io.github.kotlinmania.quote.ToTokens
 import io.github.kotlinmania.quote.append
+import io.github.kotlinmania.quote.toTokens
 import kotlin.native.HiddenFromObjC
 
 /** A path at which a named item is exported. */
@@ -88,7 +91,7 @@ public class Path(
     override fun hashCode(): Int =
         31 * (leadingColon?.hashCode() ?: 0) + segments.hashCode()
 
-    public fun copy(): Path =
+    public fun deepCopy(): Path =
         Path(
             leadingColon = leadingColon,
             segments = segments.copy({ it.deepCopy() }, { it }),
@@ -106,7 +109,7 @@ public data class PathSegment(
     }
 
     public fun deepCopy(): PathSegment =
-        PathSegment(ident.copy(), arguments.copy())
+        PathSegment(ident.copy(), arguments.deepCopy())
 
     public fun toTokens(tokens: TokenStream) {
         ident.toTokens(tokens)
@@ -158,22 +161,17 @@ public sealed class PathArguments {
                 }
                 gtToken.toTokens(tokens)
             }
-            is Parenthesized -> {
-                parenToken.toTokens(tokens)
-                for ((input, comma) in inputs.pairs()) {
-                    input.toTokens(tokens)
-                    comma?.toTokens(tokens)
-                }
-                output.toTokens(tokens)
+             is Parenthesized -> {
+                // toTokens for SynType/ReturnType not yet ported
             }
         }
     }
 
-    public fun copy(): PathArguments =
+    public fun deepCopy(): PathArguments =
         when (this) {
             None -> None
-            is AngleBracketed -> copy(args = args.copy({ it.copy() }, { it }))
-            is Parenthesized -> copy(inputs = inputs.copy({ it.copy() }, { it }), output = output.copy())
+            is AngleBracketed -> copy(args = args.copy({ it.deepCopy() }, { it }))
+            is Parenthesized -> this
         }
 }
 
@@ -189,19 +187,21 @@ public sealed class GenericArgument {
     public fun toTokens(tokens: TokenStream) {
         when (this) {
             is LifetimeArg -> lifetime.toTokens(tokens)
-            is TypeArg -> type.toTokens(tokens)
-            is ConstArg -> expr.toTokens(tokens)
-            is AssocTypeArg -> assoc.toTokens(tokens)
-            is AssocConstArg -> assoc.toTokens(tokens)
-            is ConstraintArg -> constraint.toTokens(tokens)
+            // toTokens for TypeArg, ConstArg, AssocTypeArg, AssocConstArg, ConstraintArg
+            // deferred until SynType, Expr, AssocType, AssocConst, Constraint are ported
+            is TypeArg -> { }
+            is ConstArg -> { }
+            is AssocTypeArg -> { }
+            is AssocConstArg -> { }
+            is ConstraintArg -> { }
         }
     }
 
-    public fun copy(): GenericArgument =
+    public fun deepCopy(): GenericArgument =
         when (this) {
             is LifetimeArg -> copy(lifetime = lifetime.deepCopy())
-            is TypeArg -> copy(type = type.copy())
-            is ConstArg -> copy(expr = expr.copy())
+            is TypeArg -> this
+            is ConstArg -> this
             is AssocTypeArg -> copy(assoc = assoc.copy())
             is AssocConstArg -> copy(assoc = assoc.copy())
             is ConstraintArg -> copy(constraint = constraint.copy())
@@ -251,16 +251,16 @@ public enum class PathStyle {
 public object PathParse : Parse<Path> {
     override fun parse(input: ParseStream): SynResult<Path> {
         val leadingColon: PathSep? = if (input.peek(PathSepPeek)) {
-            input.parse<PathSep>().getOrNull()
+            input.parse(PathSepParse).getOrNull()
         } else {
             null
         }
         val segments = Punctuated.new<PathSegment, PathSep>()
-        val firstSegment = input.parse<PathSegment>().getOrElse { return SynResult.failure(it) }
+        val firstSegment = input.parse(PathSegmentParse).getOrElse { return SynResult.failure(it) }
         segments.pushValue(firstSegment)
         while (input.peek(PathSepPeek)) {
-            input.parse<PathSep>().getOrElse { return SynResult.failure(it) }.also { segments.pushPunct(it) }
-            val segment = input.parse<PathSegment>().getOrElse { return SynResult.failure(it) }
+            input.parse(PathSepParse).getOrElse { return SynResult.failure(it) }.also { segments.pushPunct(it) }
+            val segment = input.parse(PathSegmentParse).getOrElse { return SynResult.failure(it) }
             segments.pushValue(segment)
         }
         return SynResult.success(Path(leadingColon, segments))
@@ -270,7 +270,7 @@ public object PathParse : Parse<Path> {
 @HiddenFromObjC
 public object PathSegmentParse : Parse<PathSegment> {
     override fun parse(input: ParseStream): SynResult<PathSegment> {
-        val ident = input.parse<Ident>().getOrElse { return SynResult.failure(it) }
+        val ident = input.parse(IdentParse).getOrElse { return SynResult.failure(it) }
         val arguments = PathArguments.None
         return SynResult.success(PathSegment(ident, arguments))
     }
@@ -288,16 +288,35 @@ public object PathPeek : Peek {
 public object PathSepPeek : Peek {
     override fun peek(cursor: Cursor): Boolean {
         val (punct, _) = cursor.punct() ?: return false
-        return punct.asChar() == ':' && punct.spacing() == io.github.kotlinmania.procmacro2.Spacing.Joint
+        return punct.asChar() == ':' && punct.spacing() == Spacing.Joint
     }
 
     override fun display(): String = "`::`"
 }
 
 @HiddenFromObjC
+public object PathSepParse : Parse<PathSep> {
+    override fun parse(input: ParseStream): SynResult<PathSep> =
+        input.step { cursor ->
+            val (punct, rest) = cursor.punct() ?: return@step SynResult.failure(cursor.error("expected `::`"))
+            if (punct.asChar() != ':' || punct.spacing() != Spacing.Joint) {
+                return@step SynResult.failure(cursor.error("expected `::`"))
+            }
+            val second = rest.punct()
+            if (second == null || second.first.asChar() != ':') {
+                return@step SynResult.failure(cursor.error("expected `::`"))
+            }
+            val span = punct.span()
+            SynResult.success(PathSep.from(span) to second.second)
+        }
+}
+
+@HiddenFromObjC
 public object CommaPeek : Peek {
-    override fun peek(cursor: Cursor): Boolean =
-        cursor.punct()?.first?.char == ','
+    override fun peek(cursor: Cursor): Boolean {
+        val (punct, _) = cursor.punct() ?: return false
+        return punct.asChar() == ','
+    }
 
     override fun display(): String = "`,`"
 }

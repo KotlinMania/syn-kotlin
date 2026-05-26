@@ -66,10 +66,14 @@ public data class Lifetime(
 @HiddenFromObjC
 public object LifetimeParse : Parse<Lifetime> {
     override fun parse(input: ParseStream): SynResult<Lifetime> =
-        input.step { cursor ->
-            val (lifetime, rest) = cursor.lifetime()
-                ?: return@step SynResult.failure(cursor.error("expected lifetime")).let { return@step it }
-            SynResult.success(lifetime to rest)
+        input.step { cursor: StepCursor ->
+            val pair: Pair<Lifetime, Cursor>? = cursor.lifetime()
+            if (pair == null) {
+                SynResult.failure(cursor.error("expected lifetime"))
+            } else {
+                val (lifetime, rest) = pair
+                SynResult.success(lifetime to rest)
+            }
         }
 }
 
