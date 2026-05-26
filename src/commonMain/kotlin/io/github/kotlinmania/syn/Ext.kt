@@ -41,7 +41,7 @@ import io.github.kotlinmania.procmacro2.TokenTree
  * //
  * //     name = anything
  * //     name = impl
- * fun parseDsl(input: ParseStream): Result<Ident> = runCatching {
+ * fun parseDsl(input: ParseStream): SynResult<Ident> = runCatching {
  *     input.parse(KwName).getOrThrow()
  *     input.parse(EqToken).getOrThrow()
  *     val name = input.call(::identParseAny).getOrThrow()
@@ -49,7 +49,7 @@ import io.github.kotlinmania.procmacro2.TokenTree
  * }
  * ```
  */
-public fun identParseAny(input: ParseStream): Result<Ident> =
+public fun identParseAny(input: ParseStream): SynResult<Ident> =
     input.step { cursor ->
         val pair = cursor.ident()
             ?: return@step SynResult.failure(cursor.error("expected ident"))

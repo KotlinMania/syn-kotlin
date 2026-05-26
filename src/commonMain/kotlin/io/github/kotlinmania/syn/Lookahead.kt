@@ -41,7 +41,7 @@ import kotlin.native.HiddenFromObjC
  * }
  *
  * class GenericParamParser : Parse<GenericParam> {
- *     override fun parse(input: ParseStream): Result<GenericParam> {
+ *     override fun parse(input: ParseStream): SynResult<GenericParam> {
  *         val lookahead = input.lookahead1()
  *         return when {
  *             lookahead.peek(Ident) -> input.parse<TypeParam>().map(GenericParam::Type)
@@ -87,7 +87,7 @@ public class Lookahead1 internal constructor(
      * The error message will identify all of the expected token types that
      * have been peeked against this lookahead instance.
      */
-    public fun error(): Error {
+    public fun error(): SynError {
         val pruned = mutableListOf<String>()
         for (item in comparisons) {
             var display = item

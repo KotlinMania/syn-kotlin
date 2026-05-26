@@ -24,7 +24,6 @@ import io.github.kotlinmania.quote.append
  * warnings-as-errors builds.
  *
  * Named `SynResult` to avoid colliding with Swift's built-in `Result` type.
- * The `Result` typealias preserves the original Kotlin API name.
  *
  * The companion-object factories [SynResult.success] / [SynResult.failure], the
  * `isSuccess` / `isFailure` properties, and the `getOrThrow` /
@@ -95,14 +94,11 @@ public sealed class SynResult<out T> {
     }
 }
 
-/** Backward-compatible alias: `Result` was the original Kotlin name before the Swift-safe rename. */
-public typealias Result<T> = SynResult<T>
 
 /**
  * Error returned when a Syn parser cannot parse the input tokens.
  *
  * Named `SynError` to avoid colliding with Swift's built-in `Error` protocol.
- * The `Error` typealias preserves the original Kotlin API name.
  *
  * # Error reporting in proc macros
  *
@@ -230,8 +226,6 @@ public class SynError private constructor(
         messages.first().message
 }
 
-/** Backward-compatible alias: `Error` was the original Kotlin name before the Swift-safe rename. */
-public typealias Error = SynError
 
 private data class ErrorMessage(
     val span: ThreadBound<SpanRange>,

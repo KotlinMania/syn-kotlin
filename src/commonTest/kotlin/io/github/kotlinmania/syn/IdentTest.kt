@@ -24,7 +24,7 @@ private val RESERVED_IDENTIFIERS: Set<String> = setOf(
     "use", "virtual", "where", "while", "yield",
 )
 
-private fun parse(s: String): Result<Ident> {
+private fun parse(s: String): SynResult<Ident> {
     return try {
         val stream: TokenStream = TokenStream.fromString(s).getOrThrow()
         val tokens = stream.toList()

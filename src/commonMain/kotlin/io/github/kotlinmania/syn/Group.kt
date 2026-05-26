@@ -33,24 +33,24 @@ public class GroupContent internal constructor(
 )
 
 // Not public API.
-public fun parseParens(input: ParseBuffer): Result<Parens> =
+public fun parseParens(input: ParseBuffer): SynResult<Parens> =
     parseDelimited(input, Delimiter.Parenthesis).map { (span, content) ->
         Parens(token = Paren.from(span), content = content)
     }
 
 // Not public API.
-public fun parseBraces(input: ParseBuffer): Result<Braces> =
+public fun parseBraces(input: ParseBuffer): SynResult<Braces> =
     parseDelimited(input, Delimiter.Brace).map { (span, content) ->
         Braces(token = Brace.from(span), content = content)
     }
 
 // Not public API.
-public fun parseBrackets(input: ParseBuffer): Result<Brackets> =
+public fun parseBrackets(input: ParseBuffer): SynResult<Brackets> =
     parseDelimited(input, Delimiter.Bracket).map { (span, content) ->
         Brackets(token = Bracket.from(span), content = content)
     }
 
-internal fun parseGroup(input: ParseBuffer): Result<GroupContent> =
+internal fun parseGroup(input: ParseBuffer): SynResult<GroupContent> =
     parseDelimited(input, Delimiter.None).map { (span, content) ->
         GroupContent(token = GroupToken.from(span.join()), content = content)
     }
@@ -58,7 +58,7 @@ internal fun parseGroup(input: ParseBuffer): Result<GroupContent> =
 private fun parseDelimited(
     input: ParseBuffer,
     delimiter: Delimiter,
-): Result<Pair<DelimSpan, ParseBuffer>> =
+): SynResult<Pair<DelimSpan, ParseBuffer>> =
     input.step { cursor ->
         val grp = cursor.group(delimiter)
         if (grp != null) {
@@ -101,10 +101,10 @@ private fun parseDelimited(
  * `content` at the end of its scope so that leftover-token diagnostics
  * propagate up to the parent buffer.
  */
-public fun parenthesized(input: ParseBuffer): Result<Parens> = parseParens(input)
+public fun parenthesized(input: ParseBuffer): SynResult<Parens> = parseParens(input)
 
 /** Parse a set of curly braces and expose their content to subsequent parsers. */
-public fun braced(input: ParseBuffer): Result<Braces> = parseBraces(input)
+public fun braced(input: ParseBuffer): SynResult<Braces> = parseBraces(input)
 
 /** Parse a set of square brackets and expose their content to subsequent parsers. */
-public fun bracketed(input: ParseBuffer): Result<Brackets> = parseBrackets(input)
+public fun bracketed(input: ParseBuffer): SynResult<Brackets> = parseBrackets(input)

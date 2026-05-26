@@ -59,20 +59,20 @@ import kotlin.native.HiddenFromObjC
  * when (val result = parse2(T, variable)) {
  *     is SynResult.Success -> ParseMacroResult.Success(result.value)
  *     is SynResult.Failure -> ParseMacroResult.CompileError(
- *         (result.exception as Error).toCompileError(),
+ *         (result.exception as SynError).toCompileError(),
  *     )
  * }
  * ```
  */
 @HiddenFromObjC
-public sealed class ParseMacroResult<out T> {
-    public data class Success<T>(public val value: T) : ParseMacroResult<T>()
-    public data class CompileError<T>(public val tokens: TokenStream) : ParseMacroResult<T>()
+public sealed class ParseMacroSynResult<out T> {
+    public data class Success<T>(public val value: T) : ParseMacroSynResult<T>()
+    public data class CompileError<T>(public val tokens: TokenStream) : ParseMacroSynResult<T>()
 }
 
 /** Parse the macro input via the supplied [Parse] strategy. */
 @HiddenFromObjC
-public fun <T> parseMacroInput(tokens: TokenStream, parser: Parse<T>): ParseMacroResult<T> {
+public fun <T> parseMacroInput(tokens: TokenStream, parser: Parse<T>): ParseMacroSynResult<T> {
     val result = parse2(parser, tokens)
     if (result.isSuccess) {
         return ParseMacroResult.Success(result.getOrThrow())
@@ -86,8 +86,8 @@ public fun <T> parseMacroInput(tokens: TokenStream, parser: Parse<T>): ParseMacr
 @HiddenFromObjC
 public fun <T> parseMacroInputWith(
     tokens: TokenStream,
-    parser: (ParseStream) -> Result<T>,
-): ParseMacroResult<T> {
+    parser: (ParseStream) -> SynResult<T>,
+): ParseMacroSynResult<T> {
     val result = parserFromFunction(parser).parse2(tokens)
     if (result.isSuccess) {
         return ParseMacroResult.Success(result.getOrThrow())

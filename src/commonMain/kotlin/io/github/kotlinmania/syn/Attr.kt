@@ -16,7 +16,7 @@ public data class Attribute(
     public fun path(): Path =
         meta.path()
 
-    public fun parseNestedMeta(logic: (ParseNestedMeta) -> Result<Unit>): Result<Unit> =
+    public fun parseNestedMeta(logic: (ParseNestedMeta) -> SynResult<Unit>): SynResult<Unit> =
         when (val metaValue = meta) {
             is Meta.List -> metaValue.parseNestedMeta(logic)
             else -> SynResult.failure(SynError.new(path().getIdent()?.span() ?: io.github.kotlinmania.procmacro2.Span.callSite(), "expected attribute arguments in parentheses"))
@@ -61,17 +61,17 @@ public data class ParseNestedMeta(
     public fun value(): TokenStream =
         input
 
-    public fun parseNestedMeta(logic: (ParseNestedMeta) -> Result<Unit>): Result<Unit> =
+    public fun parseNestedMeta(logic: (ParseNestedMeta) -> SynResult<Unit>): SynResult<Unit> =
         parseNestedMetaTokens(input, logic)
 }
 
-public fun Meta.List.parseNestedMeta(logic: (ParseNestedMeta) -> Result<Unit>): Result<Unit> =
+public fun Meta.List.parseNestedMeta(logic: (ParseNestedMeta) -> SynResult<Unit>): SynResult<Unit> =
     parseNestedMetaTokens(tokens, logic)
 
 private fun parseNestedMetaTokens(
     tokens: TokenStream,
-    logic: (ParseNestedMeta) -> Result<Unit>,
-): Result<Unit> {
+    logic: (ParseNestedMeta) -> SynResult<Unit>,
+): SynResult<Unit> {
     for (path in nestedMetaPaths(tokens)) {
         val result = logic(ParseNestedMeta(path))
         if (result.isFailure) {

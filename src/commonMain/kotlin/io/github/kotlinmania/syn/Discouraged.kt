@@ -78,7 +78,7 @@ public data class AnyDelimiterResult(
  * Returns the delimiter, the span of the delimiter token, and the nested
  * contents for further parsing.
  */
-public fun ParseBuffer.parseAnyDelimiter(): Result<AnyDelimiterResult> =
+public fun ParseBuffer.parseAnyDelimiter(): SynResult<AnyDelimiterResult> =
     step { cursor ->
         val any = cursor.anyGroup()
         if (any != null) {

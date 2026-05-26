@@ -599,7 +599,7 @@ class Try private constructor(span: Span) : KeywordToken(span) {
  *
  * Named `SynTypeToken` to avoid colliding with Swift's built-in `Type`
  * metatype expression (`foo.Type`), which the Swift compiler rejects
- * as `error: type member must not be named 'Type'`. The `Type` typealias
+ * as `error: type member must not be named 'Type'`. The `Type` class
  * preserves the original Kotlin API name.
  */
 class SynTypeToken private constructor(span: Span) : KeywordToken(span) {
@@ -611,8 +611,7 @@ class SynTypeToken private constructor(span: Span) : KeywordToken(span) {
     }
 }
 
-/** Backward-compatible alias: `Type` was the original Kotlin name before the Swift-safe rename. */
-typealias Type = SynTypeToken
+
 
 class Typeof private constructor(span: Span) : KeywordToken(span) {
     override val text: String = "typeof"
