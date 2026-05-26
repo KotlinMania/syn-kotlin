@@ -646,9 +646,10 @@ val swiftExportTaskDirectlyRequested =
 // The Swift Export pipeline generates intermediate Kotlin code (KotlinStdlib.kt, etc.)
 // that may contain unchecked cast warnings. Suppress allWarningsAsErrors for those
 // generated compilation tasks so the build does not fail on generated code.
-tasks.matching { it.name.startsWith("compileSwiftExport") }.configureEach {
-    val kotlinTask = this as? org.jetbrains.kotlin.gradle.tasks.KotlinCompile ?: return@configureEach
-    kotlinTask.compilerOptions.allWarningsAsErrors.set(false)
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().matching {
+    it.name.startsWith("compileSwiftExport")
+}.configureEach {
+    compilerOptions.allWarningsAsErrors.set(false)
 }
 tasks.matching { it.name == "embedSwiftExportForXcode" }.configureEach {
     onlyIf {
