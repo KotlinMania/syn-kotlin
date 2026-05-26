@@ -1,5 +1,4 @@
 // port-lint: source token.rs
-@file:OptIn(kotlin.experimental.ExperimentalObjCName::class)
 
 package io.github.kotlinmania.syn.token
 
@@ -14,7 +13,6 @@ import io.github.kotlinmania.procmacro2.TokenStream
 import io.github.kotlinmania.quote.ToTokens
 import io.github.kotlinmania.quote.append
 import io.github.kotlinmania.syn.intoDelimSpan
-import kotlin.native.ObjCName
 
 /**
  * Tokens representing Rust punctuation, keywords, and delimiters.
@@ -599,21 +597,22 @@ class Try private constructor(span: Span) : KeywordToken(span) {
 /**
  * The Rust `type` keyword token.
  *
- * Renamed to `SynTypeToken` in the Objective-C / Swift Export bridge via
- * `@ObjCName(swiftName = "SynTypeToken")`: the Kotlin name `Type` collides with Swift's
- * built-in `Type` metatype expression (`foo.Type`), which the Swift compiler
- * rejects as `error: type member must not be named 'Type'`. The Kotlin API
- * name stays `Type`; only the Swift-facing name changes.
+ * Named `SynTypeToken` to avoid colliding with Swift's built-in `Type`
+ * metatype expression (`foo.Type`), which the Swift compiler rejects
+ * as `error: type member must not be named 'Type'`. The `Type` typealias
+ * preserves the original Kotlin API name.
  */
-@ObjCName(swiftName = "SynTypeToken")
-class Type private constructor(span: Span) : KeywordToken(span) {
+class SynTypeToken private constructor(span: Span) : KeywordToken(span) {
     override val text: String = "type"
     companion object {
-        fun default(): Type = Type(Span.callSite())
-        fun from(span: Span): Type = Type(span)
-        operator fun invoke(span: Span): Type = from(span)
+        fun default(): SynTypeToken = SynTypeToken(Span.callSite())
+        fun from(span: Span): SynTypeToken = SynTypeToken(span)
+        operator fun invoke(span: Span): SynTypeToken = from(span)
     }
 }
+
+/** Backward-compatible alias: `Type` was the original Kotlin name before the Swift-safe rename. */
+typealias Type = SynTypeToken
 
 class Typeof private constructor(span: Span) : KeywordToken(span) {
     override val text: String = "typeof"
