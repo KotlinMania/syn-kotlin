@@ -1,6 +1,7 @@
 @file:OptIn(kotlin.experimental.ExperimentalObjCRefinement::class)
 // port-lint: source discouraged.rs
 package io.github.kotlinmania.syn
+import kotlin.native.HiddenFromObjC
 
 import io.github.kotlinmania.procmacro2.DelimSpan
 import io.github.kotlinmania.procmacro2.Delimiter
