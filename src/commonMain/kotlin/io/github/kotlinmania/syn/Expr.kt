@@ -3,19 +3,43 @@ package io.github.kotlinmania.syn
 
 import io.github.kotlinmania.procmacro2.Span
 import io.github.kotlinmania.procmacro2.TokenStream
+import io.github.kotlinmania.quote.ToTokens
+import io.github.kotlinmania.quote.toTokens
+import io.github.kotlinmania.quote.append
 
 /** An expression syntax tree node. */
-public sealed class Expr {
-    public data class Lit(val attrs: List<Attribute>, val lit: io.github.kotlinmania.syn.Lit) : Expr()
-    public data class Path(val attrs: List<Attribute>, val qself: QSelf?, val path: io.github.kotlinmania.syn.Path) : Expr()
-    public data class Verbatim(val tokens: TokenStream) : Expr()
-
-    public fun copy(): Expr =
-        when (this) {
-            is Lit -> copy(attrs = attrs.map { it.deepCopy() })
-            is Path -> copy(attrs = attrs.map { it.deepCopy() }, path = path.deepCopy())
-            is Verbatim -> copy()
+public sealed class Expr : ToTokens {
+    public data class Lit(val attrs: List<Attribute>, val lit: io.github.kotlinmania.syn.Lit) : Expr() {
+        override fun toTokens(tokens: TokenStream) {
+            lit.toTokens(tokens)
         }
+
+        override fun deepCopy(): Lit = Lit(attrs.map { it.deepCopy() }, lit)
+    }
+
+    public data class Path(val attrs: List<Attribute>, val qself: QSelf?, val path: io.github.kotlinmania.syn.Path) : Expr() {
+        override fun toTokens(tokens: TokenStream) {
+            qself?.let {
+                it.ltToken.toTokens(tokens)
+                it.ty.toTokens(tokens)
+                it.asToken?.toTokens(tokens)
+                it.gtToken.toTokens(tokens)
+            }
+            path.toTokens(tokens)
+        }
+
+        override fun deepCopy(): Path = Path(attrs.map { it.deepCopy() }, qself, path.deepCopy())
+    }
+
+    public data class Verbatim(val tokens: TokenStream) : Expr() {
+        override fun toTokens(tokens: TokenStream) {
+            tokens.extendTokenStreams(listOf(tokens))
+        }
+
+        override fun deepCopy(): Verbatim = this
+    }
+
+    public abstract fun deepCopy(): Expr
 }
 
 /** A member of a struct or tuple. */

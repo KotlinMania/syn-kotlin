@@ -103,7 +103,7 @@ class Underscore private constructor(
 /** None-delimited group. */
 class Group private constructor(
     override val span: Span,
-) : SingleSpanToken {
+) : SingleSpanToken, ToTokens {
     companion object {
         fun default(): Group =
             Group(Span.callSite())
@@ -119,6 +119,10 @@ class Group private constructor(
         val inner = TokenStream.new()
         f(inner)
         printingDelim(Delimiter.None, span, tokens, inner)
+    }
+
+    override fun toTokens(tokens: TokenStream) {
+        surround(tokens) { }
     }
 
     override fun equals(other: Any?): Boolean =

@@ -200,7 +200,7 @@ public sealed class WherePredicate : ToTokens {
         public val bounds: Punctuated<TypeParamBound, Plus>,
     ) : WherePredicate() {
         override fun toTokens(tokens: TokenStream) {
-            // boundedTy.toTokens(tokens) — deferred until SynType toTokens is ported
+            boundedTy.toTokens(tokens)
             colonToken.toTokens(tokens)
             for ((bound, plus) in bounds.pairs()) {
                 bound.toTokens(tokens)
@@ -209,7 +209,7 @@ public sealed class WherePredicate : ToTokens {
         }
 
         override fun deepCopy(): TypePredicate =
-            TypePredicate(boundedTy, colonToken, bounds.copy({ it.deepCopy() }, { it }))
+            TypePredicate(boundedTy.deepCopy(), colonToken, bounds.copy({ it.deepCopy() }, { it }))
     }
 
     public data class LifetimePredicate(

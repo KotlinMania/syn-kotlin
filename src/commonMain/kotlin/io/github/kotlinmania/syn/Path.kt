@@ -162,7 +162,13 @@ public sealed class PathArguments {
                 gtToken.toTokens(tokens)
             }
              is Parenthesized -> {
-                // toTokens for SynType/ReturnType not yet ported
+                parenToken.surround(tokens) { inner ->
+                    for ((input, comma) in inputs.pairs()) {
+                        input.toTokens(inner)
+                        comma?.toTokens(inner)
+                    }
+                }
+                output.toTokens(tokens)
             }
         }
     }
@@ -171,7 +177,7 @@ public sealed class PathArguments {
         when (this) {
             None -> None
             is AngleBracketed -> copy(args = args.copy({ it.deepCopy() }, { it }))
-            is Parenthesized -> this
+            is Parenthesized -> copy(inputs = inputs.copy({ it.deepCopy() }, { it }), output = output.deepCopy())
         }
 }
 
@@ -187,24 +193,22 @@ public sealed class GenericArgument {
     public fun toTokens(tokens: TokenStream) {
         when (this) {
             is LifetimeArg -> lifetime.toTokens(tokens)
-            // toTokens for TypeArg, ConstArg, AssocTypeArg, AssocConstArg, ConstraintArg
-            // deferred until SynType, Expr, AssocType, AssocConst, Constraint are ported
-            is TypeArg -> { }
-            is ConstArg -> { }
-            is AssocTypeArg -> { }
-            is AssocConstArg -> { }
-            is ConstraintArg -> { }
+            is TypeArg -> type.toTokens(tokens)
+            is ConstArg -> expr.toTokens(tokens)
+            is AssocTypeArg -> assoc.toTokens(tokens)
+            is AssocConstArg -> assoc.toTokens(tokens)
+            is ConstraintArg -> constraint.toTokens(tokens)
         }
     }
 
     public fun deepCopy(): GenericArgument =
         when (this) {
             is LifetimeArg -> copy(lifetime = lifetime.deepCopy())
-            is TypeArg -> this
-            is ConstArg -> this
-            is AssocTypeArg -> copy(assoc = assoc.copy())
-            is AssocConstArg -> copy(assoc = assoc.copy())
-            is ConstraintArg -> copy(constraint = constraint.copy())
+            is TypeArg -> copy(type = type.deepCopy())
+            is ConstArg -> copy(expr = expr.deepCopy())
+            is AssocTypeArg -> copy(assoc = assoc.deepCopy())
+            is AssocConstArg -> copy(assoc = assoc.deepCopy())
+            is ConstraintArg -> copy(constraint = constraint.deepCopy())
         }
 }
 
@@ -214,7 +218,16 @@ public data class AssocType(
     public val generics: PathArguments.AngleBracketed?,
     public val eqToken: io.github.kotlinmania.syn.token.Eq,
     public val ty: SynType,
-)
+) : ToTokens {
+    override fun toTokens(tokens: TokenStream) {
+        ident.toTokens(tokens)
+        generics?.toTokens(tokens)
+        eqToken.toTokens(tokens)
+        ty.toTokens(tokens)
+    }
+
+    public fun deepCopy(): AssocType = AssocType(ident.copy(), generics?.deepCopy() as? PathArguments.AngleBracketed?, eqToken, ty.deepCopy())
+}
 
 /** An equality constraint on an associated constant. */
 public data class AssocConst(
@@ -222,7 +235,16 @@ public data class AssocConst(
     public val generics: PathArguments.AngleBracketed?,
     public val eqToken: io.github.kotlinmania.syn.token.Eq,
     public val value: Expr,
-)
+) : ToTokens {
+    override fun toTokens(tokens: TokenStream) {
+        ident.toTokens(tokens)
+        generics?.toTokens(tokens)
+        eqToken.toTokens(tokens)
+        value.toTokens(tokens)
+    }
+
+    public fun deepCopy(): AssocConst = AssocConst(ident.copy(), generics?.deepCopy() as? PathArguments.AngleBracketed?, eqToken, value.deepCopy())
+}
 
 /** An associated type bound such as `Iterator<Item: Display>`. */
 public data class Constraint(
@@ -230,7 +252,19 @@ public data class Constraint(
     public val generics: PathArguments.AngleBracketed?,
     public val colonToken: Colon,
     public val bounds: Punctuated<TypeParamBound, Plus>,
-)
+) : ToTokens {
+    override fun toTokens(tokens: TokenStream) {
+        ident.toTokens(tokens)
+        generics?.toTokens(tokens)
+        colonToken.toTokens(tokens)
+        for ((bound, plus) in bounds.pairs()) {
+            bound.toTokens(tokens)
+            plus?.toTokens(tokens)
+        }
+    }
+
+    public fun deepCopy(): Constraint = Constraint(ident.copy(), generics?.deepCopy() as? PathArguments.AngleBracketed?, colonToken, bounds.copy({ it.deepCopy() }, { it }))
+}
 
 /** The explicit Self type in a qualified path. */
 public data class QSelf(

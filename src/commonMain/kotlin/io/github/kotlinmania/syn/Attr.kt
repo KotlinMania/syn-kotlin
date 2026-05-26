@@ -51,7 +51,7 @@ public sealed class Meta {
         when (this) {
             is PathMeta -> copy(path = path.deepCopy())
             is List -> copy(path = path.deepCopy())
-            is NameValue -> copy(path = path.deepCopy(), value = value.copy())
+            is NameValue -> copy(path = path.deepCopy(), value = value.deepCopy())
         }
 
 }
