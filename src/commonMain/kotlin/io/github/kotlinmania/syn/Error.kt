@@ -1,3 +1,4 @@
+@file:OptIn(kotlin.experimental.ExperimentalObjCRefinement::class)
 // port-lint: source error.rs
 package io.github.kotlinmania.syn
 
@@ -30,6 +31,7 @@ import io.github.kotlinmania.quote.append
  * `getOrNull` / `exceptionOrNull` / `getOrElse` / `fold` / `map` operations
  * match the standard result idioms used throughout this port.
  */
+@HiddenFromObjC
 public sealed class SynResult<out T> {
     /** Successful parse result carrying the parsed value. */
     public class Success<out T>(public val value: T) : SynResult<T>()

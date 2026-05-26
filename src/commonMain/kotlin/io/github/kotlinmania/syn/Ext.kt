@@ -1,3 +1,4 @@
+@file:OptIn(kotlin.experimental.ExperimentalObjCRefinement::class)
 // port-lint: source ext.rs
 package io.github.kotlinmania.syn
 
@@ -49,6 +50,7 @@ import io.github.kotlinmania.procmacro2.TokenTree
  * }
  * ```
  */
+@HiddenFromObjC
 public fun identParseAny(input: ParseStream): SynResult<Ident> =
     input.step { cursor ->
         val pair = cursor.ident()

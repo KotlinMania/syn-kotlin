@@ -1,3 +1,4 @@
+@file:OptIn(kotlin.experimental.ExperimentalObjCRefinement::class)
 // port-lint: source attr.rs
 package io.github.kotlinmania.syn
 
@@ -16,6 +17,7 @@ public data class Attribute(
     public fun path(): Path =
         meta.path()
 
+    @HiddenFromObjC
     public fun parseNestedMeta(logic: (ParseNestedMeta) -> SynResult<Unit>): SynResult<Unit> =
         when (val metaValue = meta) {
             is Meta.List -> metaValue.parseNestedMeta(logic)
@@ -61,10 +63,12 @@ public data class ParseNestedMeta(
     public fun value(): TokenStream =
         input
 
+    @HiddenFromObjC
     public fun parseNestedMeta(logic: (ParseNestedMeta) -> SynResult<Unit>): SynResult<Unit> =
         parseNestedMetaTokens(input, logic)
 }
 
+@HiddenFromObjC
 public fun Meta.List.parseNestedMeta(logic: (ParseNestedMeta) -> SynResult<Unit>): SynResult<Unit> =
     parseNestedMetaTokens(tokens, logic)
 

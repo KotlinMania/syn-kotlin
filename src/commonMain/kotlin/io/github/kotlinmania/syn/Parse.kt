@@ -203,6 +203,7 @@ public class ParseBuffer internal constructor(
      * the basic built-in token types. It is not something that will be used
      * widely outside of the Syn codebase.
      */
+    @HiddenFromObjC
     public fun <R> step(function: (StepCursor) -> SynResult<Pair<R, Cursor>>): SynResult<R> {
         val stepCursor = StepCursor(scope, currentCursor)
         return function(stepCursor).map { (node, rest) ->

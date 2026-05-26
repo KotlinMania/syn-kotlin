@@ -74,6 +74,7 @@ public fun <T> parseQuote(tokenStream: TokenStream, parser: ParseQuote<T>): T {
  */
 @HiddenFromObjC
 public interface ParseQuote<T> {
+    @HiddenFromObjC
     public fun parse(input: ParseStream): SynResult<T>
 }
 
