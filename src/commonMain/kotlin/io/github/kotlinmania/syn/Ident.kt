@@ -3,12 +3,13 @@
 
 package io.github.kotlinmania.syn
 
-import io.github.kotlinmania.procmacro2.Ident
 import io.github.kotlinmania.procmacro2.Span
 import io.github.kotlinmania.procmacro2.TokenStream
 import io.github.kotlinmania.quote.ToTokens
 import io.github.kotlinmania.quote.append
 import kotlin.native.HiddenFromObjC
+
+public typealias Ident = io.github.kotlinmania.procmacro2.Ident
 
 public fun Ident.copy(): Ident =
     Ident.new(toString(), span())
@@ -72,24 +73,20 @@ public object IdentPeek : Peek {
     override fun display(): String = "identifier"
 }
 
-public fun Ident.Companion.from(token: token.ModSelf): Ident =
+public fun Ident.Companion.from(token: token.SelfValue): Ident =
     Ident.new("self", token.span)
 
-public fun Ident.Companion.from(token: token.ModSelfType): Ident =
+public fun Ident.Companion.from(token: token.SelfType): Ident =
     Ident.new("Self", token.span)
 
-public fun Ident.Companion.from(token: token.ModSuper): Ident =
+public fun Ident.Companion.from(token: token.Super): Ident =
     Ident.new("super", token.span)
 
-public fun Ident.Companion.from(token: token.ModCrate): Ident =
+public fun Ident.Companion.from(token: token.Crate): Ident =
     Ident.new("crate", token.span)
 
-public fun Ident.Companion.from(token: token.ModExtern): Ident =
+public fun Ident.Companion.from(token: token.Extern): Ident =
     Ident.new("extern", token.span)
 
 public fun Ident.Companion.from(token: token.Underscore): Ident =
     Ident.new("_", token.span)
-
-public fun Ident.toTokens(tokens: TokenStream) {
-    tokens.append(this)
-}

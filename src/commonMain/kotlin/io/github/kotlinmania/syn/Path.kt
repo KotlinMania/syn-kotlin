@@ -288,7 +288,7 @@ public object PathPeek : Peek {
 public object PathSepPeek : Peek {
     override fun peek(cursor: Cursor): Boolean {
         val (punct, _) = cursor.punct() ?: return false
-        return punct.char == ':' && punct.spacing == io.github.kotlinmania.procmacro2.Spacing.Joint
+        return punct.asChar() == ':' && punct.spacing() == io.github.kotlinmania.procmacro2.Spacing.Joint
     }
 
     override fun display(): String = "`::`"
