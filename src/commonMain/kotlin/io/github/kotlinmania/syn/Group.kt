@@ -67,7 +67,7 @@ private fun parseDelimited(
             val nested = advanceStepCursor(cursor, content)
             val unexpected = getUnexpected(input)
             val nestedBuffer = newParseBuffer(scope, nested, unexpected)
-            Result.success((span to nestedBuffer) to rest)
+            SynResult.success((span to nestedBuffer) to rest)
         } else {
             val message = when (delimiter) {
                 Delimiter.Parenthesis -> "expected parentheses"
@@ -75,7 +75,7 @@ private fun parseDelimited(
                 Delimiter.Bracket -> "expected square brackets"
                 Delimiter.None -> "expected invisible group"
             }
-            Result.failure(cursor.error(message))
+            SynResult.failure(cursor.error(message))
         }
     }
 

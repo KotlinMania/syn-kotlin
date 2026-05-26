@@ -47,7 +47,7 @@ import kotlin.native.HiddenFromObjC
  *             lookahead.peek(Ident) -> input.parse<TypeParam>().map(GenericParam::Type)
  *             lookahead.peek(Lifetime) -> input.parse<LifetimeParam>().map(GenericParam::Lifetime)
  *             lookahead.peek(KwConst) -> input.parse<ConstParam>().map(GenericParam::Const)
- *             else -> Result.failure(lookahead.error())
+ *             else -> SynResult.failure(lookahead.error())
  *         }
  *     }
  * }
@@ -104,9 +104,9 @@ public class Lookahead1 internal constructor(
         return when (pruned.size) {
             0 -> {
                 if (cursor.eof()) {
-                    Error.new(scope, "unexpected end of input")
+                    SynError.new(scope, "unexpected end of input")
                 } else {
-                    Error.new(cursor.span(), "unexpected token")
+                    SynError.new(cursor.span(), "unexpected token")
                 }
             }
             1 -> errorNewAt(scope, cursor, "expected ${pruned[0]}")

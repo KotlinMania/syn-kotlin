@@ -233,9 +233,9 @@ public class ParseBuffer internal constructor(
     internal fun checkUnexpected(): Result<Unit> {
         val (_, info) = innerUnexpected(this)
         return if (info != null) {
-            Result.failure(errUnexpectedToken(info.first, info.second))
+            SynResult.failure(errUnexpectedToken(info.first, info.second))
         } else {
-            Result.success(Unit)
+            SynResult.success(Unit)
         }
     }
 
@@ -392,7 +392,7 @@ public fun <T : Any> Parse<T>.optional(peek: Peek): Parse<T?> = object : Parse<T
         return if (peek.peek(input.cursor())) {
             this@optional.parse(input).map { it }
         } else {
-            Result.success(null)
+            SynResult.success(null)
         }
     }
 }
@@ -402,7 +402,7 @@ public fun <T : Any> Parse<T>.optional(peek: Peek): Parse<T?> = object : Parse<T
 public object TokenStreamParse : Parse<TokenStream> {
     override fun parse(input: ParseStream): Result<TokenStream> =
         input.step { cursor ->
-            Result.success(cursor.tokenStream() to Cursor.empty())
+            SynResult.success(cursor.tokenStream() to Cursor.empty())
         }
 }
 
@@ -411,8 +411,8 @@ public object TokenStreamParse : Parse<TokenStream> {
 public object TokenTreeParse : Parse<TokenTree> {
     override fun parse(input: ParseStream): Result<TokenTree> =
         input.step { cursor ->
-            val pair = cursor.tokenTree() ?: return@step Result.failure(cursor.error("expected token tree"))
-            Result.success(pair)
+            val pair = cursor.tokenTree() ?: return@step SynResult.failure(cursor.error("expected token tree"))
+            SynResult.success(pair)
         }
 }
 
@@ -423,9 +423,9 @@ public object GroupParse : Parse<Group> {
         input.step { cursor ->
             val pair = cursor.raw.anyGroupToken()
             if (pair != null && pair.first.delimiter() != Delimiter.None) {
-                Result.success(pair)
+                SynResult.success(pair)
             } else {
-                Result.failure(cursor.error("expected group token"))
+                SynResult.failure(cursor.error("expected group token"))
             }
         }
 }
@@ -435,8 +435,8 @@ public object GroupParse : Parse<Group> {
 public object PunctParse : Parse<Punct> {
     override fun parse(input: ParseStream): Result<Punct> =
         input.step { cursor ->
-            val pair = cursor.punct() ?: return@step Result.failure(cursor.error("expected punctuation token"))
-            Result.success(pair)
+            val pair = cursor.punct() ?: return@step SynResult.failure(cursor.error("expected punctuation token"))
+            SynResult.success(pair)
         }
 }
 
@@ -445,8 +445,8 @@ public object PunctParse : Parse<Punct> {
 public object LiteralParse : Parse<Literal> {
     override fun parse(input: ParseStream): Result<Literal> =
         input.step { cursor ->
-            val pair = cursor.literal() ?: return@step Result.failure(cursor.error("expected literal token"))
-            Result.success(pair)
+            val pair = cursor.literal() ?: return@step SynResult.failure(cursor.error("expected literal token"))
+            SynResult.success(pair)
         }
 }
 
@@ -479,7 +479,7 @@ public interface Parser<T> {
     public fun parseStr(s: String): Result<T> =
         TokenStream.fromString(s).fold(
             onSuccess = { parse2(it) },
-            onFailure = { Result.failure(Error.from(it as io.github.kotlinmania.procmacro2.LexError)) },
+            onFailure = { SynResult.failure(SynError.from(it as io.github.kotlinmania.procmacro2.LexError)) },
         )
 
     /**
@@ -511,12 +511,12 @@ public fun <T> parserFromFunction(function: (ParseStream) -> Result<T>): Parser<
         if (nodeResult.isFailure) return nodeResult
         val node = nodeResult.getOrThrow()
         val check = state.checkUnexpected()
-        if (check.isFailure) return Result.failure(check.exceptionOrNull()!!)
+        if (check.isFailure) return SynResult.failure(check.exceptionOrNull()!!)
         val info = spanOfUnexpectedIgnoringNones(state.cursor())
         return if (info != null) {
-            Result.failure(errUnexpectedToken(info.first, info.second))
+            SynResult.failure(errUnexpectedToken(info.first, info.second))
         } else {
-            Result.success(node)
+            SynResult.success(node)
         }
     }
 
@@ -529,12 +529,12 @@ public fun <T> parserFromFunction(function: (ParseStream) -> Result<T>): Parser<
         if (nodeResult.isFailure) return nodeResult
         val node = nodeResult.getOrThrow()
         val check = state.checkUnexpected()
-        if (check.isFailure) return Result.failure(check.exceptionOrNull()!!)
+        if (check.isFailure) return SynResult.failure(check.exceptionOrNull()!!)
         val info = spanOfUnexpectedIgnoringNones(state.cursor())
         return if (info != null) {
-            Result.failure(errUnexpectedToken(info.first, info.second))
+            SynResult.failure(errUnexpectedToken(info.first, info.second))
         } else {
-            Result.success(node)
+            SynResult.success(node)
         }
     }
 }
@@ -549,7 +549,7 @@ private fun errUnexpectedToken(span: Span, delimiter: Delimiter): Error {
         Delimiter.Bracket -> "unexpected token, expected `]`"
         Delimiter.None -> "unexpected token"
     }
-    return Error.new(span, msg)
+    return SynError.new(span, msg)
 }
 
 /**
@@ -560,7 +560,7 @@ private fun errUnexpectedToken(span: Span, delimiter: Delimiter): Error {
  */
 @HiddenFromObjC
 public object Nothing : Parse<Nothing> {
-    override fun parse(input: ParseStream): Result<Nothing> = Result.success(Nothing)
+    override fun parse(input: ParseStream): Result<Nothing> = SynResult.success(Nothing)
     override fun toString(): String = "Nothing"
 }
 

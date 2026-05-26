@@ -45,7 +45,7 @@ public class Path(
     }
 
     public fun requireIdent(): Ident =
-        getIdent() ?: throw Error.new(
+        getIdent() ?: throw SynError.new(
             segments.first()?.ident?.span() ?: io.github.kotlinmania.procmacro2.Span.callSite(),
             "expected this path to be an identifier",
         )

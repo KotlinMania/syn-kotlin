@@ -19,7 +19,7 @@ public data class Attribute(
     public fun parseNestedMeta(logic: (ParseNestedMeta) -> Result<Unit>): Result<Unit> =
         when (val metaValue = meta) {
             is Meta.List -> metaValue.parseNestedMeta(logic)
-            else -> Result.failure(Error.new(path().getIdent()?.span() ?: io.github.kotlinmania.procmacro2.Span.callSite(), "expected attribute arguments in parentheses"))
+            else -> SynResult.failure(SynError.new(path().getIdent()?.span() ?: io.github.kotlinmania.procmacro2.Span.callSite(), "expected attribute arguments in parentheses"))
         }
 
     public fun deepCopy(): Attribute =
@@ -78,7 +78,7 @@ private fun parseNestedMetaTokens(
             return result
         }
     }
-    return Result.success(Unit)
+    return SynResult.success(Unit)
 }
 
 private fun nestedMetaPaths(tokens: TokenStream): List<Path> =

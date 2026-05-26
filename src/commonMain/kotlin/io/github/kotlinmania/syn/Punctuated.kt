@@ -58,14 +58,14 @@ public class Punctuated<T, P> private constructor(
 
             while (true) {
                 if (input.isEmpty()) break
-                val value = parser(input).getOrElse { return Result.failure(it) }
+                val value = parser(input).getOrElse { return SynResult.failure(it) }
                 punctuated.pushValue(value)
                 if (input.isEmpty()) break
-                val punct = punctParse.parse(input).getOrElse { return Result.failure(it) }
+                val punct = punctParse.parse(input).getOrElse { return SynResult.failure(it) }
                 punctuated.pushPunct(punct)
             }
 
-            return Result.success(punctuated)
+            return SynResult.success(punctuated)
         }
 
         /**
@@ -99,14 +99,14 @@ public class Punctuated<T, P> private constructor(
             val punctuated = Punctuated<T, P>()
 
             while (true) {
-                val value = parser(input).getOrElse { return Result.failure(it) }
+                val value = parser(input).getOrElse { return SynResult.failure(it) }
                 punctuated.pushValue(value)
                 if (!punctPeek.peek(input.cursor())) break
-                val punct = punctParse.parse(input).getOrElse { return Result.failure(it) }
+                val punct = punctParse.parse(input).getOrElse { return SynResult.failure(it) }
                 punctuated.pushPunct(punct)
             }
 
-            return Result.success(punctuated)
+            return SynResult.success(punctuated)
         }
     }
 
