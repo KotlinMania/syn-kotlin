@@ -1,41 +1,36 @@
 // port-lint: source ty.rs
-@file:OptIn(kotlin.experimental.ExperimentalObjCName::class)
-
 package io.github.kotlinmania.syn
 
 import io.github.kotlinmania.procmacro2.TokenStream
 import io.github.kotlinmania.syn.token.Paren
 import io.github.kotlinmania.syn.token.RArrow
-import kotlin.native.ObjCName
 
 /**
  * A type syntax tree node.
  *
- * Renamed to `SynType` in the Objective-C / Swift Export bridge via
- * `@ObjCName(swiftName = "SynType")`: the Kotlin name `Type` collides with Swift's
- * built-in `Type` metatype expression (`foo.Type`), which the Swift
- * compiler rejects as `error: type member must not be named 'Type'`.
- * The Kotlin API name stays `Type`; only the Swift-facing name changes.
+ * Named `SynType` to avoid colliding with Swift's built-in `Type`
+ * metatype expression (`foo.Type`), which the Swift compiler rejects
+ * as `error: type member must not be named 'Type'`. The `Type` typealias
+ * preserves the original Kotlin API name.
  */
-@ObjCName(swiftName = "SynType")
-public sealed class Type {
-    public data class Array(val elem: Type, val len: Expr) : Type()
-    public data class BareFn(val inputs: Punctuated<BareFnArg, io.github.kotlinmania.syn.token.Comma>, val output: ReturnType) : Type()
-    public data class Group(val groupToken: io.github.kotlinmania.syn.token.Group, val elem: Type) : Type()
-    public data class ImplTrait(val bounds: Punctuated<TypeParamBound, io.github.kotlinmania.syn.token.Plus>) : Type()
-    public data class Infer(val underscoreToken: io.github.kotlinmania.syn.token.Underscore) : Type()
-    public data class Macro(val mac: io.github.kotlinmania.syn.Macro) : Type()
-    public data class Never(val bangToken: io.github.kotlinmania.syn.token.Not) : Type()
-    public data class Paren(val parenToken: io.github.kotlinmania.syn.token.Paren, val elem: Type) : Type()
-    public data class Path(val qself: QSelf?, val path: io.github.kotlinmania.syn.Path) : Type()
-    public data class Ptr(val elem: Type) : Type()
-    public data class Reference(val lifetime: Lifetime?, val elem: Type) : Type()
-    public data class Slice(val elem: Type) : Type()
-    public data class TraitObject(val bounds: Punctuated<TypeParamBound, io.github.kotlinmania.syn.token.Plus>) : Type()
-    public data class Tuple(val parenToken: io.github.kotlinmania.syn.token.Paren, val elems: Punctuated<Type, io.github.kotlinmania.syn.token.Comma>) : Type()
-    public data class Verbatim(val tokens: TokenStream) : Type()
+public sealed class SynType {
+    public data class Array(val elem: SynType, val len: Expr) : SynType()
+    public data class BareFn(val inputs: Punctuated<BareFnArg, io.github.kotlinmania.syn.token.Comma>, val output: ReturnType) : SynType()
+    public data class Group(val groupToken: io.github.kotlinmania.syn.token.Group, val elem: SynType) : SynType()
+    public data class ImplTrait(val bounds: Punctuated<TypeParamBound, io.github.kotlinmania.syn.token.Plus>) : SynType()
+    public data class Infer(val underscoreToken: io.github.kotlinmania.syn.token.Underscore) : SynType()
+    public data class Macro(val mac: io.github.kotlinmania.syn.Macro) : SynType()
+    public data class Never(val bangToken: io.github.kotlinmania.syn.token.Not) : SynType()
+    public data class Paren(val parenToken: io.github.kotlinmania.syn.token.Paren, val elem: SynType) : SynType()
+    public data class Path(val qself: QSelf?, val path: io.github.kotlinmania.syn.Path) : SynType()
+    public data class Ptr(val elem: SynType) : SynType()
+    public data class Reference(val lifetime: Lifetime?, val elem: SynType) : SynType()
+    public data class Slice(val elem: SynType) : SynType()
+    public data class TraitObject(val bounds: Punctuated<TypeParamBound, io.github.kotlinmania.syn.token.Plus>) : SynType()
+    public data class Tuple(val parenToken: io.github.kotlinmania.syn.token.Paren, val elems: Punctuated<SynType, io.github.kotlinmania.syn.token.Comma>) : SynType()
+    public data class Verbatim(val tokens: TokenStream) : SynType()
 
-    public fun copy(): Type =
+    public fun copy(): SynType =
         when (this) {
             is Array -> copy(elem = elem.copy(), len = len.copy())
             is BareFn -> copy(inputs = inputs.copy({ it.deepCopy() }, { it }), output = output.copy())
@@ -55,9 +50,12 @@ public sealed class Type {
         }
 }
 
+/** Backward-compatible alias: `Type` was the original Kotlin name before the Swift-safe rename. */
+public typealias Type = SynType
+
 public data class BareFnArg(
     public val name: Ident?,
-    public val ty: Type,
+    public val ty: SynType,
 ) {
     public fun deepCopy(): BareFnArg =
         BareFnArg(name?.copy(), ty.copy())
@@ -65,7 +63,7 @@ public data class BareFnArg(
 
 public sealed class ReturnType {
     public data object Default : ReturnType()
-    public data class TypeReturn(val arrowToken: RArrow, val ty: Type) : ReturnType()
+    public data class TypeReturn(val arrowToken: RArrow, val ty: SynType) : ReturnType()
 
     public fun copy(): ReturnType =
         when (this) {
