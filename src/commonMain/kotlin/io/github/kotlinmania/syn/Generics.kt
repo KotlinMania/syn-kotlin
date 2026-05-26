@@ -18,7 +18,7 @@ public data class Generics(
 public sealed class GenericParam {
     public data class LifetimeParam(val lifetime: Lifetime) : GenericParam()
     public data class TypeParam(val ident: Ident, val bounds: Punctuated<TypeParamBound, Plus>) : GenericParam()
-    public data class ConstParam(val ident: Ident, val ty: Type) : GenericParam()
+    public data class ConstParam(val ident: Ident, val ty: SynType) : GenericParam()
 }
 
 public data class WhereClause(
@@ -27,7 +27,7 @@ public data class WhereClause(
 )
 
 public sealed class WherePredicate {
-    public data class TypePredicate(val boundedTy: Type, val bounds: Punctuated<TypeParamBound, Plus>) : WherePredicate()
+    public data class TypePredicate(val boundedTy: SynType, val bounds: Punctuated<TypeParamBound, Plus>) : WherePredicate()
     public data class LifetimePredicate(val lifetime: Lifetime, val bounds: Punctuated<Lifetime, Plus>) : WherePredicate()
 }
 

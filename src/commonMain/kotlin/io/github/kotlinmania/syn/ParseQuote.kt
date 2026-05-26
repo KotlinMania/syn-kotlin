@@ -74,11 +74,12 @@ public fun <T> parseQuote(tokenStream: TokenStream, parser: ParseQuote<T>): T {
  */
 @HiddenFromObjC
 public interface ParseQuote<T> {
-    public fun parse(input: ParseStream): Result<T>
+    @HiddenFromObjC
+    public fun parse(input: ParseStream): SynResult<T>
 }
 
 /** Adapts any [Parse] implementation into a [ParseQuote] implementation. */
 @HiddenFromObjC
 public fun <T> parseQuoteFromParse(parse: Parse<T>): ParseQuote<T> = object : ParseQuote<T> {
-    override fun parse(input: ParseStream): Result<T> = parse.parse(input)
+    override fun parse(input: ParseStream): SynResult<T> = parse.parse(input)
 }

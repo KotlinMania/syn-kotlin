@@ -1,5 +1,7 @@
+@file:OptIn(kotlin.experimental.ExperimentalObjCRefinement::class)
 // port-lint: source error.rs
 package io.github.kotlinmania.syn
+import kotlin.native.HiddenFromObjC
 
 import io.github.kotlinmania.procmacro2.Delimiter
 import io.github.kotlinmania.procmacro2.Group
@@ -24,13 +26,13 @@ import io.github.kotlinmania.quote.append
  * warnings-as-errors builds.
  *
  * Named `SynResult` to avoid colliding with Swift's built-in `Result` type.
- * The `Result` typealias preserves the original Kotlin API name.
  *
  * The companion-object factories [SynResult.success] / [SynResult.failure], the
  * `isSuccess` / `isFailure` properties, and the `getOrThrow` /
  * `getOrNull` / `exceptionOrNull` / `getOrElse` / `fold` / `map` operations
  * match the standard result idioms used throughout this port.
  */
+@HiddenFromObjC
 public sealed class SynResult<out T> {
     /** Successful parse result carrying the parsed value. */
     public class Success<out T>(public val value: T) : SynResult<T>()
@@ -95,14 +97,11 @@ public sealed class SynResult<out T> {
     }
 }
 
-/** Backward-compatible alias: `Result` was the original Kotlin name before the Swift-safe rename. */
-public typealias Result<T> = SynResult<T>
 
 /**
  * Error returned when a Syn parser cannot parse the input tokens.
  *
  * Named `SynError` to avoid colliding with Swift's built-in `Error` protocol.
- * The `Error` typealias preserves the original Kotlin API name.
  *
  * # Error reporting in proc macros
  *
@@ -118,6 +117,7 @@ public typealias Result<T> = SynResult<T>
  * `toCompileError` or `intoCompileError` methods can be used to perform an
  * explicit conversion to `compileError`.
  */
+@HiddenFromObjC
 public class SynError private constructor(
     private val messages: MutableList<ErrorMessage>,
 ) : IllegalArgumentException(messages.first().message), Iterable<SynError> {
@@ -230,8 +230,6 @@ public class SynError private constructor(
         messages.first().message
 }
 
-/** Backward-compatible alias: `Error` was the original Kotlin name before the Swift-safe rename. */
-public typealias Error = SynError
 
 private data class ErrorMessage(
     val span: ThreadBound<SpanRange>,

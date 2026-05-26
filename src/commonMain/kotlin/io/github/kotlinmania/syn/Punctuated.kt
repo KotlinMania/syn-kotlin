@@ -41,7 +41,7 @@ public class Punctuated<T, P> private constructor(
             input: ParseStream,
             valueParse: Parse<T>,
             punctParse: Parse<P>,
-        ): Result<Punctuated<T, P>> =
+        ): SynResult<Punctuated<T, P>> =
             parseTerminatedWith(input, valueParse::parse, punctParse)
 
         /**
@@ -51,9 +51,9 @@ public class Punctuated<T, P> private constructor(
          */
         public fun <T, P> parseTerminatedWith(
             input: ParseStream,
-            parser: (ParseStream) -> Result<T>,
+            parser: (ParseStream) -> SynResult<T>,
             punctParse: Parse<P>,
-        ): Result<Punctuated<T, P>> {
+        ): SynResult<Punctuated<T, P>> {
             val punctuated = Punctuated<T, P>()
 
             while (true) {
@@ -82,7 +82,7 @@ public class Punctuated<T, P> private constructor(
             valueParse: Parse<T>,
             punctParse: Parse<P>,
             punctPeek: Peek,
-        ): Result<Punctuated<T, P>> =
+        ): SynResult<Punctuated<T, P>> =
             parseSeparatedNonemptyWith(input, valueParse::parse, punctParse, punctPeek)
 
         /**
@@ -92,10 +92,10 @@ public class Punctuated<T, P> private constructor(
          */
         public fun <T, P> parseSeparatedNonemptyWith(
             input: ParseStream,
-            parser: (ParseStream) -> Result<T>,
+            parser: (ParseStream) -> SynResult<T>,
             punctParse: Parse<P>,
             punctPeek: Peek,
-        ): Result<Punctuated<T, P>> {
+        ): SynResult<Punctuated<T, P>> {
             val punctuated = Punctuated<T, P>()
 
             while (true) {

@@ -20,17 +20,17 @@ import kotlin.native.HiddenFromObjC
  * that calls [parse2] under the hood and early-returns the calling function
  * with a `compileError` token stream on parse failure. Kotlin has no macro
  * system and no way to early-return out of the calling function from a
- * helper, so [parseMacroInput] returns a sealed [ParseMacroResult] that the
+ * helper, so [parseMacroInput] returns a sealed [ParseMacroSynResult] that the
  * caller is expected to fold into a [TokenStream] result.
  *
  * ```kotlin
  * fun myMacro(tokens: TokenStream): TokenStream =
  *     when (val input = parseMacroInput(tokens, MyMacroInput)) {
- *         is ParseMacroResult.Success -> {
+ *         is ParseMacroSynResult.Success -> {
  *             // … work with input.value …
  *             TokenStream.new()
  *         }
- *         is ParseMacroResult.CompileError -> input.tokens
+ *         is ParseMacroSynResult.CompileError -> input.tokens
  *     }
  * ```
  *
@@ -44,8 +44,8 @@ import kotlin.native.HiddenFromObjC
  * ```kotlin
  * fun myMacro(tokens: TokenStream): TokenStream =
  *     when (val input = parseMacroInputWith(tokens, MyMacroInput.parseAlternate)) {
- *         is ParseMacroResult.Success -> /* … work with input.value … */
- *         is ParseMacroResult.CompileError -> input.tokens
+ *         is ParseMacroSynResult.Success -> /* … work with input.value … */
+ *         is ParseMacroSynResult.CompileError -> input.tokens
  *     }
  * ```
  *
@@ -57,42 +57,42 @@ import kotlin.native.HiddenFromObjC
  *
  * ```kotlin
  * when (val result = parse2(T, variable)) {
- *     is SynResult.Success -> ParseMacroResult.Success(result.value)
- *     is SynResult.Failure -> ParseMacroResult.CompileError(
- *         (result.exception as Error).toCompileError(),
+ *     is SynResult.Success -> ParseMacroSynResult.Success(result.value)
+ *     is SynResult.Failure -> ParseMacroSynResult.CompileError(
+ *         (result.exception as SynError).toCompileError(),
  *     )
  * }
  * ```
  */
 @HiddenFromObjC
-public sealed class ParseMacroResult<out T> {
-    public data class Success<T>(public val value: T) : ParseMacroResult<T>()
-    public data class CompileError<T>(public val tokens: TokenStream) : ParseMacroResult<T>()
+public sealed class ParseMacroSynResult<out T> {
+    public data class Success<T>(public val value: T) : ParseMacroSynResult<T>()
+    public data class CompileError<T>(public val tokens: TokenStream) : ParseMacroSynResult<T>()
 }
 
 /** Parse the macro input via the supplied [Parse] strategy. */
 @HiddenFromObjC
-public fun <T> parseMacroInput(tokens: TokenStream, parser: Parse<T>): ParseMacroResult<T> {
+public fun <T> parseMacroInput(tokens: TokenStream, parser: Parse<T>): ParseMacroSynResult<T> {
     val result = parse2(parser, tokens)
     if (result.isSuccess) {
-        return ParseMacroResult.Success(result.getOrThrow())
+        return ParseMacroSynResult.Success(result.getOrThrow())
     }
     val syntaxError = result.exceptionOrNull()
         ?: error("parseMacroInput parser returned no failure error")
-    return ParseMacroResult.CompileError(syntaxError.toCompileError())
+    return ParseMacroSynResult.CompileError(syntaxError.toCompileError())
 }
 
 /** Parse the macro input via the supplied closure-style parser. */
 @HiddenFromObjC
 public fun <T> parseMacroInputWith(
     tokens: TokenStream,
-    parser: (ParseStream) -> Result<T>,
-): ParseMacroResult<T> {
+    parser: (ParseStream) -> SynResult<T>,
+): ParseMacroSynResult<T> {
     val result = parserFromFunction(parser).parse2(tokens)
     if (result.isSuccess) {
-        return ParseMacroResult.Success(result.getOrThrow())
+        return ParseMacroSynResult.Success(result.getOrThrow())
     }
     val syntaxError = result.exceptionOrNull()
         ?: error("parseMacroInputWith parser returned no failure error")
-    return ParseMacroResult.CompileError(syntaxError.toCompileError())
+    return ParseMacroSynResult.CompileError(syntaxError.toCompileError())
 }

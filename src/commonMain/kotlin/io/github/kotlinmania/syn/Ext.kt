@@ -1,5 +1,7 @@
+@file:OptIn(kotlin.experimental.ExperimentalObjCRefinement::class)
 // port-lint: source ext.rs
 package io.github.kotlinmania.syn
+import kotlin.native.HiddenFromObjC
 
 import io.github.kotlinmania.procmacro2.Ident
 import io.github.kotlinmania.procmacro2.Punct
@@ -41,7 +43,7 @@ import io.github.kotlinmania.procmacro2.TokenTree
  * //
  * //     name = anything
  * //     name = impl
- * fun parseDsl(input: ParseStream): Result<Ident> = runCatching {
+ * fun parseDsl(input: ParseStream): SynResult<Ident> = runCatching {
  *     input.parse(KwName).getOrThrow()
  *     input.parse(EqToken).getOrThrow()
  *     val name = input.call(::identParseAny).getOrThrow()
@@ -49,7 +51,8 @@ import io.github.kotlinmania.procmacro2.TokenTree
  * }
  * ```
  */
-public fun identParseAny(input: ParseStream): Result<Ident> =
+@HiddenFromObjC
+public fun identParseAny(input: ParseStream): SynResult<Ident> =
     input.step { cursor ->
         val pair = cursor.ident()
             ?: return@step SynResult.failure(cursor.error("expected ident"))

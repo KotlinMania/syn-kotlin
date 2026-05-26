@@ -82,7 +82,7 @@ public data class Field(
     public val mutability: FieldMutability,
     public val ident: Ident?,
     public val colonToken: Colon?,
-    public val ty: Type,
+    public val ty: SynType,
 )
 
 private fun Field.tySpan(): io.github.kotlinmania.procmacro2.Span =

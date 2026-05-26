@@ -59,14 +59,14 @@ import kotlin.native.HiddenFromObjC
  * way from a token stream.
  *
  * The upstream Rust spelling is `pub trait Parse: Sized { fn parse(...) ->
- * Result<Self>; }` — a no-receiver associated function on `Self`. Kotlin
+ * SynResult<Self>; }` — a no-receiver associated function on `Self`. Kotlin
  * has no associated functions, so [Parse] takes a phantom type parameter
  * and implementations live on companion objects of the parsed type (or on
  * stand-alone parser strategy objects).
  */
 @HiddenFromObjC
 public interface Parse<T> {
-    public fun parse(input: ParseStream): Result<T>
+    public fun parse(input: ParseStream): SynResult<T>
 }
 
 /**
@@ -85,7 +85,7 @@ public typealias ParseStream = ParseBuffer
  * This type is more commonly used through the type alias [ParseStream].
  *
  * [ParseStream] is the input type for all parser functions in Syn. They have
- * the signature `(ParseStream) -> Result<T>`.
+ * the signature `(ParseStream) -> SynResult<T>`.
  *
  * ## Calling a parser function
  *
@@ -108,13 +108,13 @@ public class ParseBuffer internal constructor(
      * Parses a syntax tree node of type [T], advancing the position of our
      * parse stream past it.
      */
-    public fun <T> parse(parser: Parse<T>): Result<T> = parser.parse(this)
+    public fun <T> parse(parser: Parse<T>): SynResult<T> = parser.parse(this)
 
     /**
      * Calls the given parser function to parse a syntax tree node of type [T]
      * from this stream.
      */
-    public fun <T> call(function: (ParseStream) -> Result<T>): Result<T> = function(this)
+    public fun <T> call(function: (ParseStream) -> SynResult<T>): SynResult<T> = function(this)
 
     /**
      * Looks at the next token in the parse stream to determine whether it
@@ -147,10 +147,10 @@ public class ParseBuffer internal constructor(
      * of this parse stream must consist of [T] and P.
      */
     public fun <T, P> parseTerminated(
-        parser: (ParseStream) -> Result<T>,
+        parser: (ParseStream) -> SynResult<T>,
         separator: Peek,
         punctuationParser: Parse<P>,
-    ): Result<Punctuated<T, P>> {
+    ): SynResult<Punctuated<T, P>> {
         // The `separator` parameter mirrors the upstream type-level role of
         // `P: Peek`: it carries no runtime data but constrains which P this
         // overload accepts. Kotlin has no equivalent type-only function
@@ -193,7 +193,7 @@ public class ParseBuffer internal constructor(
     )
 
     /** Triggers an error at the current position of the parse stream. */
-    public fun error(message: Any): Error = errorNewAt(scope, currentCursor, message)
+    public fun error(message: Any): SynError = errorNewAt(scope, currentCursor, message)
 
     /**
      * Speculatively parses tokens from this parse stream, advancing the
@@ -203,7 +203,8 @@ public class ParseBuffer internal constructor(
      * the basic built-in token types. It is not something that will be used
      * widely outside of the Syn codebase.
      */
-    public fun <R> step(function: (StepCursor) -> Result<Pair<R, Cursor>>): Result<R> {
+    @HiddenFromObjC
+    public fun <R> step(function: (StepCursor) -> SynResult<Pair<R, Cursor>>): SynResult<R> {
         val stepCursor = StepCursor(scope, currentCursor)
         return function(stepCursor).map { (node, rest) ->
             currentCursor = rest
@@ -230,7 +231,7 @@ public class ParseBuffer internal constructor(
      */
     public fun cursor(): Cursor = currentCursor
 
-    internal fun checkUnexpected(): Result<Unit> {
+    internal fun checkUnexpected(): SynResult<Unit> {
         val (_, info) = innerUnexpected(this)
         return if (info != null) {
             SynResult.failure(errUnexpectedToken(info.first, info.second))
@@ -271,7 +272,7 @@ public class StepCursor internal constructor(
      * The [ParseBuffer.step] invocation will return this same error without
      * advancing the stream state.
      */
-    public fun error(message: Any): Error = errorNewAt(scope, cursor, message)
+    public fun error(message: Any): SynError = errorNewAt(scope, cursor, message)
 
     // Deref<Target = Cursor> — surfaces each Cursor method by delegation.
     public fun eof(): Boolean = cursor.eof()
@@ -388,7 +389,7 @@ public fun <T : Any> Parse<T>.boxed(): Parse<T> = this
  */
 @HiddenFromObjC
 public fun <T : Any> Parse<T>.optional(peek: Peek): Parse<T?> = object : Parse<T?> {
-    override fun parse(input: ParseStream): Result<T?> {
+    override fun parse(input: ParseStream): SynResult<T?> {
         return if (peek.peek(input.cursor())) {
             this@optional.parse(input).map { it }
         } else {
@@ -400,7 +401,7 @@ public fun <T : Any> Parse<T>.optional(peek: Peek): Parse<T?> = object : Parse<T
 /** Parser strategy that consumes the remainder of the stream as a [TokenStream]. */
 @HiddenFromObjC
 public object TokenStreamParse : Parse<TokenStream> {
-    override fun parse(input: ParseStream): Result<TokenStream> =
+    override fun parse(input: ParseStream): SynResult<TokenStream> =
         input.step { cursor ->
             SynResult.success(cursor.tokenStream() to Cursor.empty())
         }
@@ -409,7 +410,7 @@ public object TokenStreamParse : Parse<TokenStream> {
 /** Parser strategy for [TokenTree]. */
 @HiddenFromObjC
 public object TokenTreeParse : Parse<TokenTree> {
-    override fun parse(input: ParseStream): Result<TokenTree> =
+    override fun parse(input: ParseStream): SynResult<TokenTree> =
         input.step { cursor ->
             val pair = cursor.tokenTree() ?: return@step SynResult.failure(cursor.error("expected token tree"))
             SynResult.success(pair)
@@ -419,7 +420,7 @@ public object TokenTreeParse : Parse<TokenTree> {
 /** Parser strategy for [Group]. */
 @HiddenFromObjC
 public object GroupParse : Parse<Group> {
-    override fun parse(input: ParseStream): Result<Group> =
+    override fun parse(input: ParseStream): SynResult<Group> =
         input.step { cursor ->
             val pair = cursor.raw.anyGroupToken()
             if (pair != null && pair.first.delimiter() != Delimiter.None) {
@@ -433,7 +434,7 @@ public object GroupParse : Parse<Group> {
 /** Parser strategy for [Punct]. */
 @HiddenFromObjC
 public object PunctParse : Parse<Punct> {
-    override fun parse(input: ParseStream): Result<Punct> =
+    override fun parse(input: ParseStream): SynResult<Punct> =
         input.step { cursor ->
             val pair = cursor.punct() ?: return@step SynResult.failure(cursor.error("expected punctuation token"))
             SynResult.success(pair)
@@ -443,7 +444,7 @@ public object PunctParse : Parse<Punct> {
 /** Parser strategy for [Literal]. */
 @HiddenFromObjC
 public object LiteralParse : Parse<Literal> {
-    override fun parse(input: ParseStream): Result<Literal> =
+    override fun parse(input: ParseStream): SynResult<Literal> =
         input.step { cursor ->
             val pair = cursor.literal() ?: return@step SynResult.failure(cursor.error("expected literal token"))
             SynResult.success(pair)
@@ -463,7 +464,7 @@ public interface Parser<T> {
      * This function enforces that the input is fully parsed. If there are any
      * unparsed tokens at the end of the stream, an error is returned.
      */
-    public fun parse2(tokens: TokenStream): Result<T>
+    public fun parse2(tokens: TokenStream): SynResult<T>
 
     /**
      * Parse a string of source code into the chosen syntax tree node.
@@ -476,7 +477,7 @@ public interface Parser<T> {
      * Every span in the resulting syntax tree will be set to resolve at the
      * macro call site.
      */
-    public fun parseStr(s: String): Result<T> =
+    public fun parseStr(s: String): SynResult<T> =
         TokenStream.fromString(s).fold(
             onSuccess = { parse2(it) },
             onFailure = { SynResult.failure(SynError.from(it as io.github.kotlinmania.procmacro2.LexError)) },
@@ -486,7 +487,7 @@ public interface Parser<T> {
      * Not public API. Used by `parseMacroInput!` to attach the scope span of
      * the macro invocation site to error spans.
      */
-    public fun parseScopedImpl(scope: Span, tokens: TokenStream): Result<T> = parse2(tokens)
+    public fun parseScopedImpl(scope: Span, tokens: TokenStream): SynResult<T> = parse2(tokens)
 }
 
 private fun tokensToParseBuffer(tokens: TokenBuffer): ParseBuffer {
@@ -497,14 +498,14 @@ private fun tokensToParseBuffer(tokens: TokenBuffer): ParseBuffer {
 }
 
 /**
- * Adapts a parser closure `(ParseStream) -> Result<T>` into a [Parser]
+ * Adapts a parser closure `(ParseStream) -> SynResult<T>` into a [Parser]
  * implementation. The upstream Rust spelling is a blanket `impl<F, T>
- * Parser for F where F: FnOnce(ParseStream) -> Result<T>` — Kotlin has no
+ * Parser for F where F: FnOnce(ParseStream) -> SynResult<T>` — Kotlin has no
  * blanket impls so this helper performs the same wrapping explicitly.
  */
 @HiddenFromObjC
-public fun <T> parserFromFunction(function: (ParseStream) -> Result<T>): Parser<T> = object : Parser<T> {
-    override fun parse2(tokens: TokenStream): Result<T> {
+public fun <T> parserFromFunction(function: (ParseStream) -> SynResult<T>): Parser<T> = object : Parser<T> {
+    override fun parse2(tokens: TokenStream): SynResult<T> {
         val buf = TokenBuffer.new2(tokens)
         val state = tokensToParseBuffer(buf)
         val nodeResult = function(state)
@@ -520,7 +521,7 @@ public fun <T> parserFromFunction(function: (ParseStream) -> Result<T>): Parser<
         }
     }
 
-    override fun parseScopedImpl(scope: Span, tokens: TokenStream): Result<T> {
+    override fun parseScopedImpl(scope: Span, tokens: TokenStream): SynResult<T> {
         val buf = TokenBuffer.new2(tokens)
         val cursor = buf.begin()
         val unexpected = UnexpectedRef(Unexpected.None)
@@ -539,10 +540,10 @@ public fun <T> parserFromFunction(function: (ParseStream) -> Result<T>): Parser<
     }
 }
 
-internal fun <T> parseScoped(parser: Parser<T>, scope: Span, tokens: TokenStream): Result<T> =
+internal fun <T> parseScoped(parser: Parser<T>, scope: Span, tokens: TokenStream): SynResult<T> =
     parser.parseScopedImpl(scope, tokens)
 
-private fun errUnexpectedToken(span: Span, delimiter: Delimiter): Error {
+private fun errUnexpectedToken(span: Span, delimiter: Delimiter): SynError {
     val msg = when (delimiter) {
         Delimiter.Parenthesis -> "unexpected token, expected `)`"
         Delimiter.Brace -> "unexpected token, expected `}`"
@@ -560,7 +561,7 @@ private fun errUnexpectedToken(span: Span, delimiter: Delimiter): Error {
  */
 @HiddenFromObjC
 public object Nothing : Parse<Nothing> {
-    override fun parse(input: ParseStream): Result<Nothing> = SynResult.success(Nothing)
+    override fun parse(input: ParseStream): SynResult<Nothing> = SynResult.success(Nothing)
     override fun toString(): String = "Nothing"
 }
 
@@ -574,7 +575,7 @@ public object Nothing : Parse<Nothing> {
  * entire stream is consumed. Mirrors `syn::parse2<T>`.
  */
 @HiddenFromObjC
-public fun <T> parse2(parser: Parse<T>, tokens: TokenStream): Result<T> =
+public fun <T> parse2(parser: Parse<T>, tokens: TokenStream): SynResult<T> =
     parserFromFunction(parser::parse).parse2(tokens)
 
 /**
@@ -582,5 +583,5 @@ public fun <T> parse2(parser: Parse<T>, tokens: TokenStream): Result<T> =
  * `syn::parse_str<T>`.
  */
 @HiddenFromObjC
-public fun <T> parseStr(parser: Parse<T>, s: String): Result<T> =
+public fun <T> parseStr(parser: Parse<T>, s: String): SynResult<T> =
     parserFromFunction(parser::parse).parseStr(s)

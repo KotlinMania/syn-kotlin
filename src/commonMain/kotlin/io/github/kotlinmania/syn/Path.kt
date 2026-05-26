@@ -86,7 +86,7 @@ public sealed class PathArguments {
     /** The `(A, B) -> C` in `Fn(A, B) -> C`. */
     public data class Parenthesized(
         public val parenToken: Paren,
-        public val inputs: Punctuated<Type, Comma>,
+        public val inputs: Punctuated<SynType, Comma>,
         public val output: ReturnType,
     ) : PathArguments()
 
@@ -111,7 +111,7 @@ public sealed class PathArguments {
 /** An individual generic argument, like `'a`, `T`, or `Item = T`. */
 public sealed class GenericArgument {
     public data class LifetimeArg(val lifetime: Lifetime) : GenericArgument()
-    public data class TypeArg(val type: Type) : GenericArgument()
+    public data class TypeArg(val type: SynType) : GenericArgument()
     public data class ConstArg(val expr: Expr) : GenericArgument()
     public data class AssocTypeArg(val assoc: AssocType) : GenericArgument()
     public data class AssocConstArg(val assoc: AssocConst) : GenericArgument()
@@ -133,7 +133,7 @@ public data class AssocType(
     public val ident: Ident,
     public val generics: PathArguments.AngleBracketed?,
     public val eqToken: io.github.kotlinmania.syn.token.Eq,
-    public val ty: Type,
+    public val ty: SynType,
 )
 
 /** An equality constraint on an associated constant. */
@@ -155,7 +155,7 @@ public data class Constraint(
 /** The explicit Self type in a qualified path. */
 public data class QSelf(
     public val ltToken: Lt,
-    public val ty: Type,
+    public val ty: SynType,
     public val position: Int,
     public val asToken: io.github.kotlinmania.syn.token.As?,
     public val gtToken: Gt,

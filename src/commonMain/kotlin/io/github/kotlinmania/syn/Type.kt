@@ -10,7 +10,7 @@ import io.github.kotlinmania.syn.token.RArrow
  *
  * Named `SynType` to avoid colliding with Swift's built-in `Type`
  * metatype expression (`foo.Type`), which the Swift compiler rejects
- * as `error: type member must not be named 'Type'`. The `Type` typealias
+ * as `error: type member must not be named 'Type'`. The `Type` class
  * preserves the original Kotlin API name.
  */
 public sealed class SynType {
@@ -50,8 +50,6 @@ public sealed class SynType {
         }
 }
 
-/** Backward-compatible alias: `Type` was the original Kotlin name before the Swift-safe rename. */
-public typealias Type = SynType
 
 public data class BareFnArg(
     public val name: Ident?,

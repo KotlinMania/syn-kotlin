@@ -1,5 +1,7 @@
+@file:OptIn(kotlin.experimental.ExperimentalObjCRefinement::class)
 // port-lint: source discouraged.rs
 package io.github.kotlinmania.syn
+import kotlin.native.HiddenFromObjC
 
 import io.github.kotlinmania.procmacro2.DelimSpan
 import io.github.kotlinmania.procmacro2.Delimiter
@@ -78,7 +80,8 @@ public data class AnyDelimiterResult(
  * Returns the delimiter, the span of the delimiter token, and the nested
  * contents for further parsing.
  */
-public fun ParseBuffer.parseAnyDelimiter(): Result<AnyDelimiterResult> =
+@HiddenFromObjC
+public fun ParseBuffer.parseAnyDelimiter(): SynResult<AnyDelimiterResult> =
     step { cursor ->
         val any = cursor.anyGroup()
         if (any != null) {
