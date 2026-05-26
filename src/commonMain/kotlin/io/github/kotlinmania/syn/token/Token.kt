@@ -1,5 +1,5 @@
 // port-lint: source token.rs
-@file:OptIn(kotlin.experimental.ExperimentalObjCRefinement::class)
+@file:OptIn(kotlin.experimental.ExperimentalObjCName::class)
 
 package io.github.kotlinmania.syn.token
 
@@ -14,7 +14,7 @@ import io.github.kotlinmania.procmacro2.TokenStream
 import io.github.kotlinmania.quote.ToTokens
 import io.github.kotlinmania.quote.append
 import io.github.kotlinmania.syn.intoDelimSpan
-import kotlin.native.HiddenFromObjC
+import kotlin.native.ObjCName
 
 /**
  * Tokens representing Rust punctuation, keywords, and delimiters.
@@ -596,16 +596,16 @@ class Try private constructor(span: Span) : KeywordToken(span) {
         operator fun invoke(span: Span): Try = from(span)
     }
 }
-
 /**
  * The Rust `type` keyword token.
  *
- * Hidden from the Objective-C / Swift Export bridge: Swift forbids a type
- * member named `Type` because it collides with the `foo.Type` metatype
- * expression (`error: type member must not be named 'Type'`). The Kotlin API
- * stays intact; only the Swift bridge skips this token.
+ * Renamed to `SynTypeToken` in the Objective-C / Swift Export bridge via
+ * `@ObjCName("SynTypeToken")`: the Kotlin name `Type` collides with Swift's
+ * built-in `Type` metatype expression (`foo.Type`), which the Swift compiler
+ * rejects as `error: type member must not be named 'Type'`. The Kotlin API
+ * name stays `Type`; only the Swift-facing name changes.
  */
-@HiddenFromObjC
+@ObjCName("SynTypeToken")
 class Type private constructor(span: Span) : KeywordToken(span) {
     override val text: String = "type"
     companion object {

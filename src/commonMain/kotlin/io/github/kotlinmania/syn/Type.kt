@@ -1,25 +1,23 @@
 // port-lint: source ty.rs
-@file:OptIn(kotlin.experimental.ExperimentalObjCRefinement::class)
+@file:OptIn(kotlin.experimental.ExperimentalObjCName::class)
 
 package io.github.kotlinmania.syn
 
 import io.github.kotlinmania.procmacro2.TokenStream
 import io.github.kotlinmania.syn.token.Paren
 import io.github.kotlinmania.syn.token.RArrow
-import kotlin.native.HiddenFromObjC
+import kotlin.native.ObjCName
 
 /**
  * A type syntax tree node.
  *
- * Hidden from the Objective-C / Swift Export bridge: `Type` collides with
- * Swift's built-in `Type` metatype, so the bridge emits `Type` as a non-class
- * typealias and then can't make its nested data classes (`Array`, `BareFn`,
- * `Group`, `ImplTrait`, `Infer`, …) inherit from it, producing
- * `inheritance from non-protocol, non-class type 'io.github.kotlinmania.syn.Type'`
- * during `:macosArm64DebugBuildSPMPackage`. The Kotlin API stays intact; only
- * the Swift bridge skips this hierarchy.
+ * Renamed to `SynType` in the Objective-C / Swift Export bridge via
+ * `@ObjCName("SynType")`: the Kotlin name `Type` collides with Swift's
+ * built-in `Type` metatype expression (`foo.Type`), which the Swift
+ * compiler rejects as `error: type member must not be named 'Type'`.
+ * The Kotlin API name stays `Type`; only the Swift-facing name changes.
  */
-@HiddenFromObjC
+@ObjCName("SynType")
 public sealed class Type {
     public data class Array(val elem: Type, val len: Expr) : Type()
     public data class BareFn(val inputs: Punctuated<BareFnArg, io.github.kotlinmania.syn.token.Comma>, val output: ReturnType) : Type()
