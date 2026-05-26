@@ -1,11 +1,20 @@
 // port-lint: source lit.rs
+@file:OptIn(kotlin.experimental.ExperimentalObjCRefinement::class)
+
 package io.github.kotlinmania.syn
 
+import io.github.kotlinmania.procmacro2.Group
+import io.github.kotlinmania.procmacro2.Delimiter
 import io.github.kotlinmania.procmacro2.Literal
+import io.github.kotlinmania.procmacro2.Punct
+import io.github.kotlinmania.procmacro2.Spacing
 import io.github.kotlinmania.procmacro2.Span
 import io.github.kotlinmania.procmacro2.TokenStream
+import io.github.kotlinmania.procmacro2.TokenTree
 import io.github.kotlinmania.quote.ToTokens
 import io.github.kotlinmania.quote.toTokens
+import io.github.kotlinmania.quote.append
+import kotlin.native.HiddenFromObjC
 
 /** A Rust literal such as a string or integer or boolean. */
 public sealed class Lit {
@@ -17,6 +26,31 @@ public sealed class Lit {
     public data class Float(val value: LitFloat) : Lit()
     public data class Bool(val value: LitBool) : Lit()
     public data class Verbatim(val value: Literal) : Lit()
+
+    public fun span(): Span =
+        when (this) {
+            is Str -> value.span()
+            is ByteStr -> value.span
+            is Byte -> value.span
+            is Char -> value.span
+            is Int -> value.span
+            is Float -> value.span
+            is Bool -> value.span
+            is Verbatim -> value.span()
+        }
+
+    public fun toTokens(tokens: TokenStream) {
+        when (this) {
+            is Str -> value.toTokens(tokens)
+            is ByteStr -> value.toTokens(tokens)
+            is Byte -> value.toTokens(tokens)
+            is Char -> value.toTokens(tokens)
+            is Int -> value.toTokens(tokens)
+            is Float -> value.toTokens(tokens)
+            is Bool -> value.toTokens(tokens)
+            is Verbatim -> value.toTokens(tokens)
+        }
+    }
 }
 
 /** A UTF-8 string literal: `"foo"`. */
@@ -44,16 +78,212 @@ public class LitStr private constructor(
 
     public fun copy(): LitStr =
         new(cooked, span())
+
+    override fun toString(): String = "\"$cooked\""
+
+    override fun equals(other: Any?): Boolean =
+        other is LitStr && cooked == other.cooked
+
+    override fun hashCode(): Int = cooked.hashCode()
 }
 
-public class LitByteStr(public val bytes: List<UByte>, private val spanValue: Span)
-public class LitByte(public val value: UByte, private val spanValue: Span)
-public class LitChar(public val value: Char, private val spanValue: Span)
-public class LitInt(public val digits: String, public val suffix: String, private val spanValue: Span)
-public class LitFloat(public val digits: String, public val suffix: String, private val spanValue: Span)
+/** A byte string literal: `b"foo"`. */
+public class LitByteStr(
+    public val bytes: List<UByte>,
+    public val span: Span,
+) : ToTokens {
+    public companion object {
+        public fun new(value: List<UByte>, span: Span): LitByteStr =
+            LitByteStr(value, span)
+    }
+
+    public fun toTokens(tokens: TokenStream) {
+        tokens.append(Ident.new("b", span))
+        tokens.append(Punct('"', Spacing.Joint, span))
+        for (b in bytes) {
+            val ch = b.toInt().toChar()
+            if (ch in ' '..'~' && ch != '\\' && ch != '"') {
+                tokens.append(Punct(ch, Spacing.Alone, span))
+            } else {
+                tokens.append(Punct('\\', Spacing.Joint, span))
+                tokens.append(Ident.new(String.format("\\x%02x", b.toInt()), span))
+            }
+        }
+        tokens.append(Punct('"', Spacing.Alone, span))
+    }
+
+    public fun copy(): LitByteStr = LitByteStr(bytes, span)
+
+    override fun toString(): String = "b\"${bytes.joinToString("") { it.toString() }}\""
+}
+
+/** A byte literal: `b'f'`. */
+public class LitByte(
+    public val value: UByte,
+    public val span: Span,
+) : ToTokens {
+    public companion object {
+        public fun new(value: UByte, span: Span): LitByte =
+            LitByte(value, span)
+    }
+
+    public fun toTokens(tokens: TokenStream) {
+        tokens.append(Ident.new("b", span))
+        tokens.append(Punct('\'', Spacing.Alone, span))
+        tokens.append(Ident.new(value.toInt().toChar().toString(), span))
+        tokens.append(Punct('\'', Spacing.Alone, span))
+    }
+
+    public fun copy(): LitByte = LitByte(value, span)
+}
+
+/** A character literal: `'a'`. */
+public class LitChar(
+    public val value: Char,
+    public val span: Span,
+) : ToTokens {
+    public companion object {
+        public fun new(value: Char, span: Span): LitChar =
+            LitChar(value, span)
+    }
+
+    public fun toTokens(tokens: TokenStream) {
+        tokens.append(Punct('\'', Spacing.Alone, span))
+        tokens.append(Ident.new(value.toString(), span))
+        tokens.append(Punct('\'', Spacing.Alone, span))
+    }
+
+    public fun copy(): LitChar = LitChar(value, span)
+}
+
+/** An integer literal: `1` or `1u8` or `1i32`. */
+public class LitInt(
+    public val digits: String,
+    public val suffix: String,
+    public val span: Span,
+) : ToTokens {
+    public companion object {
+        public fun new(digits: String, suffix: String, span: Span): LitInt =
+            LitInt(digits, suffix, span)
+    }
+
+    public fun base10Digits(): String = digits.trim { it == '_'[0] }.replace("_", "")
+
+    public fun base10Parse(): Long = base10Digits().toLong()
+
+    public fun token(): Literal {
+        val token = Literal.string(digits + suffix)
+        token.setSpan(span)
+        return token
+    }
+
+    public fun toTokens(tokens: TokenStream) {
+        tokens.append(Literal.string(digits + suffix).also { it.setSpan(span) })
+    }
+
+    public fun copy(): LitInt = LitInt(digits, suffix, span)
+
+    override fun toString(): String = digits + suffix
+}
+
+/** A floating point literal: `1.0` or `1f64`. */
+public class LitFloat(
+    public val digits: String,
+    public val suffix: String,
+    public val span: Span,
+) : ToTokens {
+    public companion object {
+        public fun new(digits: String, suffix: String, span: Span): LitFloat =
+            LitFloat(digits, suffix, span)
+    }
+
+    public fun base10Digits(): String = digits.trim { it == '_'[0] }.replace("_", "")
+
+    public fun token(): Literal {
+        val token = Literal.string(digits + suffix)
+        token.setSpan(span)
+        return token
+    }
+
+    public fun toTokens(tokens: TokenStream) {
+        tokens.append(Literal.string(digits + suffix).also { it.setSpan(span) })
+    }
+
+    public fun copy(): LitFloat = LitFloat(digits, suffix, span)
+
+    override fun toString(): String = digits + suffix
+}
 
 /** A boolean literal: `true` or `false`. */
 public data class LitBool(
     public val value: Boolean,
     public val span: Span,
-)
+) : ToTokens {
+    public fun toTokens(tokens: TokenStream) {
+        tokens.append(Ident.new(if (value) "true" else "false", span))
+    }
+
+    public fun copy(): LitBool = LitBool(value, span)
+}
+
+@HiddenFromObjC
+public object LitParse : Parse<Lit> {
+    override fun parse(input: ParseStream): SynResult<Lit> =
+        input.step { cursor ->
+            val (lit, rest) = cursor.literal()
+                ?: return@step cursor.error("expected literal").let { SynResult.failure(it) }
+            val span = lit.span()
+            val suffix = lit.suffix()
+            val cooked = lit.toString()
+            val result = when {
+                lit.isString() -> Lit.Str(LitStr.new(lit.toString().removeSurrounding("\""), span))
+                lit.isByteString() -> Lit.ByteStr(LitByteStr(lit.toString().drop(2).dropLast(1).map { it.toUByte() }, span))
+                else -> Lit.Int(LitInt(cooked, suffix ?: "", span))
+            }
+            SynResult.success(result to rest)
+        }
+}
+
+@HiddenFromObjC
+public object LitStrParse : Parse<LitStr> {
+    override fun parse(input: ParseStream): SynResult<LitStr> =
+        LitParse.parse(input).map { (it as? Lit.Str)?.value ?: return@map SynResult.failure(input.error("expected string literal")).let { SynResult.failure(it) } }
+}
+
+@HiddenFromObjC
+public object LitIntParse : Parse<LitInt> {
+    override fun parse(input: ParseStream): SynResult<LitInt> =
+        LitParse.parse(input).map { (it as? Lit.Int)?.value ?: return@map SynResult.failure(input.error("expected integer literal")).let { SynResult.failure(it) } }
+}
+
+@HiddenFromObjC
+public object LitFloatParse : Parse<LitFloat> {
+    override fun parse(input: ParseStream): SynResult<LitFloat> =
+        LitParse.parse(input).map { (it as? Lit.Float)?.value ?: return@map SynResult.failure(input.error("expected float literal")).let { SynResult.failure(it) } }
+}
+
+@HiddenFromObjC
+public object LitBoolParse : Parse<LitBool> {
+    override fun parse(input: ParseStream): SynResult<LitBool> {
+        val lookahead = input.lookahead1()
+        return when {
+            lookahead.peek(IdentPeek) -> {
+                val ident = input.parse<Ident>().getOrElse { return SynResult.failure(it) }
+                when (ident.toString()) {
+                    "true" -> SynResult.success(LitBool(true, ident.span()))
+                    "false" -> SynResult.success(LitBool(false, ident.span()))
+                    else -> SynResult.failure(input.error("expected `true` or `false`"))
+                }
+            }
+            else -> SynResult.failure(lookahead.error())
+        }
+    }
+}
+
+@HiddenFromObjC
+public object LitPeek : Peek {
+    override fun peek(cursor: Cursor): Boolean =
+        cursor.literal() != null
+
+    override fun display(): String = "literal"
+}

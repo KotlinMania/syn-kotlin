@@ -228,6 +228,22 @@ public class SynError private constructor(
 
     override fun toString(): String =
         messages.first().message
+
+    override fun iterator(): Iterator<SynError> =
+        messages.map { SynError(mutableListOf(it.copy())) }.iterator()
+
+    public fun iter(): Iterator<SynError> =
+        iterator()
+
+    public fun intoIterable(): Iterable<SynError> =
+        messages.map { SynError(mutableListOf(it.copy())) }
+
+    public fun extend(other: SynError) {
+        messages.addAll(other.messages)
+    }
+
+    public fun deepCopy(): SynError =
+        SynError(messages.mapTo(mutableListOf()) { it.copy() })
 }
 
 
