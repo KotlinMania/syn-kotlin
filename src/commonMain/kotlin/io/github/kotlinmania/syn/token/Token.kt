@@ -600,12 +600,12 @@ class Try private constructor(span: Span) : KeywordToken(span) {
  * The Rust `type` keyword token.
  *
  * Renamed to `SynTypeToken` in the Objective-C / Swift Export bridge via
- * `@ObjCName("SynTypeToken")`: the Kotlin name `Type` collides with Swift's
+ * `@ObjCName(swiftName = "SynTypeToken")`: the Kotlin name `Type` collides with Swift's
  * built-in `Type` metatype expression (`foo.Type`), which the Swift compiler
  * rejects as `error: type member must not be named 'Type'`. The Kotlin API
  * name stays `Type`; only the Swift-facing name changes.
  */
-@ObjCName("SynTypeToken")
+@ObjCName(swiftName = "SynTypeToken")
 class Type private constructor(span: Span) : KeywordToken(span) {
     override val text: String = "type"
     companion object {
