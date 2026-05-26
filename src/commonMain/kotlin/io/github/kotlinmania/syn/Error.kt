@@ -116,6 +116,7 @@ public sealed class SynResult<out T> {
  * `toCompileError` or `intoCompileError` methods can be used to perform an
  * explicit conversion to `compileError`.
  */
+@HiddenFromObjC
 public class SynError private constructor(
     private val messages: MutableList<ErrorMessage>,
 ) : IllegalArgumentException(messages.first().message), Iterable<SynError> {

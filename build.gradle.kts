@@ -643,14 +643,6 @@ fun hasXcodeSwiftExportEnvironment(): Boolean {
 val swiftExportTaskDirectlyRequested =
     gradle.startParameter.taskNames.any { it == "embedSwiftExportForXcode" || it.endsWith(":embedSwiftExportForXcode") }
 
-// The Swift Export pipeline generates intermediate Kotlin code (KotlinStdlib.kt, etc.)
-// that may contain unchecked cast warnings. Suppress allWarningsAsErrors for those
-// generated compilation tasks so the build does not fail on generated code.
-tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().matching {
-    it.name.startsWith("compileSwiftExport")
-}.configureEach {
-    compilerOptions.allWarningsAsErrors.set(false)
-}
 tasks.matching { it.name == "embedSwiftExportForXcode" }.configureEach {
     onlyIf {
         val hasXcodeEnvironment = hasXcodeSwiftExportEnvironment()
