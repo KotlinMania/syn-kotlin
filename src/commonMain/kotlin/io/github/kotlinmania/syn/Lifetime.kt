@@ -1,4 +1,6 @@
 // port-lint: source lifetime.rs
+@file:OptIn(kotlin.experimental.ExperimentalObjCRefinement::class)
+
 package io.github.kotlinmania.syn
 
 import io.github.kotlinmania.procmacro2.Punct
@@ -7,6 +9,7 @@ import io.github.kotlinmania.procmacro2.Span
 import io.github.kotlinmania.procmacro2.TokenStream
 import io.github.kotlinmania.quote.ToTokens
 import io.github.kotlinmania.quote.append
+import kotlin.native.HiddenFromObjC
 
 /** A named duration marker in a syntax tree. */
 public data class Lifetime(
@@ -58,4 +61,22 @@ public data class Lifetime(
 
     override fun hashCode(): Int =
         ident.hashCode()
+}
+
+@HiddenFromObjC
+public object LifetimeParse : Parse<Lifetime> {
+    override fun parse(input: ParseStream): SynResult<Lifetime> =
+        input.step { cursor ->
+            val (lifetime, rest) = cursor.lifetime()
+                ?: return@step SynResult.failure(cursor.error("expected lifetime")).let { return@step it }
+            SynResult.success(lifetime to rest)
+        }
+}
+
+@HiddenFromObjC
+public object LifetimePeek : Peek {
+    override fun peek(cursor: Cursor): Boolean =
+        cursor.lifetime() != null
+
+    override fun display(): String = "lifetime"
 }

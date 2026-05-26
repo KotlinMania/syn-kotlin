@@ -238,6 +238,123 @@ public class Punctuated<T, P> private constructor(
             }
         }.iterator()
 
+    public fun iter(): Iterator<T> =
+        iterator()
+
+    public fun iterMut(): MutableList<T> =
+        toMutableList()
+
+    public fun firstMut(): T? =
+        inner.firstOrNull()?.first
+
+    public fun lastMut(): T? =
+        last ?: inner.lastOrNull()?.first
+
+    public fun getMut(index: Int): T? =
+        getOrNull(index)
+
+    public fun pairsMut(): MutableList<PunctuatedPair<T, P>> =
+        buildList {
+            for ((value, punctuation) in inner) {
+                add(PunctuatedPair.Punctuated(value, punctuation))
+            }
+            val tail = last
+            if (tail != null) {
+                add(PunctuatedPair.End(tail))
+            }
+        }.toMutableList()
+
+    public fun intoPairs(): List<PunctuatedPair<T, P>> =
+        pairs().map { (value, punctOpt) ->
+            if (punctOpt != null) PunctuatedPair.Punctuated(value, punctOpt) else PunctuatedPair.End(value)
+        }
+
+    public fun intoValue(): T? =
+        if (len() == 1) first() else null
+
+    public fun value(): T? =
+        intoValue()
+
+    public fun valueMut(): T? =
+        intoValue()
+
+    public fun punct(index: Int): P? =
+        inner.getOrNull(index)?.second
+
+    public fun punctMut(index: Int): P? =
+        inner.getOrNull(index)?.second
+
+    public fun intoTuple(): List<Triple<T, P?, Boolean>> =
+        buildList {
+            for ((i, pair) in inner.withIndex()) {
+                add(Triple(pair.first, pair.second, false))
+            }
+            val tail = last
+            if (tail != null) {
+                add(Triple(tail, null, true))
+            }
+        }
+
+    public fun <R> fold(initial: R, operation: (acc: R, T) -> R): R {
+        var accumulator = initial
+        for (item in this) {
+            accumulator = operation(accumulator, item)
+        }
+        return accumulator
+    }
+
+    public fun cloned(): List<T> =
+        toList()
+
+    public operator fun set(index: Int, value: T) {
+        require(index >= 0) { "index must be non-negative" }
+        if (index < inner.size) {
+            inner[index] = inner[index].copy(first = value)
+        } else if (index == inner.size && last != null) {
+            last = value
+        } else {
+            throw IndexOutOfBoundsException("index: $index")
+        }
+    }
+
+    public fun fromIterable(elements: Iterable<T>, defaultPunctuation: () -> P): Punctuated<T, P> {
+        val result = Punctuated<T, P>()
+        for (element in elements) {
+            result.push(element, defaultPunctuation)
+        }
+        return result
+    }
+
+    public fun extend(elements: Iterable<T>, defaultPunctuation: () -> P) {
+        for (element in elements) {
+            push(element, defaultPunctuation)
+        }
+    }
+
+    public fun doExtend(elements: Iterable<T>, defaultPunctuation: () -> P) {
+        extend(elements, defaultPunctuation)
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is Punctuated<*, *>) return false
+        if (len() != other.len()) return false
+        val thisItems = this.toList()
+        val otherItems = other.toList()
+        return thisItems == otherItems
+    }
+
+    override fun hashCode(): Int {
+        var result = 1
+        for (item in this) {
+            result = 31 * result + (item?.hashCode() ?: 0)
+        }
+        return result
+    }
+
+    override fun toString(): String =
+        joinToString(", ", "[", "]") { it.toString() }
+
     public fun copy(copyValue: (T) -> T = { it }, copyPunctuation: (P) -> P = { it }): Punctuated<T, P> =
         Punctuated(
             inner = inner.mapTo(mutableListOf()) { (value, punctuation) ->
