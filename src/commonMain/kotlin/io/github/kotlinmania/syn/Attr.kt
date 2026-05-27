@@ -49,9 +49,9 @@ public sealed class Meta {
 
     public fun copy(): Meta =
         when (this) {
-            is PathMeta -> copy(path = path.copy())
-            is List -> copy(path = path.copy())
-            is NameValue -> copy(path = path.copy(), value = value.copy())
+            is PathMeta -> copy(path = path.deepCopy())
+            is List -> copy(path = path.deepCopy())
+            is NameValue -> copy(path = path.deepCopy(), value = value.deepCopy())
         }
 
 }
