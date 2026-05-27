@@ -33,7 +33,7 @@ plugins {
 }
 
 group = "io.github.kotlinmania"
-version = "0.1.6"
+version = "0.1.7"
 
 
 val androidCommandLineToolsRevision = "14742923"
