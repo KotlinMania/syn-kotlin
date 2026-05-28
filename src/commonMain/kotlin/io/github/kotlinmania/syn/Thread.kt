@@ -7,16 +7,16 @@ package io.github.kotlinmania.syn
  * constructed.
  */
 internal class ThreadBound<T> private constructor(
-    private val value: T,
+ private val value: T,
 ) {
-    internal companion object {
-        internal fun <T> new(value: T): ThreadBound<T> =
-            ThreadBound(value)
-    }
+ internal companion object {
+ internal fun <T> new(value: T): ThreadBound<T> =
+ ThreadBound(value)
+ }
 
-    internal fun get(): T? =
-        value
+ internal fun get(): T? =
+ value
 
-    override fun toString(): String =
-        value.toString()
+ override fun toString(): String =
+ value.toString()
 }
