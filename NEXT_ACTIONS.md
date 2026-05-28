@@ -8,9 +8,9 @@ Based on AST analysis, here are the concrete next steps.
 - **Function parity:** 163/3214 matched (target 793) — 5.1%
 - **Class/type parity:** 33/134 matched (target 332) — 24.6%
 - **Combined symbol parity:** 196/3348 matched (target 1125) — 5.9%
-- **Average inline-code cosine:** 0.28 (function body across 32 matched files)
-- **Average documentation cosine:** 0.38 (doc text across 32 matched files)
-- **Cheat-zeroed Files:** 5
+- **Average inline-code cosine:** 0.29 (function body across 32 matched files)
+- **Average documentation cosine:** 0.37 (doc text across 32 matched files)
+- **Cheat-zeroed Files:** 4
 - **Critical Issues:** 26 files with <0.60 function similarity
 
 ## Priority 1: Fix Incomplete High-Dependency Files
@@ -306,10 +306,10 @@ Every matched file is listed below with function and type symbol parity.
 
 ### 17. parse
 
-- **Target:** `syn.Parse [ZERO] [PROVENANCE-FALLBACK]`
-- **Similarity:** 0.00
+- **Target:** `syn.Parse [PROVENANCE-FALLBACK]`
+- **Similarity:** 0.46
 - **Dependents:** 1
-- **Priority Score:** 1104210.0
+- **Priority Score:** 1104205.4
 - **Functions:** 25/33 matched (target 54)
 - **Missing functions:** `drop`, `fmt`, `deref`, `default`, `cell_clone`, `to_tokens`, `eq`, `hash`
 - **Types:** 7/9 matched (target 16)
