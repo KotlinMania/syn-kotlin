@@ -8,11 +8,9 @@ import kotlin.native.HiddenFromObjC
 /**
  * A container that binds a value to the thread on which it was created.
  *
- * The Rust `ThreadBound` type provides `Sync` semantics for non-`Sync` types
- * by restricting access to the creating thread. Kotlin has no thread-bound
- * ownership model, so this is a straightforward wrapper that always returns
- * its value. The thread-check that the Rust version performs is omitted
- * because Kotlin's memory model does not require it.
+ * Kotlin has no thread-bound ownership model, so this is a straightforward
+ * wrapper that always returns its value. The thread-check is omitted because
+ * Kotlin's memory model does not require it.
  */
 @HiddenFromObjC
 public class ThreadBound<T> private constructor(

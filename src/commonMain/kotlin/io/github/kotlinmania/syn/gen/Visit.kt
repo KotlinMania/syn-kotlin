@@ -6,10 +6,8 @@ import io.github.kotlinmania.syn.*
 /**
  * AST visitor trait — walks a syntax tree without mutating it.
  *
- * In Rust syn, `gen/visit.rs` is a code-generated module that implements
- * `Visit` for every syntax tree type, recursively descending into child
- * nodes. Kotlin sealed classes let you achieve the same with exhaustive
- * `when` expressions on each sealed hierarchy.
+ * Kotlin sealed classes let you achieve the same with exhaustive `when`
+ * expressions on each sealed hierarchy.
  *
  * This `Visit` interface provides a visitor-style API for callers who need
  * to walk trees without rewriting them. Default implementations do nothing

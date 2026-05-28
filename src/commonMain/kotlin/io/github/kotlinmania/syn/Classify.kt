@@ -4,7 +4,7 @@ package io.github.kotlinmania.syn
 /**
  * Classification helpers that determine whether an expression
  * requires a semicolon or comma to be unambiguously recognized
- * as a statement or match arm.
+ * as a statement or pattern-matching arm.
  */
 internal object Classify {
  /**
@@ -16,7 +16,7 @@ internal object Classify {
 
  /**
   * Returns true when the expression requires a comma to be
-  * recognized as a match arm.
+  * recognized as a pattern-matching arm.
   */
  internal fun requiresCommaToBeMatchArm(expr: Expr): Boolean =
   when (expr) {

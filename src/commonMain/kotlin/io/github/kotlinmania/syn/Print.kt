@@ -9,29 +9,28 @@ import io.github.kotlinmania.quote.ToTokens
  * the optional value is absent.
  */
 internal class TokensOrDefault<T>(
- private val value: T?,
- private val default: DefaultTokens<T>,
+    private val value: T?,
+    private val default: DefaultTokens<T>,
 ) : ToTokens where T : ToTokens {
- internal constructor(
- value: T?,
- default: () -> T,
- ) : this(value, DefaultTokens(default))
+    internal constructor(
+        value: T?,
+        default: () -> T,
+    ) : this(value, DefaultTokens(default))
 
- override fun toTokens(tokens: TokenStream) {
- when (val v = value) {
- null -> default.value().toTokens(tokens)
- else -> v.toTokens(tokens)
- }
- }
+    override fun toTokens(tokens: TokenStream) {
+        when (val v = value) {
+            null -> default.value().toTokens(tokens)
+            else -> v.toTokens(tokens)
+        }
+    }
 }
 
 /**
- * Stand-in for the `Default` constraint used by
- * `TokensOrDefault`.
+ * Stand-in for the `Default` constraint used by [TokensOrDefault].
  */
 internal class DefaultTokens<T>(
- private val makeDefault: () -> T,
+    private val makeDefault: () -> T,
 ) where T : ToTokens {
- internal fun value(): T =
- makeDefault()
+    internal fun value(): T =
+        makeDefault()
 }
