@@ -2,8 +2,12 @@
 package io.github.kotlinmania.syn
 
 /** Decimal accumulator used by integer-literal parsing. */
-internal class BigInt {
-    private val digits: MutableList<Int> = mutableListOf()
+public class BigInt private constructor(
+    private val digits: MutableList<Int> = mutableListOf(),
+) {
+    public companion object {
+        public fun new(): BigInt = BigInt()
+    }
 
     override fun toString(): String {
         val repr = StringBuilder(digits.size)
@@ -58,10 +62,6 @@ internal class BigInt {
             digits[index] = product % 10
             carry = product / 10
         }
-    }
-
-    internal companion object {
-        internal fun new(): BigInt = BigInt()
     }
 }
 

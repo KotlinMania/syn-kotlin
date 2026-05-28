@@ -28,4 +28,6 @@ public class ThreadBound<T> private constructor(
         other is ThreadBound<*> && value == other.value
 
     override fun hashCode(): Int = value?.hashCode() ?: 0
+
+    public fun deepCopy(): ThreadBound<T> = ThreadBound(value)
 }
