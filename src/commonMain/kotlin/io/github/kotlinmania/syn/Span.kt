@@ -12,41 +12,41 @@ import kotlin.native.HiddenFromObjC
 
 @HiddenFromObjC
 interface IntoSpans<S> {
-    fun intoSpans(): S
+ fun intoSpans(): S
 }
 
 fun Span.intoSpan(): Span =
-    this
+ this
 
 fun Span.intoOneSpan(): List<Span> =
-    listOf(this)
+ listOf(this)
 
 fun Span.intoTwoSpans(): List<Span> =
-    listOf(this, this)
+ listOf(this, this)
 
 fun Span.intoThreeSpans(): List<Span> =
-    listOf(this, this, this)
+ listOf(this, this, this)
 
 fun List<Span>.intoOneSpan(): List<Span> {
-    require(size == 1) { "expected one span" }
-    return this
+ require(size == 1) { "expected one span" }
+ return this
 }
 
 fun List<Span>.intoTwoSpans(): List<Span> {
-    require(size == 2) { "expected two spans" }
-    return this
+ require(size == 2) { "expected two spans" }
+ return this
 }
 
 fun List<Span>.intoThreeSpans(): List<Span> {
-    require(size == 3) { "expected three spans" }
-    return this
+ require(size == 3) { "expected three spans" }
+ return this
 }
 
 fun Span.intoDelimSpan(): DelimSpan {
-    val group = Group(Delimiter.None, TokenStream.new())
-    group.setSpan(this)
-    return group.delimSpan()
+ val group = Group(Delimiter.None, TokenStream.new())
+ group.setSpan(this)
+ return group.delimSpan()
 }
 
 fun DelimSpan.intoDelimSpan(): DelimSpan =
-    this
+ this

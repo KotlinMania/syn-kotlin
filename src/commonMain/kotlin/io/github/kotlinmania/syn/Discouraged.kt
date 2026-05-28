@@ -6,13 +6,13 @@ import kotlin.native.HiddenFromObjC
 import io.github.kotlinmania.procmacro2.DelimSpan
 import io.github.kotlinmania.procmacro2.Delimiter
 
-// Extensions to the parsing API with niche applicability.
+//Extensions to the parsing API with niche applicability.
 
 /**
  * Extensions to the [ParseStream] API to support speculative parsing.
  *
- * The upstream Rust spelling is a `pub trait Speculative` with a single
- * `advance_to` method, implemented by `ParseBuffer<'a>`. In Kotlin the
+ * The upstream spelling is a `Speculative` trait with a single
+ * `advanceTo` method, implemented by `ParseBuffer<T>`. In Kotlin the
  * functionality is exposed as an extension function on [ParseBuffer] for the
  * same call-site ergonomics.
  *
@@ -35,35 +35,35 @@ import io.github.kotlinmania.procmacro2.Delimiter
  * a panic.
  */
 public fun ParseBuffer.advanceTo(fork: ParseBuffer) {
-    require(sameScope(this.cursor(), fork.cursor())) {
-        "fork was not derived from the advancing parse stream"
-    }
+ require(sameScope(this.cursor(), fork.cursor())) {
+ "fork was not derived from the advancing parse stream"
+ }
 
-    val (selfUnexp, selfSp) = innerUnexpected(this)
-    val (forkUnexp, forkSp) = innerUnexpected(fork)
-    if (selfUnexp !== forkUnexp) {
-        when {
-            // Unexpected set on the fork, but not on `self`, copy it over.
-            forkSp != null && selfSp == null -> {
-                selfUnexp.value = Unexpected.Some(forkSp.first, forkSp.second)
-            }
-            // Unexpected unset. Use chain to propagate errors from fork.
-            forkSp == null && selfSp == null -> {
-                forkUnexp.value = Unexpected.Chain(selfUnexp)
+ val (selfUnexp, selfSp) = innerUnexpected(this)
+ val (forkUnexp, forkSp) = innerUnexpected(fork)
+ if (selfUnexp !== forkUnexp) {
+ when {
+ //Unexpected set on the fork, but not on `self`, copy it over.
+ forkSp != null && selfSp == null -> {
+ selfUnexp.value = Unexpected.Some(forkSp.first, forkSp.second)
+ }
+ //Unexpected unset. Use chain to propagate errors from fork.
+ forkSp == null && selfSp == null -> {
+ forkUnexp.value = Unexpected.Chain(selfUnexp)
 
-                // Ensure toplevel 'unexpected' tokens from the fork don't
-                // propagate up the chain by replacing the root `unexpected`
-                // pointer, only 'unexpected' tokens from existing group
-                // parsers should propagate.
-                fork.unexpected = UnexpectedRef(Unexpected.None)
-            }
-            // Unexpected has been set on `self`. No changes needed.
-            else -> { }
-        }
-    }
+ //Ensure toplevel unexpected tokens from the fork don't
+ //propagate up the chain by replacing the root `unexpected`
+ //pointer, only unexpected tokens from existing group
+ //parsers should propagate.
+ fork.unexpected = UnexpectedRef(Unexpected.None)
+ }
+ //Unexpected has been set on `self`. No changes needed.
+ else -> { }
+ }
+ }
 
-    // See comment on `currentCursor` in the ParseBuffer definition.
-    this.currentCursor = fork.cursor()
+ //See comment on `currentCursor` in the ParseBuffer definition.
+ this.currentCursor = fork.cursor()
 }
 
 /**
@@ -71,9 +71,9 @@ public fun ParseBuffer.advanceTo(fork: ParseBuffer) {
  * delimiters the same as if they were visible.
  */
 public data class AnyDelimiterResult(
-    public val delimiter: Delimiter,
-    public val span: DelimSpan,
-    public val content: ParseBuffer,
+ public val delimiter: Delimiter,
+ public val span: DelimSpan,
+ public val content: ParseBuffer,
 )
 
 /**
@@ -82,15 +82,15 @@ public data class AnyDelimiterResult(
  */
 @HiddenFromObjC
 public fun ParseBuffer.parseAnyDelimiter(): SynResult<AnyDelimiterResult> =
-    step { cursor ->
-        val any = cursor.anyGroup()
-        if (any != null) {
-            val scope = any.delimSpan.close()
-            val nested = advanceStepCursor(cursor, any.inside)
-            val unexpected = getUnexpected(this)
-            val content = newParseBuffer(scope, nested, unexpected)
-            SynResult.success(AnyDelimiterResult(any.delimiter, any.delimSpan, content) to any.after)
-        } else {
-            SynResult.failure(cursor.error("expected any delimiter"))
-        }
-    }
+ step { cursor ->
+ val any = cursor.anyGroup()
+ if (any != null) {
+ val scope = any.delimSpan.close()
+ val nested = advanceStepCursor(cursor, any.inside)
+ val unexpected = getUnexpected(this)
+ val content = newParseBuffer(scope, nested, unexpected)
+ SynResult.success(AnyDelimiterResult(any.delimiter, any.delimSpan, content) to any.after)
+ } else {
+ SynResult.failure(cursor.error("expected any delimiter"))
+ }
+ }

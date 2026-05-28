@@ -4,33 +4,33 @@ Based on AST analysis, here are the concrete next steps.
 
 ## Summary
 
-- **Files Present:** 34/97 (35.1%)
-- **Function parity:** 146/3214 matched (target 646) — 4.5%
-- **Class/type parity:** 31/134 matched (target 315) — 23.1%
-- **Combined symbol parity:** 177/3348 matched (target 961) — 5.3%
-- **Average inline-code cosine:** 0.15 (function body across 34 matched files)
-- **Average documentation cosine:** 0.36 (doc text across 34 matched files)
-- **Cheat-zeroed Files:** 17
-- **Critical Issues:** 31 files with <0.60 function similarity
+- **Files Present:** 32/97 (33.0%)
+- **Function parity:** 163/3214 matched (target 793) — 5.1%
+- **Class/type parity:** 33/134 matched (target 332) — 24.6%
+- **Combined symbol parity:** 196/3348 matched (target 1125) — 5.9%
+- **Average inline-code cosine:** 0.28 (function body across 32 matched files)
+- **Average documentation cosine:** 0.38 (doc text across 32 matched files)
+- **Cheat-zeroed Files:** 5
+- **Critical Issues:** 26 files with <0.60 function similarity
 
 ## Priority 1: Fix Incomplete High-Dependency Files
 
 ### 1. punctuated
-- **Similarity:** 0.00 (needs 85% improvement)
+- **Similarity:** 0.19 (needs 66% improvement)
 - **Dependencies:** 19
-- **Priority Score:** 19466810.0
-- **Functions:** 21/54 matched (target 26)
-- **Missing functions:** `first_mut`, `last_mut`, `get_mut`, `iter`, `iter_mut`, `pairs_mut`, `into_pairs`, `clone`, `clone_from`, `eq`, `hash`, `fmt`, `from_iter`, `extend`, `do_extend`, `into_iter`, `default`, `next`, `size_hint`, `next_back`, `clone_box`, `empty_punctuated_iter_mut`, `into_value`, `value`, `value_mut`, `punct`, `punct_mut`, `into_tuple`, `cloned`, `index`, `index_mut`, `fold`, `to_tokens`
+- **Priority Score:** 19296808.0
+- **Functions:** 38/54 matched (target 48)
+- **Missing functions:** `clone`, `clone_from`, `eq`, `hash`, `fmt`, `from_iter`, `into_iter`, `default`, `next`, `size_hint`, `next_back`, `clone_box`, `empty_punctuated_iter_mut`, `index`, `index_mut`, `to_tokens`
 - **Types:** 1/14 matched (target 3)
 - **Missing types:** `Item`, `IntoIter`, `Pairs`, `PairsMut`, `IntoPairs`, `Iter`, `IterTrait`, `PrivateIter`, `IterMut`, `IterMutTrait`, `PrivateIterMut`, `Pair`, `Output`
-- **Symbol Deficit:** 46 (functions: 33, types: 13)
+- **Symbol Deficit:** 29 (functions: 16, types: 13)
 - **Action:** Deep review - likely missing major functionality
 
 ### 2. token
-- **Similarity:** 0.00 (needs 85% improvement)
+- **Similarity:** 0.09 (needs 76% improvement)
 - **Dependencies:** 18
 - **Priority Score:** 18172210.0
-- **Functions:** 3/17 matched (target 383)
+- **Functions:** 3/17 matched (target 384)
 - **Missing functions:** `peek`, `display`, `parse`, `Group`, `clone`, `fmt`, `eq`, `hash`, `keyword`, `peek_keyword`, `punct`, `punct_helper`, `peek_punct`, `delim`
 - **Types:** 2/5 matched (target 110)
 - **Missing types:** `Sealed`, `WithSpan`, `CustomToken`
@@ -38,36 +38,36 @@ Based on AST analysis, here are the concrete next steps.
 - **Action:** Deep review - likely missing major functionality
 
 ### 3. path
-- **Similarity:** 0.12 (needs 73% improvement)
+- **Similarity:** 0.29 (needs 56% improvement)
 - **Dependencies:** 14
-- **Priority Score:** 14222809.0
-- **Functions:** 6/26 matched (target 13)
-- **Missing functions:** `default`, `parse`, `const_argument`, `parse_turbofish`, `do_parse`, `parse_helper`, `parse_mod_style`, `parse_rest`, `is_mod_style`, `qpath`, `clone`, `to_tokens`, `print_path`, `print_path_segment`, `print_path_arguments`, `print_angle_bracketed_generic_arguments`, `print_parenthesized_generic_arguments`, `print_qpath`, `conditionally_print_turbofish`, `span`
-- **Types:** 0/2 matched (target 17)
-- **Missing types:** `PathStyle`, `QSelfDelimiters`
-- **Symbol Deficit:** 22 (functions: 20, types: 2)
+- **Priority Score:** 14182807.0
+- **Functions:** 9/26 matched (target 37)
+- **Missing functions:** `default`, `const_argument`, `parse_turbofish`, `do_parse`, `parse_helper`, `parse_mod_style`, `parse_rest`, `is_mod_style`, `qpath`, `clone`, `print_path`, `print_path_segment`, `print_path_arguments`, `print_angle_bracketed_generic_arguments`, `print_parenthesized_generic_arguments`, `print_qpath`, `conditionally_print_turbofish`
+- **Types:** 1/2 matched (target 24)
+- **Missing types:** `QSelfDelimiters`
+- **Symbol Deficit:** 18 (functions: 17, types: 1)
 - **Action:** Deep review - likely missing major functionality
 
 ### 4. ident
-- **Similarity:** 0.13 (needs 72% improvement)
+- **Similarity:** 0.73 (needs 12% improvement)
 - **Dependencies:** 14
-- **Priority Score:** 14050609.0
-- **Functions:** 1/6 matched (target 4)
-- **Missing functions:** `from`, `accept_as_ident`, `parse`, `peek`, `display`
-- **Types:** 0/0 matched (target 1)
+- **Priority Score:** 14010603.0
+- **Functions:** 5/6 matched (target 14)
+- **Missing functions:** `from`
+- **Types:** 0/0 matched (target 3)
 - **Missing types:** _none_
-- **Symbol Deficit:** 5 (functions: 5, types: 0)
-- **Action:** Deep review - likely missing major functionality
+- **Symbol Deficit:** 1 (functions: 1, types: 0)
+- **Action:** Review and complete missing sections
 
 ### 5. expr
-- **Similarity:** 0.00 (needs 85% improvement)
+- **Similarity:** 0.02 (needs 83% improvement)
 - **Dependencies:** 12
-- **Priority Score:** 12666610.0
-- **Functions:** 0/65 matched (target 1)
-- **Missing functions:** `parse_without_eager_brace`, `parse_with_earlier_boundary_rule`, `peek`, `replace_attrs`, `from`, `eq`, `hash`, `fmt`, `span`, `is_named`, `parse`, `clone`, `parse_expr`, `parse_binop_rhs`, `peek_precedence`, `ambiguous_expr`, `expr_attrs`, `unary_expr`, `trailer_expr`, `trailer_helper`, `atom_expr`, `atom_labeled`, `expr_builtin`, `path_or_macro_or_struct`, `rest_of_path_or_macro_or_struct`, `paren_or_tuple`, `array_or_repeat`, `continue_parsing_early`, `expr_group`, `expr_let`, `expr_unary`, `expr_become`, `expr_closure`, `closure_arg`, `expr_break`, `expr_struct_helper`, `expr_range`, `parse_range_end`, `parse_obsolete`, `parse_multiple`, `multi_index`, `check_cast`, `outer_attrs_to_tokens`, `inner_attrs_to_tokens`, `print_subexpression`, `print_expr`, `to_tokens`, `print_expr_assign`, `print_expr_await`, `print_expr_binary`, `print_expr_break`, `print_expr_call`, `print_expr_cast`, `print_expr_closure`, `print_expr_field`, `print_expr_index`, `print_expr_let`, `print_expr_method_call`, `print_expr_range`, `print_expr_raw_addr`, `print_expr_reference`, `print_expr_return`, `print_expr_try`, `print_expr_unary`, `print_expr_yield`
+- **Priority Score:** 12656610.0
+- **Functions:** 1/65 matched (target 6)
+- **Missing functions:** `parse_without_eager_brace`, `parse_with_earlier_boundary_rule`, `peek`, `replace_attrs`, `from`, `eq`, `hash`, `fmt`, `span`, `is_named`, `parse`, `clone`, `parse_expr`, `parse_binop_rhs`, `peek_precedence`, `ambiguous_expr`, `expr_attrs`, `unary_expr`, `trailer_expr`, `trailer_helper`, `atom_expr`, `atom_labeled`, `expr_builtin`, `path_or_macro_or_struct`, `rest_of_path_or_macro_or_struct`, `paren_or_tuple`, `array_or_repeat`, `continue_parsing_early`, `expr_group`, `expr_let`, `expr_unary`, `expr_become`, `expr_closure`, `closure_arg`, `expr_break`, `expr_struct_helper`, `expr_range`, `parse_range_end`, `parse_obsolete`, `parse_multiple`, `multi_index`, `check_cast`, `outer_attrs_to_tokens`, `inner_attrs_to_tokens`, `print_subexpression`, `print_expr`, `print_expr_assign`, `print_expr_await`, `print_expr_binary`, `print_expr_break`, `print_expr_call`, `print_expr_cast`, `print_expr_closure`, `print_expr_field`, `print_expr_index`, `print_expr_let`, `print_expr_method_call`, `print_expr_range`, `print_expr_raw_addr`, `print_expr_reference`, `print_expr_return`, `print_expr_try`, `print_expr_unary`, `print_expr_yield`
 - **Types:** 0/1 matched (target 8)
 - **Missing types:** `AllowStruct`
-- **Symbol Deficit:** 66 (functions: 65, types: 1)
+- **Symbol Deficit:** 65 (functions: 64, types: 1)
 - **Action:** Deep review - likely missing major functionality
 
 ## Priority 2: Port Missing High-Value Files
@@ -82,12 +82,12 @@ Every matched file is listed below with function and type symbol parity.
 
 ### 1. punctuated
 
-- **Target:** `syn.Punctuated [ZERO] [PROVENANCE-FALLBACK]`
-- **Similarity:** 0.00
+- **Target:** `syn.Punctuated [PROVENANCE-FALLBACK]`
+- **Similarity:** 0.19
 - **Dependents:** 19
-- **Priority Score:** 19466810.0
-- **Functions:** 21/54 matched (target 26)
-- **Missing functions:** `first_mut`, `last_mut`, `get_mut`, `iter`, `iter_mut`, `pairs_mut`, `into_pairs`, `clone`, `clone_from`, `eq`, `hash`, `fmt`, `from_iter`, `extend`, `do_extend`, `into_iter`, `default`, `next`, `size_hint`, `next_back`, `clone_box`, `empty_punctuated_iter_mut`, `into_value`, `value`, `value_mut`, `punct`, `punct_mut`, `into_tuple`, `cloned`, `index`, `index_mut`, `fold`, `to_tokens`
+- **Priority Score:** 19296808.0
+- **Functions:** 38/54 matched (target 48)
+- **Missing functions:** `clone`, `clone_from`, `eq`, `hash`, `fmt`, `from_iter`, `into_iter`, `default`, `next`, `size_hint`, `next_back`, `clone_box`, `empty_punctuated_iter_mut`, `index`, `index_mut`, `to_tokens`
 - **Types:** 1/14 matched (target 3)
 - **Missing types:** `Item`, `IntoIter`, `Pairs`, `PairsMut`, `IntoPairs`, `Iter`, `IterTrait`, `PrivateIter`, `IterMut`, `IterMutTrait`, `PrivateIterMut`, `Pair`, `Output`
 - **Provenance warning:** port-lint provenance header matched only after fallback normalization: `punctuated.rs` vs expected `punctuated.rs`
@@ -96,11 +96,11 @@ Every matched file is listed below with function and type symbol parity.
 
 ### 2. token
 
-- **Target:** `token.Token [ZERO] [PROVENANCE-FALLBACK]`
-- **Similarity:** 0.00
+- **Target:** `token.Token [PROVENANCE-FALLBACK]`
+- **Similarity:** 0.09
 - **Dependents:** 18
 - **Priority Score:** 18172210.0
-- **Functions:** 3/17 matched (target 383)
+- **Functions:** 3/17 matched (target 384)
 - **Missing functions:** `peek`, `display`, `parse`, `Group`, `clone`, `fmt`, `eq`, `hash`, `keyword`, `peek_keyword`, `punct`, `punct_helper`, `peek_punct`, `delim`
 - **Types:** 2/5 matched (target 110)
 - **Missing types:** `Sealed`, `WithSpan`, `CustomToken`
@@ -111,13 +111,13 @@ Every matched file is listed below with function and type symbol parity.
 ### 3. path
 
 - **Target:** `syn.Path [PROVENANCE-FALLBACK]`
-- **Similarity:** 0.12
+- **Similarity:** 0.29
 - **Dependents:** 14
-- **Priority Score:** 14222809.0
-- **Functions:** 6/26 matched (target 13)
-- **Missing functions:** `default`, `parse`, `const_argument`, `parse_turbofish`, `do_parse`, `parse_helper`, `parse_mod_style`, `parse_rest`, `is_mod_style`, `qpath`, `clone`, `to_tokens`, `print_path`, `print_path_segment`, `print_path_arguments`, `print_angle_bracketed_generic_arguments`, `print_parenthesized_generic_arguments`, `print_qpath`, `conditionally_print_turbofish`, `span`
-- **Types:** 0/2 matched (target 17)
-- **Missing types:** `PathStyle`, `QSelfDelimiters`
+- **Priority Score:** 14182807.0
+- **Functions:** 9/26 matched (target 37)
+- **Missing functions:** `default`, `const_argument`, `parse_turbofish`, `do_parse`, `parse_helper`, `parse_mod_style`, `parse_rest`, `is_mod_style`, `qpath`, `clone`, `print_path`, `print_path_segment`, `print_path_arguments`, `print_angle_bracketed_generic_arguments`, `print_parenthesized_generic_arguments`, `print_qpath`, `conditionally_print_turbofish`
+- **Types:** 1/2 matched (target 24)
+- **Missing types:** `QSelfDelimiters`
 - **Provenance warning:** port-lint provenance header matched only after fallback normalization: `path.rs` vs expected `path.rs`
 - **Proposed provenance header:** `// port-lint: source path.rs` (current: `// port-lint: source path.rs`)
 - **Lint issues:** 1
@@ -125,12 +125,12 @@ Every matched file is listed below with function and type symbol parity.
 ### 4. ident
 
 - **Target:** `syn.Ident [PROVENANCE-FALLBACK]`
-- **Similarity:** 0.13
+- **Similarity:** 0.73
 - **Dependents:** 14
-- **Priority Score:** 14050609.0
-- **Functions:** 1/6 matched (target 4)
-- **Missing functions:** `from`, `accept_as_ident`, `parse`, `peek`, `display`
-- **Types:** 0/0 matched (target 1)
+- **Priority Score:** 14010603.0
+- **Functions:** 5/6 matched (target 14)
+- **Missing functions:** `from`
+- **Types:** 0/0 matched (target 3)
 - **Missing types:** _none_
 - **Provenance warning:** port-lint provenance header matched only after fallback normalization: `ident.rs` vs expected `ident.rs`
 - **Proposed provenance header:** `// port-lint: source ident.rs` (current: `// port-lint: source ident.rs`)
@@ -139,11 +139,11 @@ Every matched file is listed below with function and type symbol parity.
 ### 5. expr
 
 - **Target:** `syn.Expr [PROVENANCE-FALLBACK]`
-- **Similarity:** 0.00
+- **Similarity:** 0.02
 - **Dependents:** 12
-- **Priority Score:** 12666610.0
-- **Functions:** 0/65 matched (target 1)
-- **Missing functions:** `parse_without_eager_brace`, `parse_with_earlier_boundary_rule`, `peek`, `replace_attrs`, `from`, `eq`, `hash`, `fmt`, `span`, `is_named`, `parse`, `clone`, `parse_expr`, `parse_binop_rhs`, `peek_precedence`, `ambiguous_expr`, `expr_attrs`, `unary_expr`, `trailer_expr`, `trailer_helper`, `atom_expr`, `atom_labeled`, `expr_builtin`, `path_or_macro_or_struct`, `rest_of_path_or_macro_or_struct`, `paren_or_tuple`, `array_or_repeat`, `continue_parsing_early`, `expr_group`, `expr_let`, `expr_unary`, `expr_become`, `expr_closure`, `closure_arg`, `expr_break`, `expr_struct_helper`, `expr_range`, `parse_range_end`, `parse_obsolete`, `parse_multiple`, `multi_index`, `check_cast`, `outer_attrs_to_tokens`, `inner_attrs_to_tokens`, `print_subexpression`, `print_expr`, `to_tokens`, `print_expr_assign`, `print_expr_await`, `print_expr_binary`, `print_expr_break`, `print_expr_call`, `print_expr_cast`, `print_expr_closure`, `print_expr_field`, `print_expr_index`, `print_expr_let`, `print_expr_method_call`, `print_expr_range`, `print_expr_raw_addr`, `print_expr_reference`, `print_expr_return`, `print_expr_try`, `print_expr_unary`, `print_expr_yield`
+- **Priority Score:** 12656610.0
+- **Functions:** 1/65 matched (target 6)
+- **Missing functions:** `parse_without_eager_brace`, `parse_with_earlier_boundary_rule`, `peek`, `replace_attrs`, `from`, `eq`, `hash`, `fmt`, `span`, `is_named`, `parse`, `clone`, `parse_expr`, `parse_binop_rhs`, `peek_precedence`, `ambiguous_expr`, `expr_attrs`, `unary_expr`, `trailer_expr`, `trailer_helper`, `atom_expr`, `atom_labeled`, `expr_builtin`, `path_or_macro_or_struct`, `rest_of_path_or_macro_or_struct`, `paren_or_tuple`, `array_or_repeat`, `continue_parsing_early`, `expr_group`, `expr_let`, `expr_unary`, `expr_become`, `expr_closure`, `closure_arg`, `expr_break`, `expr_struct_helper`, `expr_range`, `parse_range_end`, `parse_obsolete`, `parse_multiple`, `multi_index`, `check_cast`, `outer_attrs_to_tokens`, `inner_attrs_to_tokens`, `print_subexpression`, `print_expr`, `print_expr_assign`, `print_expr_await`, `print_expr_binary`, `print_expr_break`, `print_expr_call`, `print_expr_cast`, `print_expr_closure`, `print_expr_field`, `print_expr_index`, `print_expr_let`, `print_expr_method_call`, `print_expr_range`, `print_expr_raw_addr`, `print_expr_reference`, `print_expr_return`, `print_expr_try`, `print_expr_unary`, `print_expr_yield`
 - **Types:** 0/1 matched (target 8)
 - **Missing types:** `AllowStruct`
 - **Provenance warning:** port-lint provenance header matched only after fallback normalization: `expr.rs` vs expected `expr.rs`
@@ -153,12 +153,12 @@ Every matched file is listed below with function and type symbol parity.
 ### 6. lifetime
 
 - **Target:** `syn.Lifetime [PROVENANCE-FALLBACK]`
-- **Similarity:** 0.33
+- **Similarity:** 0.39
 - **Dependents:** 9
-- **Priority Score:** 9071207.0
-- **Functions:** 4/11 matched (target 9)
-- **Missing functions:** `fmt`, `clone`, `eq`, `partial_cmp`, `cmp`, `hash`, `parse`
-- **Types:** 1/1 matched
+- **Priority Score:** 9061206.0
+- **Functions:** 5/11 matched (target 12)
+- **Missing functions:** `fmt`, `clone`, `eq`, `partial_cmp`, `cmp`, `hash`
+- **Types:** 1/1 matched (target 3)
 - **Missing types:** _none_
 - **Provenance warning:** port-lint provenance header matched only after fallback normalization: `lifetime.rs` vs expected `lifetime.rs`
 - **Proposed provenance header:** `// port-lint: source lifetime.rs` (current: `// port-lint: source lifetime.rs`)
@@ -181,12 +181,12 @@ Every matched file is listed below with function and type symbol parity.
 ### 8. lit
 
 - **Target:** `syn.Lit [PROVENANCE-FALLBACK]`
-- **Similarity:** 0.02
+- **Similarity:** 0.13
 - **Dependents:** 6
-- **Priority Score:** 6384210.0
-- **Functions:** 4/38 matched (target 5)
-- **Missing functions:** `parse`, `parse_with`, `respan_token_stream`, `respan_token_tree`, `set_span`, `suffix`, `token`, `base10_digits`, `base10_parse`, `from`, `fmt`, `debug`, `clone`, `parse_negative_lit`, `peek_impl`, `from_str_for_fuzzing`, `from_str`, `byte`, `next_chr`, `parse_lit_str`, `parse_lit_str_cooked`, `parse_lit_str_raw`, `parse_lit_byte_str`, `parse_lit_byte_str_cooked`, `parse_lit_byte_str_raw`, `parse_lit_c_str`, `parse_lit_c_str_cooked`, `parse_lit_c_str_raw`, `parse_lit_byte`, `parse_lit_char`, `backslash_x`, `backslash_u`, `parse_lit_int`, `parse_lit_float`
-- **Types:** 0/4 matched (target 16)
+- **Priority Score:** 6344208.5
+- **Functions:** 8/38 matched (target 42)
+- **Missing functions:** `parse_with`, `respan_token_stream`, `respan_token_tree`, `set_span`, `suffix`, `from`, `fmt`, `debug`, `clone`, `parse_negative_lit`, `peek_impl`, `from_str_for_fuzzing`, `from_str`, `byte`, `next_chr`, `parse_lit_str`, `parse_lit_str_cooked`, `parse_lit_str_raw`, `parse_lit_byte_str`, `parse_lit_byte_str_cooked`, `parse_lit_byte_str_raw`, `parse_lit_c_str`, `parse_lit_c_str_cooked`, `parse_lit_c_str_raw`, `parse_lit_byte`, `parse_lit_char`, `backslash_x`, `backslash_u`, `parse_lit_int`, `parse_lit_float`
+- **Types:** 0/4 matched (target 22)
 - **Missing types:** `LitRepr`, `LitIntRepr`, `LitFloatRepr`, `StrStyle`
 - **Provenance warning:** port-lint provenance header matched only after fallback normalization: `lit.rs` vs expected `lit.rs`
 - **Proposed provenance header:** `// port-lint: source lit.rs` (current: `// port-lint: source lit.rs`)
@@ -222,14 +222,14 @@ Every matched file is listed below with function and type symbol parity.
 
 ### 11. generics
 
-- **Target:** `syn.Generics [ZERO] [PROVENANCE-FALLBACK]`
-- **Similarity:** 0.00
+- **Target:** `syn.Generics [PROVENANCE-FALLBACK]`
+- **Similarity:** 0.21
 - **Dependents:** 3
-- **Priority Score:** 3252510.0
-- **Functions:** 0/15 matched (target 0)
-- **Missing functions:** `default`, `make_where_clause`, `split_for_impl`, `next`, `as_turbofish`, `new`, `from`, `parse`, `parse_single`, `parse_multiple`, `do_parse`, `choose_generics_over_qpath`, `choose_generics_over_qpath_after_keyword`, `to_tokens`, `print_const_argument`
-- **Types:** 0/10 matched (target 12)
-- **Missing types:** `Lifetimes`, `Item`, `LifetimesMut`, `TypeParams`, `TypeParamsMut`, `ConstParams`, `ConstParamsMut`, `ImplGenerics`, `TypeGenerics`, `Turbofish`
+- **Priority Score:** 3192508.0
+- **Functions:** 5/15 matched (target 26)
+- **Missing functions:** `next`, `as_turbofish`, `from`, `parse`, `parse_single`, `parse_multiple`, `do_parse`, `choose_generics_over_qpath`, `choose_generics_over_qpath_after_keyword`, `print_const_argument`
+- **Types:** 1/10 matched (target 14)
+- **Missing types:** `Lifetimes`, `Item`, `LifetimesMut`, `TypeParams`, `TypeParamsMut`, `ConstParams`, `ConstParamsMut`, `ImplGenerics`, `TypeGenerics`
 - **Provenance warning:** port-lint provenance header matched only after fallback normalization: `generics.rs` vs expected `generics.rs`
 - **Proposed provenance header:** `// port-lint: source generics.rs` (current: `// port-lint: source generics.rs`)
 - **Lint issues:** 1
@@ -237,11 +237,11 @@ Every matched file is listed below with function and type symbol parity.
 ### 12. error
 
 - **Target:** `syn.Error [PROVENANCE-FALLBACK]`
-- **Similarity:** 0.36
+- **Similarity:** 0.37
 - **Dependents:** 3
-- **Priority Score:** 3122206.5
-- **Functions:** 8/14 matched (target 22)
-- **Missing functions:** `new_at`, `fmt`, `clone`, `into_iter`, `next`, `extend`
+- **Priority Score:** 3112206.2
+- **Functions:** 9/14 matched (target 25)
+- **Missing functions:** `new_at`, `fmt`, `clone`, `into_iter`, `next`
 - **Types:** 2/8 matched (target 6)
 - **Missing types:** `Result`, `Error`, `_Test`, `Item`, `IntoIter`, `Iter`
 - **Provenance warning:** port-lint provenance header matched only after fallback normalization: `error.rs` vs expected `error.rs`
@@ -250,17 +250,17 @@ Every matched file is listed below with function and type symbol parity.
 
 ### 13. ty
 
-- **Target:** `syn.Type [ZERO] [PROVENANCE-FALLBACK]`
-- **Similarity:** 0.00
+- **Target:** `syn.Type [PROVENANCE-FALLBACK]`
+- **Similarity:** 0.31
 - **Dependents:** 2
-- **Priority Score:** 2070710.0
-- **Functions:** 0/7 matched (target 4)
-- **Missing functions:** `parse`, `without_plus`, `ambig_ty`, `parse_bounds`, `parse_bare_fn_arg`, `parse_bare_variadic`, `to_tokens`
+- **Priority Score:** 2060706.9
+- **Functions:** 1/7 matched (target 41)
+- **Missing functions:** `parse`, `without_plus`, `ambig_ty`, `parse_bounds`, `parse_bare_fn_arg`, `parse_bare_variadic`
 - **Types:** 0/0 matched (target 23)
 - **Missing types:** _none_
 - **Provenance warning:** port-lint provenance header matched only after fallback normalization: `ty.rs` vs expected `ty.rs`
 - **Proposed provenance header:** `// port-lint: source ty.rs` (current: `// port-lint: source ty.rs`)
-- **Lint issues:** 1
+- **Lint issues:** 2
 
 ### 14. precedence
 
@@ -334,10 +334,10 @@ Every matched file is listed below with function and type symbol parity.
 
 ### 19. group
 
-- **Target:** `syn.Group [ZERO] [PROVENANCE-FALLBACK]`
-- **Similarity:** 0.00
+- **Target:** `syn.Group [PROVENANCE-FALLBACK]`
+- **Similarity:** 0.88
 - **Dependents:** 1
-- **Priority Score:** 1010910.0
+- **Priority Score:** 1010901.2
 - **Functions:** 5/5 matched (target 8)
 - **Missing functions:** _none_
 - **Types:** 3/4 matched
@@ -376,10 +376,10 @@ Every matched file is listed below with function and type symbol parity.
 
 ### 22. ext
 
-- **Target:** `syn.Ext [ZERO] [PROVENANCE-FALLBACK]`
-- **Similarity:** 0.00
+- **Target:** `syn.Ext [PROVENANCE-FALLBACK]`
+- **Similarity:** 0.39
 - **Dependents:** 0
-- **Priority Score:** 111410.0
+- **Priority Score:** 111406.1
 - **Functions:** 3/7 matched (target 6)
 - **Missing functions:** `parse_any`, `append`, `new_spanned`, `clone`
 - **Types:** 0/7 matched (target 1)
@@ -402,7 +402,21 @@ Every matched file is listed below with function and type symbol parity.
 - **Proposed provenance header:** `// port-lint: source buffer.rs` (current: `// port-lint: source buffer.rs`)
 - **Lint issues:** 1
 
-### 24. restriction
+### 24. tt
+
+- **Target:** `syn.Tt [PROVENANCE-FALLBACK]`
+- **Similarity:** 0.00
+- **Dependents:** 0
+- **Priority Score:** 40410.0
+- **Functions:** 0/2 matched (target 5)
+- **Missing functions:** `eq`, `hash`
+- **Types:** 0/2 matched (target 0)
+- **Missing types:** `TokenTreeHelper`, `TokenStreamHelper`
+- **Provenance warning:** port-lint provenance header matched only after fallback normalization: `tt.rs` vs expected `tt.rs`
+- **Proposed provenance header:** `// port-lint: source tt.rs` (current: `// port-lint: source tt.rs`)
+- **Lint issues:** 1
+
+### 25. restriction
 
 - **Target:** `syn.Restriction [ZERO] [PROVENANCE-FALLBACK]`
 - **Similarity:** 0.00
@@ -414,20 +428,6 @@ Every matched file is listed below with function and type symbol parity.
 - **Missing types:** _none_
 - **Provenance warning:** port-lint provenance header matched only after fallback normalization: `restriction.rs` vs expected `restriction.rs`
 - **Proposed provenance header:** `// port-lint: source restriction.rs` (current: `// port-lint: source restriction.rs`)
-- **Lint issues:** 1
-
-### 25. tt
-
-- **Target:** `syn.Tt [ZERO] [PROVENANCE-FALLBACK]`
-- **Similarity:** 0.00
-- **Dependents:** 0
-- **Priority Score:** 40410.0
-- **Functions:** 0/2 matched (target 5)
-- **Missing functions:** `eq`, `hash`
-- **Types:** 0/2 matched (target 0)
-- **Missing types:** `TokenTreeHelper`, `TokenStreamHelper`
-- **Provenance warning:** port-lint provenance header matched only after fallback normalization: `tt.rs` vs expected `tt.rs`
-- **Proposed provenance header:** `// port-lint: source tt.rs` (current: `// port-lint: source tt.rs`)
 - **Lint issues:** 1
 
 ### 26. thread
@@ -446,10 +446,10 @@ Every matched file is listed below with function and type symbol parity.
 
 ### 27. discouraged
 
-- **Target:** `syn.Discouraged [ZERO] [PROVENANCE-FALLBACK]`
-- **Similarity:** 0.00
+- **Target:** `syn.Discouraged [PROVENANCE-FALLBACK]`
+- **Similarity:** 0.71
 - **Dependents:** 0
-- **Priority Score:** 20410.0
+- **Priority Score:** 20402.9
 - **Functions:** 2/2 matched
 - **Missing functions:** _none_
 - **Types:** 0/2 matched (target 1)
@@ -460,7 +460,7 @@ Every matched file is listed below with function and type symbol parity.
 
 ### 28. whitespace
 
-- **Target:** `syn.Whitespace [ZERO] [PROVENANCE-FALLBACK]`
+- **Target:** `syn.Whitespace [PROVENANCE-FALLBACK]`
 - **Similarity:** 0.00
 - **Dependents:** 0
 - **Priority Score:** 20210.0
@@ -486,36 +486,12 @@ Every matched file is listed below with function and type symbol parity.
 - **Proposed provenance header:** `// port-lint: source op.rs` (current: `// port-lint: source op.rs`)
 - **Lint issues:** 1
 
-### 30. tests.test_ident
+### 30. parse_quote
 
-- **Target:** `syn.IdentTest [ZERO]`
-- **Similarity:** 0.00
+- **Target:** `syn.ParseQuote [PROVENANCE-FALLBACK]`
+- **Similarity:** 0.09
 - **Dependents:** 0
-- **Priority Score:** 1610.0
-- **Functions:** 16/16 matched
-- **Missing functions:** _none_
-- **Types:** 0/0 matched (target 1)
-- **Missing types:** _none_
-- **Tests:** 14/14 matched
-
-### 31. tests.test_punctuated
-
-- **Target:** `syn.PunctuatedTest [ZERO]`
-- **Similarity:** 0.00
-- **Dependents:** 0
-- **Priority Score:** 410.0
-- **Functions:** 4/4 matched (target 5)
-- **Missing functions:** _none_
-- **Types:** 0/0 matched (target 1)
-- **Missing types:** _none_
-- **Tests:** 4/4 matched
-
-### 32. parse_quote
-
-- **Target:** `syn.ParseQuote [ZERO] [PROVENANCE-FALLBACK]`
-- **Similarity:** 0.00
-- **Dependents:** 0
-- **Priority Score:** 210.0
+- **Priority Score:** 209.1
 - **Functions:** 1/1 matched (target 3)
 - **Missing functions:** _none_
 - **Types:** 1/1 matched
@@ -524,7 +500,7 @@ Every matched file is listed below with function and type symbol parity.
 - **Proposed provenance header:** `// port-lint: source parse_quote.rs` (current: `// port-lint: source parse_quote.rs`)
 - **Lint issues:** 1
 
-### 33. print
+### 31. print
 
 - **Target:** `syn.Print [PROVENANCE-FALLBACK]`
 - **Similarity:** 0.86
@@ -538,7 +514,7 @@ Every matched file is listed below with function and type symbol parity.
 - **Proposed provenance header:** `// port-lint: source print.rs` (current: `// port-lint: source print.rs`)
 - **Lint issues:** 1
 
-### 34. parse_macro_input
+### 32. parse_macro_input
 
 - **Target:** `syn.ParseMacroInput [ZERO] [PROVENANCE-FALLBACK]`
 - **Similarity:** 0.00
