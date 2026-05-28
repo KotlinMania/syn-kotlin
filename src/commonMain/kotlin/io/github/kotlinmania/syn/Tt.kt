@@ -6,13 +6,14 @@ import io.github.kotlinmania.procmacro2.TokenStream
 import io.github.kotlinmania.procmacro2.TokenTree
 
 /**
- * Compares two token trees for structural equality, ignoring spans.
+ * Structural equality and hashing for token trees and token streams,
+ * ignoring spans.
  *
- * Structural helper for token tree equality. Kotlin wrapper-class
- * idiom is heavier than just exposing helper free functions, so the helpers
- * surface as [tokenTreeEq] and [tokenStreamEq] (plus matching hash helpers).
+ * Kotlin surfaces these as public helpers instead of Rust's wrapper-struct
+ * idiom. The implementations compare structure only: group delimiter,
+ * punctuation character and spacing, literal text, and identifier name.
  */
-internal fun tokenTreeEq(a: TokenTree, b: TokenTree): Boolean = when {
+public fun tokenTreeEq(a: TokenTree, b: TokenTree): Boolean = when {
     a is TokenTree.Group && b is TokenTree.Group -> {
         if (a.value.delimiter() != b.value.delimiter()) false
         else tokenStreamEq(a.value.stream(), b.value.stream())
@@ -29,10 +30,8 @@ internal fun tokenTreeEq(a: TokenTree, b: TokenTree): Boolean = when {
     else -> false
 }
 
-/**
- * Structural hash of a token tree, ignoring spans.
- */
-internal fun tokenTreeHash(tree: TokenTree): Int {
+/** Structural hash of a token tree, ignoring spans. */
+public fun tokenTreeHash(tree: TokenTree): Int {
     var hash = 0
     fun mix(value: Int) { hash = hash * 31 + value }
     when (tree) {
@@ -61,10 +60,8 @@ internal fun tokenTreeHash(tree: TokenTree): Int {
     return hash
 }
 
-/**
- * Compares two token streams for structural equality, ignoring spans.
- */
-internal fun tokenStreamEq(left: TokenStream, right: TokenStream): Boolean {
+/** Structural equality of two token streams, ignoring spans. */
+public fun tokenStreamEq(left: TokenStream, right: TokenStream): Boolean {
     val leftIter = left.iterator()
     val rightIter = right.iterator()
     while (leftIter.hasNext()) {
@@ -74,10 +71,8 @@ internal fun tokenStreamEq(left: TokenStream, right: TokenStream): Boolean {
     return !rightIter.hasNext()
 }
 
-/**
- * Structural hash of a token stream, ignoring spans.
- */
-internal fun tokenStreamHash(stream: TokenStream): Int {
+/** Structural hash of a token stream, ignoring spans. */
+public fun tokenStreamHash(stream: TokenStream): Int {
     val items = stream.toList()
     var hash = items.size
     for (tt in items) {

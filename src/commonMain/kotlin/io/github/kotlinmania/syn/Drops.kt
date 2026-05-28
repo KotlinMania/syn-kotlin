@@ -9,4 +9,4 @@ package io.github.kotlinmania.syn
  * all Kotlin objects are managed by the GC, and there is no deterministic
  * destructor to suppress.
  */
-internal class NoDrop<T>(val value: T)
+public class NoDrop<T>(public val value: T)
