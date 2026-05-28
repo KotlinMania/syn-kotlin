@@ -23,14 +23,14 @@ import kotlin.native.HiddenFromObjC
  * expected` against every strongly-typed call site (~10+ occurrences).
  */
 @HiddenFromObjC
-public class Punctuated<T, P> private constructor(
+public class Punctuated<T : ToTokens, P : ToTokens> private constructor(
  private val inner: MutableList<Pair<T, P>>,
  private var last: T?,
 ) : ToTokens, Iterable<T> {
  public constructor() : this(mutableListOf(), null)
 
  public companion object {
- public fun <T, P> new(): Punctuated<T, P> =
+ public fun <T : ToTokens, P : ToTokens> new(): Punctuated<T, P> =
  Punctuated()
 
  /**
@@ -40,7 +40,7 @@ public class Punctuated<T, P> private constructor(
  * Parsing continues until the end of this parse stream. The entire
  * content of this parse stream must consist of [T] and P.
  */
- public fun <T, P> parseTerminated(
+ public fun <T : ToTokens, P : ToTokens> parseTerminated(
  input: ParseStream,
  valueParse: Parse<T>,
  punctParse: Parse<P>,
@@ -52,7 +52,7 @@ public class Punctuated<T, P> private constructor(
  * function, separated by punctuation of type P, with optional
  * trailing punctuation.
  */
- public fun <T, P> parseTerminatedWith(
+ public fun <T : ToTokens, P : ToTokens> parseTerminatedWith(
  input: ParseStream,
  parser: (ParseStream) -> SynResult<T>,
  punctParse: Parse<P>,
@@ -80,7 +80,7 @@ public class Punctuated<T, P> private constructor(
  * that it is not followed by a P, even if there are remaining tokens
  * in the stream.
  */
- public fun <T, P> parseSeparatedNonempty(
+ public fun <T : ToTokens, P : ToTokens> parseSeparatedNonempty(
  input: ParseStream,
  valueParse: Parse<T>,
  punctParse: Parse<P>,
@@ -93,7 +93,7 @@ public class Punctuated<T, P> private constructor(
  * function, separated by punctuation of type P, not accepting
  * trailing punctuation.
  */
- public fun <T, P> parseSeparatedNonemptyWith(
+ public fun <T : ToTokens, P : ToTokens> parseSeparatedNonemptyWith(
  input: ParseStream,
  parser: (ParseStream) -> SynResult<T>,
  punctParse: Parse<P>,
@@ -350,7 +350,7 @@ public class Punctuated<T, P> private constructor(
  override fun hashCode(): Int {
  var result = 1
  for (item in this) {
- result = 31 * result + (item?.hashCode() ?: 0)
+ result = 31 * result + (item.hashCode())
  }
  return result
  }
@@ -365,25 +365,23 @@ public class Punctuated<T, P> private constructor(
  },
  last = last?.let(copyValue),
  )
-}
-
  override fun toTokens(tokens: TokenStream) {
  for ((value, punct) in pairs()) {
- value?.toTokens(tokens)
+ value.toTokens(tokens)
  punct?.toTokens(tokens)
  }
  }
-
+}
 
 @HiddenFromObjC
-public sealed class PunctuatedPair<out T, out P> {
- public data class Punctuated<T, P>(val value: T, val punctuation: P) : PunctuatedPair<T, P>(), ToTokens {
+public sealed class PunctuatedPair<out T : ToTokens, out P : ToTokens> {
+ public data class Punctuated<T : ToTokens, P : ToTokens>(val value: T, val punctuation: P) : PunctuatedPair<T, P>(), ToTokens {
   override fun toTokens(tokens: TokenStream) {
    value.toTokens(tokens)
    punctuation.toTokens(tokens)
   }
  }
- public data class End<T>(val value: T) : PunctuatedPair<T, kotlin.Nothing>(), ToTokens {
+ public data class End<T : ToTokens>(val value: T) : PunctuatedPair<T, kotlin.Nothing>(), ToTokens {
   override fun toTokens(tokens: TokenStream) {
    value.toTokens(tokens)
   }
@@ -391,5 +389,5 @@ public sealed class PunctuatedPair<out T, out P> {
 }
 
 @HiddenFromObjC
-public fun <T> emptyPunctuatedIter(): Iterator<T> =
+public fun <T : ToTokens> emptyPunctuatedIter(): Iterator<T> =
  emptyList<T>().iterator()

@@ -43,13 +43,25 @@ public sealed class Expr : ToTokens {
 }
 
 /** A member of a data structure or tuple. */
-public sealed class Member {
- public data class Named(val ident: Ident) : Member()
- public data class Unnamed(val index: Index) : Member()
+public sealed class Member : ToTokens {
+ public data class Named(val ident: Ident) : Member() {
+  override fun toTokens(tokens: TokenStream) {
+   ident.toTokens(tokens)
+  }
+ }
+ public data class Unnamed(val index: Index) : Member() {
+  override fun toTokens(tokens: TokenStream) {
+   index.toTokens(tokens)
+  }
+ }
 }
 
 /** A tuple field index such as `0` in `obj.0`. */
 public data class Index(
  public val index: UInt,
  public val span: Span,
-)
+) : ToTokens {
+ override fun toTokens(tokens: TokenStream) {
+  tokens.append(io.github.kotlinmania.procmacro2.Literal.i32Suffixed(index.toInt()))
+ }
+}

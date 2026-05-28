@@ -5,8 +5,8 @@ package io.github.kotlinmania.syn
  * Skips leading whitespace and comments in the parsed language from [input]. Returns the
  * remaining suffix of the input after the skip.
  *
- * Mirrors the upstream `skip` function from
- * the upstream whitespace module — the slice-returning upstream idiom translates to returning the
+ * Mirrors the `skip` function from
+ * the whitespace module — the slice-returning idiom translates to returning the
  * suffix substring.
  */
 internal fun skipWhitespace(input: String): String {
@@ -74,6 +74,6 @@ internal fun skipWhitespace(input: String): String {
 }
 
 private fun isWhitespaceRust(ch: Char): Boolean {
- //The upstream parser treats left-to-right mark and right-to-left mark as whitespace
+ //The parser treats left-to-right mark and right-to-left mark as whitespace
  return ch.isWhitespace() || ch == '‎' || ch == '‏'
 }

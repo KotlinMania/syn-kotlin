@@ -102,7 +102,7 @@ public class Path(
 public data class PathSegment(
  public var ident: Ident,
  public var arguments: PathArguments = PathArguments.None,
-) {
+) : ToTokens {
  public companion object {
  public fun from(ident: Ident): PathSegment =
  PathSegment(ident, PathArguments.None)
@@ -111,7 +111,7 @@ public data class PathSegment(
  public fun deepCopy(): PathSegment =
  PathSegment(ident.copy(), arguments.deepCopy())
 
- public fun toTokens(tokens: TokenStream) {
+ override fun toTokens(tokens: TokenStream) {
  ident.toTokens(tokens)
  arguments.toTokens(tokens)
  }
@@ -121,8 +121,12 @@ public data class PathSegment(
 }
 
 /** Angle bracketed or parenthesized arguments of a path segment. */
-public sealed class PathArguments {
- public data object None : PathArguments()
+public sealed class PathArguments : ToTokens {
+ public data object None : PathArguments() {
+  override fun toTokens(tokens: TokenStream) {
+   // no arguments to emit
+  }
+ }
 
  /** Generic arguments surrounded by angle brackets. */
  public data class AngleBracketed(
@@ -149,7 +153,7 @@ public sealed class PathArguments {
  public fun isNone(): Boolean =
  this is None
 
- public fun toTokens(tokens: TokenStream) {
+ override fun toTokens(tokens: TokenStream) {
  when (this) {
  None -> { }
  is AngleBracketed -> {
@@ -182,7 +186,7 @@ public sealed class PathArguments {
 }
 
 /** An individual generic argument, like `T`, `T`, or `Item = T`. */
-public sealed class GenericArgument {
+public sealed class GenericArgument : ToTokens {
  public data class LifetimeArg(val lifetime: Lifetime) : GenericArgument()
  public data class TypeArg(val type: SynType) : GenericArgument()
  public data class ConstArg(val expr: Expr) : GenericArgument()
@@ -190,7 +194,7 @@ public sealed class GenericArgument {
  public data class AssocConstArg(val assoc: AssocConst) : GenericArgument()
  public data class ConstraintArg(val constraint: Constraint) : GenericArgument()
 
- public fun toTokens(tokens: TokenStream) {
+ public override fun toTokens(tokens: TokenStream) {
  when (this) {
  is LifetimeArg -> lifetime.toTokens(tokens)
  is TypeArg -> type.toTokens(tokens)
@@ -212,7 +216,7 @@ public sealed class GenericArgument {
  }
 }
 
-/** A binding on an associated type, such as `Item = u8`. */
+/** A binding on an associated type, such as `Item = UByte`. */
 public data class AssocType(
  public val ident: Ident,
  public val generics: PathArguments.AngleBracketed?,
@@ -353,4 +357,17 @@ public object CommaPeek : Peek {
  }
 
  override fun display(): String = "`,`"
+}
+
+/** Parser for a comma token. */
+@HiddenFromObjC
+public object CommaParse : Parse<Comma> {
+ override fun parse(input: ParseStream): SynResult<Comma> =
+  input.step { cursor ->
+   val (punct, rest) = cursor.punct() ?: return@step SynResult.failure(cursor.error("expected `,`"))
+   if (punct.asChar() != ',') {
+    return@step SynResult.failure(cursor.error("expected `,`"))
+   }
+   SynResult.success(Comma.from(punct.span()) to rest)
+  }
 }

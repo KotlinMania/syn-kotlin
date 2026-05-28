@@ -127,14 +127,7 @@ internal fun lookahead1New(scope: Span, cursor: Cursor): Lookahead1 = Lookahead1
  * This interface is sealed and cannot be implemented for types outside of Syn.
  */
 public sealed interface Peek : Lookahead.Sealed {
- /**
- * Returns true if [cursor] points at a token matching this peek target.
- *
- * In the upstream codebase this is a static function on the `Token` interface
- * that lives on the [Peek.Token] associated type. Kotlin has no
- * associated types, so the peek/display pair sits directly on this
- * interface and concrete peek targets implement both methods.
- */
+ /** Returns true if [cursor] points at a token matching this peek target. */
  public fun peek(cursor: Cursor): Boolean
 
  /** Returns the display string used in Lookahead error messages. */
@@ -160,7 +153,7 @@ public sealed interface Peek : Lookahead.Sealed {
  * arguments:
  *
  * - `fmt("simple example")` attribute
- * - `fmt("interpolation e{}ample", self.x)` attribute
+ * - `fmt("interpolation e{}ample", this.x)` attribute
  *
  * and we want to recognize the cases where no interpolation occurs so that
  * more efficient code can be generated.
@@ -178,11 +171,8 @@ public object End : Peek {
 /**
  * Marker type used as the argument type for token-name peek closures.
  *
- * The upstream codebase defines this as a zero-variant enum `TokenMarker` — a
- * enum used so that the closure constraint cannot
- * ever be invoked at runtime. Kotlin has no zero-variant types other than
- * [Nothing], so this exists as a sealed class with no subclasses and a
- * private constructor that cannot be reached.
+ * A sealed class with no subclasses and a private constructor, representing
+ * a phantom token-marker type that can never be instantiated at runtime.
  */
 @HiddenFromObjC
 public sealed class TokenMarker private constructor() : IntoSpans<Any?> {

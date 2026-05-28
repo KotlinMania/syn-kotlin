@@ -6,12 +6,14 @@ import kotlin.native.HiddenFromObjC
 import io.github.kotlinmania.procmacro2.DelimSpan
 import io.github.kotlinmania.procmacro2.Delimiter
 
-//Extensions to the parsing API with niche applicability.
+/**
+ * Extensions to the parsing API with niche applicability.
+ */
 
 /**
  * Extensions to the [ParseStream] API to support speculative parsing.
  *
- * The upstream spelling is a `Speculative` interface with a single
+ * The `Speculative` interface with a single
  * `advanceTo` method, implemented by `ParseBuffer<T>`. In Kotlin the
  * functionality is exposed as an extension function on [ParseBuffer] for the
  * same call-site ergonomics.

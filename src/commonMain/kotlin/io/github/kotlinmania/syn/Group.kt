@@ -10,45 +10,45 @@ import io.github.kotlinmania.syn.token.Bracket
 import io.github.kotlinmania.syn.token.Group as GroupToken
 import io.github.kotlinmania.syn.token.Paren
 
-//Not public API.
+/** Not public API. */
 public class Parens internal constructor(
  public val token: Paren,
  public val content: ParseBuffer,
 )
 
-//Not public API.
+/** Not public API. */
 public class Braces internal constructor(
  public val token: Brace,
  public val content: ParseBuffer,
 )
 
-//Not public API.
+/** Not public API. */
 public class Brackets internal constructor(
  public val token: Bracket,
  public val content: ParseBuffer,
 )
 
-//Not public API.
+/** Not public API. */
 public class GroupContent internal constructor(
  public val token: GroupToken,
  public val content: ParseBuffer,
 )
 
-//Not public API.
+/** Not public API. */
 @HiddenFromObjC
 public fun parseParens(input: ParseBuffer): SynResult<Parens> =
  parseDelimited(input, Delimiter.Parenthesis).map { (span, content) ->
  Parens(token = Paren.from(span), content = content)
  }
 
-//Not public API.
+/** Not public API. */
 @HiddenFromObjC
 public fun parseBraces(input: ParseBuffer): SynResult<Braces> =
  parseDelimited(input, Delimiter.Brace).map { (span, content) ->
  Braces(token = Brace.from(span), content = content)
  }
 
-//Not public API.
+/** Not public API. */
 @HiddenFromObjC
 public fun parseBrackets(input: ParseBuffer): SynResult<Brackets> =
  parseDelimited(input, Delimiter.Bracket).map { (span, content) ->
@@ -87,7 +87,7 @@ private fun parseDelimited(
 /**
  * Parse a set of parentheses and expose their content to subsequent parsers.
  *
- * Mirrors the upstream `parenthesized` macro. In the upstream codebase, callers write:
+ * Mirrors the `parenthesized` macro. Callers write:
  *
  * ```kotlin
  * val content;
