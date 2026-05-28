@@ -72,7 +72,7 @@ public interface Parse<T> {
  * Input to a Syn parser function.
  *
  * The upstream spelling is `ParseStream = ParseBuffer`. The shared-reference part is the way the upstream codebase represents "may
- * mutate the cursor through interior mutability." Kotlin has no such
+ * mutate the cursor through shared mutable state." Kotlin has no such
  * distinction so the typealias resolves directly to [ParseBuffer].
  */
 public typealias ParseStream = ParseBuffer
@@ -296,7 +296,7 @@ public class StepCursor internal constructor(
 
 internal fun advanceStepCursor(proof: StepCursor, to: Cursor): Cursor {
  //The StepCursor parameter proves that the child cursor is within scope.
- //Kotlin has no borrow checker, so this is a runtime check that reads `proof`
+ //Kotlin has no scoped references, so this is a runtime check that reads `proof`
  //to surface the dependency to the type-checker.
  proof.eof()
  return to
@@ -310,8 +310,8 @@ internal fun newParseBuffer(
 
 /**
  * Shared mutable reference to an [Unexpected] state. The upstream codebase uses
- * `Rc<Cell<Unexpected>>` to val multiple parse buffers refer to and update
- * the same chain. Kotlin has neither `Rc` nor `Cell` so this single-field
+ * `SharedRef<MutableUnexpected>` to val multiple parse buffers refer to and update
+ * the same chain. Kotlin uses [UnexpectedRef] instead, so this single-field
  * class provides the same shared-mutable semantics.
  */
 public class UnexpectedRef internal constructor(public var value: Unexpected)

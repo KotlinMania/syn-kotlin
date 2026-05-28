@@ -16,7 +16,7 @@ import io.github.kotlinmania.quote.append
 //A stably addressed token buffer supporting efficient traversal based on a
 //cheaply copyable cursor.
 
-//This module is heavily commented as it contains most of the unchecked code in
+//This module is heavily commented as it contains most of the platform-specific code in
 //Syn, and caution should be used when editing it. The public-facing interface
 //is 100% safe but the implementation is fragile internally.
 
