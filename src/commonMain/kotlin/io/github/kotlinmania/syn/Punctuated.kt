@@ -2,6 +2,9 @@
 @file:OptIn(kotlin.experimental.ExperimentalObjCRefinement::class)
 
 package io.github.kotlinmania.syn
+import io.github.kotlinmania.procmacro2.TokenStream
+import io.github.kotlinmania.quote.ToTokens
+import io.github.kotlinmania.quote.append
 
 import kotlin.native.HiddenFromObjC
 
@@ -23,7 +26,7 @@ import kotlin.native.HiddenFromObjC
 public class Punctuated<T, P> private constructor(
  private val inner: MutableList<Pair<T, P>>,
  private var last: T?,
-) : Iterable<T> {
+) : ToTokens, Iterable<T> {
  public constructor() : this(mutableListOf(), null)
 
  public companion object {
@@ -364,10 +367,27 @@ public class Punctuated<T, P> private constructor(
  )
 }
 
+ override fun toTokens(tokens: TokenStream) {
+ for ((value, punct) in pairs()) {
+ value?.toTokens(tokens)
+ punct?.toTokens(tokens)
+ }
+ }
+
+
 @HiddenFromObjC
 public sealed class PunctuatedPair<out T, out P> {
- public data class Punctuated<T, P>(val value: T, val punctuation: P) : PunctuatedPair<T, P>()
- public data class End<T>(val value: T) : PunctuatedPair<T, kotlin.Nothing>()
+ public data class Punctuated<T, P>(val value: T, val punctuation: P) : PunctuatedPair<T, P>(), ToTokens {
+  override fun toTokens(tokens: TokenStream) {
+   value.toTokens(tokens)
+   punctuation.toTokens(tokens)
+  }
+ }
+ public data class End<T>(val value: T) : PunctuatedPair<T, kotlin.Nothing>(), ToTokens {
+  override fun toTokens(tokens: TokenStream) {
+   value.toTokens(tokens)
+  }
+ }
 }
 
 @HiddenFromObjC
