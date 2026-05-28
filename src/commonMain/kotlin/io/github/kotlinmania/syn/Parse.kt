@@ -58,9 +58,8 @@ import kotlin.native.HiddenFromObjC
  * Parsing interface implemented by all types that can be parsed in a default
  * way from a token stream.
  *
- * The upstream spelling is `Parse` interface has a single `parse` method returning
- * SynResult<Self>; }` — a no-receiver associated function on `Self`. Kotlin
- * has no associated functions, so [Parse] takes a phantom type parameter
+ * The upstream `Parse` interface has a single `parse` method returning
+ * a [SynResult]. Kotlin has no associated functions, so [Parse] takes a phantom type parameter
  * and implementations live on companion objects of the parsed type (or on
  * stand-alone parser strategy objects).
  */
