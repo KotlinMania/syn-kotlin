@@ -176,7 +176,7 @@ public class SynError private constructor(
  public fun from(err: LexError): SynError =
  new(err.span(), err)
 
- internal fun new2(start: Span, end: Span, message: Any): SynError =
+ public fun newAt(start: Span, end: Span, message: Any): SynError =
  SynError(
  mutableListOf(
  ErrorMessage(
