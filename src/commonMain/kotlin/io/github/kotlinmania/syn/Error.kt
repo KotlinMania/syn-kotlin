@@ -189,7 +189,7 @@ public class SynError private constructor(
 
  /** The source location of the error. */
  public fun span(): Span {
- val range = messages[0].span.get() ?: return Span.callSite()
+ val range = messages[0].span.get()
  return range.start.join(range.end) ?: range.start
  }
 
@@ -245,8 +245,8 @@ private data class ErrorMessage(
 ) {
  fun toCompileError(tokens: TokenStream) {
  val range = span.get()
- val start = range?.start ?: Span.callSite()
- val end = range?.end ?: Span.callSite()
+ val start = range.start
+ val end = range.end
 
  tokens.append(TokenTree.Punct(Punct(':', Spacing.Joint, start)))
  tokens.append(TokenTree.Punct(Punct(':', Spacing.Alone, start)))
