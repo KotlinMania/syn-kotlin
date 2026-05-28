@@ -23,38 +23,25 @@ private fun punctuatedIntComma(vararg values: Int): Punctuated<IntToken, Comma> 
 }
 
 class PunctuatedTest {
-    // `pairs` exercises `pairs()`, `pairs_mut()`, and `into_pairs()`
-    // separately to cover the immutable, mutable, and consuming iterator
-    // variants. Kotlin's `Punctuated.pairs()` returns a single immutable
-    // snapshot list; the consuming/mutable distinctions don't translate, so
-    // the size + last-element invariants collapse to a single iteration.
     @Test
     fun pairs() {
         val p = punctuatedIntComma(2, 3, 4)
 
-        val pairsList = p.pairs()
+        val pairsList = p.intoPairs()
         assertEquals(3, pairsList.size)
-        assertEquals(3, pairsList.count())
-        assertEquals(4, pairsList.last().first.v)
+        val lastPair = pairsList.last()
+        assertEquals(4, lastPair.intoValue().v)
     }
 
-    // `iter` exercises `iter()`, `iter_mut()`, and `into_iter()`.
-    // Same collapse as `pairs` above.
     @Test
     fun iter() {
         val p = punctuatedIntComma(2, 3, 4)
 
         val values = p.toList()
         assertEquals(3, values.size)
-        assertEquals(3, values.count())
         assertEquals(4, values.last().v)
     }
 
-    // `may_dangle` proves that iterating a `Punctuated` and dropping
-    // the source mid-iteration does not invalidate the iterator. Kotlin is
-    // garbage-collected, so there is no manual `drop` semantics to test; the
-    // structural iteration with an early `break` still translates and shows
-    // the iterator handles a partial walk without panicking.
     @Test
     fun mayDangle() {
         val p = punctuatedIntComma(2, 3, 4)
@@ -72,9 +59,6 @@ class PunctuatedTest {
         }
     }
 
-    // Expected behavior: indexing into an empty Punctuated should throw
-    // Indexing into an empty `Punctuated` throws `IndexOutOfBoundsException`
-    // from the `operator fun get` defined in `Punctuated.kt`.
     @Test
     fun indexOutOfBounds() {
         val p = Punctuated.new<IntToken, Comma>()
