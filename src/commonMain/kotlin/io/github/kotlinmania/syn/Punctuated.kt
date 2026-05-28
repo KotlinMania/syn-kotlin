@@ -5,7 +5,6 @@ package io.github.kotlinmania.syn
 
 import io.github.kotlinmania.procmacro2.TokenStream
 import io.github.kotlinmania.quote.ToTokens
-import io.github.kotlinmania.quote.append
 import kotlin.native.HiddenFromObjC
 
 /**
@@ -97,7 +96,7 @@ public class Punctuated<T : ToTokens, P : ToTokens> private constructor(
         get() = len()
 
     public fun first(): T? =
-        iterator().asSequence().firstOrNull()
+        inner.firstOrNull()?.first ?: last
 
     public fun last(): T? =
         last ?: inner.lastOrNull()?.first
@@ -251,36 +250,18 @@ public class Punctuated<T : ToTokens, P : ToTokens> private constructor(
     public fun iter(): Iterator<T> =
         iterator()
 
-    public fun iterMut(): MutableList<T> =
-        toMutableList()
-
-    public fun firstMut(): T? =
-        inner.firstOrNull()?.first
-
-    public fun lastMut(): T? =
-        last ?: inner.lastOrNull()?.first
-
-    public fun getMut(index: Int): T? =
-        getOrNull(index)
-
     public fun intoValue(): T? =
         if (len() == 1) first() else null
 
     public fun value(): T? =
         intoValue()
 
-    public fun valueMut(): T? =
-        intoValue()
-
     public fun punct(index: Int): P? =
-        inner.getOrNull(index)?.second
-
-    public fun punctMut(index: Int): P? =
         inner.getOrNull(index)?.second
 
     public fun intoTuple(): List<Triple<T, P?, Boolean>> =
         buildList {
-            for ((_, pair) in inner.withIndex()) {
+            for (pair in inner) {
                 add(Triple(pair.first, pair.second, false))
             }
             val tail = last
@@ -296,9 +277,6 @@ public class Punctuated<T : ToTokens, P : ToTokens> private constructor(
         }
         return accumulator
     }
-
-    public fun cloned(): List<T> =
-        toList()
 
     public operator fun set(index: Int, value: T) {
         require(index >= 0) { "index must be non-negative" }
@@ -323,10 +301,6 @@ public class Punctuated<T : ToTokens, P : ToTokens> private constructor(
         for (element in elements) {
             push(element, defaultPunctuation)
         }
-    }
-
-    public fun doExtend(elements: Iterable<T>, defaultPunctuation: () -> P) {
-        extend(elements, defaultPunctuation)
     }
 
     override fun equals(other: Any?): Boolean {
@@ -414,7 +388,7 @@ public sealed class PunctuatedPair<out T : ToTokens, out P : ToTokens> {
 
 /** An iterator over owned values of type [T], produced by consuming a [Punctuated] sequence. */
 @HiddenFromObjC
-public class IntoIter<T>(private val elements: MutableList<T>) : Iterator<T> {
+public class IntoIter<T : ToTokens>(private val elements: MutableList<T>) : Iterator<T> {
     private var index: Int = 0
 
     override fun hasNext(): Boolean = index < elements.size
@@ -452,8 +426,8 @@ public class PunctuatedPairs<T : ToTokens, P : ToTokens> internal constructor(
 }
 
 @HiddenFromObjC
-public fun <T : ToTokens> emptyPunctuatedIter(): Iterator<T> =
-    emptyList<T>().iterator()
+public fun <T : ToTokens> emptyPunctuatedIter(): IntoIter<T> =
+    IntoIter(mutableListOf())
 
 @HiddenFromObjC
 public fun <T : ToTokens> emptyPunctuatedIterMut(): MutableList<T> =
