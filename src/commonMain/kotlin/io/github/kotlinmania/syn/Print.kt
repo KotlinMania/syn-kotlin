@@ -26,7 +26,7 @@ internal class TokensOrDefault<T>(
 }
 
 /**
- * Kotlin's stand-in for the upstream `Default` constraint used by
+ * Stand-in for the `Default` constraint used by
  * `TokensOrDefault`.
  */
 internal class DefaultTokens<T>(

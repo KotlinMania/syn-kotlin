@@ -8,7 +8,7 @@ import io.github.kotlinmania.procmacro2.TokenTree
 import kotlin.test.Test
 import kotlin.test.assertFailsWith
 
-// Identifier strings that the upstream parser rejects even though the token
+// Identifier strings that the parser rejects even though the token
 // constructor accepts them at the lexer level. Includes strict and reserved
 // keywords plus the bare underscore, which the lexer tokenizes as an Ident but
 // the parser reserves as a pattern placeholder. Kept inline here until the full
@@ -87,7 +87,7 @@ class IdentTest {
         new("abstract")
     }
 
-    // Upstream: should_panic(expected = "use Option<Ident>"). The lower-level
+    // Should panic(expected = "use Option<Ident>"). The lower-level
     // `Ident::new` constructor in proc-macro2-kotlin throws
     // [IllegalArgumentException] for the empty string with that exact
     // diagnostic intent; the panic-shape contract is mapped to a thrown
@@ -99,7 +99,7 @@ class IdentTest {
         }
     }
 
-    // Upstream: should_panic(expected = "not a valid Ident"). A lifetime
+    // Should panic(expected = "not a valid Ident"). A lifetime
     // literal is not a valid identifier; the lower-level constructor throws.
     @Test
     fun identNewLifetime() {
@@ -113,7 +113,7 @@ class IdentTest {
         new("_")
     }
 
-    // Upstream: should_panic(expected = "use Literal instead"). A bare numeric
+    // Should panic(expected = "use Literal instead"). A bare numeric
     // literal is not a valid identifier; the lower-level constructor throws.
     @Test
     fun identNewNumber() {
@@ -122,7 +122,7 @@ class IdentTest {
         }
     }
 
-    // Upstream: should_panic(expected = "\"a#\" is not a valid Ident"). The
+    // Should panic(expected = "\"a#\" is not a valid Ident"). The
     // identifier syntax does not permit `#`; the lower-level constructor
     // throws.
     @Test

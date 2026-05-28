@@ -201,19 +201,6 @@ public sealed class ReturnType : ToTokens {
  public abstract fun deepCopy(): ReturnType
 }
 
-public data class Macro(
- public val path: Path,
- public val delimiter: MacroDelimiter,
- public val tokens: TokenStream,
-) : ToTokens {
- override fun toTokens(tokens: TokenStream) {
- path.toTokens(tokens)
- delimiter.toTokens(tokens)
- }
-
- public fun deepCopy(): Macro =
- Macro(path.deepCopy(), delimiter, tokens)
-}
 
 public sealed class MacroDelimiter : ToTokens {
  public data class Paren(val token: io.github.kotlinmania.syn.token.Paren) : MacroDelimiter() {

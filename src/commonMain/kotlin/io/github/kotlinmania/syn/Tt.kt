@@ -8,7 +8,7 @@ import io.github.kotlinmania.procmacro2.TokenTree
 /**
  * Compares two token trees for structural equality, ignoring spans.
  *
- * The upstream spelling is `TokenTreeHelper` with `equals` and `hashCode` implementations. Kotlin wrapper-class
+ * Structural helper for token tree equality. Kotlin wrapper-class
  * idiom is heavier than just exposing helper free functions, so the helpers
  * surface as [tokenTreeEq] and [tokenStreamEq] (plus matching hash helpers).
  */
@@ -30,7 +30,7 @@ internal fun tokenTreeEq(a: TokenTree, b: TokenTree): Boolean = when {
 }
 
 /**
- * Structural hash of a token tree, ignoring spans. Mirrors the upstream
+ * Structural hash of a token tree, ignoring spans. Mirrors the
  * `hashCode` implementation on `TokenTreeHelper`.
  */
 internal fun tokenTreeHash(tree: TokenTree): Int {
@@ -64,7 +64,7 @@ internal fun tokenTreeHash(tree: TokenTree): Int {
 
 /**
  * Compares two token streams for structural equality, ignoring spans.
- * Mirrors the upstream `equals` implementation on `TokenStreamHelper`.
+ * Mirrors the `equals` implementation on `TokenStreamHelper`.
  */
 internal fun tokenStreamEq(left: TokenStream, right: TokenStream): Boolean {
  val leftIter = left.iterator()
@@ -79,7 +79,7 @@ internal fun tokenStreamEq(left: TokenStream, right: TokenStream): Boolean {
 }
 
 /**
- * Structural hash of a token stream, ignoring spans. Mirrors the upstream
+ * Structural hash of a token stream, ignoring spans. Mirrors the
  * `hashCode` implementation on `TokenStreamHelper`.
  */
 internal fun tokenStreamHash(stream: TokenStream): Int {

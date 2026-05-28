@@ -10,19 +10,23 @@ import io.github.kotlinmania.procmacro2.Span
 import io.github.kotlinmania.procmacro2.TokenStream
 import io.github.kotlinmania.procmacro2.TokenTree
 
-//Extension functions to provide parsing methods on foreign types.
-//
-//The upstream defines IdentExt, TokenStreamExt, and PunctExt interfaces
-//each with a single implementation block. Kotlin has top-level
-//extension functions that achieve the same call-site shape without the interface
-//indirection.
+/**
+ * Extension functions to provide parsing methods on foreign types.
+ *
+ * Defines IdentExt, TokenStreamExt, and PunctExt interfaces
+ * each with a single implementation block. Kotlin has top-level
+ * extension functions that achieve the same call-site shape without the interface
+ * indirection.
+ */
 
-//Additional methods for [Ident] not provided by procmacro2.
-//
-//In the upstream codebase these methods sit on the `IdentExt` interface sealed inside the
-//the syn library. Kotlin exposes them as extension functions on
-//[io.github.kotlinmania.procmacro2.Ident]; sealing semantics are
-//inapplicable.
+/**
+ * Additional methods for [Ident] not provided by procmacro2.
+ *
+ * These methods sit on the `IdentExt` interface sealed inside the
+ * syn library. Kotlin exposes them as extension functions on
+ * [io.github.kotlinmania.procmacro2.Ident]; sealing semantics are
+ * inapplicable.
+ */
 
 /**
  * Parses any identifier including keywords.
@@ -106,7 +110,7 @@ public fun Ident.unraw(): Ident {
 /**
  * Appends a single [TokenTree] onto a [TokenStream].
  *
- * The upstream codebase declares this on the `TokenStreamExt` interface; here it
+ * Declared on the `TokenStreamExt` interface; here it
  * is an extension function with the same call-site shape. Mirrors the
  * `append` extension provided in quote-kotlin.
  */
@@ -117,7 +121,7 @@ internal fun TokenStream.appendTokenTree(token: TokenTree) {
 /**
  * Constructs a [Punct] with the given character, spacing, and span.
  *
- * The upstream codebase declares this on the `PunctExt` interface; here it is a
+ * Declared on the `PunctExt` interface; here it is a
  * companion-equivalent helper on [Punct].
  */
 internal fun punctNewSpanned(ch: Char, spacing: Spacing, span: Span): Punct {

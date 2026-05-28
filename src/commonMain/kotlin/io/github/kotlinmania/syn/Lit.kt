@@ -142,7 +142,7 @@ public class LitChar(
  public fun copy(): LitChar = LitChar(value, span)
 }
 
-/** An integer literal: `1` or `1u8` or `1i32`. */
+/** An integer literal: `1` or `1` with an optional suffix like `i32`. */
 public class LitInt(
  public val digits: String,
  public val suffix: String,

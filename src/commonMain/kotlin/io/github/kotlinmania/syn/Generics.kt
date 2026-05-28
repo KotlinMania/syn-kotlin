@@ -42,15 +42,15 @@ public data class Generics(
 
  public fun makeWhereClause(): WhereClause {
  if (whereClause == null) {
- whereClause = WhereClause(Where(Span.callSite()), Punctuated.new())
+ whereClause = WhereClause(Where(Span.callSite()), Punctuated.new<WherePredicate, Comma>())
  }
  return whereClause!!
  }
 
  public fun splitForImpl(): SplitForImpl {
- val implGenerics = Generics(ltToken, Punctuated.new(), gtToken)
- val typeGenerics = Generics(ltToken, Punctuated.new(), gtToken)
- val turbofish = Turbofish(ltToken, Punctuated.new(), gtToken)
+ val implGenerics = Generics(ltToken, Punctuated.new<GenericParam, Comma>(), gtToken)
+ val typeGenerics = Generics(ltToken, Punctuated.new<GenericParam, Comma>(), gtToken)
+ val turbofish = Turbofish(ltToken, Punctuated.new<GenericArgument, Comma>(), gtToken)
  for ((value, punct) in params.pairs()) {
  when (value) {
  is GenericParam.LifetimeParam -> {
@@ -59,7 +59,7 @@ public data class Generics(
  }
  is GenericParam.TypeParam -> {
  implGenerics.params.push(value) { Comma(Span.callSite()) }
- turbofish.params.push(GenericArgument.TypeArg(SynType.Path(null, Path.from(value.ident)))) { Comma(Span.callSite()) }
+ turbofish.params.pushValue(GenericArgument.TypeArg(SynType.Path(null, Path.from(value.ident))))
  }
  is GenericParam.ConstParam -> {
  implGenerics.params.push(value) { Comma(Span.callSite()) }

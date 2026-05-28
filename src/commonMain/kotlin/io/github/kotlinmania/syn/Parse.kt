@@ -10,55 +10,58 @@ import io.github.kotlinmania.procmacro2.Punct
 import io.github.kotlinmania.procmacro2.Span
 import io.github.kotlinmania.procmacro2.TokenStream
 import io.github.kotlinmania.procmacro2.TokenTree
+import io.github.kotlinmania.quote.ToTokens
 import kotlin.native.HiddenFromObjC
 
-//Parsing interface for parsing a token stream into a syntax tree node.
-//
-//Parsing in Syn is built on parser functions that take in a [ParseStream]
-//and produce a [Result] of some syntax tree node. Underlying these parser
-//functions is a lower level mechanism built around the [Cursor] type. Cursor
-//is a cheaply copyable cursor over a range of tokens in a token stream.
-//
-//# Example
-//
-//Here is a snippet of parsing code to get a feel for the style of the
-//library. We define data structures for a subset of the upstream syntax including
-//enums (not shown) and data classes, then provide implementations of the [Parse]
-//to parse these syntax tree data structures from a token stream.
-//
-//Once Parse implementations have been defined, they can be called conveniently from a
-//procedural macro through [parseMacroInput] as shown at the bottom of the
-//snippet. If the caller provides syntactically invalid input to the
-//procedural macro, they will receive a helpful compiler error message
-//pointing out the exact token that triggered the failure to parse.
-//
-//# The `parse*` functions
-//
-//The top-level `parse`, `parse2`, and `parseStr` helpers serve as entry
-//points for parsing syntax tree nodes that can be parsed in an obvious
-//default way. These functions accept any [Parse] implementation, which
-//includes most types in Syn.
-//
-//# The [Parser] interface
-//
-//Some types can be parsed in several ways depending on context. For example
-//an `Attribute` can be either "outer" like `...` attribute or "inner" like `...` inner attribute
-//and parsing the wrong one would be a bug. Similarly [Punctuated] may or may
-//not allow trailing punctuation, and parsing it the wrong way would either
-//reject valid input or accept invalid input.
-//
-//The [Parse] interface is not implemented in these cases because there is no good
-//behavior to consider the default.
-//
-//In these cases the types provide a choice of parser functions rather than a
-//single [Parse] implementation, and those parser functions can be invoked
-//through the [Parser] interface.
+/**
+ * Parsing interface for parsing a token stream into a syntax tree node.
+ *
+ * Parsing in Syn is built on parser functions that take in a [ParseStream]
+ * and produce a [SynResult] of some syntax tree node. Underlying these parser
+ * functions is a lower level mechanism built around the [Cursor] type. Cursor
+ * is a cheaply copyable cursor over a range of tokens in a token stream.
+ *
+ * ## Example
+ *
+ * Here is a snippet of parsing code to get a feel for the style of the
+ * library. We define data structures for a subset of the syntax including
+ * enums (not shown) and data classes, then provide implementations of the [Parse]
+ * to parse these syntax tree data structures from a token stream.
+ *
+ * Once [Parse] implementations have been defined, they can be called conveniently from a
+ * procedural-macro handler through [parseMacroInput] as shown at the bottom of the
+ * snippet. If the caller provides syntactically invalid input to the
+ * procedural-macro handler, they will receive a helpful compiler error message
+ * pointing out the exact token that triggered the failure to parse.
+ *
+ * ## The `parse*` functions
+ *
+ * The top-level `parse`, `parse2`, and `parseStr` helpers serve as entry
+ * points for parsing syntax tree nodes that can be parsed in an obvious
+ * default way. These functions accept any [Parse] implementation, which
+ * includes most types in Syn.
+ *
+ * ## The [Parser] interface
+ *
+ * Some types can be parsed in several ways depending on context. For example
+ * an `Attribute` can be either "outer" like `...` attribute or "inner" like `...` inner attribute
+ * and parsing the wrong one would be a bug. Similarly [Punctuated] may or may
+ * not allow trailing punctuation, and parsing it the wrong way would either
+ * reject valid input or accept invalid input.
+ *
+ * The [Parse] interface is not implemented in these cases because there is no good
+ * behavior to consider the default.
+ *
+ * In these cases the types provide a choice of parser functions rather than a
+ * single [Parse] implementation, and those parser functions can be invoked
+ * through the [Parser] interface.
+ */
 
 /**
  * Parsing interface implemented by all types that can be parsed in a default
  * way from a token stream.
  *
- * The upstream `Parse` interface has a single `parse` method returning
+ * The `Parse` interface has a single `parse` method returning
  * a [SynResult]. Kotlin has no associated functions, so [Parse] takes a phantom type parameter
  * and implementations live on companion objects of the parsed type (or on
  * stand-alone parser strategy objects).
@@ -71,7 +74,7 @@ public interface Parse<T> {
 /**
  * Input to a Syn parser function.
  *
- * The upstream spelling is `ParseStream = ParseBuffer`. The shared-mutable part is the way the upstream codebase represents "may
+ * Spelled `ParseStream = ParseBuffer`. The shared-mutable part is the way a parser represents "may
  * mutate the cursor through shared mutable state." Kotlin has no such
  * distinction so the typealias resolves directly to [ParseBuffer].
  */
@@ -91,7 +94,7 @@ public typealias ParseStream = ParseBuffer
  * looking to invoke a parser function that requires [ParseStream] as input,
  * you will need to go through one of the public parsing entry points:
  *
- * - The [parseMacroInput] helper if parsing input of a procedural macro;
+ * - The [parseMacroInput] helper if parsing input of a procedural-macro handler;
  * - One of the top-level `parse*` functions; or
  * - A method of the [Parser] interface.
  */
@@ -144,12 +147,12 @@ public class ParseBuffer internal constructor(
  * Parsing continues until the end of this parse stream. The entire content
  * of this parse stream must consist of [T] and P.
  */
- public fun <T, P> parseTerminated(
+ public fun <T : ToTokens, P : ToTokens> parseTerminated(
  parser: (ParseStream) -> SynResult<T>,
  separator: Peek,
  punctuationParser: Parse<P>,
  ): SynResult<Punctuated<T, P>> {
- //The `separator` parameter mirrors the upstream type-level role of
+ //The `separator` parameter mirrors the type-level role of
  //`P: Peek`: it carries no runtime data but constrains which P this
  //overload accepts. Kotlin has no equivalent type-only function
  //parameter, so the value is accepted and intentionally discarded.
@@ -240,7 +243,7 @@ public class ParseBuffer internal constructor(
 
  /**
  * Propagates any leftover unexpected-token info from this child buffer to
- * its parent's unexpected chain. The upstream codebase [finalizer] implementation on
+ * its parent's unexpected chain. The [finalizer] implementation on
  * [ParseBuffer] runs this body automatically at end-of-scope; Kotlin has
  * no destructors, so callers that construct a child [ParseBuffer]
  * (typically through the group helpers `parens`, `braces`, `brackets`)
@@ -286,7 +289,7 @@ public class StepCursor internal constructor(
  public fun span(): Span = cursor.span()
 
  /**
- * Surfaces the wrapped [Cursor]. Mirrors the upstream delegation pattern where
+ * Surfaces the wrapped [Cursor]. Mirrors the delegation pattern where
  * callers could pass a [StepCursor] anywhere
  * a [Cursor] is expected. Kotlin has no such delegation so callers explicitly
  * extract via this property.
@@ -309,7 +312,7 @@ internal fun newParseBuffer(
 ): ParseBuffer = ParseBuffer(scope = scope, currentCursor = cursor, unexpected = unexpected)
 
 /**
- * Shared mutable holder of an [Unexpected] state. The upstream codebase uses
+ * Shared mutable holder of an [Unexpected] state. Uses
  * a shared mutable reference so multiple parse buffers refer to and update
  * the same chain. Kotlin uses [UnexpectedRef] instead, so this single-field
  * class provides the same shared-mutable semantics.
@@ -332,7 +335,7 @@ public sealed class Unexpected {
  }
 }
 
-//We call this on UnexpectedRef where temporarily swapping in a None is cheap.
+/** We call this on UnexpectedRef where temporarily swapping in a None is cheap. */
 private fun unexpectedCellClone(cell: UnexpectedRef): Unexpected {
  val prev = cell.value
  cell.value = Unexpected.None
@@ -368,18 +371,18 @@ private fun spanOfUnexpectedIgnoringNones(initial: Cursor): Pair<Span, Delimiter
  return if (cursor.eof()) null else cursor.span() to cursor.scopeDelimiter()
 }
 
-//Parse implementations for the procmacro2 token types and stdlib containers.
+/** Parse implementations for the procmacro2 token types and stdlib containers. */
 
 /**
- * Parser strategy for a boxed result in upstream. Kotlin has no box type but a
+ * Parser strategy for a boxed result. Kotlin has no box type but a
  * `Parse<T>.boxed()` extension keeps callers source-compatible with
- * upstream-shaped sites that wrap a parsed node.
+ * sites that wrap a parsed node.
  */
 @HiddenFromObjC
 public fun <T : Any> Parse<T>.boxed(): Parse<T> = this
 
 /**
- * Parser strategy for an optional result in upstream — emits a `null` rather than
+ * Parser strategy for an optional result — emits a `null` rather than
  * an error if the peek target does not match.
  */
 @HiddenFromObjC
@@ -494,7 +497,7 @@ private fun tokensToParseBuffer(tokens: TokenBuffer): ParseBuffer {
 
 /**
  * Adapts a parser closure `(ParseStream) -> SynResult<T>` into a [Parser]
- * implementation. The upstream uses a universal adapter that wraps any parser
+ * implementation. Uses a universal adapter that wraps any parser
  * function — Kotlin has no such language feature so this helper performs the same wrapping explicitly.
  */
 @HiddenFromObjC
@@ -559,10 +562,12 @@ public object Nothing : Parse<Nothing> {
  override fun toString(): String = "Nothing"
 }
 
-//Top-level parsing entry points. The upstream spelling of these lives
-//in the upstream root module; see
-//[Lib.kt] when that file is ported. Provided here as a convenience while
-//downstream ports compile against the parse infrastructure.
+/**
+ * Top-level parsing entry points. These live
+ * in the root module; see
+ * [Lib.kt] when that file is ported. Provided here as a convenience while
+ * downstream ports compile against the parse infrastructure.
+ */
 
 /**
  * Parse a [TokenStream] into the chosen syntax tree node, enforcing that the

@@ -19,7 +19,7 @@ import io.github.kotlinmania.quote.append
 /**
  * The result of a Syn parser.
  *
- * Upstream parser results carry [SynError] as the dedicated failure type. This
+ * Parser results carry [SynError] as the dedicated failure type. This
  * sealed result keeps that typed failure in the Kotlin API instead of erasing
  * it behind a generic throwable. It also avoids the unchecked-cast bridge that
  * Swift export generates for the standard library result type under
@@ -197,7 +197,7 @@ public class SynError private constructor(
  * Render the error as an invocation of `compileError`.
  *
  * The `parseMacroInput` helper provides a convenient way to invoke this
- * method correctly in a procedural macro.
+ * method correctly from a procedural-macro handler.
  */
  public fun toCompileError(): TokenStream {
  val tokens = TokenStream.new()

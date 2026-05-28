@@ -7,6 +7,8 @@ import io.github.kotlinmania.procmacro2.Delimiter
 import io.github.kotlinmania.procmacro2.Group
 import io.github.kotlinmania.procmacro2.TokenStream
 import io.github.kotlinmania.procmacro2.TokenTree
+import io.github.kotlinmania.quote.ToTokens
+import io.github.kotlinmania.quote.toTokens
 
 /** An attribute attached to an item or field. */
 public data class Attribute(
@@ -14,7 +16,14 @@ public data class Attribute(
  public val style: AttrStyle,
  public val bracketToken: io.github.kotlinmania.syn.token.Bracket,
  public val meta: Meta,
-) {
+) : ToTokens {
+ override fun toTokens(tokens: TokenStream) {
+  poundToken.toTokens(tokens)
+  style.toTokens(tokens)
+  bracketToken.surround(tokens) { inner ->
+   meta.toTokens(inner)
+  }
+ }
  public fun path(): Path =
  meta.path()
 
@@ -29,16 +38,40 @@ public data class Attribute(
  copy(meta = meta.copy())
 }
 
-public sealed class AttrStyle {
- public data object Outer : AttrStyle()
- public data class Inner(val bangToken: io.github.kotlinmania.syn.token.Not) : AttrStyle()
+public sealed class AttrStyle : ToTokens {
+ public data object Outer : AttrStyle() {
+  override fun toTokens(tokens: TokenStream) {
+   // outer attribute emits nothing before the bracket
+  }
+ }
+ public data class Inner(val bangToken: io.github.kotlinmania.syn.token.Not) : AttrStyle() {
+  override fun toTokens(tokens: TokenStream) {
+   bangToken.toTokens(tokens)
+  }
+ }
 }
 
 /** Content of an attribute. */
-public sealed class Meta {
- public data class PathMeta(val path: Path) : Meta()
- public data class List(val path: Path, val delimiter: MacroDelimiter, val tokens: TokenStream) : Meta()
- public data class NameValue(val path: Path, val eqToken: io.github.kotlinmania.syn.token.Eq, val value: Expr) : Meta()
+public sealed class Meta : ToTokens {
+ public data class PathMeta(val path: Path) : Meta() {
+  override fun toTokens(tokens: TokenStream) {
+   path.toTokens(tokens)
+  }
+ }
+ public data class List(val path: Path, val delimiter: MacroDelimiter, val tokens: TokenStream) : Meta() {
+  override fun toTokens(tokens: TokenStream) {
+   path.toTokens(tokens)
+   delimiter.toTokens(tokens)
+   tokens.extendTokenStreams(listOf(tokens))
+  }
+ }
+ public data class NameValue(val path: Path, val eqToken: io.github.kotlinmania.syn.token.Eq, val value: Expr) : Meta() {
+  override fun toTokens(tokens: TokenStream) {
+   path.toTokens(tokens)
+   eqToken.toTokens(tokens)
+   value.toTokens(tokens)
+  }
+ }
 
  public fun path(): Path =
  when (this) {
