@@ -78,3 +78,18 @@ private fun isWhitespaceChar(ch: Char): Boolean {
  * Includes left-to-right mark and right-to-left mark.
  */
 public fun charIsWhitespace(ch: Char): Boolean = isWhitespaceChar(ch)
+
+/**
+ * Skips leading whitespace and comments in the parsed language.
+ * Public wrapper for the internal [skipWhitespace] function.
+ */
+public fun skip(input: String): String =
+    skipWhitespace(input)
+
+/**
+ * Returns whether the character is considered whitespace for parsing purposes.
+ * Public wrapper for the internal [charIsWhitespace] function (which already
+ * delegates to [isWhitespaceChar]).
+ */
+public fun isWhitespace(ch: Char): Boolean =
+    charIsWhitespace(ch)
