@@ -9,7 +9,7 @@ import io.github.kotlinmania.procmacro2.TokenTree
  * Structural equality and hashing for token trees and token streams,
  * ignoring spans.
  *
- * Kotlin surfaces these as public helpers instead of Rust's wrapper-struct
+ * Kotlin surfaces these as public helpers instead of wrapping types
  * idiom. The implementations compare structure only: group delimiter,
  * punctuation character and spacing, literal text, and identifier name.
  */

@@ -119,7 +119,7 @@ public class Punctuated<T : ToTokens, P : ToTokens> private constructor(
                 ?: if (index == inner.size) last else null
         }
 
-    /** Returns an iterator over borrowed pairs of values and their trailing punctuation. */
+    /** Returns an iterator over pairs of values and their trailing punctuation. */
     public fun pairs(): PunctuatedPairs<T, P> =
         PunctuatedPairs(inner.iterator(), last)
 
@@ -135,7 +135,7 @@ public class Punctuated<T : ToTokens, P : ToTokens> private constructor(
             }
         }.toMutableList()
 
-    /** Returns owned pairs, consuming this sequence. */
+    /** Returns all pairs, consuming this sequence. */
     public fun intoPairs(): List<PunctuatedPair<T, P>> {
         val result = mutableListOf<PunctuatedPair<T, P>>()
         for ((value, punctuation) in inner) {
@@ -386,7 +386,7 @@ public sealed class PunctuatedPair<out T : ToTokens, out P : ToTokens> {
     }
 }
 
-/** An iterator over owned values of type [T], produced by consuming a [Punctuated] sequence. */
+/** An iterator over values of type [T], produced by consuming a [Punctuated] sequence. */
 @HiddenFromObjC
 public class IntoIter<T : ToTokens>(private val elements: MutableList<T>) : Iterator<T> {
     private var index: Int = 0
@@ -399,7 +399,7 @@ public class IntoIter<T : ToTokens>(private val elements: MutableList<T>) : Iter
     public fun size(): Int = elements.size - index
 }
 
-/** An iterator over borrowed pairs of values and their trailing punctuation from a [Punctuated] sequence. */
+/** An iterator over pairs of values and their trailing punctuation from a [Punctuated] sequence. */
 @HiddenFromObjC
 public class PunctuatedPairs<T : ToTokens, P : ToTokens> internal constructor(
     private val inner: Iterator<Pair<T, P>>,
