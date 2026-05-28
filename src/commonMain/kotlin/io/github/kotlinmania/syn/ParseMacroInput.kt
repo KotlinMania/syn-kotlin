@@ -16,7 +16,7 @@ import kotlin.native.HiddenFromObjC
  *
  * # Intended usage
  *
- * The upstream spelling is a `parseMacroInput` macro macro
+ * The upstream spelling is a `parseMacroInput` helper
  * that calls [parse2] under the hood and early-returns the calling function
  * with a `compileError` token stream on parse failure. Kotlin has no macro
  * system and no way to early-return out of the calling function from a
@@ -38,7 +38,7 @@ import kotlin.native.HiddenFromObjC
  *
  * # Usage with Parser
  *
- * This helper can also be used with the [Parser] trait for types that have
+ * This helper can also be used with the [Parser] interface for types that have
  * multiple ways that they can be parsed:
  *
  * ```kotlin

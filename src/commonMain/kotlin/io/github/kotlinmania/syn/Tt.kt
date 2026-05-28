@@ -8,7 +8,7 @@ import io.github.kotlinmania.procmacro2.TokenTree
 /**
  * Compares two token trees for structural equality, ignoring spans.
  *
- * The upstream spelling is `TokenTreeHelper` with `equals` and `hashCode` implementations. Kotlin wrapper-struct
+ * The upstream spelling is `TokenTreeHelper` with `equals` and `hashCode` implementations. Kotlin wrapper-class
  * idiom is heavier than just exposing helper free functions, so the helpers
  * surface as [tokenTreeEq] and [tokenStreamEq] (plus matching hash helpers).
  */

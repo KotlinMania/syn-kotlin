@@ -146,10 +146,10 @@ public class SynError private constructor(
  * Unlike the `SynError.new` constructor, this constructor takes an
  * argument `tokens` which is a syntax tree node. This allows the
  * resulting `SynError` to attempt to span all tokens inside of `tokens`.
- * While you would typically be able to use the `Spanned` trait with
+ * While you would typically be able to use the `Spanned` interface with
  * the above `SynError.new` constructor, implementation limitations today
  * mean that `SynError.newSpanned` may provide a higher-quality error
- * message on stable Rust.
+ * message on the stable channel.
  *
  * When in doubt it's recommended to stick to `SynError.new`!
  */
@@ -212,7 +212,7 @@ public class SynError private constructor(
  toCompileError()
 
  /**
- * Add another error message to self such that when `toCompileError` is
+ * Add another error message to this error such that when `toCompileError` is
  * called, both errors will be emitted together.
  */
  public fun combine(another: SynError) {

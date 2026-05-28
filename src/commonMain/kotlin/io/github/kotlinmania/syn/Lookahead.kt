@@ -124,13 +124,13 @@ internal fun lookahead1New(scope: Span, cursor: Cursor): Lookahead1 = Lookahead1
  * Use [ParseBuffer.peek] to peek one of these types in a parse stream without
  * consuming it from the stream.
  *
- * This trait is sealed and cannot be implemented for types outside of Syn.
+ * This interface is sealed and cannot be implemented for types outside of Syn.
  */
 public sealed interface Peek : Lookahead.Sealed {
  /**
  * Returns true if [cursor] points at a token matching this peek target.
  *
- * In the upstream codebase this is an associated function on the `Token` trait
+ * In the upstream codebase this is a static function on the `Token` interface
  * that lives on the [Peek.Token] associated type. Kotlin has no
  * associated types, so the peek/display pair sits directly on this
  * interface and concrete peek targets implement both methods.
@@ -178,9 +178,9 @@ public object End : Peek {
 /**
  * Marker type used as the argument type for token-name peek closures.
  *
- * The upstream codebase defines this as `enum TokenMarker {}` — an uninhabited
- * enum used so that the closure constraint `FnOnce(TokenMarker) -> T` cannot
- * ever be invoked at runtime. Kotlin has no uninhabited types other than
+ * The upstream codebase defines this as a zero-variant enum `TokenMarker` — a
+ * enum used so that the closure constraint cannot
+ * ever be invoked at runtime. Kotlin has no zero-variant types other than
  * [Nothing], so this exists as a sealed class with no subclasses and a
  * private constructor that cannot be reached.
  */

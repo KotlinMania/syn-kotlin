@@ -9,7 +9,7 @@ import kotlin.native.HiddenFromObjC
  * A punctuated sequence of syntax tree nodes of type [T] separated by
  * punctuation of type [P].
  *
- * This shape is used for struct fields, path segments, generic
+ * This shape is used for data structure fields, path segments, generic
  * arguments, function inputs, and many other comma- or operator-separated
  * lists. Every node except possibly the final one is paired with punctuation.
  *

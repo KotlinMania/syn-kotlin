@@ -11,7 +11,7 @@ import io.github.kotlinmania.procmacro2.Delimiter
 /**
  * Extensions to the [ParseStream] API to support speculative parsing.
  *
- * The upstream spelling is a `Speculative` trait with a single
+ * The upstream spelling is a `Speculative` interface with a single
  * `advanceTo` method, implemented by `ParseBuffer<T>`. In Kotlin the
  * functionality is exposed as an extension function on [ParseBuffer] for the
  * same call-site ergonomics.
@@ -43,7 +43,7 @@ public fun ParseBuffer.advanceTo(fork: ParseBuffer) {
  val (forkUnexp, forkSp) = innerUnexpected(fork)
  if (selfUnexp !== forkUnexp) {
  when {
- //Unexpected set on the fork, but not on `self`, copy it over.
+ //Unexpected set on the fork, but not on this buffer, copy it over.
  forkSp != null && selfSp == null -> {
  selfUnexp.value = Unexpected.Some(forkSp.first, forkSp.second)
  }
@@ -57,7 +57,7 @@ public fun ParseBuffer.advanceTo(fork: ParseBuffer) {
  //parsers should propagate.
  fork.unexpected = UnexpectedRef(Unexpected.None)
  }
- //Unexpected has been set on `self`. No changes needed.
+ //Unexpected has been set on this buffer. No changes needed.
  else -> { }
  }
  }

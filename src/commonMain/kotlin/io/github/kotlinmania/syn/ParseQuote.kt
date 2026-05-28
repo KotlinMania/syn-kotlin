@@ -10,7 +10,7 @@ import kotlin.native.HiddenFromObjC
 //type inference to figure out a return type for those tokens.
 //
 //The return type can be any syntax tree node that implements the [Parse]
-//trait (via [ParseQuote]).
+//interface (via [ParseQuote]).
 //
 //The upstream spelling is the `parseQuote` and `parseQuoteSpanned`
 //macros, which expand to `parseQuote` internally. Kotlin has
@@ -33,7 +33,7 @@ import kotlin.native.HiddenFromObjC
 //# Special cases
 //
 //The upstream macro can parse additional types as a special case even though
-//they do not implement the [Parse] trait:
+//they do not implement the [Parse] interface:
 //
 //- `Attribute` — parses one attribute, allowing either outer like `...` attribute
 //or inner like `...` inner attribute
@@ -44,7 +44,7 @@ import kotlin.native.HiddenFromObjC
 //same grammar as the inside of a `match` expression
 //- `List<Stmt>` — parses the same as `Block.parseWithin`
 //- `Pat` — parses the same as `Pat.parseMultiWithLeadingVert`
-//- `Field` — parses a named or unnamed struct field
+//- `Field` — parses a named or unnamed data class field
 //
 //Those special-case implementations live alongside their respective syntax-tree types
 //once those are ported; they are not re-declared here so [ParseQuote] stays
