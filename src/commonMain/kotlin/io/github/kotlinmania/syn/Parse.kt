@@ -23,11 +23,11 @@ import kotlin.native.HiddenFromObjC
 //
 //Here is a snippet of parsing code to get a feel for the style of the
 //library. We define data structures for a subset of the upstream syntax including
-//enums (not shown) and structs, then provide implementations of the [Parse]
-//trait to parse these syntax tree data structures from a token stream.
+//enums (not shown) and data classes, then provide implementations of the [Parse]
+//to parse these syntax tree data structures from a token stream.
 //
 //Once Parse implementations have been defined, they can be called conveniently from a
-//procedural macro through `parseMacroInput!` as shown at the bottom of the
+//procedural macro through [parseMacroInput] as shown at the bottom of the
 //snippet. If the caller provides syntactically invalid input to the
 //procedural macro, they will receive a helpful compiler error message
 //pointing out the exact token that triggered the failure to parse.
@@ -39,7 +39,7 @@ import kotlin.native.HiddenFromObjC
 //default way. These functions accept any [Parse] implementation, which
 //includes most types in Syn.
 //
-//# The [Parser] trait
+//# The [Parser] interface
 //
 //Some types can be parsed in several ways depending on context. For example
 //an `Attribute` can be either "outer" like `...` attribute or "inner" like `...` inner attribute
@@ -47,12 +47,12 @@ import kotlin.native.HiddenFromObjC
 //not allow trailing punctuation, and parsing it the wrong way would either
 //reject valid input or accept invalid input.
 //
-//The [Parse] trait is not implemented in these cases because there is no good
+//The [Parse] interface is not implemented in these cases because there is no good
 //behavior to consider the default.
 //
 //In these cases the types provide a choice of parser functions rather than a
 //single [Parse] implementation, and those parser functions can be invoked
-//through the [Parser] trait.
+//through the [Parser] interface.
 
 /**
  * Parsing interface implemented by all types that can be parsed in a default
@@ -71,7 +71,7 @@ public interface Parse<T> {
 /**
  * Input to a Syn parser function.
  *
- * The upstream spelling is `ParseStream = ParseBuffer`. The shared-reference part is the way the upstream codebase represents "may
+ * The upstream spelling is `ParseStream = ParseBuffer`. The shared-mutable part is the way the upstream codebase represents "may
  * mutate the cursor through shared mutable state." Kotlin has no such
  * distinction so the typealias resolves directly to [ParseBuffer].
  */
@@ -93,7 +93,7 @@ public typealias ParseStream = ParseBuffer
  *
  * - The [parseMacroInput] helper if parsing input of a procedural macro;
  * - One of the top-level `parse*` functions; or
- * - A method of the [Parser] trait.
+ * - A method of the [Parser] interface.
  */
 public class ParseBuffer internal constructor(
  internal val scope: Span,
@@ -272,7 +272,7 @@ public class StepCursor internal constructor(
  */
  public fun error(message: Any): SynError = errorNewAt(scope, cursor, message)
 
- //Deref<Target = Cursor> — surfaces each Cursor method by delegation.
+ //Delegates each Cursor method by forwarding.
  public fun eof(): Boolean = cursor.eof()
  public fun ident(): Pair<io.github.kotlinmania.procmacro2.Ident, Cursor>? = cursor.ident()
  public fun punct(): Pair<Punct, Cursor>? = cursor.punct()
@@ -286,9 +286,9 @@ public class StepCursor internal constructor(
  public fun span(): Span = cursor.span()
 
  /**
- * Surfaces the wrapped [Cursor]. Mirrors the upstream `Deref<Target =
- * Cursor>` implementation which lets callers pass a [StepCursor] anywhere
- * a [Cursor] is expected. Kotlin has no Deref so callers explicitly
+ * Surfaces the wrapped [Cursor]. Mirrors the upstream delegation pattern where
+ * callers could pass a [StepCursor] anywhere
+ * a [Cursor] is expected. Kotlin has no such delegation so callers explicitly
  * extract via this property.
  */
  public val raw: Cursor get() = cursor
@@ -309,8 +309,8 @@ internal fun newParseBuffer(
 ): ParseBuffer = ParseBuffer(scope = scope, currentCursor = cursor, unexpected = unexpected)
 
 /**
- * Shared mutable reference to an [Unexpected] state. The upstream codebase uses
- * `SharedRef<MutableUnexpected>` to val multiple parse buffers refer to and update
+ * Shared mutable holder of an [Unexpected] state. The upstream codebase uses
+ * a shared mutable reference so multiple parse buffers refer to and update
  * the same chain. Kotlin uses [UnexpectedRef] instead, so this single-field
  * class provides the same shared-mutable semantics.
  */
@@ -368,10 +368,10 @@ private fun spanOfUnexpectedIgnoringNones(initial: Cursor): Pair<Span, Delimiter
  return if (cursor.eof()) null else cursor.span() to cursor.scopeDelimiter()
 }
 
-//Parse implementations for the proc-macro2 token types and stdlib containers.
+//Parse implementations for the procmacro2 token types and stdlib containers.
 
 /**
- * Parser strategy for `Box<T>` in upstream. Kotlin has no Box type but a
+ * Parser strategy for a boxed result in upstream. Kotlin has no box type but a
  * `Parse<T>.boxed()` extension keeps callers source-compatible with
  * upstream-shaped sites that wrap a parsed node.
  */
@@ -379,7 +379,7 @@ private fun spanOfUnexpectedIgnoringNones(initial: Cursor): Pair<Span, Delimiter
 public fun <T : Any> Parse<T>.boxed(): Parse<T> = this
 
 /**
- * Parser strategy for `Option<T>` in upstream — emits a `null` rather than
+ * Parser strategy for an optional result in upstream — emits a `null` rather than
  * an error if the peek target does not match.
  */
 @HiddenFromObjC
@@ -447,14 +447,14 @@ public object LiteralParse : Parse<Literal> {
 }
 
 /**
- * Parser that can parse Rust tokens into a particular syntax tree node.
+ * Parser that can parse tokens into a particular syntax tree node.
  *
  * Refer to the module documentation for details about parsing in Syn.
  */
 @HiddenFromObjC
 public interface Parser<T> {
  /**
- * Parse a proc-macro2 token stream into the chosen syntax tree node.
+ * Parse a procmacro2 token stream into the chosen syntax tree node.
  *
  * This function enforces that the input is fully parsed. If there are any
  * unparsed tokens at the end of the stream, an error is returned.
@@ -479,7 +479,7 @@ public interface Parser<T> {
  )
 
  /**
- * Not public API. Used by `parseMacroInput!` to attach the scope span of
+ * Not public API. Used by [parseMacroInput] to attach the scope span of
  * the macro invocation site to error spans.
  */
  public fun parseScopedImpl(scope: Span, tokens: TokenStream): SynResult<T> = parse2(tokens)
@@ -494,9 +494,8 @@ private fun tokensToParseBuffer(tokens: TokenBuffer): ParseBuffer {
 
 /**
  * Adapts a parser closure `(ParseStream) -> SynResult<T>` into a [Parser]
- * implementation. The upstream spelling is a blanket implementation
- * Parser for F where F: FnOnce(ParseStream) -> SynResult<T>` — Kotlin has no
- * blanket implementations so this helper performs the same wrapping explicitly.
+ * implementation. The upstream uses a universal adapter that wraps any parser
+ * function — Kotlin has no such language feature so this helper performs the same wrapping explicitly.
  */
 @HiddenFromObjC
 public fun <T> parserFromFunction(function: (ParseStream) -> SynResult<T>): Parser<T> = object : Parser<T> {
@@ -561,7 +560,7 @@ public object Nothing : Parse<Nothing> {
 }
 
 //Top-level parsing entry points. The upstream spelling of these lives
-//in [lib.rs] (`parse`, `parse2`, `parseStr`); see
+//in the upstream root module; see
 //[Lib.kt] when that file is ported. Provided here as a convenience while
 //downstream ports compile against the parse infrastructure.
 

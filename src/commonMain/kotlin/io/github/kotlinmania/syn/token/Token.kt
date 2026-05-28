@@ -15,7 +15,7 @@ import io.github.kotlinmania.quote.append
 import io.github.kotlinmania.syn.intoDelimSpan
 
 /**
- * Tokens representing Rust punctuation, keywords, and delimiters.
+ * Tokens representing punctuation, keywords, and delimiters.
  *
  * The type names in this package can be difficult to keep straight, so callers
  * usually use the root token facade when constructing syntax tree fields.
@@ -599,7 +599,7 @@ class Try private constructor(span: Span) : KeywordToken(span) {
  }
 }
 /**
- * The Rust `type` keyword token.
+ * The `type` keyword token.
  *
  * Named `SynTypeToken` to avoid colliding with Swift's built-in `Type`
  * metatype expression (`foo.Type`), which the Swift compiler rejects

@@ -12,22 +12,22 @@ import io.github.kotlinmania.procmacro2.TokenTree
 
 //Extension functions to provide parsing methods on foreign types.
 //
-//The upstream defines IdentExt, TokenStreamExt, and PunctExt traits
+//The upstream defines IdentExt, TokenStreamExt, and PunctExt interfaces
 //each with a single implementation block. Kotlin has top-level
-//extension functions that achieve the same call-site shape without the trait
+//extension functions that achieve the same call-site shape without the interface
 //indirection.
 
-//Additional methods for [Ident] not provided by proc-macro2 or proc-macro.
+//Additional methods for [Ident] not provided by procmacro2.
 //
-//In the upstream codebase these methods sit on the `IdentExt` trait sealed inside the
-//`syn` crate. Kotlin exposes them as extension functions on
+//In the upstream codebase these methods sit on the `IdentExt` interface sealed inside the
+//the syn library. Kotlin exposes them as extension functions on
 //[io.github.kotlinmania.procmacro2.Ident]; sealing semantics are
 //inapplicable.
 
 /**
  * Parses any identifier including keywords.
  *
- * This is useful when parsing macro input which allows Rust keywords as
+ * This is useful when parsing macro input which allows keywords as
  * identifiers.
  *
  * # Example
@@ -62,7 +62,7 @@ public fun identParseAny(input: ParseStream): SynResult<Ident> =
  * Peek any identifier including keywords. Usage: `input.peek(IdentPeekAny)`.
  *
  * This is different from `input.peek(Ident)` which only returns true in the
- * case of an ident which is not a Rust keyword.
+ * case of an ident which is not a keyword.
  */
 public object IdentPeekAny : Peek {
  override fun peek(cursor: Cursor): Boolean = cursor.ident() != null
@@ -79,9 +79,9 @@ public object IdentPeekAny : Peek {
  * # Example
  *
  * In the case of interop with other languages like Python that have a
- * different set of keywords than Rust, we might come across macro input that
+ * different set of keywords, we might come across macro input that
  * involves raw identifiers to refer to ordinary variables in the other
- * language with a name that happens to be a Rust keyword.
+ * language with a name that happens to be a keyword.
  *
  * The function below appends an identifier from the caller's input onto a
  * fixed prefix. Without using `unraw()`, this would tend to produce invalid
@@ -106,7 +106,7 @@ public fun Ident.unraw(): Ident {
 /**
  * Appends a single [TokenTree] onto a [TokenStream].
  *
- * The upstream codebase declares this on `TokenStreamExt` trait; here it
+ * The upstream codebase declares this on the `TokenStreamExt` interface; here it
  * is an extension function with the same call-site shape. Mirrors the
  * `append` extension provided in quote-kotlin.
  */
@@ -117,7 +117,7 @@ internal fun TokenStream.appendTokenTree(token: TokenTree) {
 /**
  * Constructs a [Punct] with the given character, spacing, and span.
  *
- * The upstream codebase declares this on `PunctExt` trait; here it is a
+ * The upstream codebase declares this on the `PunctExt` interface; here it is a
  * companion-equivalent helper on [Punct].
  */
 internal fun punctNewSpanned(ch: Char, spacing: Spacing, span: Span): Punct {

@@ -2,11 +2,11 @@
 package io.github.kotlinmania.syn
 
 /**
- * Skips leading whitespace and Rust-style comments from [input]. Returns the
+ * Skips leading whitespace and comments in the parsed language from [input]. Returns the
  * remaining suffix of the input after the skip.
  *
- * Mirrors `(crate) fun skip(s: &str) -> &str` from upstream
- * whitespace.rs — the slice-returning upstream idiom translates to returning the
+ * Mirrors the upstream `skip` function from
+ * the upstream whitespace module — the slice-returning upstream idiom translates to returning the
  * suffix substring.
  */
 internal fun skipWhitespace(input: String): String {
@@ -74,6 +74,6 @@ internal fun skipWhitespace(input: String): String {
 }
 
 private fun isWhitespaceRust(ch: Char): Boolean {
- //Rust treats left-to-right mark and right-to-left mark as whitespace
+ //The upstream parser treats left-to-right mark and right-to-left mark as whitespace
  return ch.isWhitespace() || ch == '‎' || ch == '‏'
 }

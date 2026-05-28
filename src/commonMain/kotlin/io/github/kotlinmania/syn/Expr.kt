@@ -42,13 +42,13 @@ public sealed class Expr : ToTokens {
  public abstract fun deepCopy(): Expr
 }
 
-/** A member of a struct or tuple. */
+/** A member of a data structure or tuple. */
 public sealed class Member {
  public data class Named(val ident: Ident) : Member()
  public data class Unnamed(val index: Index) : Member()
 }
 
-/** A tuple field index such as `0` in `self.0`. */
+/** A tuple field index such as `0` in `obj.0`. */
 public data class Index(
  public val index: UInt,
  public val span: Span,

@@ -12,7 +12,7 @@ import io.github.kotlinmania.quote.toTokens
 import io.github.kotlinmania.quote.append
 import kotlin.native.HiddenFromObjC
 
-/** A Rust literal such as a string or integer or boolean. */
+/** A literal such as a string or integer or boolean. */
 public sealed class Lit {
  public data class Str(val value: LitStr) : Lit()
  public data class ByteStr(val value: LitByteStr) : Lit()

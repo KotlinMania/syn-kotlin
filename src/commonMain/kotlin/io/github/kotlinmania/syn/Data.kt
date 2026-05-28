@@ -28,7 +28,7 @@ public data class Variant(
  public val discriminant: Pair<Eq, Expr>?,
 )
 
-/** Data stored within an enum variant or struct. */
+/** Data stored within an enum variant or data structure. */
 public sealed class Fields : Iterable<Field> {
  public data class Named(val fields: FieldsNamed) : Fields()
  public data class Unnamed(val fields: FieldsUnnamed) : Fields()
@@ -63,19 +63,19 @@ public sealed class Fields : Iterable<Field> {
  }
 }
 
-/** Named fields of a struct or struct variant such as `Point { x: f64, y: f64 }`. */
+/** Named fields of a data structure such as `Point { x: f64, y: f64 }`. */
 public data class FieldsNamed(
  public val braceToken: Brace,
  public val named: Punctuated<Field, Comma>,
 )
 
-/** Unnamed fields of a tuple struct or tuple variant such as `Some(T)`. */
+/** Unnamed fields of a tuple-style data structure such as `Some(T)`. */
 public data class FieldsUnnamed(
  public val parenToken: Paren,
  public val unnamed: Punctuated<Field, Comma>,
 )
 
-/** A field of a struct or enum variant. */
+/** A field of a data class or enum variant. */
 public data class Field(
  public val attrs: List<Attribute>,
  public val vis: Visibility,
@@ -100,7 +100,7 @@ public data class DeriveInput(
  public val data: Data,
 )
 
-/** The storage of a struct, enum or union data structure. */
+/** The storage of an enum, struct-like, or union data structure. */
 public sealed class Data {
  public data class Struct(val value: DataStruct) : Data() {
  public val fields: Fields get() = value.fields
@@ -115,7 +115,7 @@ public sealed class Data {
  }
 }
 
-/** A struct input to a derive macro. */
+/** A struct-like input to a derive macro. */
 public data class DataStruct(
  public val structToken: io.github.kotlinmania.syn.token.Struct,
  public val fields: Fields,

@@ -17,15 +17,15 @@ import io.github.kotlinmania.quote.append
 //cheaply copyable cursor.
 
 //This module is heavily commented as it contains most of the platform-specific code in
-//Syn, and caution should be used when editing it. The public-facing interface
-//is 100% safe but the implementation is fragile internally.
+//Syn, and caution should be used when editing it. The public-facing API
+//has no memory-safety concerns but the implementation is fragile internally.
 
 /**
  * Internal type which is used instead of [TokenTree] to represent a token tree
  * within a [TokenBuffer].
  */
 internal sealed class Entry {
- //Mimicking types from proc-macro.
+ //Mimicking types from procmacro2.
  //Group entries contain the offset to the matching End entry.
  class GroupEntry(val group: Group, val endOffset: Int) : Entry()
  class IdentEntry(val ident: Ident) : Entry()
@@ -105,9 +105,9 @@ public class Cursor internal constructor(
  internal val scope: Int,
 ) {
  public companion object {
- //It's safe in this situation for us to put an [Entry] object in global
- //storage, despite the upstream note about thread-locality
- //(`Ident` was a reference into a thread-local table). This is because
+ //It is fine in this situation for us to put an [Entry] object in global
+ //storage, despite the upstream note about thread confinement
+ //(Ident was a pointer into a thread-confined table). This is because
  //this entry never includes an `Ident` object.
  private val EMPTY_ENTRIES: Array<Entry> = arrayOf(Entry.End(0, 0))
 
