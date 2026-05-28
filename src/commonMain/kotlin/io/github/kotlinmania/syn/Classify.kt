@@ -23,5 +23,6 @@ internal object Classify {
    is Expr.Lit -> true
    is Expr.Path -> true
    is Expr.Verbatim -> true
+   else -> false
   }
 }

@@ -16,6 +16,8 @@ import kotlin.native.HiddenFromObjC
  */
 @HiddenFromObjC
 public sealed class Pat : ToTokens {
+ public abstract fun deepCopy(): Pat
+
  /** A pattern that binds a new variable, optionally with a reference, mutability, and sub-pattern. */
  public data class Ident(
   public val attrs: List<Attribute>,
@@ -25,6 +27,8 @@ public sealed class Pat : ToTokens {
   public val atToken: io.github.kotlinmania.syn.token.At?,
   public val subpat: Pat?,
  ) : Pat() {
+  override fun deepCopy(): Pat = copy(attrs = attrs.map { it.deepCopy() })
+
   override fun toTokens(tokens: TokenStream) {
    for (attr in attrs) attr.toTokens(tokens)
    byRef?.toTokens(tokens)
@@ -40,6 +44,8 @@ public sealed class Pat : ToTokens {
   public val parenToken: io.github.kotlinmania.syn.token.Paren,
   public val elems: Punctuated<Pat, Comma>,
  ) : Pat() {
+  override fun deepCopy(): Pat = copy(elems = elems.copy({ it.deepCopy() }, { it }))
+
   override fun toTokens(tokens: TokenStream) {
    parenToken.surround(tokens) { inner ->
     for ((elem, comma) in elems.pairs()) {
@@ -55,6 +61,8 @@ public sealed class Pat : ToTokens {
   public val leadingVert: Or?,
   public val cases: Punctuated<Pat, Or>,
  ) : Pat() {
+  override fun deepCopy(): Pat = copy(cases = cases.copy({ it.deepCopy() }, { it }))
+
   override fun toTokens(tokens: TokenStream) {
    leadingVert?.toTokens(tokens)
    for ((case, vert) in cases.pairs()) {
@@ -69,6 +77,8 @@ public sealed class Pat : ToTokens {
   public val parenToken: io.github.kotlinmania.syn.token.Paren,
   public val pat: Pat,
  ) : Pat() {
+  override fun deepCopy(): Pat = copy(pat = pat.deepCopy())
+
   override fun toTokens(tokens: TokenStream) {
    parenToken.surround(tokens) { inner -> pat.toTokens(inner) }
   }
@@ -80,6 +90,8 @@ public sealed class Pat : ToTokens {
   public val mutability: FieldMutability,
   public val pat: Pat,
  ) : Pat() {
+  override fun deepCopy(): Pat = copy(andToken = andToken, mutability = mutability, pat = pat.deepCopy())
+
   override fun toTokens(tokens: TokenStream) {
    andToken.toTokens(tokens)
    mutability.toTokens(tokens)
@@ -96,6 +108,8 @@ public sealed class Pat : ToTokens {
   public val rest: PatRest?,
   public val dot2Token: io.github.kotlinmania.syn.token.DotDot?,
  ) : Pat() {
+  override fun deepCopy(): Pat = copy(qself = qself, path = path.deepCopy(), fields = fields.copy({ it.deepCopy() }, { it }), rest = rest?.deepCopy(), dot2Token = dot2Token)
+
   override fun toTokens(tokens: TokenStream) {
    qself?.let { it.ltToken.toTokens(tokens); it.ty.toTokens(tokens); it.asToken?.toTokens(tokens); it.gtToken.toTokens(tokens) }
    path.toTokens(tokens)
@@ -115,6 +129,8 @@ public sealed class Pat : ToTokens {
   public val bracketToken: io.github.kotlinmania.syn.token.Bracket,
   public val elems: Punctuated<Pat, Comma>,
  ) : Pat() {
+  override fun deepCopy(): Pat = copy(elems = elems.copy({ it.deepCopy() }, { it }))
+
   override fun toTokens(tokens: TokenStream) {
    bracketToken.surround(tokens) { inner ->
     for ((elem, comma) in elems.pairs()) {
@@ -131,6 +147,8 @@ public sealed class Pat : ToTokens {
   public val colonToken: Colon,
   public val ty: SynType,
  ) : Pat() {
+  override fun deepCopy(): Pat = copy(pat = pat.deepCopy(), ty = ty.deepCopy())
+
   override fun toTokens(tokens: TokenStream) {
    pat.toTokens(tokens)
    colonToken.toTokens(tokens)
@@ -142,6 +160,8 @@ public sealed class Pat : ToTokens {
  public data class Verbatim(
   public val tokens: TokenStream,
  ) : Pat() {
+  override fun deepCopy(): Pat = this
+
   override fun toTokens(tokens: TokenStream) {
    tokens.extendTokenStreams(listOf(tokens))
   }
@@ -159,6 +179,8 @@ public data class FieldPat(
   colonToken?.toTokens(tokens)
   pat.toTokens(tokens)
  }
+
+ public fun deepCopy(): FieldPat = FieldPat(member, colonToken, pat.deepCopy())
 }
 
 /** The `..` in a struct pattern. */
@@ -168,4 +190,6 @@ public data class PatRest(
  override fun toTokens(tokens: TokenStream) {
   dot2Token?.toTokens(tokens)
  }
+
+ public fun deepCopy(): PatRest = this
 }

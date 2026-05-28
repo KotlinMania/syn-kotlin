@@ -24,6 +24,8 @@ public data class Block(
    for (stmt in stmts) stmt.toTokens(inner)
   }
  }
+
+ public fun deepCopy(): Block = Block(braceToken, stmts.map { it.deepCopy() })
 }
 
 /**
@@ -31,6 +33,8 @@ public data class Block(
  */
 @HiddenFromObjC
 public sealed class Stmt : ToTokens {
+ public abstract fun deepCopy(): Stmt
+
  /** A local binding. */
  public data class Local(
   public val attrs: List<Attribute>,
@@ -46,6 +50,8 @@ public sealed class Stmt : ToTokens {
    init?.toTokens(tokens)
    semiToken.toTokens(tokens)
   }
+
+  override fun deepCopy(): Local = Local(attrs.map { it.deepCopy() }, letToken, pat.deepCopy(), init?.deepCopy(), semiToken)
  }
 
  /** An item definition. */
@@ -55,6 +61,8 @@ public sealed class Stmt : ToTokens {
   override fun toTokens(tokens: TokenStream) {
    item.toTokens(tokens)
   }
+
+  override fun deepCopy(): ItemStmt = ItemStmt(item)
  }
 
 
@@ -67,6 +75,8 @@ public sealed class Stmt : ToTokens {
    expr.toTokens(tokens)
    semiToken?.toTokens(tokens)
   }
+
+  override fun deepCopy(): ExprStmt = ExprStmt(expr.deepCopy(), semiToken)
  }
 
  /** A macro invocation in statement position. */
@@ -80,6 +90,8 @@ public sealed class Stmt : ToTokens {
    mac.toTokens(tokens)
    semiToken?.toTokens(tokens)
   }
+
+  override fun deepCopy(): MacroStmt = MacroStmt(attrs.map { it.deepCopy() }, mac.deepCopy(), semiToken)
  }
 }
 
@@ -100,4 +112,6 @@ public data class LocalInit(
    divergeExpr.toTokens(tokens)
   }
  }
+
+ public fun deepCopy(): LocalInit = LocalInit(eqToken, expr.deepCopy(), diverge?.let { (elseToken, divergeExpr) -> elseToken to divergeExpr.deepCopy() })
 }
