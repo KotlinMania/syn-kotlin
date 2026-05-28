@@ -348,7 +348,7 @@ public class Cursor internal constructor(
  * Skip over the next token that is not a [Delimiter.None]-delimited group,
  * without cloning it. Returns null if this cursor points to eof.
  *
- * This method treats `lifetimes` as a single token.
+ * This method treats named durations as a single token.
  */
  internal fun skip(): Cursor? {
  val c = ignoreNone()
@@ -357,7 +357,7 @@ public class Cursor internal constructor(
  val len = when {
  e is Entry.End -> return null
 
- //Treat lifetimes as a single tt for the purposes of `skip`.
+ //Treat named durations as a single tt for the purposes of `skip`.
  e is Entry.PunctEntry && e.punct.asChar() == '\'' && e.punct.spacing() == Spacing.Joint -> {
  if (c.entries[c.index + 1] is Entry.IdentEntry) 2 else 1
  }

@@ -27,13 +27,13 @@ import kotlin.native.HiddenFromObjC
  * import io.github.kotlinmania.syn.parse.ParseStream
  *
  * // A generic parameter, a single one of the comma-separated elements inside
- * // angle brackets in:
+ * * // angle brackets in:
  * //
- * // fun f<T : Clone, a, b : T, const N : usize>() { ... }
+ * * // fun f<T : Clone, L, U : T, const N : USize>() { ... }
  * //
  * // On invalid input, lookahead gives us a reasonable error message.
  * //
- * // error: expected one of: identifier, lifetime, `const`
+ * * // error: expected one of: identifier, namedDuration, `const`
  * sealed class GenericParam {
  * data class Type(val inner: TypeParam) : GenericParam()
  * data class Lifetime(val inner: LifetimeParam) : GenericParam()
