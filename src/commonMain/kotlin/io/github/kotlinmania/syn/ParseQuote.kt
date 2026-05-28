@@ -42,7 +42,7 @@ import kotlin.native.HiddenFromObjC
  * - [Punctuated] — parses zero or more T separated by punctuation P with
  *   optional trailing punctuation
  * - `List<Arm>` — parses arms separated by optional commas according to the
- *   same grammar as the inside of a `match` expression
+ *   same grammar as the body of a pattern-matching expression
  * - `List<Stmt>` — parses the same as `Block.parseWithin`
  * - `Pat` — parses the same as `Pat.parseMultiWithLeadingVert`
  * - `Field` — parses a named or unnamed data class field

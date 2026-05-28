@@ -98,7 +98,7 @@ public sealed class Item : ToTokens {
   }
  }
 
- /** A struct definition. */
+ /** A data class definition. */
  public data class Struct(
   public val attrs: List<Attribute>,
   public val vis: Visibility,

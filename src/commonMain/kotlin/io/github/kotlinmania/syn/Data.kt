@@ -157,7 +157,7 @@ public data class DeriveInput(
  }
 }
 
-/** The storage of an enum, struct-like, or union data structure. */
+/** The storage of an enum-like, data-class-like, or union data structure. */
 public sealed class Data : ToTokens {
  public data class Struct(val value: DataStruct) : Data() {
  public val fields: Fields get() = value.fields
@@ -181,7 +181,7 @@ public sealed class Data : ToTokens {
  }
 }
 
-/** A struct-like input to a derive macro. */
+/** A data-class-like input to a derive macro. */
 public data class DataStruct(
  public val structToken: io.github.kotlinmania.syn.token.Struct,
  public val fields: Fields,

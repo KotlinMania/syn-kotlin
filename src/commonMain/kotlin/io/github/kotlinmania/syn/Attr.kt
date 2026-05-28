@@ -137,5 +137,3 @@ private fun nestedMetaPaths(tokens: TokenStream): List<Path> =
  visit(tokens)
  }
 
-public typealias MetaList = Meta.List
-public typealias MetaNameValue = Meta.NameValue

@@ -11,7 +11,7 @@ import io.github.kotlinmania.quote.toTokens
 import kotlin.native.HiddenFromObjC
 
 /**
- * A pattern in a local binding, function signature, match expression, or
+ * A pattern in a local binding, function signature, pattern-matching expression, or
  * various other places.
  */
 @HiddenFromObjC
@@ -99,7 +99,7 @@ public sealed class Pat : ToTokens {
   }
  }
 
- /** A struct pattern: `Point { x: 0, y: 0 }`. */
+ /** A data-object pattern. */
  public data class Struct(
   public val qself: QSelf?,
   public val path: Path,
@@ -168,7 +168,7 @@ public sealed class Pat : ToTokens {
  }
 }
 
-/** A field in a struct pattern. */
+/** A field in a data-object pattern. */
 public data class FieldPat(
  public val member: Member,
  public val colonToken: Colon?,
@@ -183,7 +183,7 @@ public data class FieldPat(
  public fun deepCopy(): FieldPat = FieldPat(member, colonToken, pat.deepCopy())
 }
 
-/** The `..` in a struct pattern. */
+/** The rest pattern in a data-object pattern. */
 public data class PatRest(
  public val dot2Token: io.github.kotlinmania.syn.token.DotDot?,
 ) : ToTokens {

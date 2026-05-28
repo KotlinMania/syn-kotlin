@@ -6,11 +6,8 @@ import io.github.kotlinmania.syn.*
 /**
  * AST mutable-visitor trait — walks a syntax tree and can mutate nodes in place.
  *
- * In Rust syn, `gen/visit_mut.rs` is a code-generated module that implements
- * `VisitMut` for every syntax tree type, recursively descending into and
- * potentially rewriting child nodes. Kotlin data classes provide `copy()`
- * for immutable mutation, and sealed hierarchies support `deepCopy()` for
- * deep cloning.
+ * Kotlin data classes provide `copy()` for immutable mutation, and sealed
+ * hierarchies support `deepCopy()` for deep cloning.
  *
  * This `VisitMut` interface provides a mutable-visitor-style API. Override
  * methods to intercept and rewrite specific node types.

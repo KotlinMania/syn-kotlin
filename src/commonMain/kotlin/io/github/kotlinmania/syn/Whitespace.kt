@@ -58,7 +58,7 @@ internal fun skipWhitespace(input: String): String {
                 // fall through to return
             }
             else -> {
-                if (isWhitespaceRust(byte)) {
+                if (isWhitespaceChar(byte)) {
                     s = s.substring(byte.toString().length)
                     continue
                 }
@@ -69,12 +69,12 @@ internal fun skipWhitespace(input: String): String {
     return s
 }
 
-private fun isWhitespaceRust(ch: Char): Boolean {
+private fun isWhitespaceChar(ch: Char): Boolean {
     return ch.isWhitespace() || ch == '\u200E' || ch == '\u200F'
 }
 
 /**
- * Returns whether the character is considered whitespace by Rust rules.
+ * Returns whether the character is considered whitespace.
  * Includes left-to-right mark and right-to-left mark.
  */
-public fun charIsWhitespace(ch: Char): Boolean = isWhitespaceRust(ch)
+public fun charIsWhitespace(ch: Char): Boolean = isWhitespaceChar(ch)

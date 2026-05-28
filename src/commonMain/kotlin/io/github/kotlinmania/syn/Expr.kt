@@ -214,7 +214,7 @@ public sealed class Expr : ToTokens {
   override fun deepCopy(): Continue = Continue(attrs.map { it.deepCopy() }, continueToken, label?.deepCopy())
  }
 
- /** Access of a named struct field (`obj.k`) or unnamed tuple struct field (`obj.0`). */
+ /** Access of a named field of a data class (`obj.k`) or indexed element of a tuple-like compound (`obj.0`). */
  public data class Field(
   public val attrs: List<Attribute>,
   public val base: Expr,
@@ -454,7 +454,7 @@ public sealed class Expr : ToTokens {
   override fun deepCopy(): Range = Range(attrs.map { it.deepCopy() }, start?.deepCopy(), limits, end?.deepCopy())
  }
 
- /** A referencing operation: `&a` or `&mut a`. */
+ /** A referencing operation. */
  public data class Reference(
   public val attrs: List<Attribute>,
   public val andToken: io.github.kotlinmania.syn.token.And,
@@ -503,7 +503,7 @@ public sealed class Expr : ToTokens {
   override fun deepCopy(): Return = Return(attrs.map { it.deepCopy() }, returnToken, expr?.deepCopy())
  }
 
- /** A struct literal expression: `Point { x: 1, y: 1 }`. */
+ /** A data-object initialization expression. */
  public data class Struct(
   public val attrs: List<Attribute>,
   public val qself: QSelf?,
@@ -594,7 +594,7 @@ public sealed class Expr : ToTokens {
   override fun deepCopy(): Unary = Unary(attrs.map { it.deepCopy() }, op, expr.deepCopy())
  }
 
- /** An unsafe block: `unsafe { ... }`. */
+ /** An unsafe block expression. */
  public data class Unsafe(
   public val attrs: List<Attribute>,
   public val unsafeToken: io.github.kotlinmania.syn.token.Unsafe,
@@ -675,7 +675,7 @@ public data class Index(
  }
 }
 
-/** A field-value pair in a struct literal. */
+/** A field-value pair in a data-object initialization. */
 public data class FieldValue(
  public val attrs: List<Attribute>,
  public val member: Member,
@@ -691,7 +691,7 @@ public data class FieldValue(
  public fun deepCopy(): FieldValue = FieldValue(attrs.map { it.deepCopy() }, member, colonToken, expr.deepCopy())
 }
 
-/** A lifetime labeling a `for`, `while`, or `loop`. */
+/** A label on a `for`, `while`, or `loop`. */
 public data class Label(
  public val name: Lifetime,
  public val colonToken: io.github.kotlinmania.syn.token.Colon,
