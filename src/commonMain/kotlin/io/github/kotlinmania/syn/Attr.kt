@@ -97,6 +97,14 @@ public data class ParseNestedMeta(
  public fun value(): TokenStream =
  input
 
+ /** Reports an error spanning from the path to the current position. */
+ public fun error(msg: String): SynError {
+ val startSpan = path.segments.firstOrNull()?.ident?.span()
+ ?: io.github.kotlinmania.procmacro2.Span.callSite()
+ val endSpan = io.github.kotlinmania.procmacro2.Span.callSite()
+ return SynError.newAt(startSpan, endSpan, msg)
+ }
+
  @HiddenFromObjC
  public fun parseNestedMeta(logic: (ParseNestedMeta) -> SynResult<Unit>): SynResult<Unit> =
  parseNestedMetaTokens(input, logic)
