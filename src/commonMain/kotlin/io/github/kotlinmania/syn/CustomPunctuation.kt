@@ -49,3 +49,61 @@ public abstract class CustomPunctuation : ToTokens {
             }
     }
 }
+
+
+/**
+ * Creates a [Peek] and [Parse] pair for a custom multi-character punctuation
+ * sequence.
+ *
+ * In Rust, `custom_punctuation!` is a macro that defines data classes for
+ * specific punctuation sequences like `<-`, `=>`, `||`, etc. In Kotlin,
+ * this function provides a dynamic mechanism to peek and parse arbitrary
+ * punctuation sequences.
+ *
+ * @param chars The character sequence for this punctuation (e.g., "<=>").
+ * @return A pair of [Peek] and [Parse] implementations for this punctuation.
+ */
+public fun customPunctuation(chars: String): Pair<Peek, Parse<CustomPunctuation>> {
+    val peek = CustomPunctuationPeek(chars)
+    val parse = CustomPunctuationParse(chars)
+    return peek to parse
+}
+
+/** Peek implementation for a custom punctuation sequence. */
+internal class CustomPunctuationPeek(private val chars: String) : Peek {
+    override fun peek(cursor: Cursor): Boolean {
+        var current = cursor
+        for ((i, ch) in chars.withIndex()) {
+            val pair = current.punct() ?: return false
+            val punct = pair.first
+            val next = pair.second
+            if (punct.asChar() != ch) return false
+            if (i < chars.length - 1 && punct.spacing() != io.github.kotlinmania.procmacro2.Spacing.Joint) return false
+            current = next
+        }
+        return true
+    }
+    override fun display(): String = "`$chars`"
+}
+
+/** Parse implementation for a custom punctuation sequence. */
+internal class CustomPunctuationParse(private val chars: String) : Parse<CustomPunctuation> {
+    override fun parse(input: ParseStream): SynResult<CustomPunctuation> =
+        input.step { cursor ->
+            val spans = mutableListOf<io.github.kotlinmania.procmacro2.Span>()
+            var current = cursor.raw
+            for ((i, ch) in chars.withIndex()) {
+                val pair = current.punct()
+                    ?: return@step SynResult.failure(cursor.error("expected `$chars`"))
+                val punct = pair.first
+                val next = pair.second
+                if (punct.asChar() != ch) return@step SynResult.failure(cursor.error("expected `$chars`"))
+                if (i < chars.length - 1 && punct.spacing() != io.github.kotlinmania.procmacro2.Spacing.Joint) {
+                    return@step SynResult.failure(cursor.error("expected `$chars`"))
+                }
+                spans.add(punct.span())
+                current = next
+            }
+            SynResult.success(CustomPunctuation.fromSpans(chars, spans) to current)
+        }
+}

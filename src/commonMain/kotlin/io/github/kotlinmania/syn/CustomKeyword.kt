@@ -40,3 +40,30 @@ public class CustomKeywordParse(private val name: String) : Parse<Ident> {
             SynResult.success(Ident.new(name, ident.span()) to rest)
         }
 }
+
+
+/**
+ * Reserved keywords in Rust that cannot be used as identifiers.
+ *
+ * This set includes all strict and reserved keywords from the Rust
+ * reference. When parsing macro input, these may appear as identifiers
+ * and should be accepted by [identParseAny] but rejected by [IdentParse].
+ */
+public val RESERVED_KEYWORDS: Set<String> = setOf(
+    "as", "break", "const", "continue", "crate", "else", "enum", "extern",
+    "false", "fn", "for", "if", "impl", "in", "let", "loop", "match",
+    "mod", "move", "mut", "pub", "ref", "return", "self", "Self",
+    "static", "struct", "super", "trait", "true", "type", "unsafe",
+    "use", "where", "while",
+    // Reserved keywords
+    "abstract", "async", "await", "become", "box", "do", "final",
+    "macro", "override", "priv", "try", "typeof", "unsized", "virtual", "yield"
+)
+
+/**
+ * Weak keywords that have special meaning in some contexts but can be
+ * used as identifiers in others.
+ */
+public val WEAK_KEYWORDS: Set<String> = setOf(
+    "_", "dyn", "macro_rules", "union"
+)
