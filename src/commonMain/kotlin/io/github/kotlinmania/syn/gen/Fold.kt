@@ -4,7 +4,7 @@ package io.github.kotlinmania.syn.gen
 import io.github.kotlinmania.syn.*
 
 /**
- * AST fold trait — traverses a syntax tree and can rewrite every node.
+ * AST fold — traverses a syntax tree and can rewrite every node.
  *
  * Kotlin sealed classes and data classes provide `copy()` and `deepCopy()`
  * as idiomatic alternatives; this file provides the companion `deepCopy`

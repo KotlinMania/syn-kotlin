@@ -14,7 +14,7 @@ import io.github.kotlinmania.procmacro2.Delimiter
  * Extensions to the [ParseStream] API to support speculative parsing.
  *
  * The `Speculative` interface with a single
- * `advanceTo` method, implemented by `ParseBuffer<T>`. In Kotlin the
+ * `advanceTo` method, implemented by `ParseBuffer<T>`. The
  * functionality is exposed as an extension function on [ParseBuffer] for the
  * same call-site ergonomics.
  *

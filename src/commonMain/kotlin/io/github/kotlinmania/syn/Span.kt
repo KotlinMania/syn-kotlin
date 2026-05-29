@@ -14,13 +14,10 @@ import kotlin.native.HiddenFromObjC
  * Converts a single span or a list of spans into the shape required by
  * multi-span token constructors.
  *
- * In the upstream Rust crate, `IntoSpans` is a trait with implementations for
- * `Span`, `[Span; 1]`, `[Span; 2]`, `[Span; 3]`, and `DelimSpan`. In Kotlin
- * this becomes a set of top-level extension functions because Kotlin has no
- * type-level integer generics for array sizes.
- *
- * The `S` type parameter is phantom — it carries no runtime data, but
- * constrains which conversion is available at the call site.
+ * The `IntoSpans` interface provides type-safe conversion from spans and span
+ * lists into the shapes required by multi-span token constructors. Extension
+ * functions on [Span], [List<Span>], and [DelimSpan] satisfy each supported
+ * arity at the call site.
  */
 @HiddenFromObjC
 public interface IntoSpans<out S> {

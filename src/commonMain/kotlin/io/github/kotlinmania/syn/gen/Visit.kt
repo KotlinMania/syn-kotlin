@@ -4,7 +4,7 @@ package io.github.kotlinmania.syn.gen
 import io.github.kotlinmania.syn.*
 
 /**
- * AST visitor trait — walks a syntax tree without mutating it.
+ * AST visitor — walks a syntax tree without mutating it.
  *
  * Kotlin sealed classes let you achieve the same with exhaustive `when`
  * expressions on each sealed hierarchy.

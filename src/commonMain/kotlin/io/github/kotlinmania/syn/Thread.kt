@@ -8,9 +8,7 @@ import kotlin.native.HiddenFromObjC
 /**
  * A container that binds a value to the thread on which it was created.
  *
- * Kotlin has no thread-bound ownership model, so this is a straightforward
- * wrapper that always returns its value. The thread-check is omitted because
- * Kotlin's memory model does not require it.
+ * Always returns its value. Thread-affinity checks are not needed in Kotlin.
  */
 @HiddenFromObjC
 public class ThreadBound<T> private constructor(

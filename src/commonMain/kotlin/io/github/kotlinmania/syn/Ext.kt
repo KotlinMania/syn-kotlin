@@ -14,8 +14,8 @@ import io.github.kotlinmania.procmacro2.TokenTree
  * Extension functions to provide parsing methods on foreign types.
  *
  * Defines IdentExt, TokenStreamExt, and PunctExt interfaces
- * each with a single implementation block. Kotlin has top-level
- * extension functions that achieve the same call-site shape without the interface
+ * each with a single implementation block. Top-level
+ * extension functions achieve the same call-site shape without the interface
  * indirection.
  */
 
