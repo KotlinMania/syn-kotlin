@@ -4,7 +4,11 @@
 package io.github.kotlinmania.syn
 
 import io.github.kotlinmania.procmacro2.Delimiter
+import io.github.kotlinmania.procmacro2.Spacing
 import io.github.kotlinmania.procmacro2.Span
+import io.github.kotlinmania.syn.token.Brace
+import io.github.kotlinmania.syn.token.Bracket
+import io.github.kotlinmania.syn.token.Paren
 import kotlin.native.HiddenFromObjC
 
 /**
@@ -30,15 +34,11 @@ public class Lookahead1 internal constructor(
 	 * Looks at the next token in the parse stream to determine whether it
 	 * matches the requested type of token.
 	 *
-	 * # Syntax
-	 *
-	 * Pass the peek target.
-	 *
-	 * - `input.peek(StructKw)`
-	 * - `input.peek(EqEq)`
-	 * - `input.peek(Ident)` *(does not accept keywords)*
-	 * - `input.peek(Lifetime)`
-	 * - `input.peek(Brace)`
+	 * Pass the peek target:
+	 * - `input.peek(IdentPeek)`
+	 * - `input.peek(CommaPeek)`
+	 * - `input.peek(BracePeek)`
+	 * - `input.peek(LifetimePeek)`
 	 */
 	public fun peek(token: Peek): Boolean {
 		if (token.peek(cursor)) {
@@ -81,6 +81,9 @@ public class Lookahead1 internal constructor(
 			else -> errorNewAt(scope, cursor, "expected one of: ${pruned.joinToString(", ")}")
 		}
 	}
+
+	public fun toString(): String =
+		comparisons.joinToString(", ", "Lookahead1[", "]")
 }
 
 internal fun lookahead1New(scope: Span, cursor: Cursor): Lookahead1 = Lookahead1(scope, cursor)
@@ -107,8 +110,6 @@ public sealed interface Peek : Lookahead.Sealed {
  * This type is only useful as an argument to one of the following functions:
  *
  * - [ParseBuffer.peek]
- * - [ParseBuffer.peek2]
- * - [ParseBuffer.peek3]
  * - [Lookahead1.peek]
  *
  * The peek will return true if there are no remaining tokens after that
@@ -116,7 +117,76 @@ public sealed interface Peek : Lookahead.Sealed {
  */
 public object End : Peek {
 	override fun peek(cursor: Cursor): Boolean = cursor.eof()
-	override fun display(): String = "`)`"
+	override fun display(): String = "end of input"
+}
+
+/** Peek for an opening brace `{`. */
+@HiddenFromObjC
+public object BracePeek : Peek {
+	override fun peek(cursor: Cursor): Boolean =
+		cursor.group(Delimiter.Brace) != null
+	override fun display(): String = "`{`"
+}
+
+/** Peek for an opening bracket `[`. */
+@HiddenFromObjC
+public object BracketPeek : Peek {
+	override fun peek(cursor: Cursor): Boolean =
+		cursor.group(Delimiter.Bracket) != null
+	override fun display(): String = "`[`"
+}
+
+/** Peek for an opening parenthesis `(`. */
+@HiddenFromObjC
+public object ParenPeek : Peek {
+	override fun peek(cursor: Cursor): Boolean =
+		cursor.group(Delimiter.Parenthesis) != null
+	override fun display(): String = "`(`"
+}
+
+/** Strongly-typed parse for an opening brace `{`. */
+@HiddenFromObjC
+public object BraceParse : Parse<Brace> {
+	override fun parse(input: ParseStream): SynResult<Brace> =
+		input.step { cursor ->
+			val (content, span, rest) = cursor.group(Delimiter.Brace)
+				?: return@step SynResult.failure(cursor.error("expected `{`"))
+			val scope = span.close()
+			val nested = advanceStepCursor(cursor, content)
+			val unexpected = getUnexpected(input)
+			val nestedBuffer = newParseBuffer(scope, nested, unexpected)
+			SynResult.success(Brace.from(span) to rest)
+		}
+}
+
+/** Strongly-typed parse for an opening bracket `[`. */
+@HiddenFromObjC
+public object BracketParse : Parse<Bracket> {
+	override fun parse(input: ParseStream): SynResult<Bracket> =
+		input.step { cursor ->
+			val (content, span, rest) = cursor.group(Delimiter.Bracket)
+				?: return@step SynResult.failure(cursor.error("expected `[`"))
+			val scope = span.close()
+			val nested = advanceStepCursor(cursor, content)
+			val unexpected = getUnexpected(input)
+			val nestedBuffer = newParseBuffer(scope, nested, unexpected)
+			SynResult.success(Bracket.from(span) to rest)
+		}
+}
+
+/** Strongly-typed parse for an opening parenthesis `(`. */
+@HiddenFromObjC
+public object ParenParse : Parse<Paren> {
+	override fun parse(input: ParseStream): SynResult<Paren> =
+		input.step { cursor ->
+			val (content, span, rest) = cursor.group(Delimiter.Parenthesis)
+				?: return@step SynResult.failure(cursor.error("expected `(`"))
+			val scope = span.close()
+			val nested = advanceStepCursor(cursor, content)
+			val unexpected = getUnexpected(input)
+			val nestedBuffer = newParseBuffer(scope, nested, unexpected)
+			SynResult.success(Paren.from(span) to rest)
+		}
 }
 
 /**
