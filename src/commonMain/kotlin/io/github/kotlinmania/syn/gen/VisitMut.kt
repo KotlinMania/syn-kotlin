@@ -4,7 +4,7 @@ package io.github.kotlinmania.syn.gen
 import io.github.kotlinmania.syn.*
 
 /**
- * AST mutable-visitor trait — walks a syntax tree and can mutate nodes in place.
+ * AST mutable-visitor — walks a syntax tree and can mutate nodes in place.
  *
  * Kotlin data classes provide `copy()` for immutable mutation, and sealed
  * hierarchies support `deepCopy()` for deep cloning.

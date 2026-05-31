@@ -1,8 +1,9 @@
 // port-lint: source meta.rs
+@file:OptIn(kotlin.experimental.ExperimentalObjCRefinement::class)
 package io.github.kotlinmania.syn
 
 import io.github.kotlinmania.procmacro2.TokenStream
-import io.github.kotlinmania.quote.ToTokens
+import kotlin.native.HiddenFromObjC
 
 /**
  * Facility for interpreting structured content inside an [Attribute].
@@ -18,27 +19,27 @@ import io.github.kotlinmania.quote.ToTokens
  * handler function that processes each nested attribute property.
  */
 public fun metaParser(logic: (ParseNestedMeta) -> SynResult<Unit>): Parser<Unit> =
- parserFromFunction { input ->
-  if (input.isEmpty()) {
-   SynResult.success(Unit)
-  } else {
-   parseNestedMetaInternal(input, logic)
-  }
- }
+    parserFromFunction { input ->
+        if (input.isEmpty()) {
+            SynResult.success(Unit)
+        } else {
+            parseNestedMetaInternal(input, logic)
+        }
+    }
 
 internal fun parseNestedMetaInternal(
- input: ParseStream,
- logic: (ParseNestedMeta) -> SynResult<Unit>,
+    input: ParseStream,
+    logic: (ParseNestedMeta) -> SynResult<Unit>,
 ): SynResult<Unit> {
- while (true) {
-  val path = input.parse(PathParse).getOrElse { return SynResult.failure(it) }
-  val result = logic(ParseNestedMeta(path, input.currentCursor.tokenStream()))
-  if (result.isFailure) return result
-  if (input.isEmpty()) return SynResult.success(Unit)
-  // consume comma
-  if (input.peek(CommaPeek)) {
-   input.parse(CommaParse).getOrElse { return SynResult.failure(it) }
-  }
-  if (input.isEmpty()) return SynResult.success(Unit)
- }
+    while (true) {
+        val path = input.parse(PathParse).getOrElse { return SynResult.failure(it) }
+        val result = logic(ParseNestedMeta(path, input.currentCursor.tokenStream()))
+        if (result.isFailure) return result
+        if (input.isEmpty()) return SynResult.success(Unit)
+        // consume comma
+        if (input.peek(CommaPeek)) {
+            input.parse(CommaParse).getOrElse { return SynResult.failure(it) }
+        }
+        if (input.isEmpty()) return SynResult.success(Unit)
+    }
 }

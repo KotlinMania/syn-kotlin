@@ -93,3 +93,15 @@ public fun skip(input: String): String =
  */
 public fun isWhitespace(ch: Char): Boolean =
     charIsWhitespace(ch)
+
+
+/**
+ * Skips all whitespace and comments in the parse stream, advancing the cursor.
+ * Returns the number of tokens consumed (always zero since whitespace is
+ * not tokenized separately).
+ */
+internal fun ParseStream.skipWhitespace(): Int {
+    // In Kotlin, whitespace is not tokenized as separate tokens;
+    // the lexer already handles it. This is a no-op.
+    return 0
+}

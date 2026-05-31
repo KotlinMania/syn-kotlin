@@ -14,9 +14,7 @@ import kotlin.native.HiddenFromObjC
  * interface (via [ParseQuote]).
  *
  * The `parseQuote` and `parseQuoteSpanned`
- * macros, which expand to `parseQuote` internally. Kotlin has
- * no macro system, so callers manually invoke the quote-kotlin builder and
- * then pass the resulting [TokenStream] to [parseQuote].
+ * macros, which expand to `parseQuote` internally. Callers manually invoke the quote-kotlin builder and pass the resulting [TokenStream] to [parseQuote].
  *
  * ## Example
  *

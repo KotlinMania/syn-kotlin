@@ -62,7 +62,7 @@ import kotlin.native.HiddenFromObjC
  * way from a token stream.
  *
  * The `Parse` interface has a single `parse` method returning
- * a [SynResult]. Kotlin has no associated functions, so [Parse] takes a phantom type parameter
+ * a [SynResult]. [Parse] takes a phantom type parameter
  * and implementations live on companion objects of the parsed type (or on
  * stand-alone parser strategy objects).
  */
@@ -75,8 +75,7 @@ public interface Parse<T> {
  * Input to a Syn parser function.
  *
  * Spelled `ParseStream = ParseBuffer`. The shared-mutable part is the way a parser represents "may
- * mutate the cursor through shared mutable state." Kotlin has no such
- * distinction so the typealias resolves directly to [ParseBuffer].
+ * mutate the cursor through shared mutable state." The typealias resolves directly to [ParseBuffer].
  */
 public typealias ParseStream = ParseBuffer
 
@@ -154,8 +153,7 @@ public class ParseBuffer internal constructor(
  ): SynResult<Punctuated<T, P>> {
  //The `separator` parameter mirrors the type-level role of
  //`P: Peek`: it carries no runtime data but constrains which P this
- //overload accepts. Kotlin has no equivalent type-only function
- //parameter, so the value is accepted and intentionally discarded.
+ //overload accepts. The value is accepted and intentionally discarded.
  separator.peek(currentCursor)
  return Punctuated.parseTerminatedWith(this, parser, punctuationParser)
  }
@@ -244,8 +242,7 @@ public class ParseBuffer internal constructor(
  /**
  * Propagates any leftover unexpected-token info from this child buffer to
  * its parent's unexpected chain. The [finalizer] implementation on
- * [ParseBuffer] runs this body automatically at end-of-scope; Kotlin has
- * no destructors, so callers that construct a child [ParseBuffer]
+ * [ParseBuffer] runs this body automatically at end-of-scope. Callers that construct a child [ParseBuffer]
  * (typically through the group helpers `parens`, `braces`, `brackets`)
  * must invoke this when the child buffer's scope ends.
  */
@@ -291,16 +288,14 @@ public class StepCursor internal constructor(
  /**
  * Surfaces the wrapped [Cursor]. Mirrors the delegation pattern where
  * callers could pass a [StepCursor] anywhere
- * a [Cursor] is expected. Kotlin has no such delegation so callers explicitly
- * extract via this property.
+ * a [Cursor] is expected. Callers explicitly extract via this property.
  */
  public val raw: Cursor get() = cursor
 }
 
 internal fun advanceStepCursor(proof: StepCursor, to: Cursor): Cursor {
  //The StepCursor parameter proves that the child cursor is within scope.
- //Kotlin has no scoped references, so this is a runtime check that reads `proof`
- //to surface the dependency to the type-checker.
+ //This is a runtime check that reads `proof` to surface the dependency to the type-checker.
  proof.eof()
  return to
 }
@@ -374,8 +369,7 @@ private fun spanOfUnexpectedIgnoringNones(initial: Cursor): Pair<Span, Delimiter
 /** Parse implementations for the procmacro2 token types and stdlib containers. */
 
 /**
- * Parser strategy for a boxed result. Kotlin has no box type but a
- * `Parse<T>.boxed()` extension keeps callers source-compatible with
+ * Parser strategy for a boxed result. The `Parse<T>.boxed()` extension keeps callers source-compatible with
  * sites that wrap a parsed node.
  */
 @HiddenFromObjC
@@ -498,7 +492,7 @@ private fun tokensToParseBuffer(tokens: TokenBuffer): ParseBuffer {
 /**
  * Adapts a parser closure `(ParseStream) -> SynResult<T>` into a [Parser]
  * implementation. Uses a universal adapter that wraps any parser
- * function — Kotlin has no such language feature so this helper performs the same wrapping explicitly.
+ * function — this helper performs the same wrapping explicitly.
  */
 @HiddenFromObjC
 public fun <T> parserFromFunction(function: (ParseStream) -> SynResult<T>): Parser<T> = object : Parser<T> {

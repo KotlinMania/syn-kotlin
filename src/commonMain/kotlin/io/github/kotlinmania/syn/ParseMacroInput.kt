@@ -17,11 +17,8 @@ import kotlin.native.HiddenFromObjC
  * # Intended usage
  *
  * The `parseMacroInput` helper
- * that calls [parse2] under the hood and early-returns the calling function
- * with a `compileError` token stream on parse failure. Kotlin has no macro
- * system and no way to early-return out of the calling function from a
- * helper, so [parseMacroInput] returns a sealed [ParseMacroSynResult] that the
- * caller is expected to fold into a [TokenStream] result.
+ * that calls [parse2] under the hood and returns a sealed [ParseMacroSynResult]
+ * that the caller folds into a [TokenStream] result.
  *
  * ```kotlin
  * fun myMacro(tokens: TokenStream): TokenStream =

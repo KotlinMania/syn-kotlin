@@ -740,7 +740,7 @@ public sealed class RangeLimits : ToTokens {
  }
 }
 
-/** Mutability of a raw pointer (`*const T`, `*mut T`). */
+/** Mutability of a raw pointer. */
 public sealed class PointerMutability : ToTokens {
  public data class Const(val token: io.github.kotlinmania.syn.token.Const) : PointerMutability() {
   override fun toTokens(tokens: TokenStream) {

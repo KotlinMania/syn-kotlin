@@ -390,8 +390,7 @@ public class Cursor internal constructor(
 /**
  * The four-value result of [Cursor.anyGroup]: a cursor inside the group, the
  * group's delimiter, its delim span, and a cursor after the group. The
- * `anyGroup` returns a 4-tuple; Kotlin has no tuple type that long,
- * so the four fields are surfaced as a small data class.
+ * The four fields are surfaced as a small data class.
  */
 public data class AnyGroup(
  public val inside: Cursor,

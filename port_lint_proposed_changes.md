@@ -1,6 +1,6 @@
 # port-lint Proposed Changes
 
-**Generated:** 2026-05-27
+**Generated:** 2026-05-28
 **Source:** tmp/syn
 **Target:** src/commonMain
 
@@ -10,6 +10,7 @@ These are review proposals only. They are emitted when a Rust -> Kotlin pair mat
 |-------------|----------------|-----------------|-------------|--------|
 | `kotlin/io/github/kotlinmania/syn/Punctuated.kt` | `// port-lint: source punctuated.rs` | `// port-lint: source punctuated.rs` | `punctuated.rs` | `port-lint provenance header matched only after fallback normalization: 'punctuated.rs' vs expected 'punctuated.rs'` |
 | `kotlin/io/github/kotlinmania/syn/token/Token.kt` | `// port-lint: source token.rs` | `// port-lint: source token.rs` | `token.rs` | `port-lint provenance header matched only after fallback normalization: 'token.rs' vs expected 'token.rs'` |
+| `kotlin/io/github/kotlinmania/syn/TokenParsers.kt` | `// port-lint: source token.rs` | `// port-lint: source token.rs` | `token.rs` | `port-lint provenance header matched only after fallback normalization: 'token.rs' vs expected 'token.rs'` |
 | `kotlin/io/github/kotlinmania/syn/Path.kt` | `// port-lint: source path.rs` | `// port-lint: source path.rs` | `path.rs` | `port-lint provenance header matched only after fallback normalization: 'path.rs' vs expected 'path.rs'` |
 | `kotlin/io/github/kotlinmania/syn/Ident.kt` | `// port-lint: source ident.rs` | `// port-lint: source ident.rs` | `ident.rs` | `port-lint provenance header matched only after fallback normalization: 'ident.rs' vs expected 'ident.rs'` |
 | `kotlin/io/github/kotlinmania/syn/Expr.kt` | `// port-lint: source expr.rs` | `// port-lint: source expr.rs` | `expr.rs` | `port-lint provenance header matched only after fallback normalization: 'expr.rs' vs expected 'expr.rs'` |
@@ -46,13 +47,13 @@ These are review proposals only. They are emitted when a Rust -> Kotlin pair mat
 | `kotlin/io/github/kotlinmania/syn/Meta.kt` | `// port-lint: source meta.rs` | `// port-lint: source meta.rs` | `meta.rs` | `port-lint provenance header matched only after fallback normalization: 'meta.rs' vs expected 'meta.rs'` |
 | `kotlin/io/github/kotlinmania/syn/Buffer.kt` | `// port-lint: source buffer.rs` | `// port-lint: source buffer.rs` | `buffer.rs` | `port-lint provenance header matched only after fallback normalization: 'buffer.rs' vs expected 'buffer.rs'` |
 | `kotlin/io/github/kotlinmania/syn/Tt.kt` | `// port-lint: source tt.rs` | `// port-lint: source tt.rs` | `tt.rs` | `port-lint provenance header matched only after fallback normalization: 'tt.rs' vs expected 'tt.rs'` |
-| `kotlin/io/github/kotlinmania/syn/Restriction.kt` | `// port-lint: source restriction.rs` | `// port-lint: source restriction.rs` | `restriction.rs` | `port-lint provenance header matched only after fallback normalization: 'restriction.rs' vs expected 'restriction.rs'` |
 | `kotlin/io/github/kotlinmania/syn/Thread.kt` | `// port-lint: source thread.rs` | `// port-lint: source thread.rs` | `thread.rs` | `port-lint provenance header matched only after fallback normalization: 'thread.rs' vs expected 'thread.rs'` |
 | `kotlin/io/github/kotlinmania/syn/Discouraged.kt` | `// port-lint: source discouraged.rs` | `// port-lint: source discouraged.rs` | `discouraged.rs` | `port-lint provenance header matched only after fallback normalization: 'discouraged.rs' vs expected 'discouraged.rs'` |
-| `kotlin/io/github/kotlinmania/syn/Whitespace.kt` | `// port-lint: source whitespace.rs` | `// port-lint: source whitespace.rs` | `whitespace.rs` | `port-lint provenance header matched only after fallback normalization: 'whitespace.rs' vs expected 'whitespace.rs'` |
-| `kotlin/io/github/kotlinmania/syn/Op.kt` | `// port-lint: source op.rs` | `// port-lint: source op.rs` | `op.rs` | `port-lint provenance header matched only after fallback normalization: 'op.rs' vs expected 'op.rs'` |
+| `kotlin/io/github/kotlinmania/syn/Restriction.kt` | `// port-lint: source restriction.rs` | `// port-lint: source restriction.rs` | `restriction.rs` | `port-lint provenance header matched only after fallback normalization: 'restriction.rs' vs expected 'restriction.rs'` |
 | `kotlin/io/github/kotlinmania/syn/gen/Hash.kt` | `// port-lint: source gen/hash.rs` | `// port-lint: source gen/hash.rs` | `gen/hash.rs` | `port-lint provenance header matched only after fallback normalization: 'gen/hash.rs' vs expected 'gen/hash.rs'` |
 | `kotlin/io/github/kotlinmania/syn/gen/Eq.kt` | `// port-lint: source gen/eq.rs` | `// port-lint: source gen/eq.rs` | `gen/eq.rs` | `port-lint provenance header matched only after fallback normalization: 'gen/eq.rs' vs expected 'gen/eq.rs'` |
 | `kotlin/io/github/kotlinmania/syn/ParseQuote.kt` | `// port-lint: source parse_quote.rs` | `// port-lint: source parse_quote.rs` | `parse_quote.rs` | `port-lint provenance header matched only after fallback normalization: 'parse_quote.rs' vs expected 'parse_quote.rs'` |
+| `kotlin/io/github/kotlinmania/syn/Whitespace.kt` | `// port-lint: source whitespace.rs` | `// port-lint: source whitespace.rs` | `whitespace.rs` | `port-lint provenance header matched only after fallback normalization: 'whitespace.rs' vs expected 'whitespace.rs'` |
+| `kotlin/io/github/kotlinmania/syn/Op.kt` | `// port-lint: source op.rs` | `// port-lint: source op.rs` | `op.rs` | `port-lint provenance header matched only after fallback normalization: 'op.rs' vs expected 'op.rs'` |
 | `kotlin/io/github/kotlinmania/syn/Print.kt` | `// port-lint: source print.rs` | `// port-lint: source print.rs` | `print.rs` | `port-lint provenance header matched only after fallback normalization: 'print.rs' vs expected 'print.rs'` |
 | `kotlin/io/github/kotlinmania/syn/ParseMacroInput.kt` | `// port-lint: source parse_macro_input.rs` | `// port-lint: source parse_macro_input.rs` | `parse_macro_input.rs` | `port-lint provenance header matched only after fallback normalization: 'parse_macro_input.rs' vs expected 'parse_macro_input.rs'` |

@@ -10,19 +10,28 @@ import io.github.kotlinmania.procmacro2.Span
 import io.github.kotlinmania.procmacro2.TokenStream
 import kotlin.native.HiddenFromObjC
 
-/** Converts a single span into itself. */
+/**
+ * Converts a single span or a list of spans into the shape required by
+ * multi-span token constructors.
+ *
+ * The `IntoSpans` interface provides type-safe conversion from spans and span
+ * lists into the shapes required by multi-span token constructors. Extension
+ * functions on [Span], [List<Span>], and [DelimSpan] satisfy each supported
+ * arity at the call site.
+ */
 @HiddenFromObjC
 public interface IntoSpans<out S> {
+    /** Converts this value into the target span shape. */
     public fun intoSpans(): S
 }
 
-/** Converts a [Span] into a single-element span list. */
+/** Converts a single [Span] into itself (identity). */
 public fun Span.intoOneSpan(): List<Span> = listOf(this)
 
-/** Converts a [Span] into a two-element span list (both elements are this span). */
+/** Converts a single [Span] into a two-element list where both spans are this one. */
 public fun Span.intoTwoSpans(): List<Span> = listOf(this, this)
 
-/** Converts a [Span] into a three-element span list (all elements are this span). */
+/** Converts a single [Span] into a three-element list where all three spans are this one. */
 public fun Span.intoThreeSpans(): List<Span> = listOf(this, this, this)
 
 /** Asserts that the list has exactly one span and returns it. */
@@ -43,14 +52,19 @@ public fun List<Span>.intoThreeSpans(): List<Span> {
     return this
 }
 
-/** Converts a [Span] into a [DelimSpan]. */
+/**
+ * Converts a [Span] into a [DelimSpan].
+ *
+ * Creates an invisible group with [Delimiter.None] to obtain the delimiter span,
+ * which carries open and close span information.
+ */
 public fun Span.intoDelimSpan(): DelimSpan {
     val group = Group(Delimiter.None, TokenStream.new())
     group.setSpan(this)
     return group.delimSpan()
 }
 
-/** Converts a [DelimSpan] into itself. */
+/** Converts a [DelimSpan] into itself (identity). */
 public fun DelimSpan.intoDelimSpan(): DelimSpan = this
 
 /** Converts a single [Span] into a [Span] (identity). */
