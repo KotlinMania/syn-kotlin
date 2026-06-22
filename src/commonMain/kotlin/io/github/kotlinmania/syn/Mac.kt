@@ -12,7 +12,7 @@ import io.github.kotlinmania.syn.token.Bracket
 import io.github.kotlinmania.syn.token.Paren
 
 /**
- * A macro invocation: `println!("{}", mac)`.
+ * A macro invocation consisting of a path, bang token, delimiter, and token stream.
  */
 public data class Macro(
     public val path: Path,

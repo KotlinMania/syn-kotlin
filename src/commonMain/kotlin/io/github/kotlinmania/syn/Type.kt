@@ -248,7 +248,7 @@ public data class BareFnArg(
         BareFnArg(attrs.map { it.deepCopy() }, name, ty.deepCopy())
 }
 
-/** The variadic argument of a function pointer like `fn(usize, ...)`. */
+/** The variadic argument of a function pointer. */
 public data class BareVariadic(
     public val attrs: List<Attribute>,
     public val name: IdentColon?,

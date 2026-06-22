@@ -319,7 +319,7 @@ public sealed class Expr : ToTokens {
         override fun deepCopy(): Infer = Infer(attrs.map { it.deepCopy() }, underscoreToken)
     }
 
-    /** A `let` guard: `let Some(x) = opt`. */
+    /** A pattern guard that tests whether a pattern matches a value. */
     public data class Let(
         public val attrs: List<Attribute>,
         public val letToken: io.github.kotlinmania.syn.token.Let,
@@ -368,7 +368,7 @@ public sealed class Expr : ToTokens {
         override fun deepCopy(): Loop = Loop(attrs.map { it.deepCopy() }, label?.deepCopy(), loopToken, body)
     }
 
-    /** A macro invocation expression: `format!("{}", q)`. */
+    /** A macro invocation expression. */
     public data class Macro(
         val attrs: List<Attribute>,
         val mac: io.github.kotlinmania.syn.Macro,
@@ -401,7 +401,7 @@ public sealed class Expr : ToTokens {
         override fun deepCopy(): Match = Match(attrs.map { it.deepCopy() }, matchToken, expr.deepCopy(), braceToken, arms.map { it.deepCopy() })
     }
 
-    /** A method call expression: `x.foo::<T>(a, b)`. */
+    /** A method call expression with optional turbofish and arguments. */
     public data class MethodCall(
         public val attrs: List<Attribute>,
         public val receiver: Expr,
@@ -439,7 +439,7 @@ public sealed class Expr : ToTokens {
         override fun deepCopy(): Paren = Paren(attrs.map { it.deepCopy() }, parenToken, expr.deepCopy())
     }
 
-    /** A path like `core::mem::replace` possibly containing generic parameters. */
+    /** A path expression possibly containing generic parameters. */
     public data class Path(
         val attrs: List<Attribute>,
         val qself: QSelf?,
@@ -603,7 +603,7 @@ public sealed class Expr : ToTokens {
         override fun deepCopy(): Tuple = Tuple(attrs.map { it.deepCopy() }, parenToken, elems.copy({ it.deepCopy() }, { it }))
     }
 
-    /** A unary operation: `!x`, `*x`. */
+    /** A unary prefix operation: negation or dereference. */
     public data class Unary(
         public val attrs: List<Attribute>,
         public val op: UnOp,
@@ -618,7 +618,7 @@ public sealed class Expr : ToTokens {
         override fun deepCopy(): Unary = Unary(attrs.map { it.deepCopy() }, op, expr.deepCopy())
     }
 
-    /** An unsafe block expression. */
+    /** A block expression that permits operations violating memory safety invariants. */
     public data class Unsafe(
         public val attrs: List<Attribute>,
         public val unsafeToken: io.github.kotlinmania.syn.token.Unsafe,

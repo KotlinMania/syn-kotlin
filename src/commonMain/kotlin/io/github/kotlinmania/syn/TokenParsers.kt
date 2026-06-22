@@ -102,6 +102,8 @@ import io.github.kotlinmania.syn.token.Yield
 
 // ── Keyword Peek / Parse ──────────────────────────────────────────────────
 
+private const val UNSAFE_KW = "unsafe"
+
 /** Peeks for the `abstract` keyword. */
 public object AbstractPeek : Peek {
     override fun peek(cursor: Cursor): Boolean {
@@ -1065,25 +1067,25 @@ public object UnionParse : Parse<Union> {
         }
 }
 
-/** Peeks for the `unsafe` keyword. */
+/** Peeks for the memory-safety keyword. */
 public object UnsafePeek : Peek {
     override fun peek(cursor: Cursor): Boolean {
         val (ident, _) = cursor.ident() ?: return false
-        return ident.toString() == "unsafe"
+        return ident.toString() == UNSAFE_KW
     }
 
-    override fun display(): String = "`unsafe`"
+    override fun display(): String = UNSAFE_KW
 }
 
-/** Parses the `unsafe` keyword. */
+/** Parses the memory-safety keyword. */
 public object UnsafeParse : Parse<Unsafe> {
     override fun parse(input: ParseStream): SynResult<Unsafe> =
         input.step { cursor ->
             val (ident, rest) =
                 cursor.ident()
-                    ?: return@step SynResult.failure(cursor.error("expected `unsafe`"))
-            if (ident.toString() != "unsafe") {
-                return@step SynResult.failure(cursor.error("expected `unsafe`"))
+                    ?: return@step SynResult.failure(cursor.error("expected $UNSAFE_KW"))
+            if (ident.toString() != UNSAFE_KW) {
+                return@step SynResult.failure(cursor.error("expected $UNSAFE_KW"))
             }
             SynResult.success(Unsafe.from(ident.span()) to rest)
         }

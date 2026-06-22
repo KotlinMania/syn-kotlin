@@ -11,13 +11,13 @@ import io.github.kotlinmania.quote.append
 /**
  * Support for defining custom multi-character punctuation tokens.
  *
- * In the upstream Rust crate this is a macro (`custom_punctuation!`).
- * In Kotlin, custom punctuation is defined as a data class with companion
- * [Peek] and [Parse] implementations that match the character sequence.
+ * In the upstream crate this is a declarative macro. In Kotlin, custom
+ * punctuation is defined as a data class with companion Peek and Parse
+ * implementations that match the character sequence.
  *
- * Example: `PathSeparator` for `</>` would be defined as a data class
- * holding the three spans, with a companion Peek that checks for the
- * character sequence `<`, `/`, `>` with joint spacing.
+ * Example: PathSeparator for the angle-bracket-slash sequence would be
+ * defined as a data class holding the three spans, with a companion
+ * Peek that checks for the character sequence with joint spacing.
  */
 public abstract class CustomPunctuation : ToTokens {
     /** The spans covering each character of this punctuation. */
@@ -51,15 +51,14 @@ public abstract class CustomPunctuation : ToTokens {
 }
 
 /**
- * Creates a [Peek] and [Parse] pair for a custom multi-character punctuation
+ * Creates a Peek and Parse pair for a custom multi-character punctuation
  * sequence.
  *
- * In Rust, `custom_punctuation!` is a macro that defines data classes for
- * specific punctuation sequences like `<-`, `=>`, `||`, etc. In Kotlin,
- * this function provides a dynamic mechanism to peek and parse arbitrary
- * punctuation sequences.
+ * In the upstream crate, a declarative macro defines data classes for
+ * specific punctuation sequences. In Kotlin, this function provides a
+ * dynamic mechanism to peek and parse arbitrary punctuation sequences.
  *
- * @param chars The character sequence for this punctuation (e.g., "<=>").
+ * @param chars The character sequence for this punctuation.
  * @return A pair of [Peek] and [Parse] implementations for this punctuation.
  */
 public fun customPunctuation(chars: String): Pair<Peek, Parse<CustomPunctuation>> {

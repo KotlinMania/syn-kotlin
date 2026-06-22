@@ -38,9 +38,8 @@ public class ThreadBound<T> private constructor(
 /**
  * A reference that is safe to send across threads.
  *
- * In Rust, this is `SendBox` which wraps a `Box<dyn Send + Sync>` to
- * allow safe cross-thread transfer. In Kotlin, all objects are already
- * safe to share across coroutines, so `SendBox` is a simple wrapper.
+ * In Kotlin, all objects are already safe to share across coroutines,
+ * so this is a simple wrapper.
  */
 public class SendBox<T> private constructor(
     private val value: T,
