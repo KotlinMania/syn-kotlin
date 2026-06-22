@@ -139,10 +139,3 @@ public object InParse : Parse<In> {
             SynResult.success(In.from(ident.span()) to rest)
         }
 }
-
-@HiddenFromObjC
-public object ParenPeek : Peek {
-    override fun peek(cursor: Cursor): Boolean =
-        cursor.group(io.github.kotlinmania.procmacro2.Delimiter.Parenthesis) != null
-    override fun display(): String = "`(`"
-}

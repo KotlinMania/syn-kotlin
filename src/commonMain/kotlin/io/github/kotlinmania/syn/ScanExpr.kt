@@ -18,7 +18,7 @@ internal fun scanExpr(input: ParseStream): SynResult<Unit> {
         return SynResult.failure(SynError.new(input.currentCursor.span(), "unexpected end of input"))
     }
     val result = input.call { stream -> parseExprFull(stream) }
-    if (result.isFailure) return result.map { Unit }
+    if (result.isFailure) return SynResult.failure((result as SynResult.Failure).error)
     return SynResult.success(Unit)
 }
 

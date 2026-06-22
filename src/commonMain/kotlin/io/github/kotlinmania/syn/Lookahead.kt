@@ -82,7 +82,7 @@ public class Lookahead1 internal constructor(
 		}
 	}
 
-	public fun toString(): String =
+	public override fun toString(): String =
 		comparisons.joinToString(", ", "Lookahead1[", "]")
 }
 
