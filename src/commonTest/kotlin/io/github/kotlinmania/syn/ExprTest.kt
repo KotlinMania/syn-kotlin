@@ -63,7 +63,13 @@ class ExprTest {
         val await = assertIs<Expr.Await>(expr)
         val base = assertIs<Expr.Path>(await.base)
         assertEquals(1, base.path.segments.len())
-        assertEquals("fut", base.path.segments.first()?.ident?.toString())
+        assertEquals(
+            "fut",
+            base.path.segments
+                .first()
+                ?.ident
+                ?.toString(),
+        )
     }
 
     // Upstream parses `tuple.0.0` (and several whitespace variants) as
@@ -84,7 +90,13 @@ class ExprTest {
         val field = assertIs<Expr.Field>(single)
         val base = assertIs<Expr.Path>(field.base)
         assertEquals(1, base.path.segments.len())
-        assertEquals("tuple", base.path.segments.first()?.ident?.toString())
+        assertEquals(
+            "tuple",
+            base.path.segments
+                .first()
+                ?.ident
+                ?.toString(),
+        )
         assertIs<Member.Unnamed>(field.member)
         // Whitespace variant that does parse (whitespace breaks the
         // float lex): `tuple.0 .0` parses as nested Field with two
@@ -98,7 +110,13 @@ class ExprTest {
         assertEquals(0u, innerMember.index.index)
         val innerBase = assertIs<Expr.Path>(inner.base)
         assertEquals(1, innerBase.path.segments.len())
-        assertEquals("tuple", innerBase.path.segments.first()?.ident?.toString())
+        assertEquals(
+            "tuple",
+            innerBase.path.segments
+                .first()
+                ?.ident
+                ?.toString(),
+        )
     }
 
     // Upstream builds a `Delimiter::None` group containing `f`, parses
@@ -115,12 +133,13 @@ class ExprTest {
         // `Expr::Group`; the upstream `Expr::Call { func: Expr::Group
         // { expr: Expr::Path } }` shape cannot be faithfully asserted.
         val path = Group(Delimiter.None, TokenStream.fromString("f").getOrThrow())
-        val tokens = TokenStream.fromTokenTrees(
-            listOf(
-                TokenTree.Group(path),
-                TokenTree.Group(Group(Delimiter.Parenthesis, TokenStream.new())),
-            ),
-        )
+        val tokens =
+            TokenStream.fromTokenTrees(
+                listOf(
+                    TokenTree.Group(path),
+                    TokenTree.Group(Group(Delimiter.Parenthesis, TokenStream.new())),
+                ),
+            )
         val expr = parseTokens(tokens)
         assertIs<Expr.Call>(expr)
     }
@@ -150,16 +169,23 @@ class ExprTest {
     @Test
     fun testMacroVariableStruct() {
         val s = Group(Delimiter.None, TokenStream.fromString("S").getOrThrow())
-        val tokens = TokenStream.fromTokenTrees(
-            listOf(
-                TokenTree.Group(s),
-                TokenTree.Group(Group(Delimiter.Brace, TokenStream.new())),
-            ),
-        )
+        val tokens =
+            TokenStream.fromTokenTrees(
+                listOf(
+                    TokenTree.Group(s),
+                    TokenTree.Group(Group(Delimiter.Brace, TokenStream.new())),
+                ),
+            )
         val expr = parseTokens(tokens)
         val struct = assertIs<Expr.Struct>(expr)
         assertEquals(1, struct.path.segments.len())
-        assertEquals("S", struct.path.segments.first()?.ident?.toString())
+        assertEquals(
+            "S",
+            struct.path.segments
+                .first()
+                ?.ident
+                ?.toString(),
+        )
         assertEquals(0, struct.fields.len())
     }
 

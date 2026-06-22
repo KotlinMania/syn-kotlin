@@ -35,20 +35,21 @@ internal object ItemParse : Parse<Item> {
                     }
                 }
             }
-            val bodyResult = if (input.peek(BracePeek)) {
-                braced(input).map { bracesVal ->
-                    val stmts = mutableListOf<Stmt>()
-                    while (!bracesVal.content.isEmpty()) {
-                        val s = bracesVal.content.call { parseStmtFull(it) }
-                        if (s.isFailure) break
-                        stmts.add(s.getOrThrow())
+            val bodyResult =
+                if (input.peek(BracePeek)) {
+                    braced(input).map { bracesVal ->
+                        val stmts = mutableListOf<Stmt>()
+                        while (!bracesVal.content.isEmpty()) {
+                            val s = bracesVal.content.call { parseStmtFull(it) }
+                            if (s.isFailure) break
+                            stmts.add(s.getOrThrow())
+                        }
+                        bracesVal.content.finishChildBuffer()
+                        Block(bracesVal.token, stmts)
                     }
-                    bracesVal.content.finishChildBuffer()
-                    Block(bracesVal.token, stmts)
+                } else {
+                    SynResult.success(null)
                 }
-            } else {
-                SynResult.success(null)
-            }
             if (bodyResult.isFailure) return asFailure(bodyResult)
             return SynResult.success(
                 Item.Fn(emptyList(), vis, fnToken, ident, generics, parensVal.token, inputs, output, bodyResult.getOrThrow()),
@@ -242,7 +243,19 @@ private fun <T, R> asFailure(result: SynResult<T>): SynResult<R> =
 internal fun parseFnArg(input: ParseStream): SynResult<FnArg> {
     if (input.peek(SelfValuePeek)) {
         val selfToken = input.parse(SelfValueParse).getOrThrow()
-        return SynResult.success(FnArg.Receiver(emptyList(), null, null, selfToken, null, SynType.Infer(io.github.kotlinmania.syn.token.Underscore.default())))
+        return SynResult.success(
+            FnArg.Receiver(
+                emptyList(),
+                null,
+                null,
+                selfToken,
+                null,
+                SynType.Infer(
+                    io.github.kotlinmania.syn.token.Underscore
+                        .default(),
+                ),
+            ),
+        )
     }
     if (input.peek(AndPeek) && input.peek2(SelfValuePeek)) {
         val andToken = input.parse(AndParse).getOrThrow()
@@ -251,7 +264,19 @@ internal fun parseFnArg(input: ParseStream): SynResult<FnArg> {
         val mutResult = input.parse(MutParse)
         val mutability = if (mutResult.isSuccess) mutResult.getOrThrow() else null
         val selfToken = input.parse(SelfValueParse).getOrThrow()
-        return SynResult.success(FnArg.Receiver(emptyList(), AndLifetime(andToken, lifetime), mutability, selfToken, null, SynType.Infer(io.github.kotlinmania.syn.token.Underscore.default())))
+        return SynResult.success(
+            FnArg.Receiver(
+                emptyList(),
+                AndLifetime(andToken, lifetime),
+                mutability,
+                selfToken,
+                null,
+                SynType.Infer(
+                    io.github.kotlinmania.syn.token.Underscore
+                        .default(),
+                ),
+            ),
+        )
     }
     val patResult = input.call { parsePatFull(it) }
     if (patResult.isFailure) return asFailure(patResult)
@@ -362,8 +387,9 @@ internal fun parseUseTree(input: ParseStream): SynResult<UseTree> {
         val prefix = pathWithoutLast(path)
         return SynResult.success(UseTree.Path(prefix.ident, prefix.colon2Token, null))
     }
-    val ident = lastSeg?.ident
-        ?: return SynResult.failure(input.error("expected use tree"))
+    val ident =
+        lastSeg?.ident
+            ?: return SynResult.failure(input.error("expected use tree"))
     return SynResult.success(UseTree.Path(ident, null, null))
 }
 
@@ -428,7 +454,12 @@ internal fun parseTraitItem(input: ParseStream): SynResult<TraitItem> {
     }
     if (input.peek(SemiPeek)) {
         input.parse(SemiParse).getOrThrow()
-        return SynResult.success(TraitItem.Verbatim(io.github.kotlinmania.procmacro2.TokenStream.new()))
+        return SynResult.success(
+            TraitItem.Verbatim(
+                io.github.kotlinmania.procmacro2.TokenStream
+                    .new(),
+            ),
+        )
     }
     return SynResult.failure(input.error("expected trait item"))
 }
@@ -482,7 +513,12 @@ internal fun parseImplItem(input: ParseStream): SynResult<ImplItem> {
     }
     if (input.peek(SemiPeek)) {
         input.parse(SemiParse).getOrThrow()
-        return SynResult.success(ImplItem.Verbatim(io.github.kotlinmania.procmacro2.TokenStream.new()))
+        return SynResult.success(
+            ImplItem.Verbatim(
+                io.github.kotlinmania.procmacro2.TokenStream
+                    .new(),
+            ),
+        )
     }
     return SynResult.failure(input.error("expected impl item"))
 }
@@ -552,8 +588,14 @@ internal object DeriveInputParseImpl : Parse<DeriveInput> {
             }
             bracesVal.content.finishChildBuffer()
             return SynResult.success(
-                DeriveInput(emptyList(), vis, ident, Generics(), Data.Enum(DataEnum(enumToken, bracesVal.token, variants)),
-            ))
+                DeriveInput(
+                    emptyList(),
+                    vis,
+                    ident,
+                    Generics(),
+                    Data.Enum(DataEnum(enumToken, bracesVal.token, variants)),
+                ),
+            )
         }
         return SynResult.failure(input.error("expected struct, enum, or union"))
     }

@@ -1,8 +1,6 @@
 // port-lint: source scan_expr.rs
 package io.github.kotlinmania.syn
 
-import io.github.kotlinmania.procmacro2.TokenStream
-
 private fun <T, R> SynResult<T>.asFailure(): SynResult<R> =
     SynResult.failure((this as SynResult.Failure).error)
 
@@ -210,11 +208,12 @@ private fun atomExpr(input: ParseStream, allowStruct: Boolean): SynResult<Expr> 
     if (input.peek(ReturnPeek)) {
         val retToken = input.parse(ReturnParse)
         if (retToken.isFailure) return retToken.asFailure()
-        val expr = if (!input.isEmpty() && !input.peek(SemiPeek)) {
-            parseExprFull(input)
-        } else {
-            SynResult.success(null)
-        }
+        val expr =
+            if (!input.isEmpty() && !input.peek(SemiPeek)) {
+                parseExprFull(input)
+            } else {
+                SynResult.success(null)
+            }
         if (expr.isFailure) return expr.asFailure()
         return SynResult.success(Expr.Return(emptyList(), retToken.getOrThrow(), expr.getOrThrow()))
     }
@@ -223,11 +222,12 @@ private fun atomExpr(input: ParseStream, allowStruct: Boolean): SynResult<Expr> 
         if (brkToken.isFailure) return brkToken.asFailure()
         val labelResult = input.parse(LifetimeParse)
         val label = if (labelResult.isSuccess) labelResult.getOrThrow() else null
-        val expr = if (!input.isEmpty() && !input.peek(SemiPeek) && !input.peek(CommaPeek)) {
-            parseExprFull(input)
-        } else {
-            SynResult.success(null)
-        }
+        val expr =
+            if (!input.isEmpty() && !input.peek(SemiPeek) && !input.peek(CommaPeek)) {
+                parseExprFull(input)
+            } else {
+                SynResult.success(null)
+            }
         if (expr.isFailure) return expr.asFailure()
         return SynResult.success(Expr.Break(emptyList(), brkToken.getOrThrow(), label, expr.getOrThrow()))
     }
@@ -241,13 +241,17 @@ private fun atomExpr(input: ParseStream, allowStruct: Boolean): SynResult<Expr> 
     if (input.peek(DotDotPeek)) {
         return parseExprRange(input, null, allowStruct)
     }
-    if (input.peek(IdentPeek) || input.peek(PathSepPeek) ||
-        input.peek(SelfValuePeek) || input.peek(SelfTypePeek) ||
-        input.peek(SuperPeek) || input.peek(CratePeek)
+    if (input.peek(IdentPeek) ||
+        input.peek(PathSepPeek) ||
+        input.peek(SelfValuePeek) ||
+        input.peek(SelfTypePeek) ||
+        input.peek(SuperPeek) ||
+        input.peek(CratePeek)
     ) {
         return pathOrMacroOrStruct(input, allowStruct)
     }
-    if (input.peek(MovePeek) || input.peek(OrPeek) ||
+    if (input.peek(MovePeek) ||
+        input.peek(OrPeek) ||
         (input.peek(AsyncPeek) && (input.peek2(OrPeek) || input.peek2(MovePeek)))
     ) {
         return parseExprClosure(input, allowStruct)
@@ -401,8 +405,11 @@ private fun parseExprRange(input: ParseStream, start: Expr?, allowStruct: Boolea
     val dotDotResult = input.parse(DotDotParse)
     if (dotDotResult.isFailure) return dotDotResult.asFailure()
     val limits = RangeLimits.HalfOpen(dotDotResult.getOrThrow())
-    if (input.isEmpty() || input.peek(SemiPeek) || input.peek(CommaPeek) ||
-        input.peek(BracePeek) || input.peek(BracketPeek)
+    if (input.isEmpty() ||
+        input.peek(SemiPeek) ||
+        input.peek(CommaPeek) ||
+        input.peek(BracePeek) ||
+        input.peek(BracketPeek)
     ) {
         return SynResult.success(Expr.Range(emptyList(), start, limits, null))
     }
@@ -534,13 +541,21 @@ private fun parseMatchArm(input: ParseStream): SynResult<Arm> {
 }
 
 private fun fatArrowSentinel(input: ParseStream): io.github.kotlinmania.syn.token.FatArrow =
-    io.github.kotlinmania.syn.token.FatArrow.from(input.span())
+    io.github.kotlinmania.syn.token.FatArrow
+        .from(input.span())
 
 private fun inferSentinel(input: ParseStream): Expr =
-    Expr.Infer(emptyList(), io.github.kotlinmania.syn.token.Underscore.from(input.span()))
+    Expr.Infer(
+        emptyList(),
+        io.github.kotlinmania.syn.token.Underscore
+            .from(input.span()),
+    )
 
 internal fun inferSentinelType(input: ParseStream): SynType =
-    SynType.Infer(io.github.kotlinmania.syn.token.Underscore.from(input.span()))
+    SynType.Infer(
+        io.github.kotlinmania.syn.token.Underscore
+            .from(input.span()),
+    )
 
 private fun parseExprAsync(input: ParseStream): SynResult<Expr> {
     val asyncToken = input.parse(AsyncParse).getOrThrow()
@@ -643,11 +658,14 @@ internal fun parseStmtFull(input: ParseStream): SynResult<Stmt> {
                 Stmt.Local(emptyList(), letToken, it, null, semi.getOrThrow())
             }
         }
-        val init: LocalInit? = if (input.peek(EqPeek)) {
-            val eq = input.parse(EqParse).getOrThrow()
-            val e = parseExprFull(input)
-            if (e.isFailure) null else LocalInit(eq, e.getOrThrow(), null)
-        } else null
+        val init: LocalInit? =
+            if (input.peek(EqPeek)) {
+                val eq = input.parse(EqParse).getOrThrow()
+                val e = parseExprFull(input)
+                if (e.isFailure) null else LocalInit(eq, e.getOrThrow(), null)
+            } else {
+                null
+            }
         val semi = input.parse(SemiParse).getOrThrow()
         return SynResult.success(Stmt.Local(emptyList(), letToken, patResult.getOrThrow(), init, semi))
     }
@@ -660,13 +678,9 @@ internal fun parseStmtFull(input: ParseStream): SynResult<Stmt> {
     return SynResult.success(Stmt.ExprStmt(exprResult.getOrThrow(), null))
 }
 
-internal fun parsePatFull(input: ParseStream): SynResult<Pat> {
-    return PatParseImpl.parse(input)
-}
+internal fun parsePatFull(input: ParseStream): SynResult<Pat> = PatParseImpl.parse(input)
 
-internal fun parseTypeFull(input: ParseStream): SynResult<SynType> {
-    return SynTypeParseExpr.parse(input)
-}
+internal fun parseTypeFull(input: ParseStream): SynResult<SynType> = SynTypeParseExpr.parse(input)
 
 internal object ExprParse : Parse<Expr> {
     override fun parse(input: ParseStream): SynResult<Expr> =
@@ -770,8 +784,11 @@ internal object SynTypeParseExpr : Parse<SynType> {
             }
             return SynResult.success(SynType.Tuple(parensVal.token, elems))
         }
-        if (input.peek(IdentPeek) || input.peek(PathSepPeek) ||
-            input.peek(SelfTypePeek) || input.peek(SuperPeek) || input.peek(CratePeek)
+        if (input.peek(IdentPeek) ||
+            input.peek(PathSepPeek) ||
+            input.peek(SelfTypePeek) ||
+            input.peek(SuperPeek) ||
+            input.peek(CratePeek)
         ) {
             val pathResult = input.parse(PathParse)
             if (pathResult.isFailure) return pathResult.asFailure()

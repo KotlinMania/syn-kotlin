@@ -283,13 +283,17 @@ public sealed class TraitBoundModifier : ToTokens {
 
     public data object None : TraitBoundModifier() {
         override fun toTokens(tokens: TokenStream) {}
+
         override fun deepCopy(): None = this
     }
 
     public data class Maybe(
         val token: io.github.kotlinmania.syn.token.Question,
     ) : TraitBoundModifier() {
-        override fun toTokens(tokens: TokenStream) { token.toTokens(tokens) }
+        override fun toTokens(tokens: TokenStream) {
+            token.toTokens(tokens)
+        }
+
         override fun deepCopy(): Maybe = this
     }
 }
@@ -316,14 +320,20 @@ public sealed class CapturedParam : ToTokens {
     public data class Lifetime(
         val lifetime: io.github.kotlinmania.syn.Lifetime,
     ) : CapturedParam() {
-        override fun toTokens(tokens: TokenStream) { lifetime.toTokens(tokens) }
+        override fun toTokens(tokens: TokenStream) {
+            lifetime.toTokens(tokens)
+        }
+
         override fun deepCopy(): Lifetime = Lifetime(lifetime.deepCopy())
     }
 
     public data class Ident(
         val ident: io.github.kotlinmania.procmacro2.Ident,
     ) : CapturedParam() {
-        override fun toTokens(tokens: TokenStream) { ident.toTokens(tokens) }
+        override fun toTokens(tokens: TokenStream) {
+            ident.toTokens(tokens)
+        }
+
         override fun deepCopy(): Ident = Ident(ident.copy())
     }
 }

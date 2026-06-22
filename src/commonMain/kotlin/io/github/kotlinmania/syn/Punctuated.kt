@@ -459,9 +459,13 @@ public class CapturedParamList : SynPunctuated {
 
     public fun toList(): List<CapturedParam> = map { it as CapturedParam }
 
-    public fun pushValue(value: CapturedParam) { pushValueRaw(value) }
+    public fun pushValue(value: CapturedParam) {
+        pushValueRaw(value)
+    }
 
-    public fun pushPunct(punctuation: ToTokens) { pushPunctRaw(punctuation) }
+    public fun pushPunct(punctuation: ToTokens) {
+        pushPunctRaw(punctuation)
+    }
 
     public fun push(value: CapturedParam, defaultPunctuation: () -> ToTokens) {
         if (!emptyOrTrailing()) pushPunct(defaultPunctuation())

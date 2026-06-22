@@ -47,7 +47,9 @@ public sealed class SynType : ToTokens {
                 inputs.toTokens(inner)
                 if (variadic != null) {
                     if (!inputs.emptyOrTrailing()) {
-                        io.github.kotlinmania.syn.token.Comma.from(variadic.dots.spans.first()).toTokens(inner)
+                        io.github.kotlinmania.syn.token.Comma
+                            .from(variadic.dots.spans.first())
+                            .toTokens(inner)
                     }
                     variadic.toTokens(inner)
                 }
@@ -55,16 +57,17 @@ public sealed class SynType : ToTokens {
             output.toTokens(tokens)
         }
 
-        override fun deepCopy(): BareFn = BareFn(
-            lifetimes?.deepCopy(),
-            unsafety,
-            abi,
-            fnToken,
-            parenToken,
-            inputs.copy({ it.deepCopy() }, { it }),
-            variadic?.deepCopy(),
-            output.deepCopy(),
-        )
+        override fun deepCopy(): BareFn =
+            BareFn(
+                lifetimes?.deepCopy(),
+                unsafety,
+                abi,
+                fnToken,
+                parenToken,
+                inputs.copy({ it.deepCopy() }, { it }),
+                variadic?.deepCopy(),
+                output.deepCopy(),
+            )
     }
 
     public data class Group(
@@ -231,31 +234,31 @@ public sealed class SynType : ToTokens {
 
 public data class BareFnArg(
     public val attrs: List<Attribute>,
-    public val name: Pair<Ident, io.github.kotlinmania.syn.token.Colon>?,
+    public val name: IdentColon?,
     public val ty: SynType,
 ) : ToTokens {
     override fun toTokens(tokens: TokenStream) {
         for (attr in attrs) attr.toTokens(tokens)
-        name?.first?.toTokens(tokens)
-        name?.second?.toTokens(tokens)
+        name?.ident?.toTokens(tokens)
+        name?.colonToken?.toTokens(tokens)
         ty.toTokens(tokens)
     }
 
     public fun deepCopy(): BareFnArg =
-        BareFnArg(attrs.map { it.deepCopy() }, name?.let { Pair(it.first.copy(), it.second) }, ty.deepCopy())
+        BareFnArg(attrs.map { it.deepCopy() }, name, ty.deepCopy())
 }
 
 /** The variadic argument of a function pointer like `fn(usize, ...)`. */
 public data class BareVariadic(
     public val attrs: List<Attribute>,
-    public val name: Pair<Ident, io.github.kotlinmania.syn.token.Colon>?,
+    public val name: IdentColon?,
     public val dots: io.github.kotlinmania.syn.token.DotDotDot,
     public val comma: io.github.kotlinmania.syn.token.Comma?,
 ) : ToTokens {
     override fun toTokens(tokens: TokenStream) {
         for (attr in attrs) attr.toTokens(tokens)
-        name?.first?.toTokens(tokens)
-        name?.second?.toTokens(tokens)
+        name?.ident?.toTokens(tokens)
+        name?.colonToken?.toTokens(tokens)
         dots.toTokens(tokens)
         comma?.toTokens(tokens)
     }
