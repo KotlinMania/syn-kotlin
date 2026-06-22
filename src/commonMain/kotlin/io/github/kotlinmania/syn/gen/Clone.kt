@@ -11,3 +11,5 @@ package io.github.kotlinmania.syn.gen
  *
  * This file exists for port-lint provenance tracking only.
  */
+
+internal const val CloneMarker: String = ""

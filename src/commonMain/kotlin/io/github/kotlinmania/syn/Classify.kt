@@ -1,8 +1,5 @@
 // port-lint: source classify.rs
-@file:OptIn(kotlin.experimental.ExperimentalObjCRefinement::class)
 package io.github.kotlinmania.syn
-
-import kotlin.native.HiddenFromObjC
 
 /**
  * Classification helpers that determine whether an expression

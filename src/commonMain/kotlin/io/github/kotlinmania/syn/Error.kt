@@ -1,7 +1,5 @@
-@file:OptIn(kotlin.experimental.ExperimentalObjCRefinement::class)
 // port-lint: source error.rs
 package io.github.kotlinmania.syn
-import kotlin.native.HiddenFromObjC
 
 import io.github.kotlinmania.procmacro2.Delimiter
 import io.github.kotlinmania.procmacro2.Group
@@ -32,69 +30,76 @@ import io.github.kotlinmania.quote.append
  * `getOrNull` / `exceptionOrNull` / `getOrElse` / `fold` / `map` operations
  * match the standard result idioms used throughout this port.
  */
-@HiddenFromObjC
 public sealed class SynResult<out T> {
- /** Successful parse result carrying the parsed value. */
- public class Success<out T>(public val value: T) : SynResult<T>()
+    /** Successful parse result carrying the parsed value. */
+    public class Success<out T>(
+        public val value: T,
+    ) : SynResult<T>()
 
- /** Failed parse result carrying a syn [SynError]. */
- public class Failure<out T>(public val error: SynError) : SynResult<T>()
+    /** Failed parse result carrying a syn [SynError]. */
+    public class Failure<out T>(
+        public val error: SynError,
+    ) : SynResult<T>()
 
- /** `true` when this is a [Success]. */
- public val isSuccess: Boolean
- get() = this is Success
+    /** `true` when this is a [Success]. */
+    public val isSuccess: Boolean
+        get() = this is Success
 
- /** `true` when this is a [Failure]. */
- public val isFailure: Boolean
- get() = this is Failure
+    /** `true` when this is a [Failure]. */
+    public val isFailure: Boolean
+        get() = this is Failure
 
- /**
- * Returns the parsed value if this is a [Success], or throws the
- * carried [SynError] if this is a [Failure]. `SynError` extends
- * `IllegalArgumentException`, so the throw is well-typed.
- */
- public fun getOrThrow(): T = when (this) {
- is Success -> value
- is Failure -> throw error
- }
+    /**
+     * Returns the parsed value if this is a [Success], or throws the
+     * carried [SynError] if this is a [Failure]. `SynError` extends
+     * `IllegalArgumentException`, so the throw is well-typed.
+     */
+    public fun getOrThrow(): T =
+        when (this) {
+            is Success -> value
+            is Failure -> throw error
+        }
 
- /** Returns the parsed value if this is a [Success], or `null` if this is a [Failure]. */
- public fun getOrNull(): T? = (this as? Success)?.value
+    /** Returns the parsed value if this is a [Success], or `null` if this is a [Failure]. */
+    public fun getOrNull(): T? = (this as? Success)?.value
 
- /** Returns the carried [SynError] if this is a [Failure], or `null` if this is a [Success]. */
- public fun exceptionOrNull(): SynError? = (this as? Failure<*>)?.error
+    /** Returns the carried [SynError] if this is a [Failure], or `null` if this is a [Success]. */
+    public fun exceptionOrNull(): SynError? = (this as? Failure<*>)?.error
 
- /** Returns the parsed value if this is a [Success], or [onFailure]'s value for a [Failure]. */
- public inline fun getOrElse(onFailure: (SynError) -> @UnsafeVariance T): T = when (this) {
- is Success -> value
- is Failure -> onFailure(error)
- }
+    /** Returns the parsed value if this is a [Success], or [onFailure]'s value for a [Failure]. */
+    public inline fun getOrElse(onFailure: (SynError) -> @UnsafeVariance T): T =
+        when (this) {
+            is Success -> value
+            is Failure -> onFailure(error)
+        }
 
- /**
- * Applies [onSuccess] to a [Success] value or [onFailure] to a
- * [Failure] error and returns the result.
- */
- public inline fun <R> fold(onSuccess: (T) -> R, onFailure: (SynError) -> R): R = when (this) {
- is Success -> onSuccess(value)
- is Failure -> onFailure(error)
- }
+    /**
+     * Applies [onSuccess] to a [Success] value or [onFailure] to a
+     * [Failure] error and returns the result.
+     */
+    public inline fun <R> fold(onSuccess: (T) -> R, onFailure: (SynError) -> R): R =
+        when (this) {
+            is Success -> onSuccess(value)
+            is Failure -> onFailure(error)
+        }
 
- /**
- * Returns a [SynResult] containing the [transform]-mapped value if
- * this is a [Success], or this [Failure] unchanged.
- */
- public inline fun <R> map(transform: (T) -> R): SynResult<R> = when (this) {
- is Success -> Success(transform(value))
- is Failure -> Failure(error)
- }
+    /**
+     * Returns a [SynResult] containing the [transform]-mapped value if
+     * this is a [Success], or this [Failure] unchanged.
+     */
+    public inline fun <R> map(transform: (T) -> R): SynResult<R> =
+        when (this) {
+            is Success -> Success(transform(value))
+            is Failure -> Failure(error)
+        }
 
- public companion object {
- /** Constructs a [Success] wrapping [value]. */
- public fun <T> success(value: T): SynResult<T> = Success(value)
+    public companion object {
+        /** Constructs a [Success] wrapping [value]. */
+        public fun <T> success(value: T): SynResult<T> = Success(value)
 
- /** Constructs a [Failure] wrapping [error]. */
- public fun <T> failure(error: SynError): SynResult<T> = Failure(error)
- }
+        /** Constructs a [Failure] wrapping [error]. */
+        public fun <T> failure(error: SynError): SynResult<T> = Failure(error)
+    }
 }
 
 /**
@@ -116,166 +121,167 @@ public sealed class SynResult<out T> {
  * `toCompileError` or `intoCompileError` methods can be used to perform an
  * explicit conversion to `compileError`.
  */
-@HiddenFromObjC
 public class SynError private constructor(
- private val messages: MutableList<ErrorMessage>,
-) : IllegalArgumentException(messages.first().message), Iterable<SynError> {
- public companion object {
- /**
- * Usually the `ParseStream.error` method will be used instead, which
- * automatically uses the correct span from the current position of the
- * parse stream.
- *
- * Use `SynError.new` when the error needs to be triggered on some span
- * other than where the parse stream is currently positioned.
- */
- public fun new(span: Span, message: Any): SynError =
- SynError(
- mutableListOf(
- ErrorMessage(
- span = ThreadBound.new(SpanRange(span, span)),
- message = message.toString(),
- ),
- ),
- )
+    private val messages: MutableList<ErrorMessage>,
+) : IllegalArgumentException(messages.first().message),
+    Iterable<SynError> {
+    public companion object {
+        /**
+         * Usually the `ParseStream.error` method will be used instead, which
+         * automatically uses the correct span from the current position of the
+         * parse stream.
+         *
+         * Use `SynError.new` when the error needs to be triggered on some span
+         * other than where the parse stream is currently positioned.
+         */
+        public fun new(span: Span, message: Any): SynError =
+            SynError(
+                mutableListOf(
+                    ErrorMessage(
+                        span = ThreadBound.new(SpanRange(span, span)),
+                        message = message.toString(),
+                    ),
+                ),
+            )
 
- /**
- * Creates an error with the specified message spanning the given syntax
- * tree node.
- *
- * Unlike the `SynError.new` constructor, this constructor takes an
- * argument `tokens` which is a syntax tree node. This allows the
- * resulting `SynError` to attempt to span all tokens inside of `tokens`.
- * While you would typically be able to use the `Spanned` interface with
- * the above `SynError.new` constructor, implementation limitations today
- * mean that `SynError.newSpanned` may provide a higher-quality error
- * message on the stable channel.
- *
- * When in doubt it's recommended to stick to `SynError.new`!
- */
- public fun newSpanned(tokens: ToTokens, message: Any): SynError =
- newSpanned(tokens.intoTokenStream(), message)
+        /**
+         * Creates an error with the specified message spanning the given syntax
+         * tree node.
+         *
+         * Unlike the `SynError.new` constructor, this constructor takes an
+         * argument `tokens` which is a syntax tree node. This allows the
+         * resulting `SynError` to attempt to span all tokens inside of `tokens`.
+         * While you would typically be able to use the `Spanned` interface with
+         * the above `SynError.new` constructor, implementation limitations today
+         * mean that `SynError.newSpanned` may provide a higher-quality error
+         * message on the stable channel.
+         *
+         * When in doubt it's recommended to stick to `SynError.new`!
+         */
+        public fun newSpanned(tokens: ToTokens, message: Any): SynError =
+            newSpanned(tokens.intoTokenStream(), message)
 
- public fun newSpanned(tokens: TokenStream, message: Any): SynError {
- val iterator = tokens.iterator()
- val start = if (iterator.hasNext()) iterator.next().span() else Span.callSite()
- var end = start
- while (iterator.hasNext()) {
- end = iterator.next().span()
- }
- return SynError(
- mutableListOf(
- ErrorMessage(
- span = ThreadBound.new(SpanRange(start, end)),
- message = message.toString(),
- ),
- ),
- )
- }
+        public fun newSpanned(tokens: TokenStream, message: Any): SynError {
+            val iterator = tokens.iterator()
+            val start = if (iterator.hasNext()) iterator.next().span() else Span.callSite()
+            var end = start
+            while (iterator.hasNext()) {
+                end = iterator.next().span()
+            }
+            return SynError(
+                mutableListOf(
+                    ErrorMessage(
+                        span = ThreadBound.new(SpanRange(start, end)),
+                        message = message.toString(),
+                    ),
+                ),
+            )
+        }
 
- public fun from(err: LexError): SynError =
- new(err.span(), err)
+        public fun from(err: LexError): SynError =
+            new(err.span(), err)
 
- public fun newAt(start: Span, end: Span, message: Any): SynError =
- SynError(
- mutableListOf(
- ErrorMessage(
- span = ThreadBound.new(SpanRange(start, end)),
- message = message.toString(),
- ),
- ),
- )
- }
+        public fun newAt(start: Span, end: Span, message: Any): SynError =
+            SynError(
+                mutableListOf(
+                    ErrorMessage(
+                        span = ThreadBound.new(SpanRange(start, end)),
+                        message = message.toString(),
+                    ),
+                ),
+            )
+    }
 
- /** The source location of the error. */
- public fun span(): Span {
- val range = messages[0].span.get()
- return range.start.join(range.end) ?: range.start
- }
+    /** The source location of the error. */
+    public fun span(): Span {
+        val range = messages[0].span.get()
+        return range.start.join(range.end) ?: range.start
+    }
 
- /**
- * Render the error as an invocation of `compileError`.
- *
- * The `parseMacroInput` helper provides a convenient way to invoke this
- * method correctly from a procedural-macro handler.
- */
- public fun toCompileError(): TokenStream {
- val tokens = TokenStream.new()
- for (msg in messages) {
- msg.toCompileError(tokens)
- }
- return tokens
- }
+    /**
+     * Render the error as an invocation of `compileError`.
+     *
+     * The `parseMacroInput` helper provides a convenient way to invoke this
+     * method correctly from a procedural-macro handler.
+     */
+    public fun toCompileError(): TokenStream {
+        val tokens = TokenStream.new()
+        for (msg in messages) {
+            msg.toCompileError(tokens)
+        }
+        return tokens
+    }
 
- /** Render the error as an invocation of `compileError`. */
- public fun intoCompileError(): TokenStream =
- toCompileError()
+    /** Render the error as an invocation of `compileError`. */
+    public fun intoCompileError(): TokenStream =
+        toCompileError()
 
- /**
- * Add another error message to this error such that when `toCompileError` is
- * called, both errors will be emitted together.
- */
- public fun combine(another: SynError) {
- messages.addAll(another.messages)
- }
+    /**
+     * Add another error message to this error such that when `toCompileError` is
+     * called, both errors will be emitted together.
+     */
+    public fun combine(another: SynError) {
+        messages.addAll(another.messages)
+    }
 
- override fun iterator(): Iterator<SynError> =
- messages.map { SynError(mutableListOf(it.copy())) }.iterator()
+    override fun iterator(): Iterator<SynError> =
+        messages.map { SynError(mutableListOf(it.copy())) }.iterator()
 
- public fun iter(): Iterator<SynError> =
- iterator()
+    public fun iter(): Iterator<SynError> =
+        iterator()
 
- override fun toString(): String =
- messages.first().message
+    override fun toString(): String =
+        messages.first().message
 
- public fun intoIterable(): Iterable<SynError> =
- messages.map { SynError(mutableListOf(it.copy())) }
+    public fun intoIterable(): Iterable<SynError> =
+        messages.map { SynError(mutableListOf(it.copy())) }
 
- public fun extend(other: SynError) {
- messages.addAll(other.messages)
- }
+    public fun extend(other: SynError) {
+        messages.addAll(other.messages)
+    }
 
- public fun deepCopy(): SynError =
- SynError(messages.mapTo(mutableListOf()) { it.copy() })
+    public fun deepCopy(): SynError =
+        SynError(messages.mapTo(mutableListOf()) { it.copy() })
 }
 
 private data class ErrorMessage(
- val span: ThreadBound<SpanRange>,
- val message: String,
+    val span: ThreadBound<SpanRange>,
+    val message: String,
 ) {
- fun toCompileError(tokens: TokenStream) {
- val range = span.get()
- val start = range.start
- val end = range.end
+    fun toCompileError(tokens: TokenStream) {
+        val range = span.get()
+        val start = range.start
+        val end = range.end
 
- tokens.append(TokenTree.Punct(Punct(':', Spacing.Joint, start)))
- tokens.append(TokenTree.Punct(Punct(':', Spacing.Alone, start)))
- tokens.append(TokenTree.Ident(Ident.new("core", start)))
- tokens.append(TokenTree.Punct(Punct(':', Spacing.Joint, start)))
- tokens.append(TokenTree.Punct(Punct(':', Spacing.Alone, start)))
- tokens.append(TokenTree.Ident(Ident.new("compile_error", start)))
- tokens.append(TokenTree.Punct(Punct('!', Spacing.Alone, start)))
+        tokens.append(TokenTree.Punct(Punct(':', Spacing.Joint, start)))
+        tokens.append(TokenTree.Punct(Punct(':', Spacing.Alone, start)))
+        tokens.append(TokenTree.Ident(Ident.new("core", start)))
+        tokens.append(TokenTree.Punct(Punct(':', Spacing.Joint, start)))
+        tokens.append(TokenTree.Punct(Punct(':', Spacing.Alone, start)))
+        tokens.append(TokenTree.Ident(Ident.new("compile_error", start)))
+        tokens.append(TokenTree.Punct(Punct('!', Spacing.Alone, start)))
 
- val string = Literal.string(message)
- string.setSpan(end)
- val group = Group(
- Delimiter.Brace,
- TokenStream.fromTokenTree(TokenTree.Literal(string)),
- )
- group.setSpan(end)
- tokens.append(TokenTree.Group(group))
- }
+        val string = Literal.string(message)
+        string.setSpan(end)
+        val group =
+            Group(
+                Delimiter.Brace,
+                TokenStream.fromTokenTree(TokenTree.Literal(string)),
+            )
+        group.setSpan(end)
+        tokens.append(TokenTree.Group(group))
+    }
 }
 
 private data class SpanRange(
- val start: Span,
- val end: Span,
+    val start: Span,
+    val end: Span,
 )
 
 internal fun errorNewAt(scope: Span, cursor: Cursor, message: Any): SynError =
- if (cursor.eof()) {
- SynError.new(scope, "unexpected end of input, $message")
- } else {
- val span = openSpanOfGroup(cursor)
- SynError.new(span, message)
- }
+    if (cursor.eof()) {
+        SynError.new(scope, "unexpected end of input, $message")
+    } else {
+        val span = openSpanOfGroup(cursor)
+        SynError.new(span, message)
+    }

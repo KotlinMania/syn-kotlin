@@ -13,19 +13,64 @@ import kotlin.test.assertFailsWith
 // keywords plus the bare underscore, which the lexer tokenizes as an Ident but
 // the parser reserves as a pattern placeholder. Kept inline here until the full
 // Syn identifier parser is ported.
-private val RESERVED_IDENTIFIERS: Set<String> = setOf(
-    "_",
-    "abstract", "as", "async", "await", "become", "box", "break",
-    "const", "continue", "crate", "do", "dyn", "else", "enum", "extern",
-    "false", "final", "fn", "for", "if", "impl", "in", "let", "loop",
-    "macro", "match", "mod", "move", "mut", "override", "priv", "pub",
-    "ref", "return", "self", "Self", "static", "struct", "super",
-    "trait", "true", "try", "type", "typeof", "unsafe", "unsized",
-    "use", "virtual", "where", "while", "yield",
-)
+private val RESERVED_IDENTIFIERS: Set<String> =
+    setOf(
+        "_",
+        "abstract",
+        "as",
+        "async",
+        "await",
+        "become",
+        "box",
+        "break",
+        "const",
+        "continue",
+        "crate",
+        "do",
+        "dyn",
+        "else",
+        "enum",
+        "extern",
+        "false",
+        "final",
+        "fn",
+        "for",
+        "if",
+        "impl",
+        "in",
+        "let",
+        "loop",
+        "macro",
+        "match",
+        "mod",
+        "move",
+        "mut",
+        "override",
+        "priv",
+        "pub",
+        "ref",
+        "return",
+        "self",
+        "Self",
+        "static",
+        "struct",
+        "super",
+        "trait",
+        "true",
+        "try",
+        "type",
+        "typeof",
+        "unsafe",
+        "unsized",
+        "use",
+        "virtual",
+        "where",
+        "while",
+        "yield",
+    )
 
-private fun parse(s: String): SynResult<Ident> {
-    return try {
+private fun parse(s: String): SynResult<Ident> =
+    try {
         val stream: TokenStream = TokenStream.fromString(s).getOrThrow()
         val tokens = stream.toList()
         if (tokens.size != 1) error("expected exactly one identifier, found ${tokens.size} tokens")
@@ -37,7 +82,6 @@ private fun parse(s: String): SynResult<Ident> {
     } catch (cause: Throwable) {
         SynResult.failure(SynError.new(Span.callSite(), cause.message ?: cause.toString()))
     }
-}
 
 private fun new(s: String): Ident = Ident.new(s, Span.callSite())
 

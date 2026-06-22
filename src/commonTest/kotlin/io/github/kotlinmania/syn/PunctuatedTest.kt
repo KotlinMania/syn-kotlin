@@ -7,10 +7,19 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
 /** A token-like integer wrapper for testing Punctuated with ToTokens bounds. */
-private data class IntToken(val v: Int) : io.github.kotlinmania.quote.ToTokens {
+private data class IntToken(
+    val v: Int,
+) : io.github.kotlinmania.quote.ToTokens {
     override fun toTokens(tokens: io.github.kotlinmania.procmacro2.TokenStream) {
-        val lit = io.github.kotlinmania.procmacro2.Literal.i32Suffixed(v)
-        tokens.extendTokenTrees(listOf(io.github.kotlinmania.procmacro2.TokenTree.Literal(lit)))
+        val lit =
+            io.github.kotlinmania.procmacro2.Literal
+                .i32Suffixed(v)
+        tokens.extendTokenTrees(
+            listOf(
+                io.github.kotlinmania.procmacro2.TokenTree
+                    .Literal(lit),
+            ),
+        )
     }
 }
 

@@ -1,7 +1,5 @@
-@file:OptIn(kotlin.experimental.ExperimentalObjCRefinement::class)
 // port-lint: source ext.rs
 package io.github.kotlinmania.syn
-import kotlin.native.HiddenFromObjC
 
 import io.github.kotlinmania.procmacro2.Ident
 import io.github.kotlinmania.procmacro2.Punct
@@ -54,13 +52,13 @@ import io.github.kotlinmania.procmacro2.TokenTree
  * }
  * ```
  */
-@HiddenFromObjC
 public fun identParseAny(input: ParseStream): SynResult<Ident> =
- input.step { cursor ->
- val pair = cursor.ident()
- ?: return@step SynResult.failure(cursor.error("expected ident"))
- SynResult.success(pair)
- }
+    input.step { cursor ->
+        val pair =
+            cursor.ident()
+                ?: return@step SynResult.failure(cursor.error("expected ident"))
+        SynResult.success(pair)
+    }
 
 /**
  * Peek any identifier including keywords. Usage: `input.peek(IdentPeekAny)`.
@@ -69,8 +67,9 @@ public fun identParseAny(input: ParseStream): SynResult<Ident> =
  * case of an ident which is not a keyword.
  */
 public object IdentPeekAny : Peek {
- override fun peek(cursor: Cursor): Boolean = cursor.ident() != null
- override fun display(): String = "identifier"
+    override fun peek(cursor: Cursor): Boolean = cursor.ident() != null
+
+    override fun display(): String = "identifier"
 }
 
 /**
@@ -99,12 +98,12 @@ public object IdentPeekAny : Peek {
  * ```
  */
 public fun Ident.unraw(): Ident {
- val string = this.toString()
- return if (string.startsWith("r#")) {
- Ident.new(string.removePrefix("r#"), this.span())
- } else {
- Ident.new(string, this.span())
- }
+    val string = this.toString()
+    return if (string.startsWith("r#")) {
+        Ident.new(string.removePrefix("r#"), this.span())
+    } else {
+        Ident.new(string, this.span())
+    }
 }
 
 /**
@@ -115,7 +114,7 @@ public fun Ident.unraw(): Ident {
  * `append` extension provided in quote-kotlin.
  */
 internal fun TokenStream.appendTokenTree(token: TokenTree) {
- this.extendTokenTrees(listOf(token))
+    this.extendTokenTrees(listOf(token))
 }
 
 /**
@@ -125,7 +124,7 @@ internal fun TokenStream.appendTokenTree(token: TokenTree) {
  * companion-equivalent helper on [Punct].
  */
 internal fun punctNewSpanned(ch: Char, spacing: Spacing, span: Span): Punct {
- val punct = Punct(ch, spacing)
- punct.setSpan(span)
- return punct
+    val punct = Punct(ch, spacing)
+    punct.setSpan(span)
+    return punct
 }

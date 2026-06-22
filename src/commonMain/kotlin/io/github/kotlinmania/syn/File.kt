@@ -1,11 +1,9 @@
 // port-lint: source file.rs
-@file:OptIn(kotlin.experimental.ExperimentalObjCRefinement::class)
 package io.github.kotlinmania.syn
 
 import io.github.kotlinmania.procmacro2.TokenStream
 import io.github.kotlinmania.quote.ToTokens
 import io.github.kotlinmania.quote.append
-import kotlin.native.HiddenFromObjC
 
 /**
  * A complete file of source code.
@@ -19,8 +17,19 @@ public data class File(
 ) : ToTokens {
     override fun toTokens(tokens: TokenStream) {
         if (shebang != null) {
-            tokens.append(io.github.kotlinmania.procmacro2.Literal.string(shebang))
-            tokens.append(io.github.kotlinmania.procmacro2.Punct('\n', io.github.kotlinmania.procmacro2.Spacing.Alone, io.github.kotlinmania.procmacro2.Span.callSite()))
+            tokens.append(
+                io.github.kotlinmania.procmacro2.Literal
+                    .string(shebang),
+            )
+            tokens.append(
+                io.github.kotlinmania.procmacro2
+                    .Punct(
+                        '\n',
+                        io.github.kotlinmania.procmacro2.Spacing.Alone,
+                        io.github.kotlinmania.procmacro2.Span
+                            .callSite(),
+                    ),
+            )
         }
         for (attr in attrs) attr.toTokens(tokens)
         for (item in items) item.toTokens(tokens)

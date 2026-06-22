@@ -1,11 +1,5 @@
 // port-lint: source derive.rs
-@file:OptIn(kotlin.experimental.ExperimentalObjCRefinement::class)
 package io.github.kotlinmania.syn
-
-import io.github.kotlinmania.procmacro2.TokenStream
-import io.github.kotlinmania.quote.ToTokens
-import io.github.kotlinmania.quote.append
-import kotlin.native.HiddenFromObjC
 
 /**
  * Data structure supplied to a derive macro.
@@ -31,7 +25,6 @@ public fun parseDeriveInput(input: ParseStream): SynResult<DeriveInput> =
     input.parse(DeriveInputParse)
 
 /** Parse implementation for derive macro input. */
-@HiddenFromObjC
 public object DeriveInputParse : Parse<DeriveInput> {
     override fun parse(input: ParseStream): SynResult<DeriveInput> {
         // Simplified: parse attributes, visibility, and then delegate

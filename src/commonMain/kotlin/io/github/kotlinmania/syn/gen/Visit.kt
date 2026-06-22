@@ -1,7 +1,20 @@
 // port-lint: source gen/visit.rs
 package io.github.kotlinmania.syn.gen
 
-import io.github.kotlinmania.syn.*
+import io.github.kotlinmania.syn.Attribute
+import io.github.kotlinmania.syn.Data
+import io.github.kotlinmania.syn.DeriveInput
+import io.github.kotlinmania.syn.Expr
+import io.github.kotlinmania.syn.Generics
+import io.github.kotlinmania.syn.Ident
+import io.github.kotlinmania.syn.Item
+import io.github.kotlinmania.syn.Lifetime
+import io.github.kotlinmania.syn.Lit
+import io.github.kotlinmania.syn.Meta
+import io.github.kotlinmania.syn.Pat
+import io.github.kotlinmania.syn.Path
+import io.github.kotlinmania.syn.Stmt
+import io.github.kotlinmania.syn.SynType
 
 /**
  * AST visitor — walks a syntax tree without mutating it.
@@ -15,17 +28,30 @@ import io.github.kotlinmania.syn.*
  */
 public open class Visit {
     public open fun visitExpr(e: Expr) { /* default: no-op */ }
+
     public open fun visitType(t: SynType) { /* default: no-op */ }
+
     public open fun visitPath(p: Path) { /* default: no-op */ }
+
     public open fun visitPat(p: Pat) { /* default: no-op */ }
+
     public open fun visitItem(i: Item) { /* default: no-op */ }
+
     public open fun visitAttribute(a: Attribute) { /* default: no-op */ }
+
     public open fun visitMeta(m: Meta) { /* default: no-op */ }
+
     public open fun visitGenerics(g: Generics) { /* default: no-op */ }
+
     public open fun visitLit(l: Lit) { /* default: no-op */ }
+
     public open fun visitLifetime(lt: Lifetime) { /* default: no-op */ }
+
     public open fun visitIdent(id: Ident) { /* default: no-op */ }
+
     public open fun visitStmt(s: Stmt) { /* default: no-op */ }
+
     public open fun visitData(d: Data) { /* default: no-op */ }
+
     public open fun visitDeriveInput(di: DeriveInput) { /* default: no-op */ }
 }

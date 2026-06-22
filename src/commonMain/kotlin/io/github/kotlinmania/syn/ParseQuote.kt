@@ -1,10 +1,8 @@
 // port-lint: source parse_quote.rs
-@file:OptIn(kotlin.experimental.ExperimentalObjCRefinement::class)
 
 package io.github.kotlinmania.syn
 
 import io.github.kotlinmania.procmacro2.TokenStream
-import kotlin.native.HiddenFromObjC
 
 /**
  * Quasi-quotation helper that accepts input like the `quote` macro but uses
@@ -59,10 +57,9 @@ import kotlin.native.HiddenFromObjC
  * are syntactically valid; downstream parser failures are unrecoverable from
  * a [parseQuote] call site by design.
  */
-@HiddenFromObjC
 public fun <T> parseQuote(tokenStream: TokenStream, parser: ParseQuote<T>): T {
- val result = parserFromFunction(parser::parse).parse2(tokenStream)
- return result.getOrElse { err -> error(err.message ?: err.toString()) }
+    val result = parserFromFunction(parser::parse).parse2(tokenStream)
+    return result.getOrElse { err -> error(err.message ?: err.toString()) }
 }
 
 /**
@@ -72,14 +69,12 @@ public fun <T> parseQuote(tokenStream: TokenStream, parser: ParseQuote<T>): T {
  * `Attribute`, `Field`, `List<Stmt>`) provide a custom [ParseQuote] in their
  * own port file.
  */
-@HiddenFromObjC
 public interface ParseQuote<T> {
- @HiddenFromObjC
- public fun parse(input: ParseStream): SynResult<T>
+    public fun parse(input: ParseStream): SynResult<T>
 }
 
 /** Adapts any [Parse] implementation into a [ParseQuote] implementation. */
-@HiddenFromObjC
-public fun <T> parseQuoteFromParse(parse: Parse<T>): ParseQuote<T> = object : ParseQuote<T> {
- override fun parse(input: ParseStream): SynResult<T> = parse.parse(input)
-}
+public fun <T> parseQuoteFromParse(parse: Parse<T>): ParseQuote<T> =
+    object : ParseQuote<T> {
+        override fun parse(input: ParseStream): SynResult<T> = parse.parse(input)
+    }

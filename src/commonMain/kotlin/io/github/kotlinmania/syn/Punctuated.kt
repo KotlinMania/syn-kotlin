@@ -1,11 +1,9 @@
 // port-lint: source punctuated.rs
-@file:OptIn(kotlin.experimental.ExperimentalObjCRefinement::class)
 
 package io.github.kotlinmania.syn
 
 import io.github.kotlinmania.procmacro2.TokenStream
 import io.github.kotlinmania.quote.ToTokens
-import kotlin.native.HiddenFromObjC
 
 /**
  * A punctuated sequence of syntax tree nodes of type [T] separated by
@@ -21,11 +19,11 @@ import kotlin.native.HiddenFromObjC
  * `actual type is Punctuated<Any?, Any?>, but Punctuated<…, …> was
  * expected` against every strongly-typed call site (~10+ occurrences).
  */
-@HiddenFromObjC
 public class Punctuated<T : ToTokens, P : ToTokens> private constructor(
     private val inner: MutableList<Pair<T, P>>,
     private var last: T?,
-) : ToTokens, Iterable<T> {
+) : ToTokens,
+    Iterable<T> {
     public constructor() : this(mutableListOf(), null)
 
     public companion object {
@@ -325,9 +323,10 @@ public class Punctuated<T : ToTokens, P : ToTokens> private constructor(
 
     public fun copy(copyValue: (T) -> T = { it }, copyPunctuation: (P) -> P = { it }): Punctuated<T, P> =
         Punctuated(
-            inner = inner.mapTo(mutableListOf()) { (value, punctuation) ->
-                copyValue(value) to copyPunctuation(punctuation)
-            },
+            inner =
+                inner.mapTo(mutableListOf()) { (value, punctuation) ->
+                    copyValue(value) to copyPunctuation(punctuation)
+                },
             last = last?.let(copyValue),
         )
 
@@ -340,17 +339,22 @@ public class Punctuated<T : ToTokens, P : ToTokens> private constructor(
 }
 
 /** A single syntax tree node of type [T] followed by its trailing punctuation of type [P] if any. */
-@HiddenFromObjC
 public sealed class PunctuatedPair<out T : ToTokens, out P : ToTokens> {
-    public data class Punctuated<T : ToTokens, P : ToTokens>(val value: T, val punctuation: P) :
-        PunctuatedPair<T, P>(), ToTokens {
+    public data class Punctuated<T : ToTokens, P : ToTokens>(
+        val value: T,
+        val punctuation: P,
+    ) : PunctuatedPair<T, P>(),
+        ToTokens {
         override fun toTokens(tokens: TokenStream) {
             value.toTokens(tokens)
             punctuation.toTokens(tokens)
         }
     }
 
-    public data class End<T : ToTokens>(val value: T) : PunctuatedPair<T, kotlin.Nothing>(), ToTokens {
+    public data class End<T : ToTokens>(
+        val value: T,
+    ) : PunctuatedPair<T, kotlin.Nothing>(),
+        ToTokens {
         override fun toTokens(tokens: TokenStream) {
             value.toTokens(tokens)
         }
@@ -387,8 +391,9 @@ public sealed class PunctuatedPair<out T : ToTokens, out P : ToTokens> {
 }
 
 /** An iterator over values of type [T], produced by consuming a [Punctuated] sequence. */
-@HiddenFromObjC
-public class IntoIter<T : ToTokens>(private val elements: MutableList<T>) : Iterator<T> {
+public class IntoIter<T : ToTokens>(
+    private val elements: MutableList<T>,
+) : Iterator<T> {
     private var index: Int = 0
 
     override fun hasNext(): Boolean = index < elements.size
@@ -400,7 +405,6 @@ public class IntoIter<T : ToTokens>(private val elements: MutableList<T>) : Iter
 }
 
 /** An iterator over pairs of values and their trailing punctuation from a [Punctuated] sequence. */
-@HiddenFromObjC
 public class PunctuatedPairs<T : ToTokens, P : ToTokens> internal constructor(
     private val inner: Iterator<Pair<T, P>>,
     private val lastValue: T?,
@@ -425,10 +429,8 @@ public class PunctuatedPairs<T : ToTokens, P : ToTokens> internal constructor(
         if (lastConsumed) 0 else 1
 }
 
-@HiddenFromObjC
 public fun <T : ToTokens> emptyPunctuatedIter(): IntoIter<T> =
     IntoIter(mutableListOf())
 
-@HiddenFromObjC
 public fun <T : ToTokens> emptyPunctuatedIterMut(): MutableList<T> =
     mutableListOf()

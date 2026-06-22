@@ -3,8 +3,6 @@ package io.github.kotlinmania.syn
 
 import io.github.kotlinmania.procmacro2.Span
 import io.github.kotlinmania.procmacro2.TokenStream
-import io.github.kotlinmania.quote.ToTokens
-import io.github.kotlinmania.quote.append
 
 /**
  * Re-export convenience aliases for types that live in other modules.
