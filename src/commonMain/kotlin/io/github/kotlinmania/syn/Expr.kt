@@ -13,15 +13,12 @@ public sealed class Expr : ToTokens {
     public data class Array(
         public val attrs: List<Attribute>,
         public val bracketToken: io.github.kotlinmania.syn.token.Bracket,
-        public val elems: Punctuated<Expr, io.github.kotlinmania.syn.token.Comma>,
+        public val elems: ExprList,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
             bracketToken.surround(tokens) { inner ->
-                for ((elem, comma) in elems.pairs()) {
-                    elem.toTokens(inner)
-                    comma?.toTokens(inner)
-                }
+                elems.toTokens(inner)
             }
         }
 
@@ -133,16 +130,13 @@ public sealed class Expr : ToTokens {
         public val attrs: List<Attribute>,
         public val func: Expr,
         public val parenToken: io.github.kotlinmania.syn.token.Paren,
-        public val args: Punctuated<Expr, io.github.kotlinmania.syn.token.Comma>,
+        public val args: ExprList,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
             func.toTokens(tokens)
             parenToken.surround(tokens) { inner ->
-                for ((arg, comma) in args.pairs()) {
-                    arg.toTokens(inner)
-                    comma?.toTokens(inner)
-                }
+                args.toTokens(inner)
             }
         }
 
@@ -173,7 +167,7 @@ public sealed class Expr : ToTokens {
         public val asyncness: io.github.kotlinmania.syn.token.Async?,
         public val capture: io.github.kotlinmania.syn.token.Move?,
         public val or1Token: io.github.kotlinmania.syn.token.Or,
-        public val inputs: Punctuated<Pat, io.github.kotlinmania.syn.token.Comma>,
+        public val inputs: PatList,
         public val or2Token: io.github.kotlinmania.syn.token.Or,
         public val output: ReturnType,
         public val body: Expr,
@@ -184,10 +178,7 @@ public sealed class Expr : ToTokens {
             asyncness?.toTokens(tokens)
             capture?.toTokens(tokens)
             or1Token.toTokens(tokens)
-            for ((input, comma) in inputs.pairs()) {
-                input.toTokens(tokens)
-                comma?.toTokens(tokens)
-            }
+            inputs.toTokens(tokens)
             or2Token.toTokens(tokens)
             output.toTokens(tokens)
             body.toTokens(tokens)
@@ -286,20 +277,17 @@ public sealed class Expr : ToTokens {
         public val ifToken: io.github.kotlinmania.syn.token.If,
         public val cond: Expr,
         public val thenBranch: Block,
-        public val elseBranch: Pair<io.github.kotlinmania.syn.token.Else, Expr>?,
+        public val elseBranch: ElseExpr?,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
             ifToken.toTokens(tokens)
             cond.toTokens(tokens)
             thenBranch.toTokens(tokens)
-            elseBranch?.let { (elseToken, elseExpr) ->
-                elseToken.toTokens(tokens)
-                elseExpr.toTokens(tokens)
-            }
+            elseBranch?.toTokens(tokens)
         }
 
-        override fun deepCopy(): If = If(attrs.map { it.deepCopy() }, ifToken, cond.deepCopy(), thenBranch, elseBranch?.let { (elseToken, elseExpr) -> elseToken to elseExpr.deepCopy() })
+        override fun deepCopy(): If = If(attrs.map { it.deepCopy() }, ifToken, cond.deepCopy(), thenBranch, elseBranch?.let { it.copy(expr = it.expr.deepCopy()) })
     }
 
     /** A square bracketed indexing expression: `vector[2]`. */
@@ -421,7 +409,7 @@ public sealed class Expr : ToTokens {
         public val method: Ident,
         public val turbofish: PathArguments.AngleBracketed?,
         public val parenToken: io.github.kotlinmania.syn.token.Paren,
-        public val args: Punctuated<Expr, io.github.kotlinmania.syn.token.Comma>,
+        public val args: ExprList,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
@@ -430,10 +418,7 @@ public sealed class Expr : ToTokens {
             method.toTokens(tokens)
             turbofish?.toTokens(tokens)
             parenToken.surround(tokens) { inner ->
-                for ((arg, comma) in args.pairs()) {
-                    arg.toTokens(inner)
-                    comma?.toTokens(inner)
-                }
+                args.toTokens(inner)
             }
         }
 
@@ -549,7 +534,7 @@ public sealed class Expr : ToTokens {
         public val qself: QSelf?,
         public val path: io.github.kotlinmania.syn.Path,
         public val braceToken: io.github.kotlinmania.syn.token.Brace,
-        public val fields: Punctuated<FieldValue, io.github.kotlinmania.syn.token.Comma>,
+        public val fields: FieldValueList,
         public val dot2Token: io.github.kotlinmania.syn.token.DotDot?,
         public val rest: Expr?,
     ) : Expr() {
@@ -563,10 +548,7 @@ public sealed class Expr : ToTokens {
             }
             path.toTokens(tokens)
             braceToken.surround(tokens) { inner ->
-                for ((field, comma) in fields.pairs()) {
-                    field.toTokens(inner)
-                    comma?.toTokens(inner)
-                }
+                fields.toTokens(inner)
                 dot2Token?.toTokens(inner)
                 rest?.toTokens(inner)
             }
@@ -609,15 +591,12 @@ public sealed class Expr : ToTokens {
     public data class Tuple(
         public val attrs: List<Attribute>,
         public val parenToken: io.github.kotlinmania.syn.token.Paren,
-        public val elems: Punctuated<Expr, io.github.kotlinmania.syn.token.Comma>,
+        public val elems: ExprList,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
             parenToken.surround(tokens) { inner ->
-                for ((elem, comma) in elems.pairs()) {
-                    elem.toTokens(inner)
-                    comma?.toTokens(inner)
-                }
+                elems.toTokens(inner)
             }
         }
 
@@ -768,7 +747,7 @@ public data class Label(
 public data class Arm(
     public val attrs: List<Attribute>,
     public val pat: Pat,
-    public val guard: Pair<io.github.kotlinmania.syn.token.If, Expr>?,
+    public val guard: IfExpr?,
     public val fatArrowToken: io.github.kotlinmania.syn.token.FatArrow,
     public val body: Expr,
     public val comma: io.github.kotlinmania.syn.token.Comma?,
@@ -776,16 +755,13 @@ public data class Arm(
     override fun toTokens(tokens: TokenStream) {
         for (attr in attrs) attr.toTokens(tokens)
         pat.toTokens(tokens)
-        guard?.let { (ifToken, guardExpr) ->
-            ifToken.toTokens(tokens)
-            guardExpr.toTokens(tokens)
-        }
+        guard?.toTokens(tokens)
         fatArrowToken.toTokens(tokens)
         body.toTokens(tokens)
         comma?.toTokens(tokens)
     }
 
-    public fun deepCopy(): Arm = Arm(attrs.map { it.deepCopy() }, pat.deepCopy(), guard?.let { (ifToken, guardExpr) -> ifToken to guardExpr.deepCopy() }, fatArrowToken, body.deepCopy(), comma)
+    public fun deepCopy(): Arm = Arm(attrs.map { it.deepCopy() }, pat.deepCopy(), guard?.let { it.copy(expr = it.expr.deepCopy()) }, fatArrowToken, body.deepCopy(), comma)
 }
 
 /** Limit types of a range, inclusive or exclusive. */

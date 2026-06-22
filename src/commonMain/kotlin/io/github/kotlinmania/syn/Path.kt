@@ -14,22 +14,21 @@ import io.github.kotlinmania.syn.token.Gt
 import io.github.kotlinmania.syn.token.Lt
 import io.github.kotlinmania.syn.token.Paren
 import io.github.kotlinmania.syn.token.PathSep
-import io.github.kotlinmania.syn.token.Plus
 
 /** A path at which a named item is exported. */
 public class Path(
     public var leadingColon: PathSep?,
-    public val segments: Punctuated<PathSegment, PathSep>,
+    public val segments: PathSegmentList,
 ) {
     public companion object {
         public fun from(segment: Ident): Path {
-            val path = Path(null, Punctuated.new())
+            val path = Path(null, PathSegmentList())
             path.segments.pushValue(PathSegment.from(segment))
             return path
         }
 
         public fun from(segment: PathSegment): Path {
-            val path = Path(null, Punctuated.new())
+            val path = Path(null, PathSegmentList())
             path.segments.pushValue(segment)
             return path
         }
@@ -66,15 +65,7 @@ public class Path(
 
     public fun toTokens(tokens: TokenStream) {
         leadingColon?.toTokens(tokens)
-        var first = true
-        for ((segment, punct) in segments.pairs()) {
-            if (!first) {
-                // PathSep already written via punct
-            }
-            segment.toTokens(tokens)
-            punct?.toTokens(tokens)
-            first = false
-        }
+        segments.toTokens(tokens)
     }
 
     override fun toString(): String =
@@ -129,14 +120,14 @@ public sealed class PathArguments : ToTokens {
     public data class AngleBracketed(
         public var colon2Token: PathSep?,
         public val ltToken: Lt,
-        public val args: Punctuated<GenericArgument, Comma>,
+        public val args: GenericArgumentList,
         public val gtToken: Gt,
     ) : PathArguments()
 
     /** The `(A, B) -> C` in `Fn(A, B) -> C`. */
     public data class Parenthesized(
         public val parenToken: Paren,
-        public val inputs: Punctuated<SynType, Comma>,
+        public val inputs: SynTypeList,
         public val output: ReturnType,
     ) : PathArguments()
 
@@ -156,18 +147,12 @@ public sealed class PathArguments : ToTokens {
             is AngleBracketed -> {
                 colon2Token?.toTokens(tokens)
                 ltToken.toTokens(tokens)
-                for ((arg, comma) in args.pairs()) {
-                    arg.toTokens(tokens)
-                    comma?.toTokens(tokens)
-                }
+                args.toTokens(tokens)
                 gtToken.toTokens(tokens)
             }
             is Parenthesized -> {
                 parenToken.surround(tokens) { inner ->
-                    for ((input, comma) in inputs.pairs()) {
-                        input.toTokens(inner)
-                        comma?.toTokens(inner)
-                    }
+                    inputs.toTokens(inner)
                 }
                 output.toTokens(tokens)
             }
@@ -269,16 +254,13 @@ public data class Constraint(
     public val ident: Ident,
     public val generics: PathArguments.AngleBracketed?,
     public val colonToken: Colon,
-    public val bounds: Punctuated<TypeParamBound, Plus>,
+    public val bounds: TypeParamBoundList,
 ) : ToTokens {
     override fun toTokens(tokens: TokenStream) {
         ident.toTokens(tokens)
         generics?.toTokens(tokens)
         colonToken.toTokens(tokens)
-        for ((bound, plus) in bounds.pairs()) {
-            bound.toTokens(tokens)
-            plus?.toTokens(tokens)
-        }
+        bounds.toTokens(tokens)
     }
 
     public fun deepCopy(): Constraint = Constraint(ident.copy(), generics?.deepCopy() as? PathArguments.AngleBracketed?, colonToken, bounds.copy({ it.deepCopy() }, { it }))
@@ -307,7 +289,7 @@ public object PathParse : Parse<Path> {
             } else {
                 null
             }
-        val segments = Punctuated.new<PathSegment, PathSep>()
+        val segments = PathSegmentList()
         val firstSegment = input.parse(PathSegmentParse).getOrElse { return SynResult.failure(it) }
         segments.pushValue(firstSegment)
         while (input.peek(PathSepPeek)) {

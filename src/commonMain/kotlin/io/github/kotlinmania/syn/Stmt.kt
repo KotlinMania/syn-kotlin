@@ -4,8 +4,6 @@ package io.github.kotlinmania.syn
 import io.github.kotlinmania.procmacro2.TokenStream
 import io.github.kotlinmania.quote.ToTokens
 import io.github.kotlinmania.syn.token.Brace
-import io.github.kotlinmania.syn.token.Else
-import io.github.kotlinmania.syn.token.Eq
 import io.github.kotlinmania.syn.token.Let
 import io.github.kotlinmania.syn.token.Semi
 
@@ -97,16 +95,13 @@ public sealed class Stmt : ToTokens {
 public data class LocalInit(
     public val eqToken: io.github.kotlinmania.syn.token.Eq,
     public val expr: Expr,
-    public val diverge: Pair<io.github.kotlinmania.syn.token.Else, Expr>?,
+    public val diverge: ElseExpr?,
 ) : ToTokens {
     override fun toTokens(tokens: TokenStream) {
         eqToken.toTokens(tokens)
         expr.toTokens(tokens)
-        diverge?.let { (elseToken, divergeExpr) ->
-            elseToken.toTokens(tokens)
-            divergeExpr.toTokens(tokens)
-        }
+        diverge?.toTokens(tokens)
     }
 
-    public fun deepCopy(): LocalInit = LocalInit(eqToken, expr.deepCopy(), diverge?.let { (elseToken, divergeExpr) -> elseToken to divergeExpr.deepCopy() })
+    public fun deepCopy(): LocalInit = LocalInit(eqToken, expr.deepCopy(), diverge?.let { it.copy(expr = it.expr.deepCopy()) })
 }

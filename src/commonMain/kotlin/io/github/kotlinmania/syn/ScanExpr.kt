@@ -39,7 +39,7 @@ internal object ExprParse : Parse<Expr> {
             val ident = input.parse(IdentParse)
             if (ident.isSuccess) {
                 val segment = PathSegment.from(ident.getOrThrow())
-                val segments = Punctuated<PathSegment, io.github.kotlinmania.syn.token.PathSep>().also { it.add(segment) }
+                val segments = PathSegmentList().also { it.pushValue(segment) }
                 val path = Path(null, segments)
                 return SynResult.success(Expr.Path(attrs = emptyList(), qself = null, path = path))
             }

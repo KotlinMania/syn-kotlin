@@ -39,7 +39,7 @@ class PunctuatedTest {
         val pairsList = p.intoPairs()
         assertEquals(3, pairsList.size)
         val lastPair = pairsList.last()
-        assertEquals(4, lastPair.intoValue().v)
+        assertEquals(4, lastPair.first.v)
     }
 
     @Test

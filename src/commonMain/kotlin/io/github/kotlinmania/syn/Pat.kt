@@ -5,7 +5,6 @@ import io.github.kotlinmania.procmacro2.TokenStream
 import io.github.kotlinmania.quote.ToTokens
 import io.github.kotlinmania.quote.toTokens
 import io.github.kotlinmania.syn.token.Colon
-import io.github.kotlinmania.syn.token.Comma
 import io.github.kotlinmania.syn.token.Or
 import io.github.kotlinmania.syn.token.Underscore
 
@@ -40,16 +39,13 @@ public sealed class Pat : ToTokens {
     /** A tuple pattern: `(A, B, C)`. */
     public data class Tuple(
         public val parenToken: io.github.kotlinmania.syn.token.Paren,
-        public val elems: Punctuated<Pat, Comma>,
+        public val elems: PatList,
     ) : Pat() {
         override fun deepCopy(): Pat = copy(elems = elems.copy({ it.deepCopy() }, { it }))
 
         override fun toTokens(tokens: TokenStream) {
             parenToken.surround(tokens) { inner ->
-                for ((elem, comma) in elems.pairs()) {
-                    elem.toTokens(inner)
-                    comma?.toTokens(inner)
-                }
+                elems.toTokens(inner)
             }
         }
     }
@@ -57,13 +53,13 @@ public sealed class Pat : ToTokens {
     /** A pattern that matches any one of a set of cases. */
     public data class Or(
         public val leadingVert: Or?,
-        public val cases: Punctuated<Pat, Or>,
+        public val cases: PatList,
     ) : Pat() {
         override fun deepCopy(): Pat = copy(cases = cases.copy({ it.deepCopy() }, { it }))
 
         override fun toTokens(tokens: TokenStream) {
             leadingVert?.toTokens(tokens)
-            for ((case, vert) in cases.pairs()) {
+            for ((case, vert) in cases.pairsList()) {
                 case.toTokens(tokens)
                 vert?.toTokens(tokens)
             }
@@ -102,7 +98,7 @@ public sealed class Pat : ToTokens {
         public val qself: QSelf?,
         public val path: Path,
         public val braceToken: io.github.kotlinmania.syn.token.Brace,
-        public val fields: Punctuated<FieldPat, Comma>,
+        public val fields: FieldPatList,
         public val rest: PatRest?,
         public val dot2Token: io.github.kotlinmania.syn.token.DotDot?,
     ) : Pat() {
@@ -117,10 +113,7 @@ public sealed class Pat : ToTokens {
             }
             path.toTokens(tokens)
             braceToken.surround(tokens) { inner ->
-                for ((field, comma) in fields.pairs()) {
-                    field.toTokens(inner)
-                    comma?.toTokens(inner)
-                }
+                fields.toTokens(inner)
                 rest?.toTokens(inner)
                 dot2Token?.toTokens(inner)
             }
@@ -130,16 +123,13 @@ public sealed class Pat : ToTokens {
     /** A slice pattern: `[a, b.., c]`. */
     public data class Slice(
         public val bracketToken: io.github.kotlinmania.syn.token.Bracket,
-        public val elems: Punctuated<Pat, Comma>,
+        public val elems: PatList,
     ) : Pat() {
         override fun deepCopy(): Pat = copy(elems = elems.copy({ it.deepCopy() }, { it }))
 
         override fun toTokens(tokens: TokenStream) {
             bracketToken.surround(tokens) { inner ->
-                for ((elem, comma) in elems.pairs()) {
-                    elem.toTokens(inner)
-                    comma?.toTokens(inner)
-                }
+                elems.toTokens(inner)
             }
         }
     }
