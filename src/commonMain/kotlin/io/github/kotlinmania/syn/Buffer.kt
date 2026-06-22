@@ -134,7 +134,7 @@ public class Cursor internal constructor(
 
         /**
          * This create method intelligently exits non-explicitly-entered
-         * [Delimiter.None]-delimited scopes when the cursor reaches the end of
+         * none-delimited scopes when the cursor reaches the end of
          * them, allowing for them to be treated transparently.
          */
         internal fun create(entries: Array<Entry>, index: Int, scope: Int): Cursor {
@@ -315,8 +315,8 @@ public class Cursor internal constructor(
      *
      * Returns null if the cursor has reached the end of its stream.
      *
-     * This method does not treat [Delimiter.None]-delimited groups as
-     * transparent, and will return a `Group(None, ..)` if the cursor is
+     * This method does not treat none-delimited groups as
+     * transparent, and will return a none-delimited group if the cursor is
      * looking at one.
      */
     public fun tokenTree(): Pair<TokenTree, Cursor>? {

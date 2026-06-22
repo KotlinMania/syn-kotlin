@@ -319,7 +319,7 @@ public sealed class Expr : ToTokens {
         override fun deepCopy(): Infer = Infer(attrs.map { it.deepCopy() }, underscoreToken)
     }
 
-    /** A `let` guard: `let Some(x) = opt`. */
+    /** A let guard that tests whether a pattern matches a value. */
     public data class Let(
         public val attrs: List<Attribute>,
         public val letToken: io.github.kotlinmania.syn.token.Let,
@@ -401,7 +401,7 @@ public sealed class Expr : ToTokens {
         override fun deepCopy(): Match = Match(attrs.map { it.deepCopy() }, matchToken, expr.deepCopy(), braceToken, arms.map { it.deepCopy() })
     }
 
-    /** A method call expression: `x.foo::<T>(a, b)`. */
+    /** A method call expression with optional turbofish and arguments. */
     public data class MethodCall(
         public val attrs: List<Attribute>,
         public val receiver: Expr,
@@ -439,7 +439,7 @@ public sealed class Expr : ToTokens {
         override fun deepCopy(): Paren = Paren(attrs.map { it.deepCopy() }, parenToken, expr.deepCopy())
     }
 
-    /** A path like `core::mem::replace` possibly containing generic parameters. */
+    /** A path expression possibly containing generic parameters. */
     public data class Path(
         val attrs: List<Attribute>,
         val qself: QSelf?,
@@ -618,7 +618,7 @@ public sealed class Expr : ToTokens {
         override fun deepCopy(): Unary = Unary(attrs.map { it.deepCopy() }, op, expr.deepCopy())
     }
 
-    /** An unsafe block expression. */
+    /** An unsafe block expression that permits operations violating Rust safety invariants. */
     public data class Unsafe(
         public val attrs: List<Attribute>,
         public val unsafeToken: io.github.kotlinmania.syn.token.Unsafe,
