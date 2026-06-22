@@ -29,14 +29,11 @@ public sealed class SynType : ToTokens {
     }
 
     public data class BareFn(
-        val inputs: Punctuated<BareFnArg, io.github.kotlinmania.syn.token.Comma>,
+        val inputs: BareFnArgList,
         val output: ReturnType,
     ) : SynType() {
         override fun toTokens(tokens: TokenStream) {
-            for ((input, comma) in inputs.pairs()) {
-                input.toTokens(tokens)
-                comma?.toTokens(tokens)
-            }
+            inputs.toTokens(tokens)
             output.toTokens(tokens)
         }
 
@@ -55,13 +52,10 @@ public sealed class SynType : ToTokens {
     }
 
     public data class ImplTrait(
-        val bounds: Punctuated<TypeParamBound, io.github.kotlinmania.syn.token.Plus>,
+        val bounds: TypeParamBoundList,
     ) : SynType() {
         override fun toTokens(tokens: TokenStream) {
-            for ((bound, plus) in bounds.pairs()) {
-                bound.toTokens(tokens)
-                plus?.toTokens(tokens)
-            }
+            bounds.toTokens(tokens)
         }
 
         override fun deepCopy(): ImplTrait = ImplTrait(bounds.copy({ it.deepCopy() }, { it }))
@@ -160,13 +154,10 @@ public sealed class SynType : ToTokens {
     }
 
     public data class TraitObject(
-        val bounds: Punctuated<TypeParamBound, io.github.kotlinmania.syn.token.Plus>,
+        val bounds: TypeParamBoundList,
     ) : SynType() {
         override fun toTokens(tokens: TokenStream) {
-            for ((bound, plus) in bounds.pairs()) {
-                bound.toTokens(tokens)
-                plus?.toTokens(tokens)
-            }
+            bounds.toTokens(tokens)
         }
 
         override fun deepCopy(): TraitObject = TraitObject(bounds.copy({ it.deepCopy() }, { it }))
@@ -174,14 +165,11 @@ public sealed class SynType : ToTokens {
 
     public data class Tuple(
         val parenToken: io.github.kotlinmania.syn.token.Paren,
-        val elems: Punctuated<SynType, io.github.kotlinmania.syn.token.Comma>,
+        val elems: SynTypeList,
     ) : SynType() {
         override fun toTokens(tokens: TokenStream) {
             parenToken.surround(tokens) { inner ->
-                for ((elem, comma) in elems.pairs()) {
-                    elem.toTokens(inner)
-                    comma?.toTokens(inner)
-                }
+                elems.toTokens(inner)
             }
         }
 

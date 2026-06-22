@@ -7,34 +7,23 @@ import io.github.kotlinmania.quote.ToTokens
 import io.github.kotlinmania.quote.toTokens
 import io.github.kotlinmania.syn.token.Brace
 import io.github.kotlinmania.syn.token.Colon
-import io.github.kotlinmania.syn.token.Comma
-import io.github.kotlinmania.syn.token.Eq
 import io.github.kotlinmania.syn.token.Paren
 import io.github.kotlinmania.syn.token.Semi
 
 /**
  * An enum variant.
- *
- * Hidden from the Objective-C / Swift Export bridge: the `discriminant`
- * field of type `kotlin.Pair<Eq, Expr>?` is bridged with type-parameters
- * erased to `Pair<Any?, Any?>?`, and the auto-generated `Syn.kt` then
- * fails to re-pass the value through the typed call site. Same shape as
- * the [Punctuated] erasure.
  */
 public data class Variant(
     public val attrs: List<Attribute>,
     public val ident: Ident,
     public val fields: Fields,
-    public val discriminant: Pair<Eq, Expr>?,
+    public val discriminant: EqExpr?,
 ) : ToTokens {
     override fun toTokens(tokens: TokenStream) {
         for (attr in attrs) attr.toTokens(tokens)
         ident.toTokens(tokens)
         fields.toTokens(tokens)
-        discriminant?.let { (eq, expr) ->
-            eq.toTokens(tokens)
-            expr.toTokens(tokens)
-        }
+        discriminant?.toTokens(tokens)
     }
 }
 
@@ -66,9 +55,9 @@ public sealed class Fields :
 
     override fun iterator(): Iterator<Field> =
         when (this) {
-            Unit -> emptyPunctuatedIter()
-            is Named -> fields.named.iterator()
-            is Unnamed -> fields.unnamed.iterator()
+            Unit -> emptyList<Field>().iterator()
+            is Named -> fields.named.toList().iterator()
+            is Unnamed -> fields.unnamed.toList().iterator()
         }
 
     public fun len(): Int =
@@ -97,14 +86,11 @@ public sealed class Fields :
 /** Named fields of a data structure such as `Point { x: f64, y: f64 }`. */
 public data class FieldsNamed(
     public val braceToken: Brace,
-    public val named: Punctuated<Field, Comma>,
+    public val named: FieldList,
 ) : ToTokens {
     override fun toTokens(tokens: TokenStream) {
         braceToken.surround(tokens) { inner ->
-            for ((field, comma) in named.pairs()) {
-                field.toTokens(inner)
-                comma?.toTokens(inner)
-            }
+            named.toTokens(inner)
         }
     }
 }
@@ -112,14 +98,11 @@ public data class FieldsNamed(
 /** Unnamed fields of a tuple-style data structure such as `Some(T)`. */
 public data class FieldsUnnamed(
     public val parenToken: Paren,
-    public val unnamed: Punctuated<Field, Comma>,
+    public val unnamed: FieldList,
 ) : ToTokens {
     override fun toTokens(tokens: TokenStream) {
         parenToken.surround(tokens) { inner ->
-            for ((field, comma) in unnamed.pairs()) {
-                field.toTokens(inner)
-                comma?.toTokens(inner)
-            }
+            unnamed.toTokens(inner)
         }
     }
 }
@@ -185,7 +168,7 @@ public sealed class Data : ToTokens {
     public data class Enum(
         val value: DataEnum,
     ) : Data() {
-        public val variants: Punctuated<Variant, Comma> get() = value.variants
+        public val variants: VariantList get() = value.variants
 
         override fun toTokens(tokens: TokenStream) {
             value.toTokens(tokens)
@@ -220,15 +203,12 @@ public data class DataStruct(
 public data class DataEnum(
     public val enumToken: io.github.kotlinmania.syn.token.Enum,
     public val braceToken: Brace,
-    public val variants: Punctuated<Variant, Comma>,
+    public val variants: VariantList,
 ) : ToTokens {
     override fun toTokens(tokens: TokenStream) {
         enumToken.toTokens(tokens)
         braceToken.surround(tokens) { inner ->
-            for ((variant, comma) in variants.pairs()) {
-                variant.toTokens(inner)
-                comma?.toTokens(inner)
-            }
+            variants.toTokens(inner)
         }
     }
 }

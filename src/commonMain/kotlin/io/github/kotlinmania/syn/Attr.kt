@@ -120,7 +120,7 @@ public data class ParseNestedMeta(
     public fun error(msg: String): SynError {
         val startSpan =
             path.segments
-                .firstOrNull()
+                .first()
                 ?.ident
                 ?.span()
                 ?: io.github.kotlinmania.procmacro2.Span

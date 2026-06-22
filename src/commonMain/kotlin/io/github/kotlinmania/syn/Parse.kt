@@ -143,7 +143,7 @@ public class ParseBuffer internal constructor(
      * Parsing continues until the end of this parse stream. The entire content
      * of this parse stream must consist of [T] and P.
      */
-    public fun <T : ToTokens, P : ToTokens> parseTerminated(
+    internal fun <T : ToTokens, P : ToTokens> parseTerminated(
         parser: (ParseStream) -> SynResult<T>,
         separator: Peek,
         punctuationParser: Parse<P>,

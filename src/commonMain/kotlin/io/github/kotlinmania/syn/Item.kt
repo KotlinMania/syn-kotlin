@@ -12,7 +12,6 @@ import io.github.kotlinmania.syn.token.Eq
 import io.github.kotlinmania.syn.token.For
 import io.github.kotlinmania.syn.token.Impl
 import io.github.kotlinmania.syn.token.Paren
-import io.github.kotlinmania.syn.token.Plus
 import io.github.kotlinmania.syn.token.Semi
 import io.github.kotlinmania.syn.token.Trait
 import io.github.kotlinmania.syn.token.Unsafe
@@ -54,7 +53,7 @@ public sealed class Item : ToTokens {
         public val ident: Ident,
         public val generics: Generics,
         public val braceToken: Brace,
-        public val variants: Punctuated<Variant, Comma>,
+        public val variants: VariantList,
     ) : Item() {
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
@@ -63,10 +62,7 @@ public sealed class Item : ToTokens {
             ident.toTokens(tokens)
             generics.toTokens(tokens)
             braceToken.surround(tokens) { inner ->
-                for ((variant, comma) in variants.pairs()) {
-                    variant.toTokens(inner)
-                    comma?.toTokens(inner)
-                }
+                variants.toTokens(inner)
             }
         }
     }
@@ -79,7 +75,7 @@ public sealed class Item : ToTokens {
         public val ident: Ident,
         public val generics: Generics,
         public val parenToken: Paren,
-        public val inputs: Punctuated<FnArg, Comma>,
+        public val inputs: FnArgList,
         public val output: ReturnType?,
         public val block: Block?,
     ) : Item() {
@@ -90,10 +86,7 @@ public sealed class Item : ToTokens {
             ident.toTokens(tokens)
             generics.toTokens(tokens)
             parenToken.surround(tokens) { inner ->
-                for ((arg, comma) in inputs.pairs()) {
-                    arg.toTokens(inner)
-                    comma?.toTokens(inner)
-                }
+                inputs.toTokens(inner)
             }
             output?.toTokens(tokens)
             block?.toTokens(tokens)
@@ -163,7 +156,7 @@ public sealed class Item : ToTokens {
         public val ident: Ident,
         public val generics: Generics,
         public val colonToken: Colon?,
-        public val supertraits: Punctuated<TypeParamBound, Plus>,
+        public val supertraits: TypeParamBoundList,
         public val braceToken: Brace,
         public val items: List<TraitItem>,
     ) : Item() {
@@ -232,7 +225,7 @@ public sealed class FnArg : ToTokens {
     /** The receiver argument of an associated method. */
     public data class Receiver(
         public val attrs: List<Attribute>,
-        public val reference: Pair<io.github.kotlinmania.syn.token.And, Lifetime?>?,
+        public val reference: AndLifetime?,
         public val mutability: io.github.kotlinmania.syn.token.Mut?,
         public val selfToken: io.github.kotlinmania.syn.token.SelfValue,
         public val colonToken: Colon?,
@@ -240,10 +233,7 @@ public sealed class FnArg : ToTokens {
     ) : FnArg() {
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
-            reference?.let { (amp, lt) ->
-                amp.toTokens(tokens)
-                lt?.toTokens(tokens)
-            }
+            reference?.toTokens(tokens)
             mutability?.toTokens(tokens)
             selfToken.toTokens(tokens)
             if (colonToken != null) {
@@ -252,7 +242,7 @@ public sealed class FnArg : ToTokens {
             }
         }
 
-        public fun lifetime(): Lifetime? = reference?.second
+        public fun lifetime(): Lifetime? = reference?.lifetime
     }
 
     /** A function argument accepted by pattern and type. */
@@ -303,27 +293,21 @@ public sealed class UseTree : ToTokens {
 
     public data class Name(
         val ident: Ident,
-        val rename: Pair<io.github.kotlinmania.syn.token.As, Ident>?,
+        val rename: AsIdent?,
     ) : UseTree() {
         override fun toTokens(tokens: TokenStream) {
             ident.toTokens(tokens)
-            rename?.let { (asToken, renameIdent) ->
-                asToken.toTokens(tokens)
-                renameIdent.toTokens(tokens)
-            }
+            rename?.toTokens(tokens)
         }
     }
 
     public data class Group(
         val braceToken: Brace,
-        val items: Punctuated<UseTree, Comma>,
+        val items: UseTreeList,
     ) : UseTree() {
         override fun toTokens(tokens: TokenStream) {
             braceToken.surround(tokens) { inner ->
-                for ((item, comma) in items.pairs()) {
-                    item.toTokens(inner)
-                    comma?.toTokens(inner)
-                }
+                items.toTokens(inner)
             }
         }
     }
@@ -360,7 +344,7 @@ public data class Signature(
     public val ident: Ident,
     public val generics: Generics,
     public val parenToken: Paren,
-    public val inputs: Punctuated<FnArg, Comma>,
+    public val inputs: FnArgList,
     public val variadic: Variadic?,
     public val output: ReturnType,
 ) : ToTokens {
@@ -373,10 +357,7 @@ public data class Signature(
         ident.toTokens(tokens)
         generics.toTokens(tokens)
         parenToken.surround(tokens) { inner ->
-            for ((arg, comma) in inputs.pairs()) {
-                arg.toTokens(inner)
-                comma?.toTokens(inner)
-            }
+            inputs.toTokens(inner)
             if (variadic != null) {
                 if (!inputs.isEmpty() && !inputs.trailingPunct()) {
                     io.github.kotlinmania.syn.token.Comma
@@ -392,7 +373,7 @@ public data class Signature(
 
     /** A method's receiver, such as a reference receiver or an explicit receiver type. */
     public fun receiver(): FnArg.Receiver? {
-        val first = inputs.firstOrNull() ?: return null
+        val first = inputs.first() ?: return null
         return first as? FnArg.Receiver
     }
 }
@@ -411,16 +392,13 @@ public data class Abi(
 /** The variadic argument of a foreign function. */
 public data class Variadic(
     public val attrs: List<Attribute>,
-    public val pat: Pair<Pat, Colon>?,
+    public val pat: PatColon?,
     public val dots: io.github.kotlinmania.syn.token.DotDotDot,
     public val comma: Comma?,
 ) : ToTokens {
     override fun toTokens(tokens: TokenStream) {
         for (attr in attrs) attr.toTokens(tokens)
-        pat?.let { (p, colon) ->
-            p.toTokens(tokens)
-            colon.toTokens(tokens)
-        }
+        pat?.toTokens(tokens)
         dots.toTokens(tokens)
         comma?.toTokens(tokens)
     }
@@ -436,7 +414,7 @@ public sealed class TraitItem : ToTokens {
         public val generics: Generics,
         public val colonToken: Colon,
         public val ty: SynType,
-        public val default: Pair<Eq, Expr>?,
+        public val default: EqExpr?,
         public val semiToken: Semi,
     ) : TraitItem() {
         override fun toTokens(tokens: TokenStream) {
@@ -446,10 +424,7 @@ public sealed class TraitItem : ToTokens {
             generics.toTokens(tokens)
             colonToken.toTokens(tokens)
             ty.toTokens(tokens)
-            default?.let { (eq, expr) ->
-                eq.toTokens(tokens)
-                expr.toTokens(tokens)
-            }
+            default?.toTokens(tokens)
             semiToken.toTokens(tokens)
         }
     }
@@ -481,8 +456,8 @@ public sealed class TraitItem : ToTokens {
         public val ident: Ident,
         public val generics: Generics,
         public val colonToken: Colon?,
-        public val bounds: Punctuated<TypeParamBound, Plus>,
-        public val default: Pair<Eq, SynType>?,
+        public val bounds: TypeParamBoundList,
+        public val default: EqSynType?,
         public val semiToken: Semi,
     ) : TraitItem() {
         override fun toTokens(tokens: TokenStream) {
@@ -494,10 +469,7 @@ public sealed class TraitItem : ToTokens {
                 colonToken?.toTokens(tokens)
                 bounds.toTokens(tokens)
             }
-            default?.let { (eq, ty) ->
-                eq.toTokens(tokens)
-                ty.toTokens(tokens)
-            }
+            default?.toTokens(tokens)
             generics.whereClause?.toTokens(tokens)
             semiToken.toTokens(tokens)
         }

@@ -11,13 +11,12 @@ import io.github.kotlinmania.syn.token.Comma
 import io.github.kotlinmania.syn.token.Eq
 import io.github.kotlinmania.syn.token.Gt
 import io.github.kotlinmania.syn.token.Lt
-import io.github.kotlinmania.syn.token.Plus
 import io.github.kotlinmania.syn.token.Where
 
 /** Generic parameters attached to a declaration. */
 public data class Generics(
     public var ltToken: Lt? = null,
-    public var params: Punctuated<GenericParam, Comma> = Punctuated.new(),
+    public var params: GenericParamList = GenericParamList(),
     public var gtToken: Gt? = null,
     public var whereClause: WhereClause? = null,
 ) : ToTokens {
@@ -38,16 +37,16 @@ public data class Generics(
 
     public fun makeWhereClause(): WhereClause {
         if (whereClause == null) {
-            whereClause = WhereClause(Where(Span.callSite()), Punctuated.new<WherePredicate, Comma>())
+            whereClause = WhereClause(Where(Span.callSite()), WherePredicateList())
         }
         return whereClause!!
     }
 
     public fun splitForImpl(): SplitForImpl {
-        val implGenerics = Generics(ltToken, Punctuated.new<GenericParam, Comma>(), gtToken)
-        val typeGenerics = Generics(ltToken, Punctuated.new<GenericParam, Comma>(), gtToken)
-        val turbofish = Turbofish(ltToken, Punctuated.new<GenericArgument, Comma>(), gtToken)
-        for ((value, punct) in params.pairs()) {
+        val implGenerics = Generics(ltToken, GenericParamList(), gtToken)
+        val typeGenerics = Generics(ltToken, GenericParamList(), gtToken)
+        val turbofish = Turbofish(ltToken, GenericArgumentList(), gtToken)
+        for ((value, punct) in params.pairsList()) {
             when (value) {
                 is GenericParam.LifetimeParam -> {
                     implGenerics.params.push(value) { Comma(Span.callSite()) }
@@ -67,10 +66,7 @@ public data class Generics(
 
     override fun toTokens(tokens: TokenStream) {
         ltToken?.toTokens(tokens)
-        for ((param, comma) in params.pairs()) {
-            param.toTokens(tokens)
-            comma?.toTokens(tokens)
-        }
+        params.toTokens(tokens)
         gtToken?.toTokens(tokens)
         whereClause?.toTokens(tokens)
     }
@@ -92,15 +88,12 @@ public data class SplitForImpl(
 
 public data class Turbofish(
     public val ltToken: Lt?,
-    public val params: Punctuated<GenericArgument, Comma>,
+    public val params: GenericArgumentList,
     public val gtToken: Gt?,
 ) : ToTokens {
     override fun toTokens(tokens: TokenStream) {
         ltToken?.toTokens(tokens)
-        for ((arg, comma) in params.pairs()) {
-            arg.toTokens(tokens)
-            comma?.toTokens(tokens)
-        }
+        params.toTokens(tokens)
         gtToken?.toTokens(tokens)
     }
 }
@@ -112,12 +105,12 @@ public sealed class GenericParam : ToTokens {
         public var attrs: List<Attribute>,
         public var lifetime: Lifetime,
         public var colonToken: Colon?,
-        public var bounds: Punctuated<Lifetime, Plus>,
+        public var bounds: LifetimeList,
     ) : GenericParam() {
         override fun toTokens(tokens: TokenStream) {
             lifetime.toTokens(tokens)
             colonToken?.toTokens(tokens)
-            for ((bound, plus) in bounds.pairs()) {
+            for ((bound, plus) in bounds.pairsList()) {
                 plus?.toTokens(tokens)
                 bound.toTokens(tokens)
             }
@@ -131,14 +124,14 @@ public sealed class GenericParam : ToTokens {
         public var attrs: List<Attribute>,
         public var ident: Ident,
         public var colonToken: Colon?,
-        public var bounds: Punctuated<TypeParamBound, Plus>,
+        public var bounds: TypeParamBoundList,
         public var eqToken: Eq?,
         public var default: SynType?,
     ) : GenericParam() {
         override fun toTokens(tokens: TokenStream) {
             ident.toTokens(tokens)
             colonToken?.toTokens(tokens)
-            for ((bound, plus) in bounds.pairs()) {
+            for ((bound, plus) in bounds.pairsList()) {
                 bound.toTokens(tokens)
                 plus?.toTokens(tokens)
             }
@@ -171,14 +164,11 @@ public sealed class GenericParam : ToTokens {
 
 public data class WhereClause(
     public val whereToken: Where,
-    public val predicates: Punctuated<WherePredicate, Comma>,
+    public val predicates: WherePredicateList,
 ) : ToTokens {
     override fun toTokens(tokens: TokenStream) {
         whereToken.toTokens(tokens)
-        for ((pred, comma) in predicates.pairs()) {
-            pred.toTokens(tokens)
-            comma?.toTokens(tokens)
-        }
+        predicates.toTokens(tokens)
     }
 
     public fun deepCopy(): WhereClause =
@@ -191,12 +181,12 @@ public sealed class WherePredicate : ToTokens {
     public data class TypePredicate(
         public val boundedTy: SynType,
         public val colonToken: Colon,
-        public val bounds: Punctuated<TypeParamBound, Plus>,
+        public val bounds: TypeParamBoundList,
     ) : WherePredicate() {
         override fun toTokens(tokens: TokenStream) {
             boundedTy.toTokens(tokens)
             colonToken.toTokens(tokens)
-            for ((bound, plus) in bounds.pairs()) {
+            for ((bound, plus) in bounds.pairsList()) {
                 bound.toTokens(tokens)
                 plus?.toTokens(tokens)
             }
@@ -209,12 +199,12 @@ public sealed class WherePredicate : ToTokens {
     public data class LifetimePredicate(
         public val lifetime: Lifetime,
         public val colonToken: Colon?,
-        public val bounds: Punctuated<Lifetime, Plus>,
+        public val bounds: LifetimeList,
     ) : WherePredicate() {
         override fun toTokens(tokens: TokenStream) {
             lifetime.toTokens(tokens)
             colonToken?.toTokens(tokens)
-            for ((bound, plus) in bounds.pairs()) {
+            for ((bound, plus) in bounds.pairsList()) {
                 plus?.toTokens(tokens)
                 bound.toTokens(tokens)
             }
