@@ -250,6 +250,20 @@ public class ParseBuffer internal constructor(
             inner.value = Unexpected.Some(info.first, info.second)
         }
     }
+
+    /**
+     * Advances this stream's position to match the position of [other], a
+     * fork of this stream. Used to commit speculative parsing done in a fork.
+     *
+     * Throws [IllegalArgumentException] if [other] was not derived from this
+     * parse stream.
+     */
+    public fun advanceTo(other: ParseBuffer) {
+        require(sameScope(currentCursor, other.currentCursor)) {
+            "fork was not derived from the advancing parse stream"
+        }
+        currentCursor = other.currentCursor
+    }
 }
 
 /**

@@ -71,6 +71,16 @@ public data class AsIdent(
     }
 }
 
+public data class IdentColon(
+    public val ident: Ident,
+    public val colonToken: io.github.kotlinmania.syn.token.Colon,
+) : ToTokens {
+    override fun toTokens(tokens: TokenStream) {
+        ident.toTokens(tokens)
+        colonToken.toTokens(tokens)
+    }
+}
+
 public data class PatColon(
     public val pat: Pat,
     public val colonToken: Colon,

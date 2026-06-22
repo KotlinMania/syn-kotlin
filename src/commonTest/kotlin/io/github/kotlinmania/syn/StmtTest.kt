@@ -8,72 +8,76 @@ import io.github.kotlinmania.procmacro2.Span
 import io.github.kotlinmania.procmacro2.TokenStream
 import io.github.kotlinmania.procmacro2.TokenTree
 import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertIs
+import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 /**
  * Tests for parsing of statements.
  *
- * The upstream Rust tests drive `syn::parse_str::<Stmt>(...)` and
- * `Block::parse_within.parse2(...)`, which require a `Parse<Stmt>` entry
- * point and a `Block.parseWithin` statement-sequence parser, neither of
- * which is ported to this Kotlin codebase yet. The `snapshot!` macro
- * expands to `insta::assert_debug_snapshot!` against a `Lite` debug
- * wrapper, which is also not ported. Each test below carries an honest
- * one-line comment naming the specific missing semantic, rather than
- * emitting a fake simulation that tests a different invariant.
- *
- * The Rust source constructs token streams via `quote!` and
- * `TokenStream::from_iter`; the equivalent constructors
- * ([TokenStream.fromString] and [TokenStream.fromTokenTrees]) are
- * available here, but without a `Parse<Stmt>` implementation they cannot
- * be driven through to a structural assertion.
+ * The statement parser (`parseStmtFull`, equivalent to upstream
+ * `Parse<Stmt>`) currently handles local bindings (`let pat = expr;`),
+ * expression statements (`expr;`), and trailing expressions (`expr`
+ * without a semicolon). The pattern parser backing the local binding
+ * handles wildcard, ident, type-ascripted ident, parenthesized, and
+ * tuple patterns. Item statements, macro statements, raw-address
+ * expressions (`&raw const x`), rest patterns (`..`), tuple-struct
+ * patterns (`Some(x)`), let-else, `Block.parseWithin`, and
+ * `Delimiter::None` group items are not yet handled; the corresponding
+ * upstream tests below carry an honest one-line comment naming the
+ * specific missing semantic.
  */
 class StmtTest {
-    // Not ported: `Parse<Stmt>` (the top-level statement parser entry
-    // point) is not implemented in this Kotlin port, so `let _ = &raw
-    // const x;` cannot be parsed into a `Stmt.Local` whose `init.expr`
-    // is an `Expr.RawAddr` for snapshot comparison.
+    // Not ported: `parseStmtFull` parses `&raw const x` as a reference
+    // to a path (`raw const x`) rather than a raw-address expression;
+    // the upstream test asserts an `Expr::RawAddr` initializer.
     @Test
     fun testRawOperator() {
-        // Not ported: `Parse<Stmt>` is not implemented; the upstream test
-        // parses `let _ = &raw const x;` and asserts the local binding's
-        // initializer expression is a raw-address expression with const
-        // mutability and a path expression to `x`.
+        // Not ported: raw-address expressions (`&raw const x`) are not
+        // recognized by the expression parser; the upstream
+        // `Expr::RawAddr` shape cannot be reproduced.
         TokenStream.fromString("let _ = &raw const x;").getOrThrow()
     }
 
-    // Not ported: `Parse<Stmt>` is not implemented; the upstream test
-    // parses `let _ = &raw;` and asserts the initializer is a reference
-    // expression to the path `raw` (not a raw-address expression).
     @Test
     fun testRawVariable() {
-        // Not ported: `Parse<Stmt>` is not implemented; the upstream test
-        // asserts that `&raw` without a following `const`/`mut` is parsed
-        // as a reference expression to a path named `raw`, distinguishing
-        // it from the raw-address operator form.
-        TokenStream.fromString("let _ = &raw;").getOrThrow()
+        // `&raw` without a following `const`/`mut` parses as a reference
+        // expression to the path `raw`; the local binding's pattern is a
+        // wildcard and the initializer's inner expression is a path.
+        val stmt = parserFromFunction(::parseStmtFull).parseStr("let _ = &raw;").getOrThrow()
+        val local = assertIs<Stmt.Local>(stmt)
+        assertIs<Pat.Wild>(local.pat)
+        val init = local.init
+        assertTrue(init != null)
+        val ref = assertIs<Expr.Reference>(init.expr)
+        assertNull(ref.mutability)
+        val path = assertIs<Expr.Path>(ref.expr)
+        val segment = path.path.segments.first()
+        assertTrue(segment != null)
+        assertEquals("raw", segment.ident.toString())
     }
 
-    // Not ported: `Parse<Stmt>` is not implemented; the upstream test
-    // asserts that `let _ = &raw x;` fails to parse because the raw
-    // address operator requires `const` or `mut` after `raw`.
     @Test
     fun testRawInvalid() {
-        // Not ported: `Parse<Stmt>` is not implemented; the upstream test
-        // asserts that parsing `let _ = &raw x;` returns an error because
-        // `&raw` must be followed by `const` or `mut`, not a bare path.
-        TokenStream.fromString("let _ = &raw x;").getOrThrow()
+        // `&raw x;` is not a valid statement: after `&raw` parses as a
+        // reference to the path `raw`, the trailing `x` leaves the
+        // stream unconsumed, so the statement parser rejects it.
+        // `parseStmtFull` throws `SynError` on the missing `;` rather
+        // than returning a `Failure`, so the assertion uses
+        // `runCatching` to treat either outcome as a parse rejection.
+        val result = runCatching { parserFromFunction(::parseStmtFull).parseStr("let _ = &raw x;") }
+        assertTrue(result.isFailure || result.getOrNull()?.isFailure == true, "expected parse error for: let _ = &raw x;")
     }
 
-    // Not ported: `Parse<Stmt>` is not implemented; the upstream test
-    // wraps an `async fn f() {}` token stream in a `Delimiter::None`
-    // group and parses it as a `Stmt::Item(Item::Fn { ... })` asserting
-    // the asyncness, ident, generics, output, and empty block shape.
+    // Not ported: `parseStmtFull` has no item-statement branch; the
+    // upstream test wraps `async fn f() {}` in a `Delimiter::None`
+    // group and asserts a `Stmt::Item(Item::Fn { ... })`.
     @Test
     fun testNoneGroup() {
-        // Not ported: `Parse<Stmt>` is not implemented; the upstream test
-        // builds a `Delimiter::None` group containing `async fn f() {}`
-        // and asserts it parses as a function item statement with
-        // asyncness set, ident `f`, default return type, and empty block.
+        // Not ported: `Delimiter::None` group items (`async fn f() {}`)
+        // are not handled by `parseStmtFull`; the upstream
+        // `Stmt::Item(Item::Fn)` shape cannot be reproduced.
         val tokens =
             TokenStream.fromTokenTrees(
                 listOf(
@@ -97,63 +101,55 @@ class StmtTest {
     }
 
     // Not ported: `Block.parseWithin` (the statement-sequence parser
-    // used by block bodies) is not implemented in this Kotlin port, so
-    // a `Delimiter::None` group containing `let None = None` cannot be
-    // parsed into a one-element statement list whose single statement is
-    // a `Stmt::Expr(Expr::Group { expr: Expr::Let { ... } }, None)`.
+    // used by block bodies) is not implemented; the upstream test
+    // parses a `Delimiter::None` group containing `let None = None` and
+    // asserts a one-element statement list wrapping a group expression.
     @Test
     fun testNoneGroupLetWithin() {
-        // Not ported: `Block.parseWithin` is not implemented; the upstream
-        // test wraps `let None = None` in a `Delimiter::None` group,
-        // parses it via `Block::parse_within.parse2(...)`, and asserts the
-        // result is a one-element list containing a group expression
-        // wrapping a let expression whose pattern and expr are both the
-        // path `None`.
+        // Not ported: `Block.parseWithin` is not implemented; the
+        // upstream `Expr::Group { expr: Expr::Let { ... } }` shape
+        // cannot be reproduced.
         val tokens =
             Group(Delimiter.None, TokenStream.fromString("let None = None").getOrThrow())
                 .let { TokenStream.fromTokenTrees(listOf(TokenTree.Group(it))) }
         tokens.toString()
     }
 
-    // Not ported: `Parse<Stmt>` is not implemented; the upstream test
-    // parses `let .. = 10;` and asserts the local binding's pattern is
-    // `Pat::Rest` and the initializer expression is `Expr::Lit { lit: 10 }`.
+    // Not ported: `parsePatFull` has no rest-pattern (`..`) branch; the
+    // upstream test parses `let .. = 10;` and asserts a `Pat::Rest`
+    // pattern with a literal initializer.
     @Test
     fun testLetDotDot() {
-        // Not ported: `Parse<Stmt>` is not implemented; the upstream test
-        // asserts that `let .. = 10;` parses into a local binding with a
-        // rest pattern and an integer-literal initializer.
+        // Not ported: rest patterns (`..`) are not handled by
+        // `parsePatFull`; the upstream `Pat::Rest` shape cannot be
+        // reproduced.
         TokenStream.fromString("let .. = 10;").getOrThrow()
     }
 
-    // Not ported: `Parse<Stmt>` is not implemented; the upstream test
+    // Not ported: `parsePatFull` has no tuple-struct pattern branch and
+    // `parseStmtFull` has no let-else diverge block; the upstream test
     // parses `let Some(x) = None else { return 0; };` and asserts the
-    // pattern is a tuple-struct pattern, the initializer expression is
-    // the path `None`, and the diverging else block contains a return
-    // statement with an integer-literal expression.
+    // tuple-struct pattern, path initializer, and return-statement
+    // diverge block.
     @Test
     fun testLetElse() {
-        // Not ported: `Parse<Stmt>` is not implemented; the upstream test
-        // asserts the let-else shape: a `Some(x)` tuple-struct pattern,
-        // a `None` path initializer, and a diverging block whose single
-        // statement is `return 0` with an integer-literal expression.
+        // Not ported: tuple-struct patterns (`Some(x)`) and let-else
+        // diverge blocks are not handled by `parseStmtFull`; the
+        // upstream `Stmt::Local { pat: Pat::TupleStruct, diverge: ... }`
+        // shape cannot be reproduced.
         TokenStream.fromString("let Some(x) = None else { return 0; };").getOrThrow()
     }
 
-    // Not ported: `Parse<Stmt>` is not implemented; the upstream test
-    // parses a function body containing a `macro_rules!` item, a
-    // `thread_local!` statement macro, a `println!("")` statement macro,
-    // and a `vec![]` expression macro, asserting the four-statement shape
-    // with each macro's path, delimiter, and token stream.
+    // Not ported: `parseStmtFull` has no item-statement or
+    // macro-statement branch; the upstream test parses a function body
+    // containing `macro_rules!`, `thread_local!`, `println!`, and
+    // `vec![]` and asserts the four-statement shape.
     @Test
     fun testMacros() {
-        // Not ported: `Parse<Stmt>` is not implemented; the upstream test
-        // asserts the four-statement body: an `Item::Macro` statement for
-        // `macro_rules! mac {}` with brace delimiter, a `Stmt::Macro` for
-        // `thread_local! { static FOO }` with brace delimiter, a
-        // `Stmt::Macro` for `println!("")` with paren delimiter and a
-        // trailing semicolon, and a `Stmt::Expr` wrapping an `Expr::Macro`
-        // for `vec![]` with bracket delimiter and no trailing semicolon.
+        // Not ported: item statements (`macro_rules! mac {}`) and
+        // macro statements (`thread_local! { ... }`, `println!(...)`)
+        // are not handled by `parseStmtFull`; the upstream
+        // four-statement body shape cannot be reproduced.
         TokenStream
             .fromString(
                 "fn main() { macro_rules! mac {} thread_local! { static FOO } println!(\"\"); vec![] }",
@@ -163,17 +159,13 @@ class StmtTest {
     // Not ported: `Block.parseWithin` is not implemented; the upstream
     // test parses `loop {} ()` and `'a: loop {} ()` via
     // `Block::parse_within.parse2(...)` and asserts each produces a
-    // two-element statement list: a loop expression (with optional label)
-    // followed by a unit tuple expression, distinguishing the loop-then-
-    // tuple shape from a call expression.
+    // two-element statement list (loop expression followed by unit
+    // tuple), distinguishing the shape from a call expression.
     @Test
     fun testEarlyParseLoop() {
-        // Not ported: `Block.parseWithin` is not implemented; the upstream
-        // test asserts that `loop {} ()` parses as a loop expression
-        // followed by a unit tuple expression (not a call), and that
-        // `'a: loop {} ()` parses as a labeled loop expression followed
-        // by a unit tuple expression, exercising the early-parse-loop
-        // disambiguation in the statement parser.
+        // Not ported: `Block.parseWithin` is not implemented; the
+        // upstream two-element `[Stmt::Expr(Expr::Loop), Stmt::Expr(Expr::Tuple)]`
+        // shape cannot be reproduced.
         TokenStream.fromString("loop {} ()").getOrThrow()
         TokenStream.fromString("'a: loop {} ()").getOrThrow()
     }

@@ -20,7 +20,7 @@ public sealed class Pat : ToTokens {
         public val attrs: List<Attribute>,
         public val byRef: io.github.kotlinmania.syn.token.Ref?,
         public val mutability: FieldMutability,
-        public val ident: Ident,
+        public val ident: io.github.kotlinmania.procmacro2.Ident,
         public val atToken: io.github.kotlinmania.syn.token.At?,
         public val subpat: Pat?,
     ) : Pat() {
@@ -96,7 +96,7 @@ public sealed class Pat : ToTokens {
     /** A data-object pattern. */
     public data class Struct(
         public val qself: QSelf?,
-        public val path: Path,
+        public val path: io.github.kotlinmania.syn.Path,
         public val braceToken: io.github.kotlinmania.syn.token.Brace,
         public val fields: FieldPatList,
         public val rest: PatRest?,
@@ -148,6 +148,120 @@ public sealed class Pat : ToTokens {
             pat.toTokens(tokens)
             colonToken.toTokens(tokens)
             ty.toTokens(tokens)
+        }
+    }
+
+    /** A const block pattern: `const { ... }`. */
+    public data class Const(
+        public val attrs: List<Attribute>,
+        public val constToken: io.github.kotlinmania.syn.token.Const,
+        public val block: Block,
+    ) : Pat() {
+        override fun deepCopy(): Pat = copy(attrs = attrs.map { it.deepCopy() }, block = block.deepCopy())
+
+        override fun toTokens(tokens: TokenStream) {
+            for (attr in attrs) attr.toTokens(tokens)
+            constToken.toTokens(tokens)
+            block.toTokens(tokens)
+        }
+    }
+
+    /** A literal pattern: `0`. */
+    public data class Lit(
+        public val attrs: List<Attribute>,
+        public val lit: io.github.kotlinmania.syn.Lit,
+    ) : Pat() {
+        override fun deepCopy(): Pat = copy(attrs = attrs.map { it.deepCopy() }, lit = lit)
+
+        override fun toTokens(tokens: TokenStream) {
+            for (attr in attrs) attr.toTokens(tokens)
+            lit.toTokens(tokens)
+        }
+    }
+
+    /** A macro invocation in pattern position. */
+    public data class Macro(
+        public val attrs: List<Attribute>,
+        public val mac: io.github.kotlinmania.syn.Macro,
+    ) : Pat() {
+        override fun deepCopy(): Pat = copy(attrs = attrs.map { it.deepCopy() }, mac = mac.deepCopy())
+
+        override fun toTokens(tokens: TokenStream) {
+            for (attr in attrs) attr.toTokens(tokens)
+            mac.toTokens(tokens)
+        }
+    }
+
+    /** A path pattern like `Color::Red`, optionally qualified with a self-type. */
+    public data class Path(
+        public val attrs: List<Attribute>,
+        public val qself: QSelf?,
+        public val path: io.github.kotlinmania.syn.Path,
+    ) : Pat() {
+        override fun deepCopy(): Pat = copy(attrs = attrs.map { it.deepCopy() }, qself = qself, path = path.deepCopy())
+
+        override fun toTokens(tokens: TokenStream) {
+            for (attr in attrs) attr.toTokens(tokens)
+            qself?.let {
+                it.ltToken.toTokens(tokens)
+                it.ty.toTokens(tokens)
+                it.asToken?.toTokens(tokens)
+                it.gtToken.toTokens(tokens)
+            }
+            path.toTokens(tokens)
+        }
+    }
+
+    /** A range pattern: `1..=2`. */
+    public data class Range(
+        public val attrs: List<Attribute>,
+        public val start: Expr?,
+        public val limits: RangeLimits,
+        public val end: Expr?,
+    ) : Pat() {
+        override fun deepCopy(): Pat = copy(attrs = attrs.map { it.deepCopy() }, start = start?.deepCopy(), end = end?.deepCopy())
+
+        override fun toTokens(tokens: TokenStream) {
+            for (attr in attrs) attr.toTokens(tokens)
+            start?.toTokens(tokens)
+            limits.toTokens(tokens)
+            end?.toTokens(tokens)
+        }
+    }
+
+    /** The dots in a tuple or slice pattern: `[0, 1, ..]`. */
+    public data class Rest(
+        public val attrs: List<Attribute>,
+        public val dot2Token: io.github.kotlinmania.syn.token.DotDot,
+    ) : Pat() {
+        override fun deepCopy(): Pat = copy(attrs = attrs.map { it.deepCopy() })
+
+        override fun toTokens(tokens: TokenStream) {
+            for (attr in attrs) attr.toTokens(tokens)
+            dot2Token.toTokens(tokens)
+        }
+    }
+
+    /** A tuple struct or tuple variant pattern: `Variant(x, y, .., z)`. */
+    public data class TupleStruct(
+        public val attrs: List<Attribute>,
+        public val qself: QSelf?,
+        public val path: io.github.kotlinmania.syn.Path,
+        public val parenToken: io.github.kotlinmania.syn.token.Paren,
+        public val elems: PatList,
+    ) : Pat() {
+        override fun deepCopy(): Pat = copy(attrs = attrs.map { it.deepCopy() }, qself = qself, path = path.deepCopy(), elems = elems.copy({ it.deepCopy() }, { it }))
+
+        override fun toTokens(tokens: TokenStream) {
+            for (attr in attrs) attr.toTokens(tokens)
+            qself?.let {
+                it.ltToken.toTokens(tokens)
+                it.ty.toTokens(tokens)
+                it.asToken?.toTokens(tokens)
+                it.gtToken.toTokens(tokens)
+            }
+            path.toTokens(tokens)
+            parenToken.surround(tokens) { inner -> elems.toTokens(inner) }
         }
     }
 

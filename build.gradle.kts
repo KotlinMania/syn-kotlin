@@ -581,6 +581,10 @@ ktlint {
     }
 }
 
+tasks.matching { it.name.contains("SwiftExport") && it.name.contains("ktlint") }.configureEach {
+    enabled = false
+}
+
 if (benchmarkEnabled) {
     tasks
         .withType<io.gitlab.arturbosch.detekt.Detekt>()

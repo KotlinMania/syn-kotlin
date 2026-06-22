@@ -29,15 +29,45 @@ public sealed class SynType : ToTokens {
     }
 
     public data class BareFn(
+        val lifetimes: BoundLifetimes?,
+        val unsafety: io.github.kotlinmania.syn.token.Unsafe?,
+        val abi: Abi?,
+        val fnToken: io.github.kotlinmania.syn.token.Fn,
+        val parenToken: io.github.kotlinmania.syn.token.Paren,
         val inputs: BareFnArgList,
+        val variadic: BareVariadic?,
         val output: ReturnType,
     ) : SynType() {
         override fun toTokens(tokens: TokenStream) {
-            inputs.toTokens(tokens)
+            lifetimes?.toTokens(tokens)
+            unsafety?.toTokens(tokens)
+            abi?.toTokens(tokens)
+            fnToken.toTokens(tokens)
+            parenToken.surround(tokens) { inner ->
+                inputs.toTokens(inner)
+                if (variadic != null) {
+                    if (!inputs.emptyOrTrailing()) {
+                        io.github.kotlinmania.syn.token.Comma
+                            .from(variadic.dots.spans.first())
+                            .toTokens(inner)
+                    }
+                    variadic.toTokens(inner)
+                }
+            }
             output.toTokens(tokens)
         }
 
-        override fun deepCopy(): BareFn = BareFn(inputs.copy({ it.deepCopy() }, { it }), output.deepCopy())
+        override fun deepCopy(): BareFn =
+            BareFn(
+                lifetimes?.deepCopy(),
+                unsafety,
+                abi,
+                fnToken,
+                parenToken,
+                inputs.copy({ it.deepCopy() }, { it }),
+                variadic?.deepCopy(),
+                output.deepCopy(),
+            )
     }
 
     public data class Group(
@@ -45,20 +75,22 @@ public sealed class SynType : ToTokens {
         val elem: SynType,
     ) : SynType() {
         override fun toTokens(tokens: TokenStream) {
-            elem.toTokens(tokens)
+            groupToken.surround(tokens) { inner -> elem.toTokens(inner) }
         }
 
         override fun deepCopy(): Group = Group(groupToken, elem.deepCopy())
     }
 
     public data class ImplTrait(
+        val implToken: io.github.kotlinmania.syn.token.Impl,
         val bounds: TypeParamBoundList,
     ) : SynType() {
         override fun toTokens(tokens: TokenStream) {
+            implToken.toTokens(tokens)
             bounds.toTokens(tokens)
         }
 
-        override fun deepCopy(): ImplTrait = ImplTrait(bounds.copy({ it.deepCopy() }, { it }))
+        override fun deepCopy(): ImplTrait = ImplTrait(implToken, bounds.copy({ it.deepCopy() }, { it }))
     }
 
     public data class Infer(
@@ -122,25 +154,34 @@ public sealed class SynType : ToTokens {
     }
 
     public data class Ptr(
+        val starToken: io.github.kotlinmania.syn.token.Star,
+        val constToken: io.github.kotlinmania.syn.token.Const?,
+        val mutability: io.github.kotlinmania.syn.token.Mut?,
         val elem: SynType,
     ) : SynType() {
         override fun toTokens(tokens: TokenStream) {
+            starToken.toTokens(tokens)
+            if (mutability != null) mutability.toTokens(tokens) else constToken?.toTokens(tokens)
             elem.toTokens(tokens)
         }
 
-        override fun deepCopy(): Ptr = Ptr(elem.deepCopy())
+        override fun deepCopy(): Ptr = Ptr(starToken, constToken, mutability, elem.deepCopy())
     }
 
     public data class Reference(
+        val andToken: io.github.kotlinmania.syn.token.And,
         val lifetime: Lifetime?,
+        val mutability: io.github.kotlinmania.syn.token.Mut?,
         val elem: SynType,
     ) : SynType() {
         override fun toTokens(tokens: TokenStream) {
+            andToken.toTokens(tokens)
             lifetime?.toTokens(tokens)
+            mutability?.toTokens(tokens)
             elem.toTokens(tokens)
         }
 
-        override fun deepCopy(): Reference = Reference(lifetime?.deepCopy(), elem.deepCopy())
+        override fun deepCopy(): Reference = Reference(andToken, lifetime?.deepCopy(), mutability, elem.deepCopy())
     }
 
     public data class Slice(
@@ -154,13 +195,15 @@ public sealed class SynType : ToTokens {
     }
 
     public data class TraitObject(
+        val dynToken: io.github.kotlinmania.syn.token.Dyn?,
         val bounds: TypeParamBoundList,
     ) : SynType() {
         override fun toTokens(tokens: TokenStream) {
+            dynToken?.toTokens(tokens)
             bounds.toTokens(tokens)
         }
 
-        override fun deepCopy(): TraitObject = TraitObject(bounds.copy({ it.deepCopy() }, { it }))
+        override fun deepCopy(): TraitObject = TraitObject(dynToken, bounds.copy({ it.deepCopy() }, { it }))
     }
 
     public data class Tuple(
@@ -190,16 +233,37 @@ public sealed class SynType : ToTokens {
 }
 
 public data class BareFnArg(
-    public val name: Ident?,
+    public val attrs: List<Attribute>,
+    public val name: IdentColon?,
     public val ty: SynType,
 ) : ToTokens {
     override fun toTokens(tokens: TokenStream) {
-        name?.toTokens(tokens)
+        for (attr in attrs) attr.toTokens(tokens)
+        name?.ident?.toTokens(tokens)
+        name?.colonToken?.toTokens(tokens)
         ty.toTokens(tokens)
     }
 
     public fun deepCopy(): BareFnArg =
-        BareFnArg(name?.copy(), ty.deepCopy())
+        BareFnArg(attrs.map { it.deepCopy() }, name, ty.deepCopy())
+}
+
+/** The variadic argument of a function pointer like `fn(usize, ...)`. */
+public data class BareVariadic(
+    public val attrs: List<Attribute>,
+    public val name: IdentColon?,
+    public val dots: io.github.kotlinmania.syn.token.DotDotDot,
+    public val comma: io.github.kotlinmania.syn.token.Comma?,
+) : ToTokens {
+    override fun toTokens(tokens: TokenStream) {
+        for (attr in attrs) attr.toTokens(tokens)
+        name?.ident?.toTokens(tokens)
+        name?.colonToken?.toTokens(tokens)
+        dots.toTokens(tokens)
+        comma?.toTokens(tokens)
+    }
+
+    public fun deepCopy(): BareVariadic = BareVariadic(attrs.map { it.deepCopy() }, name, dots, comma)
 }
 
 public sealed class ReturnType : ToTokens {

@@ -140,6 +140,14 @@ public open class VisitMut {
         when (bound) {
             is io.github.kotlinmania.syn.TypeParamBound.Trait -> bound.copy(path = visitPath(bound.path))
             is io.github.kotlinmania.syn.TypeParamBound.LifetimeBound -> bound.copy(lifetime = visitLifetime(bound.lifetime))
+            is io.github.kotlinmania.syn.TypeParamBound.PreciseCapture -> bound.copy(params = bound.params.copy({ visitCapturedParam(it) }, { it }))
+            is io.github.kotlinmania.syn.TypeParamBound.Verbatim -> bound
+        }
+
+    public open fun visitCapturedParam(param: io.github.kotlinmania.syn.CapturedParam): io.github.kotlinmania.syn.CapturedParam =
+        when (param) {
+            is io.github.kotlinmania.syn.CapturedParam.Lifetime -> param.copy(lifetime = visitLifetime(param.lifetime))
+            is io.github.kotlinmania.syn.CapturedParam.Ident -> param
         }
 
     public open fun visitPathSegment(segment: PathSegment): PathSegment = segment.copy(arguments = visitPathArguments(segment.arguments))
