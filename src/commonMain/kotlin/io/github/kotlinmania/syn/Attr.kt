@@ -108,6 +108,60 @@ public sealed class Meta : ToTokens {
         }
 }
 
+/** Parser for [Meta]: a path, a path followed by a delimited token stream, or a path followed by `=` and an expression. */
+public object MetaParse : Parse<Meta> {
+    override fun parse(input: ParseStream): SynResult<Meta> {
+        val path = input.parse(PathParse).getOrElse { return SynResult.failure(it) }
+        return parseMetaAfterPath(path, input)
+    }
+}
+
+/** Parser for [Meta.List]: a path followed by a delimited token stream. */
+public object MetaListParse : Parse<Meta.List> {
+    override fun parse(input: ParseStream): SynResult<Meta.List> {
+        val path = input.parse(PathParse).getOrElse { return SynResult.failure(it) }
+        return parseMetaListAfterPath(path, input)
+    }
+}
+
+/** Parser for [Meta.NameValue]: a path followed by `=` and an expression. */
+public object MetaNameValueParse : Parse<Meta.NameValue> {
+    override fun parse(input: ParseStream): SynResult<Meta.NameValue> {
+        val path = input.parse(PathParse).getOrElse { return SynResult.failure(it) }
+        return parseMetaNameValueAfterPath(path, input)
+    }
+}
+
+internal fun parseMetaAfterPath(path: Path, input: ParseStream): SynResult<Meta> =
+    if (input.peek(ParenPeek) || input.peek(BracketPeek) || input.peek(BracePeek)) {
+        parseMetaListAfterPath(path, input).map { Meta.List(it.path, it.delimiter, it.tokens) }
+    } else if (input.peek(EqPeek) && !input.peek(EqEqPeek) && !input.peek(FatArrowPeek)) {
+        parseMetaNameValueAfterPath(path, input).map { Meta.NameValue(it.path, it.eqToken, it.value) }
+    } else {
+        SynResult.success(Meta.PathMeta(path))
+    }
+
+internal fun parseMetaListAfterPath(path: Path, input: ParseStream): SynResult<Meta.List> {
+    val (delimiter, tokens) = parseDelimiter(input).getOrElse { return SynResult.failure(it) }
+    return SynResult.success(Meta.List(path, delimiter, tokens))
+}
+
+internal fun parseMetaNameValueAfterPath(path: Path, input: ParseStream): SynResult<Meta.NameValue> {
+    val eqToken = input.parse(EqParse).getOrElse { return SynResult.failure(it) }
+    val ahead = input.fork()
+    val lit = ahead.parse(LitParse)
+    val value: Expr =
+        if (lit is SynResult.Success && ahead.isEmpty()) {
+            input.advanceTo(ahead)
+            Expr.Lit(attrs = emptyList(), lit = lit.value)
+        } else if (input.peek(PoundPeek) && input.peek2(BracketPeek)) {
+            return SynResult.failure(input.error("unexpected attribute inside of attribute"))
+        } else {
+            parseExprFull(input).getOrElse { return SynResult.failure(it) }
+        }
+    return SynResult.success(Meta.NameValue(path, eqToken, value))
+}
+
 /** Context passed to a nested attribute parser. */
 public data class ParseNestedMeta(
     public val path: Path,
