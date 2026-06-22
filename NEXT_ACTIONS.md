@@ -8,10 +8,10 @@ Based on AST analysis, here are the concrete next steps.
 - **Function parity:** 199/1083 matched (target 1626) — 18.4%
 - **Class/type parity:** 39/121 matched (target 697) — 32.2%
 - **Combined symbol parity:** 238/1204 matched (target 2323) — 19.8%
-- **Average inline-code cosine:** 0.26 (function body across 53 matched files)
-- **Average documentation cosine:** 0.32 (doc text across 53 matched files)
-- **Cheat-zeroed Files:** 16
-- **Critical Issues:** 47 files with <0.60 function similarity
+- **Average inline-code cosine:** 0.30 (function body across 53 matched files)
+- **Average documentation cosine:** 0.31 (doc text across 53 matched files)
+- **Cheat-zeroed Files:** 12
+- **Critical Issues:** 46 files with <0.60 function similarity
 
 ## Priority 1: Fix Incomplete High-Dependency Files
 
@@ -295,10 +295,10 @@ Every matched file is listed below with function and type symbol parity.
 
 ### 21. ty
 
-- **Target:** `syn.Type [ZERO]`
-- **Similarity:** 0.00
+- **Target:** `syn.Type`
+- **Similarity:** 0.32
 - **Dependents:** 1
-- **Priority Score:** 1060710.0
+- **Priority Score:** 1060706.9
 - **Functions:** 1/7 matched (target 41)
 - **Missing functions:** `parse`, `without_plus`, `ambig_ty`, `parse_bounds`, `parse_bare_fn_arg`, `parse_bare_variadic`
 - **Types:** 0/0 matched (target 24)
@@ -453,10 +453,10 @@ Every matched file is listed below with function and type symbol parity.
 
 ### 35. export
 
-- **Target:** `syn.Export [ZERO]`
-- **Similarity:** 0.00
+- **Target:** `syn.Export`
+- **Similarity:** 1.00
 - **Dependents:** 0
-- **Priority Score:** 80810.0
+- **Priority Score:** 80800.0
 - **Functions:** 0/0 matched
 - **Missing functions:** _none_
 - **Types:** 0/8 matched (target 1)
@@ -520,10 +520,10 @@ Every matched file is listed below with function and type symbol parity.
 
 ### 41. mac
 
-- **Target:** `syn.Mac [ZERO]`
-- **Similarity:** 0.00
+- **Target:** `syn.Mac`
+- **Similarity:** 0.48
 - **Dependents:** 0
-- **Priority Score:** 30810.0
+- **Priority Score:** 30805.2
 - **Functions:** 5/8 matched (target 6)
 - **Missing functions:** `span`, `is_brace`, `parse`
 - **Types:** 0/0 matched (target 1)
@@ -531,10 +531,10 @@ Every matched file is listed below with function and type symbol parity.
 
 ### 42. thread
 
-- **Target:** `syn.Thread [ZERO]`
-- **Similarity:** 0.00
+- **Target:** `syn.Thread`
+- **Similarity:** 0.30
 - **Dependents:** 0
-- **Priority Score:** 20510.0
+- **Priority Score:** 20507.0
 - **Functions:** 2/4 matched (target 11)
 - **Missing functions:** `fmt`, `clone`
 - **Types:** 1/1 matched (target 2)

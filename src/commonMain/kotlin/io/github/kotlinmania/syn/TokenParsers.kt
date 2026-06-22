@@ -1065,7 +1065,7 @@ public object UnionParse : Parse<Union> {
         }
 }
 
-/** Peeks for the unsafe keyword. */
+/** Peeks for the memory-safety keyword. */
 public object UnsafePeek : Peek {
     override fun peek(cursor: Cursor): Boolean {
         val (ident, _) = cursor.ident() ?: return false
@@ -1075,7 +1075,7 @@ public object UnsafePeek : Peek {
     override fun display(): String = "`unsafe`"
 }
 
-/** Parses the unsafe keyword. */
+/** Parses the memory-safety keyword. */
 public object UnsafeParse : Parse<Unsafe> {
     override fun parse(input: ParseStream): SynResult<Unsafe> =
         input.step { cursor ->

@@ -19,7 +19,7 @@ import io.github.kotlinmania.syn.SynType
 /**
  * AST visitor — walks a syntax tree without mutating it.
  *
- * Kotlin sealed classes let you achieve the same with exhaustive when
+ * Kotlin sealed classes support the same pattern via exhaustive when
  * expressions on each sealed hierarchy.
  *
  * This Visit interface provides a visitor-style API for callers who need
