@@ -2,8 +2,9 @@
 package io.github.kotlinmania.syn
 
 import io.github.kotlinmania.procmacro2.TokenStream
+import io.github.kotlinmania.quote.ToTokens
+import io.github.kotlinmania.quote.toTokens
 import io.github.kotlinmania.syn.token.Brace
-import io.github.kotlinmania.syn.token.Bracket
 import io.github.kotlinmania.syn.token.Colon
 import io.github.kotlinmania.syn.token.Comma
 import io.github.kotlinmania.syn.token.Default
@@ -15,586 +16,610 @@ import io.github.kotlinmania.syn.token.Plus
 import io.github.kotlinmania.syn.token.Semi
 import io.github.kotlinmania.syn.token.Trait
 import io.github.kotlinmania.syn.token.Unsafe
-import io.github.kotlinmania.quote.ToTokens
-import io.github.kotlinmania.quote.toTokens
 
 /**
  * Things that can appear directly inside of a module or scope.
  */
 public sealed class Item : ToTokens {
- /** A constant item: `const MAX: UShort = 65535`. */
- public data class Const(
-  public val attrs: List<Attribute>,
-  public val vis: Visibility,
-  public val constToken: io.github.kotlinmania.syn.token.Const,
-  public val ident: Ident,
-  public val colonToken: Colon?,
-  public val ty: SynType,
-  public val eqToken: Eq?,
-  public val expr: Expr?,
-  public val semiToken: Semi,
- ) : Item() {
-  override fun toTokens(tokens: TokenStream) {
-   for (attr in attrs) attr.toTokens(tokens)
-   vis.toTokens(tokens)
-   constToken.toTokens(tokens)
-   ident.toTokens(tokens)
-   colonToken?.toTokens(tokens)
-   ty.toTokens(tokens)
-   eqToken?.toTokens(tokens)
-   expr?.toTokens(tokens)
-   semiToken.toTokens(tokens)
-  }
- }
-
- /** An enum definition. */
- public data class Enum(
-  public val attrs: List<Attribute>,
-  public val vis: Visibility,
-  public val enumToken: io.github.kotlinmania.syn.token.Enum,
-  public val ident: Ident,
-  public val generics: Generics,
-  public val braceToken: Brace,
-  public val variants: Punctuated<Variant, Comma>,
- ) : Item() {
-  override fun toTokens(tokens: TokenStream) {
-   for (attr in attrs) attr.toTokens(tokens)
-   vis.toTokens(tokens)
-   enumToken.toTokens(tokens)
-   ident.toTokens(tokens)
-   generics.toTokens(tokens)
-   braceToken.surround(tokens) { inner ->
-    for ((variant, comma) in variants.pairs()) {
-     variant.toTokens(inner)
-     comma?.toTokens(inner)
+    /** A constant item: `const MAX: UShort = 65535`. */
+    public data class Const(
+        public val attrs: List<Attribute>,
+        public val vis: Visibility,
+        public val constToken: io.github.kotlinmania.syn.token.Const,
+        public val ident: Ident,
+        public val colonToken: Colon?,
+        public val ty: SynType,
+        public val eqToken: Eq?,
+        public val expr: Expr?,
+        public val semiToken: Semi,
+    ) : Item() {
+        override fun toTokens(tokens: TokenStream) {
+            for (attr in attrs) attr.toTokens(tokens)
+            vis.toTokens(tokens)
+            constToken.toTokens(tokens)
+            ident.toTokens(tokens)
+            colonToken?.toTokens(tokens)
+            ty.toTokens(tokens)
+            eqToken?.toTokens(tokens)
+            expr?.toTokens(tokens)
+            semiToken.toTokens(tokens)
+        }
     }
-   }
-  }
- }
 
- /** A free-standing function. */
- public data class Fn(
-  public val attrs: List<Attribute>,
-  public val vis: Visibility,
-  public val fnToken: io.github.kotlinmania.syn.token.Fn,
-  public val ident: Ident,
-  public val generics: Generics,
-  public val parenToken: Paren,
-  public val inputs: Punctuated<FnArg, Comma>,
-  public val output: ReturnType?,
-  public val block: Block?,
- ) : Item() {
-  override fun toTokens(tokens: TokenStream) {
-   for (attr in attrs) attr.toTokens(tokens)
-   vis.toTokens(tokens)
-   fnToken.toTokens(tokens)
-   ident.toTokens(tokens)
-   generics.toTokens(tokens)
-   parenToken.surround(tokens) { inner ->
-    for ((arg, comma) in inputs.pairs()) {
-     arg.toTokens(inner)
-     comma?.toTokens(inner)
+    /** An enum definition. */
+    public data class Enum(
+        public val attrs: List<Attribute>,
+        public val vis: Visibility,
+        public val enumToken: io.github.kotlinmania.syn.token.Enum,
+        public val ident: Ident,
+        public val generics: Generics,
+        public val braceToken: Brace,
+        public val variants: Punctuated<Variant, Comma>,
+    ) : Item() {
+        override fun toTokens(tokens: TokenStream) {
+            for (attr in attrs) attr.toTokens(tokens)
+            vis.toTokens(tokens)
+            enumToken.toTokens(tokens)
+            ident.toTokens(tokens)
+            generics.toTokens(tokens)
+            braceToken.surround(tokens) { inner ->
+                for ((variant, comma) in variants.pairs()) {
+                    variant.toTokens(inner)
+                    comma?.toTokens(inner)
+                }
+            }
+        }
     }
-   }
-   output?.toTokens(tokens)
-   block?.toTokens(tokens)
-  }
- }
 
- /** A data class definition. */
- public data class Struct(
-  public val attrs: List<Attribute>,
-  public val vis: Visibility,
-  public val structToken: io.github.kotlinmania.syn.token.Struct,
-  public val ident: Ident,
-  public val generics: Generics,
-  public val fields: Fields,
-  public val semiToken: Semi?,
- ) : Item() {
-  override fun toTokens(tokens: TokenStream) {
-   for (attr in attrs) attr.toTokens(tokens)
-   vis.toTokens(tokens)
-   structToken.toTokens(tokens)
-   ident.toTokens(tokens)
-   generics.toTokens(tokens)
-   fields.toTokens(tokens)
-   semiToken?.toTokens(tokens)
-  }
- }
+    /** A free-standing function. */
+    public data class Fn(
+        public val attrs: List<Attribute>,
+        public val vis: Visibility,
+        public val fnToken: io.github.kotlinmania.syn.token.Fn,
+        public val ident: Ident,
+        public val generics: Generics,
+        public val parenToken: Paren,
+        public val inputs: Punctuated<FnArg, Comma>,
+        public val output: ReturnType?,
+        public val block: Block?,
+    ) : Item() {
+        override fun toTokens(tokens: TokenStream) {
+            for (attr in attrs) attr.toTokens(tokens)
+            vis.toTokens(tokens)
+            fnToken.toTokens(tokens)
+            ident.toTokens(tokens)
+            generics.toTokens(tokens)
+            parenToken.surround(tokens) { inner ->
+                for ((arg, comma) in inputs.pairs()) {
+                    arg.toTokens(inner)
+                    comma?.toTokens(inner)
+                }
+            }
+            output?.toTokens(tokens)
+            block?.toTokens(tokens)
+        }
+    }
 
- /** A module or module declaration. */
- public data class Mod(
-  public val attrs: List<Attribute>,
-  public val vis: Visibility,
-  public val modToken: io.github.kotlinmania.syn.token.Mod,
-  public val ident: Ident,
-  public val content: ModContent?,
- ) : Item() {
-  override fun toTokens(tokens: TokenStream) {
-   for (attr in attrs) attr.toTokens(tokens)
-   vis.toTokens(tokens)
-   modToken.toTokens(tokens)
-   ident.toTokens(tokens)
-   content?.toTokens(tokens)
-  }
- }
+    /** A data class definition. */
+    public data class Struct(
+        public val attrs: List<Attribute>,
+        public val vis: Visibility,
+        public val structToken: io.github.kotlinmania.syn.token.Struct,
+        public val ident: Ident,
+        public val generics: Generics,
+        public val fields: Fields,
+        public val semiToken: Semi?,
+    ) : Item() {
+        override fun toTokens(tokens: TokenStream) {
+            for (attr in attrs) attr.toTokens(tokens)
+            vis.toTokens(tokens)
+            structToken.toTokens(tokens)
+            ident.toTokens(tokens)
+            generics.toTokens(tokens)
+            fields.toTokens(tokens)
+            semiToken?.toTokens(tokens)
+        }
+    }
 
- /** A use declaration. */
- public data class Use(
-  public val attrs: List<Attribute>,
-  public val vis: Visibility,
-  public val useToken: io.github.kotlinmania.syn.token.Use,
-  public val tree: UseTree,
- ) : Item() {
-  override fun toTokens(tokens: TokenStream) {
-   for (attr in attrs) attr.toTokens(tokens)
-   vis.toTokens(tokens)
-   useToken.toTokens(tokens)
-   tree.toTokens(tokens)
-  }
- }
+    /** A module or module declaration. */
+    public data class Mod(
+        public val attrs: List<Attribute>,
+        public val vis: Visibility,
+        public val modToken: io.github.kotlinmania.syn.token.Mod,
+        public val ident: Ident,
+        public val content: ModContent?,
+    ) : Item() {
+        override fun toTokens(tokens: TokenStream) {
+            for (attr in attrs) attr.toTokens(tokens)
+            vis.toTokens(tokens)
+            modToken.toTokens(tokens)
+            ident.toTokens(tokens)
+            content?.toTokens(tokens)
+        }
+    }
 
-  /** A trait definition. */
- public data class Trait(
-  public val attrs: List<Attribute>,
-  public val vis: Visibility,
-  public val unsafety: Unsafe?,
-  public val autoToken: io.github.kotlinmania.syn.token.Auto?,
-  public val traitToken: Trait,
-  public val ident: Ident,
-  public val generics: Generics,
-  public val colonToken: Colon?,
-  public val supertraits: Punctuated<TypeParamBound, Plus>,
-  public val braceToken: Brace,
-  public val items: List<TraitItem>,
- ) : Item() {
-  override fun toTokens(tokens: TokenStream) {
-   for (attr in attrs) attr.toTokens(tokens)
-   vis.toTokens(tokens)
-   unsafety?.toTokens(tokens)
-   autoToken?.toTokens(tokens)
-   traitToken.toTokens(tokens)
-   ident.toTokens(tokens)
-   generics.toTokens(tokens)
-   if (!supertraits.isEmpty()) {
-    colonToken?.toTokens(tokens)
-    supertraits.toTokens(tokens)
-   }
-   generics.whereClause?.toTokens(tokens)
-   braceToken.surround(tokens) { inner ->
-    for (item in items) item.toTokens(inner)
-   }
-  }
- }
+    /** A use declaration. */
+    public data class Use(
+        public val attrs: List<Attribute>,
+        public val vis: Visibility,
+        public val useToken: io.github.kotlinmania.syn.token.Use,
+        public val tree: UseTree,
+    ) : Item() {
+        override fun toTokens(tokens: TokenStream) {
+            for (attr in attrs) attr.toTokens(tokens)
+            vis.toTokens(tokens)
+            useToken.toTokens(tokens)
+            tree.toTokens(tokens)
+        }
+    }
 
-  /** An impl block providing trait or associated items. */
- public data class Impl(
-  public val attrs: List<Attribute>,
-  public val defaultness: Default?,
-  public val unsafety: Unsafe?,
-  public val implToken: Impl,
-  public val generics: Generics,
-  public val traitPath: PathTrait?,
-  public val selfType: SynType,
-  public val braceToken: Brace,
-  public val items: List<ImplItem>,
- ) : Item() {
-  override fun toTokens(tokens: TokenStream) {
-   for (attr in attrs) attr.toTokens(tokens)
-   defaultness?.toTokens(tokens)
-   unsafety?.toTokens(tokens)
-   implToken.toTokens(tokens)
-   generics.toTokens(tokens)
-   traitPath?.let { (polarity, path, forToken) ->
-    polarity?.toTokens(tokens)
-    path.toTokens(tokens)
-    forToken.toTokens(tokens)
-   }
-   selfType.toTokens(tokens)
-   generics.whereClause?.toTokens(tokens)
-   braceToken.surround(tokens) { inner ->
-    for (item in items) item.toTokens(inner)
-   }
-  }
- }
+    /** A trait definition. */
+    public data class Trait(
+        public val attrs: List<Attribute>,
+        public val vis: Visibility,
+        public val unsafety: Unsafe?,
+        public val autoToken: io.github.kotlinmania.syn.token.Auto?,
+        public val traitToken: Trait,
+        public val ident: Ident,
+        public val generics: Generics,
+        public val colonToken: Colon?,
+        public val supertraits: Punctuated<TypeParamBound, Plus>,
+        public val braceToken: Brace,
+        public val items: List<TraitItem>,
+    ) : Item() {
+        override fun toTokens(tokens: TokenStream) {
+            for (attr in attrs) attr.toTokens(tokens)
+            vis.toTokens(tokens)
+            unsafety?.toTokens(tokens)
+            autoToken?.toTokens(tokens)
+            traitToken.toTokens(tokens)
+            ident.toTokens(tokens)
+            generics.toTokens(tokens)
+            if (!supertraits.isEmpty()) {
+                colonToken?.toTokens(tokens)
+                supertraits.toTokens(tokens)
+            }
+            generics.whereClause?.toTokens(tokens)
+            braceToken.surround(tokens) { inner ->
+                for (item in items) item.toTokens(inner)
+            }
+        }
+    }
 
- /** Tokens forming an item not interpreted by Syn. */
- public data class Verbatim(
-  public val tokens: TokenStream,
- ) : Item() {
-  override fun toTokens(tokens: TokenStream) {
-   tokens.extendTokenStreams(listOf(tokens))
-  }
- }
+    /** An impl block providing trait or associated items. */
+    public data class Impl(
+        public val attrs: List<Attribute>,
+        public val defaultness: Default?,
+        public val unsafety: Unsafe?,
+        public val implToken: Impl,
+        public val generics: Generics,
+        public val traitPath: PathTrait?,
+        public val selfType: SynType,
+        public val braceToken: Brace,
+        public val items: List<ImplItem>,
+    ) : Item() {
+        override fun toTokens(tokens: TokenStream) {
+            for (attr in attrs) attr.toTokens(tokens)
+            defaultness?.toTokens(tokens)
+            unsafety?.toTokens(tokens)
+            implToken.toTokens(tokens)
+            generics.toTokens(tokens)
+            traitPath?.let { (polarity, path, forToken) ->
+                polarity?.toTokens(tokens)
+                path.toTokens(tokens)
+                forToken.toTokens(tokens)
+            }
+            selfType.toTokens(tokens)
+            generics.whereClause?.toTokens(tokens)
+            braceToken.surround(tokens) { inner ->
+                for (item in items) item.toTokens(inner)
+            }
+        }
+    }
+
+    /** Tokens forming an item not interpreted by Syn. */
+    public data class Verbatim(
+        public val tokens: TokenStream,
+    ) : Item() {
+        override fun toTokens(tokens: TokenStream) {
+            tokens.extendTokenStreams(listOf(tokens))
+        }
+    }
 }
 
 /** An argument in a function signature. */
 public sealed class FnArg : ToTokens {
- /** The receiver argument of an associated method. */
- public data class Receiver(
-  public val attrs: List<Attribute>,
-  public val reference: Pair<io.github.kotlinmania.syn.token.And, Lifetime?>?,
-  public val mutability: io.github.kotlinmania.syn.token.Mut?,
-  public val selfToken: io.github.kotlinmania.syn.token.SelfValue,
-  public val colonToken: Colon?,
-  public val type: SynType,
- ) : FnArg() {
-  override fun toTokens(tokens: TokenStream) {
-   for (attr in attrs) attr.toTokens(tokens)
-   reference?.let { (amp, lt) ->
-    amp.toTokens(tokens)
-    lt?.toTokens(tokens)
-   }
-   mutability?.toTokens(tokens)
-   selfToken.toTokens(tokens)
-   if (colonToken != null) {
-    colonToken.toTokens(tokens)
-    type.toTokens(tokens)
-   }
-  }
+    /** The receiver argument of an associated method. */
+    public data class Receiver(
+        public val attrs: List<Attribute>,
+        public val reference: Pair<io.github.kotlinmania.syn.token.And, Lifetime?>?,
+        public val mutability: io.github.kotlinmania.syn.token.Mut?,
+        public val selfToken: io.github.kotlinmania.syn.token.SelfValue,
+        public val colonToken: Colon?,
+        public val type: SynType,
+    ) : FnArg() {
+        override fun toTokens(tokens: TokenStream) {
+            for (attr in attrs) attr.toTokens(tokens)
+            reference?.let { (amp, lt) ->
+                amp.toTokens(tokens)
+                lt?.toTokens(tokens)
+            }
+            mutability?.toTokens(tokens)
+            selfToken.toTokens(tokens)
+            if (colonToken != null) {
+                colonToken.toTokens(tokens)
+                type.toTokens(tokens)
+            }
+        }
 
-  public fun lifetime(): Lifetime? = reference?.second
- }
+        public fun lifetime(): Lifetime? = reference?.second
+    }
 
- /** A function argument accepted by pattern and type. */
- public data class Typed(
-  public val patType: PatType,
- ) : FnArg() {
-  override fun toTokens(tokens: TokenStream) {
-   patType.toTokens(tokens)
-  }
- }
+    /** A function argument accepted by pattern and type. */
+    public data class Typed(
+        public val patType: PatType,
+    ) : FnArg() {
+        override fun toTokens(tokens: TokenStream) {
+            patType.toTokens(tokens)
+        }
+    }
 }
 
 /** Module content: either an inline block or just a semicolon. */
 public sealed class ModContent : ToTokens {
- public data class Unnamed(val semiToken: Semi) : ModContent() {
-  override fun toTokens(tokens: TokenStream) {
-   semiToken.toTokens(tokens)
-  }
- }
- public data class Inline(val braceToken: Brace, val items: List<Item>) : ModContent() {
-  override fun toTokens(tokens: TokenStream) {
-   braceToken.surround(tokens) { inner ->
-    for (item in items) item.toTokens(inner)
-   }
-  }
- }
+    public data class Unnamed(
+        val semiToken: Semi,
+    ) : ModContent() {
+        override fun toTokens(tokens: TokenStream) {
+            semiToken.toTokens(tokens)
+        }
+    }
+
+    public data class Inline(
+        val braceToken: Brace,
+        val items: List<Item>,
+    ) : ModContent() {
+        override fun toTokens(tokens: TokenStream) {
+            braceToken.surround(tokens) { inner ->
+                for (item in items) item.toTokens(inner)
+            }
+        }
+    }
 }
 
 /** A use tree in a use declaration. */
 public sealed class UseTree : ToTokens {
- public data class Path(val ident: Ident, val colon2Token: io.github.kotlinmania.syn.token.PathSep?, val tree: UseTree?) : UseTree() {
-  override fun toTokens(tokens: TokenStream) {
-   ident.toTokens(tokens)
-   colon2Token?.toTokens(tokens)
-   tree?.toTokens(tokens)
-  }
- }
- public data class Name(val ident: Ident, val rename: Pair<io.github.kotlinmania.syn.token.As, Ident>?) : UseTree() {
-  override fun toTokens(tokens: TokenStream) {
-   ident.toTokens(tokens)
-   rename?.let { (asToken, renameIdent) -> asToken.toTokens(tokens); renameIdent.toTokens(tokens) }
-  }
- }
- public data class Group(val braceToken: Brace, val items: Punctuated<UseTree, Comma>) : UseTree() {
-  override fun toTokens(tokens: TokenStream) {
-   braceToken.surround(tokens) { inner ->
-    for ((item, comma) in items.pairs()) {
-     item.toTokens(inner)
-     comma?.toTokens(inner)
+    public data class Path(
+        val ident: Ident,
+        val colon2Token: io.github.kotlinmania.syn.token.PathSep?,
+        val tree: UseTree?,
+    ) : UseTree() {
+        override fun toTokens(tokens: TokenStream) {
+            ident.toTokens(tokens)
+            colon2Token?.toTokens(tokens)
+            tree?.toTokens(tokens)
+        }
     }
-   }
-  }
- }
-  public data class Glob(val starToken: io.github.kotlinmania.syn.token.Star) : UseTree() {
-   override fun toTokens(tokens: TokenStream) {
-    starToken.toTokens(tokens)
-   }
-  }
+
+    public data class Name(
+        val ident: Ident,
+        val rename: Pair<io.github.kotlinmania.syn.token.As, Ident>?,
+    ) : UseTree() {
+        override fun toTokens(tokens: TokenStream) {
+            ident.toTokens(tokens)
+            rename?.let { (asToken, renameIdent) ->
+                asToken.toTokens(tokens)
+                renameIdent.toTokens(tokens)
+            }
+        }
+    }
+
+    public data class Group(
+        val braceToken: Brace,
+        val items: Punctuated<UseTree, Comma>,
+    ) : UseTree() {
+        override fun toTokens(tokens: TokenStream) {
+            braceToken.surround(tokens) { inner ->
+                for ((item, comma) in items.pairs()) {
+                    item.toTokens(inner)
+                    comma?.toTokens(inner)
+                }
+            }
+        }
+    }
+
+    public data class Glob(
+        val starToken: io.github.kotlinmania.syn.token.Star,
+    ) : UseTree() {
+        override fun toTokens(tokens: TokenStream) {
+            starToken.toTokens(tokens)
+        }
+    }
 }
 
 /** The trait path in an impl block. */
 public data class PathTrait(
- public val polarity: io.github.kotlinmania.syn.token.Not?,
- public val path: Path,
- public val forToken: For,
+    public val polarity: io.github.kotlinmania.syn.token.Not?,
+    public val path: Path,
+    public val forToken: For,
 ) : ToTokens {
- override fun toTokens(tokens: TokenStream) {
-  polarity?.toTokens(tokens)
-  path.toTokens(tokens)
-  forToken.toTokens(tokens)
- }
+    override fun toTokens(tokens: TokenStream) {
+        polarity?.toTokens(tokens)
+        path.toTokens(tokens)
+        forToken.toTokens(tokens)
+    }
 }
 
 /** A function signature in a trait or implementation. */
 public data class Signature(
- public val constness: io.github.kotlinmania.syn.token.Const?,
- public val asyncness: io.github.kotlinmania.syn.token.Async?,
- public val unsafety: Unsafe?,
- public val abi: Abi?,
- public val fnToken: io.github.kotlinmania.syn.token.Fn,
- public val ident: Ident,
- public val generics: Generics,
- public val parenToken: Paren,
- public val inputs: Punctuated<FnArg, Comma>,
- public val variadic: Variadic?,
- public val output: ReturnType,
+    public val constness: io.github.kotlinmania.syn.token.Const?,
+    public val asyncness: io.github.kotlinmania.syn.token.Async?,
+    public val unsafety: Unsafe?,
+    public val abi: Abi?,
+    public val fnToken: io.github.kotlinmania.syn.token.Fn,
+    public val ident: Ident,
+    public val generics: Generics,
+    public val parenToken: Paren,
+    public val inputs: Punctuated<FnArg, Comma>,
+    public val variadic: Variadic?,
+    public val output: ReturnType,
 ) : ToTokens {
- override fun toTokens(tokens: TokenStream) {
-  constness?.toTokens(tokens)
-  asyncness?.toTokens(tokens)
-  unsafety?.toTokens(tokens)
-  abi?.toTokens(tokens)
-  fnToken.toTokens(tokens)
-  ident.toTokens(tokens)
-  generics.toTokens(tokens)
-  parenToken.surround(tokens) { inner ->
-   for ((arg, comma) in inputs.pairs()) {
-    arg.toTokens(inner)
-    comma?.toTokens(inner)
-   }
-   if (variadic != null) {
-    if (!inputs.isEmpty() && !inputs.trailingPunct()) {
-     io.github.kotlinmania.syn.token.Comma.default().toTokens(inner)
+    override fun toTokens(tokens: TokenStream) {
+        constness?.toTokens(tokens)
+        asyncness?.toTokens(tokens)
+        unsafety?.toTokens(tokens)
+        abi?.toTokens(tokens)
+        fnToken.toTokens(tokens)
+        ident.toTokens(tokens)
+        generics.toTokens(tokens)
+        parenToken.surround(tokens) { inner ->
+            for ((arg, comma) in inputs.pairs()) {
+                arg.toTokens(inner)
+                comma?.toTokens(inner)
+            }
+            if (variadic != null) {
+                if (!inputs.isEmpty() && !inputs.trailingPunct()) {
+                    io.github.kotlinmania.syn.token.Comma
+                        .default()
+                        .toTokens(inner)
+                }
+                variadic.toTokens(inner)
+            }
+        }
+        output.toTokens(tokens)
+        generics.whereClause?.toTokens(tokens)
     }
-    variadic.toTokens(inner)
-   }
-  }
-  output.toTokens(tokens)
-  generics.whereClause?.toTokens(tokens)
- }
 
- /** A method's receiver, such as a reference receiver or an explicit receiver type. */
- public fun receiver(): FnArg.Receiver? {
-  val first = inputs.firstOrNull() ?: return null
-  return first as? FnArg.Receiver
- }
+    /** A method's receiver, such as a reference receiver or an explicit receiver type. */
+    public fun receiver(): FnArg.Receiver? {
+        val first = inputs.firstOrNull() ?: return null
+        return first as? FnArg.Receiver
+    }
 }
 
 /** The ABI name in a function signature. */
 public data class Abi(
- public val externToken: io.github.kotlinmania.syn.token.Extern,
- public val name: LitStr?,
+    public val externToken: io.github.kotlinmania.syn.token.Extern,
+    public val name: LitStr?,
 ) : ToTokens {
- override fun toTokens(tokens: TokenStream) {
-  externToken.toTokens(tokens)
-  name?.toTokens(tokens)
- }
+    override fun toTokens(tokens: TokenStream) {
+        externToken.toTokens(tokens)
+        name?.toTokens(tokens)
+    }
 }
 
 /** The variadic argument of a foreign function. */
 public data class Variadic(
- public val attrs: List<Attribute>,
- public val pat: Pair<Pat, Colon>?,
- public val dots: io.github.kotlinmania.syn.token.DotDotDot,
- public val comma: Comma?,
+    public val attrs: List<Attribute>,
+    public val pat: Pair<Pat, Colon>?,
+    public val dots: io.github.kotlinmania.syn.token.DotDotDot,
+    public val comma: Comma?,
 ) : ToTokens {
- override fun toTokens(tokens: TokenStream) {
-  for (attr in attrs) attr.toTokens(tokens)
-  pat?.let { (p, colon) ->
-   p.toTokens(tokens)
-   colon.toTokens(tokens)
-  }
-  dots.toTokens(tokens)
-  comma?.toTokens(tokens)
- }
+    override fun toTokens(tokens: TokenStream) {
+        for (attr in attrs) attr.toTokens(tokens)
+        pat?.let { (p, colon) ->
+            p.toTokens(tokens)
+            colon.toTokens(tokens)
+        }
+        dots.toTokens(tokens)
+        comma?.toTokens(tokens)
+    }
 }
 
 /** An item within a trait definition. */
 public sealed class TraitItem : ToTokens {
- /** An associated constant within the definition of a trait. */
- public data class Const(
-  public val attrs: List<Attribute>,
-  public val constToken: io.github.kotlinmania.syn.token.Const,
-  public val ident: Ident,
-  public val generics: Generics,
-  public val colonToken: Colon,
-  public val ty: SynType,
-  public val default: Pair<Eq, Expr>?,
-  public val semiToken: Semi,
- ) : TraitItem() {
-  override fun toTokens(tokens: TokenStream) {
-   for (attr in attrs) attr.toTokens(tokens)
-   constToken.toTokens(tokens)
-   ident.toTokens(tokens)
-   generics.toTokens(tokens)
-   colonToken.toTokens(tokens)
-   ty.toTokens(tokens)
-   default?.let { (eq, expr) ->
-    eq.toTokens(tokens)
-    expr.toTokens(tokens)
-   }
-   semiToken.toTokens(tokens)
-  }
- }
-
- /** An associated function within the definition of a trait. */
- public data class Fn(
-  public val attrs: List<Attribute>,
-  public val sig: Signature,
-  public val default: Block?,
-  public val semiToken: Semi?,
- ) : TraitItem() {
-  override fun toTokens(tokens: TokenStream) {
-   for (attr in attrs) attr.toTokens(tokens)
-   sig.toTokens(tokens)
-   if (default != null) {
-    default.braceToken.surround(tokens) { inner ->
-     for (stmt in default.stmts) stmt.toTokens(inner)
+    /** An associated constant within the definition of a trait. */
+    public data class Const(
+        public val attrs: List<Attribute>,
+        public val constToken: io.github.kotlinmania.syn.token.Const,
+        public val ident: Ident,
+        public val generics: Generics,
+        public val colonToken: Colon,
+        public val ty: SynType,
+        public val default: Pair<Eq, Expr>?,
+        public val semiToken: Semi,
+    ) : TraitItem() {
+        override fun toTokens(tokens: TokenStream) {
+            for (attr in attrs) attr.toTokens(tokens)
+            constToken.toTokens(tokens)
+            ident.toTokens(tokens)
+            generics.toTokens(tokens)
+            colonToken.toTokens(tokens)
+            ty.toTokens(tokens)
+            default?.let { (eq, expr) ->
+                eq.toTokens(tokens)
+                expr.toTokens(tokens)
+            }
+            semiToken.toTokens(tokens)
+        }
     }
-   } else {
-    semiToken?.toTokens(tokens)
-   }
-  }
- }
 
- /** An associated type within the definition of a trait. */
- public data class Type(
-  public val attrs: List<Attribute>,
-  public val typeToken: io.github.kotlinmania.syn.token.SynTypeToken,
-  public val ident: Ident,
-  public val generics: Generics,
-  public val colonToken: Colon?,
-  public val bounds: Punctuated<TypeParamBound, Plus>,
-  public val default: Pair<Eq, SynType>?,
-  public val semiToken: Semi,
- ) : TraitItem() {
-  override fun toTokens(tokens: TokenStream) {
-   for (attr in attrs) attr.toTokens(tokens)
-   typeToken.toTokens(tokens)
-   ident.toTokens(tokens)
-   generics.toTokens(tokens)
-   if (!bounds.isEmpty()) {
-    colonToken?.toTokens(tokens)
-    bounds.toTokens(tokens)
-   }
-   default?.let { (eq, ty) ->
-    eq.toTokens(tokens)
-    ty.toTokens(tokens)
-   }
-   generics.whereClause?.toTokens(tokens)
-   semiToken.toTokens(tokens)
-  }
- }
+    /** An associated function within the definition of a trait. */
+    public data class Fn(
+        public val attrs: List<Attribute>,
+        public val sig: Signature,
+        public val default: Block?,
+        public val semiToken: Semi?,
+    ) : TraitItem() {
+        override fun toTokens(tokens: TokenStream) {
+            for (attr in attrs) attr.toTokens(tokens)
+            sig.toTokens(tokens)
+            if (default != null) {
+                default.braceToken.surround(tokens) { inner ->
+                    for (stmt in default.stmts) stmt.toTokens(inner)
+                }
+            } else {
+                semiToken?.toTokens(tokens)
+            }
+        }
+    }
 
- /** A macro invocation within the definition of a trait. */
- public data class Macro(
-  public val attrs: List<Attribute>,
-  public val mac: io.github.kotlinmania.syn.Macro,
-  public val semiToken: Semi?,
- ) : TraitItem() {
-  override fun toTokens(tokens: TokenStream) {
-   for (attr in attrs) attr.toTokens(tokens)
-   mac.toTokens(tokens)
-   semiToken?.toTokens(tokens)
-  }
- }
+    /** An associated type within the definition of a trait. */
+    public data class AssocType(
+        public val attrs: List<Attribute>,
+        public val typeToken: io.github.kotlinmania.syn.token.SynTypeToken,
+        public val ident: Ident,
+        public val generics: Generics,
+        public val colonToken: Colon?,
+        public val bounds: Punctuated<TypeParamBound, Plus>,
+        public val default: Pair<Eq, SynType>?,
+        public val semiToken: Semi,
+    ) : TraitItem() {
+        override fun toTokens(tokens: TokenStream) {
+            for (attr in attrs) attr.toTokens(tokens)
+            typeToken.toTokens(tokens)
+            ident.toTokens(tokens)
+            generics.toTokens(tokens)
+            if (!bounds.isEmpty()) {
+                colonToken?.toTokens(tokens)
+                bounds.toTokens(tokens)
+            }
+            default?.let { (eq, ty) ->
+                eq.toTokens(tokens)
+                ty.toTokens(tokens)
+            }
+            generics.whereClause?.toTokens(tokens)
+            semiToken.toTokens(tokens)
+        }
+    }
 
- /** Tokens within the definition of a trait not interpreted by Syn. */
- public data class Verbatim(
-  public val tokens: TokenStream,
- ) : TraitItem() {
-  override fun toTokens(tokens: TokenStream) {
-   tokens.extendTokenStreams(listOf(tokens))
-  }
- }
+    /** A macro invocation within the definition of a trait. */
+    public data class Macro(
+        public val attrs: List<Attribute>,
+        public val mac: io.github.kotlinmania.syn.Macro,
+        public val semiToken: Semi?,
+    ) : TraitItem() {
+        override fun toTokens(tokens: TokenStream) {
+            for (attr in attrs) attr.toTokens(tokens)
+            mac.toTokens(tokens)
+            semiToken?.toTokens(tokens)
+        }
+    }
+
+    /** Tokens within the definition of a trait not interpreted by Syn. */
+    public data class Verbatim(
+        public val tokens: TokenStream,
+    ) : TraitItem() {
+        override fun toTokens(tokens: TokenStream) {
+            tokens.extendTokenStreams(listOf(tokens))
+        }
+    }
 }
 
 /** An item within an impl block. */
 public sealed class ImplItem : ToTokens {
- /** An associated constant within an impl block. */
- public data class Const(
-  public val attrs: List<Attribute>,
-  public val vis: Visibility,
-  public val defaultness: Default?,
-  public val constToken: io.github.kotlinmania.syn.token.Const,
-  public val ident: Ident,
-  public val generics: Generics,
-  public val colonToken: Colon,
-  public val ty: SynType,
-  public val eqToken: Eq,
-  public val expr: Expr,
-  public val semiToken: Semi,
- ) : ImplItem() {
-  override fun toTokens(tokens: TokenStream) {
-   for (attr in attrs) attr.toTokens(tokens)
-   vis.toTokens(tokens)
-   defaultness?.toTokens(tokens)
-   constToken.toTokens(tokens)
-   ident.toTokens(tokens)
-   colonToken.toTokens(tokens)
-   ty.toTokens(tokens)
-   eqToken.toTokens(tokens)
-   expr.toTokens(tokens)
-   semiToken.toTokens(tokens)
-  }
- }
+    /** An associated constant within an impl block. */
+    public data class Const(
+        public val attrs: List<Attribute>,
+        public val vis: Visibility,
+        public val defaultness: Default?,
+        public val constToken: io.github.kotlinmania.syn.token.Const,
+        public val ident: Ident,
+        public val generics: Generics,
+        public val colonToken: Colon,
+        public val ty: SynType,
+        public val eqToken: Eq,
+        public val expr: Expr,
+        public val semiToken: Semi,
+    ) : ImplItem() {
+        override fun toTokens(tokens: TokenStream) {
+            for (attr in attrs) attr.toTokens(tokens)
+            vis.toTokens(tokens)
+            defaultness?.toTokens(tokens)
+            constToken.toTokens(tokens)
+            ident.toTokens(tokens)
+            colonToken.toTokens(tokens)
+            ty.toTokens(tokens)
+            eqToken.toTokens(tokens)
+            expr.toTokens(tokens)
+            semiToken.toTokens(tokens)
+        }
+    }
 
- /** An associated function within an impl block. */
- public data class Fn(
-  public val attrs: List<Attribute>,
-  public val vis: Visibility,
-  public val defaultness: Default?,
-  public val sig: Signature,
-  public val block: Block,
- ) : ImplItem() {
-  override fun toTokens(tokens: TokenStream) {
-   for (attr in attrs) attr.toTokens(tokens)
-   vis.toTokens(tokens)
-   defaultness?.toTokens(tokens)
-   sig.toTokens(tokens)
-   block.braceToken.surround(tokens) { inner ->
-    for (stmt in block.stmts) stmt.toTokens(inner)
-   }
-  }
- }
+    /** An associated function within an impl block. */
+    public data class Fn(
+        public val attrs: List<Attribute>,
+        public val vis: Visibility,
+        public val defaultness: Default?,
+        public val sig: Signature,
+        public val block: Block,
+    ) : ImplItem() {
+        override fun toTokens(tokens: TokenStream) {
+            for (attr in attrs) attr.toTokens(tokens)
+            vis.toTokens(tokens)
+            defaultness?.toTokens(tokens)
+            sig.toTokens(tokens)
+            block.braceToken.surround(tokens) { inner ->
+                for (stmt in block.stmts) stmt.toTokens(inner)
+            }
+        }
+    }
 
- /** An associated type within an impl block. */
- public data class Type(
-  public val attrs: List<Attribute>,
-  public val vis: Visibility,
-  public val defaultness: Default?,
-  public val typeToken: io.github.kotlinmania.syn.token.SynTypeToken,
-  public val ident: Ident,
-  public val generics: Generics,
-  public val eqToken: Eq,
-  public val ty: SynType,
-  public val semiToken: Semi,
- ) : ImplItem() {
-  override fun toTokens(tokens: TokenStream) {
-   for (attr in attrs) attr.toTokens(tokens)
-   vis.toTokens(tokens)
-   defaultness?.toTokens(tokens)
-   typeToken.toTokens(tokens)
-   ident.toTokens(tokens)
-   generics.toTokens(tokens)
-   eqToken.toTokens(tokens)
-   ty.toTokens(tokens)
-   generics.whereClause?.toTokens(tokens)
-   semiToken.toTokens(tokens)
-  }
- }
+    /** An associated type within an impl block. */
+    public data class AssocType(
+        public val attrs: List<Attribute>,
+        public val vis: Visibility,
+        public val defaultness: Default?,
+        public val typeToken: io.github.kotlinmania.syn.token.SynTypeToken,
+        public val ident: Ident,
+        public val generics: Generics,
+        public val eqToken: Eq,
+        public val ty: SynType,
+        public val semiToken: Semi,
+    ) : ImplItem() {
+        override fun toTokens(tokens: TokenStream) {
+            for (attr in attrs) attr.toTokens(tokens)
+            vis.toTokens(tokens)
+            defaultness?.toTokens(tokens)
+            typeToken.toTokens(tokens)
+            ident.toTokens(tokens)
+            generics.toTokens(tokens)
+            eqToken.toTokens(tokens)
+            ty.toTokens(tokens)
+            generics.whereClause?.toTokens(tokens)
+            semiToken.toTokens(tokens)
+        }
+    }
 
- /** A macro invocation within an impl block. */
- public data class Macro(
-  public val attrs: List<Attribute>,
-  public val mac: io.github.kotlinmania.syn.Macro,
-  public val semiToken: Semi?,
- ) : ImplItem() {
-  override fun toTokens(tokens: TokenStream) {
-   for (attr in attrs) attr.toTokens(tokens)
-   mac.toTokens(tokens)
-   semiToken?.toTokens(tokens)
-  }
- }
+    /** A macro invocation within an impl block. */
+    public data class Macro(
+        public val attrs: List<Attribute>,
+        public val mac: io.github.kotlinmania.syn.Macro,
+        public val semiToken: Semi?,
+    ) : ImplItem() {
+        override fun toTokens(tokens: TokenStream) {
+            for (attr in attrs) attr.toTokens(tokens)
+            mac.toTokens(tokens)
+            semiToken?.toTokens(tokens)
+        }
+    }
 
- /** Tokens within an impl block not interpreted by Syn. */
- public data class Verbatim(
-  public val tokens: TokenStream,
- ) : ImplItem() {
-  override fun toTokens(tokens: TokenStream) {
-   tokens.extendTokenStreams(listOf(tokens))
-  }
- }
+    /** Tokens within an impl block not interpreted by Syn. */
+    public data class Verbatim(
+        public val tokens: TokenStream,
+    ) : ImplItem() {
+        override fun toTokens(tokens: TokenStream) {
+            tokens.extendTokenStreams(listOf(tokens))
+        }
+    }
 }

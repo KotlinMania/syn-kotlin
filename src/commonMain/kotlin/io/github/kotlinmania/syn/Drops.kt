@@ -10,7 +10,9 @@ package io.github.kotlinmania.syn
  * wrapper is transparent: it simply holds the value and delegates
  * access to it.
  */
-public class NoDrop<T>(public val value: T) {
+public class NoDrop<T>(
+    public val value: T,
+) {
     /** Returns the wrapped value. */
     public fun get(): T = value
 

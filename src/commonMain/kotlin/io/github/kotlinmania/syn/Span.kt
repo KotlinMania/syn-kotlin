@@ -1,5 +1,4 @@
 // port-lint: source span.rs
-@file:OptIn(kotlin.experimental.ExperimentalObjCRefinement::class)
 
 package io.github.kotlinmania.syn
 
@@ -8,7 +7,6 @@ import io.github.kotlinmania.procmacro2.Delimiter
 import io.github.kotlinmania.procmacro2.Group
 import io.github.kotlinmania.procmacro2.Span
 import io.github.kotlinmania.procmacro2.TokenStream
-import kotlin.native.HiddenFromObjC
 
 /**
  * Converts a single span or a list of spans into the shape required by
@@ -19,7 +17,6 @@ import kotlin.native.HiddenFromObjC
  * functions on [Span], [List<Span>], and [DelimSpan] satisfy each supported
  * arity at the call site.
  */
-@HiddenFromObjC
 public interface IntoSpans<out S> {
     /** Converts this value into the target span shape. */
     public fun intoSpans(): S

@@ -1,10 +1,8 @@
 // port-lint: source parse_macro_input.rs
-@file:OptIn(kotlin.experimental.ExperimentalObjCRefinement::class)
 
 package io.github.kotlinmania.syn
 
 import io.github.kotlinmania.procmacro2.TokenStream
-import kotlin.native.HiddenFromObjC
 
 /**
  * Parse the input [TokenStream] of a macro, returning either the parsed
@@ -61,35 +59,39 @@ import kotlin.native.HiddenFromObjC
  * }
  * ```
  */
-@HiddenFromObjC
 public sealed class ParseMacroSynResult<out T> {
- public data class Success<T>(public val value: T) : ParseMacroSynResult<T>()
- public data class CompileError<T>(public val tokens: TokenStream) : ParseMacroSynResult<T>()
+    public data class Success<T>(
+        public val value: T,
+    ) : ParseMacroSynResult<T>()
+
+    public data class CompileError<T>(
+        public val tokens: TokenStream,
+    ) : ParseMacroSynResult<T>()
 }
 
 /** Parse the macro input via the supplied [Parse] strategy. */
-@HiddenFromObjC
 public fun <T> parseMacroInput(tokens: TokenStream, parser: Parse<T>): ParseMacroSynResult<T> {
- val result = parse2(parser, tokens)
- if (result.isSuccess) {
- return ParseMacroSynResult.Success(result.getOrThrow())
- }
- val syntaxError = result.exceptionOrNull()
- ?: error("parseMacroInput parser returned no failure error")
- return ParseMacroSynResult.CompileError(syntaxError.toCompileError())
+    val result = parse2(parser, tokens)
+    if (result.isSuccess) {
+        return ParseMacroSynResult.Success(result.getOrThrow())
+    }
+    val syntaxError =
+        result.exceptionOrNull()
+            ?: error("parseMacroInput parser returned no failure error")
+    return ParseMacroSynResult.CompileError(syntaxError.toCompileError())
 }
 
 /** Parse the macro input via the supplied closure-style parser. */
-@HiddenFromObjC
 public fun <T> parseMacroInputWith(
- tokens: TokenStream,
- parser: (ParseStream) -> SynResult<T>,
+    tokens: TokenStream,
+    parser: (ParseStream) -> SynResult<T>,
 ): ParseMacroSynResult<T> {
- val result = parserFromFunction(parser).parse2(tokens)
- if (result.isSuccess) {
- return ParseMacroSynResult.Success(result.getOrThrow())
- }
- val syntaxError = result.exceptionOrNull()
- ?: error("parseMacroInputWith parser returned no failure error")
- return ParseMacroSynResult.CompileError(syntaxError.toCompileError())
+    val result = parserFromFunction(parser).parse2(tokens)
+    if (result.isSuccess) {
+        return ParseMacroSynResult.Success(result.getOrThrow())
+    }
+    val syntaxError =
+        result.exceptionOrNull()
+            ?: error("parseMacroInputWith parser returned no failure error")
+    return ParseMacroSynResult.CompileError(syntaxError.toCompileError())
 }

@@ -1,12 +1,8 @@
 // port-lint: source precedence.rs
-@file:OptIn(kotlin.experimental.ExperimentalObjCRefinement::class)
 
 package io.github.kotlinmania.syn
 
-import kotlin.native.HiddenFromObjC
-
 /** Expression precedence used while printing nested expressions. */
-@HiddenFromObjC
 public enum class Precedence {
     Jump,
     Assign,
@@ -23,7 +19,8 @@ public enum class Precedence {
     Product,
     Cast,
     Prefix,
-    Unambiguous;
+    Unambiguous,
+    ;
 
     public companion object {
         public val MIN: Precedence = Jump
@@ -48,7 +45,8 @@ public enum class Precedence {
                 is BinOp.BitAndAssign,
                 is BinOp.BitOrAssign,
                 is BinOp.ShlAssign,
-                is BinOp.ShrAssign -> Assign
+                is BinOp.ShrAssign,
+                -> Assign
             }
 
         /** Returns the precedence of the given expression. */

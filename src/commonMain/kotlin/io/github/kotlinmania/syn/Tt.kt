@@ -13,27 +13,34 @@ import io.github.kotlinmania.procmacro2.TokenTree
  * idiom. The implementations compare structure only: group delimiter,
  * punctuation character and spacing, literal text, and identifier name.
  */
-public fun tokenTreeEq(a: TokenTree, b: TokenTree): Boolean = when {
-    a is TokenTree.Group && b is TokenTree.Group -> {
-        if (a.value.delimiter() != b.value.delimiter()) false
-        else tokenStreamEq(a.value.stream(), b.value.stream())
+public fun tokenTreeEq(a: TokenTree, b: TokenTree): Boolean =
+    when {
+        a is TokenTree.Group && b is TokenTree.Group -> {
+            if (a.value.delimiter() != b.value.delimiter()) {
+                false
+            } else {
+                tokenStreamEq(a.value.stream(), b.value.stream())
+            }
+        }
+        a is TokenTree.Punct && b is TokenTree.Punct -> {
+            a.value.asChar() == b.value.asChar() &&
+                (
+                    (a.value.spacing() == Spacing.Alone && b.value.spacing() == Spacing.Alone) ||
+                        (a.value.spacing() == Spacing.Joint && b.value.spacing() == Spacing.Joint)
+                )
+        }
+        a is TokenTree.Literal && b is TokenTree.Literal -> a.value.toString() == b.value.toString()
+        a is TokenTree.Ident && b is TokenTree.Ident -> a.value == b.value
+        else -> false
     }
-    a is TokenTree.Punct && b is TokenTree.Punct -> {
-        a.value.asChar() == b.value.asChar() &&
-            (
-                (a.value.spacing() == Spacing.Alone && b.value.spacing() == Spacing.Alone) ||
-                (a.value.spacing() == Spacing.Joint && b.value.spacing() == Spacing.Joint)
-            )
-    }
-    a is TokenTree.Literal && b is TokenTree.Literal -> a.value.toString() == b.value.toString()
-    a is TokenTree.Ident && b is TokenTree.Ident -> a.value == b.value
-    else -> false
-}
 
 /** Structural hash of a token tree, ignoring spans. */
 public fun tokenTreeHash(tree: TokenTree): Int {
     var hash = 0
-    fun mix(value: Int) { hash = hash * 31 + value }
+
+    fun mix(value: Int) {
+        hash = hash * 31 + value
+    }
     when (tree) {
         is TokenTree.Group -> {
             mix(0)

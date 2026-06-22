@@ -1,8 +1,6 @@
 // port-lint: source gen/fold.rs
 package io.github.kotlinmania.syn.gen
 
-import io.github.kotlinmania.syn.*
-
 /**
  * AST fold — traverses a syntax tree and can rewrite every node.
  *

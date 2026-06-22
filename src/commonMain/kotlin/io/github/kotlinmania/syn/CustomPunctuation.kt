@@ -50,7 +50,6 @@ public abstract class CustomPunctuation : ToTokens {
     }
 }
 
-
 /**
  * Creates a [Peek] and [Parse] pair for a custom multi-character punctuation
  * sequence.
@@ -70,7 +69,9 @@ public fun customPunctuation(chars: String): Pair<Peek, Parse<CustomPunctuation>
 }
 
 /** Peek implementation for a custom punctuation sequence. */
-internal class CustomPunctuationPeek(private val chars: String) : Peek {
+internal class CustomPunctuationPeek(
+    private val chars: String,
+) : Peek {
     override fun peek(cursor: Cursor): Boolean {
         var current = cursor
         for ((i, ch) in chars.withIndex()) {
@@ -83,18 +84,22 @@ internal class CustomPunctuationPeek(private val chars: String) : Peek {
         }
         return true
     }
+
     override fun display(): String = "`$chars`"
 }
 
 /** Parse implementation for a custom punctuation sequence. */
-internal class CustomPunctuationParse(private val chars: String) : Parse<CustomPunctuation> {
+internal class CustomPunctuationParse(
+    private val chars: String,
+) : Parse<CustomPunctuation> {
     override fun parse(input: ParseStream): SynResult<CustomPunctuation> =
         input.step { cursor ->
             val spans = mutableListOf<io.github.kotlinmania.procmacro2.Span>()
             var current = cursor.raw
             for ((i, ch) in chars.withIndex()) {
-                val pair = current.punct()
-                    ?: return@step SynResult.failure(cursor.error("expected `$chars`"))
+                val pair =
+                    current.punct()
+                        ?: return@step SynResult.failure(cursor.error("expected `$chars`"))
                 val punct = pair.first
                 val next = pair.second
                 if (punct.asChar() != ch) return@step SynResult.failure(cursor.error("expected `$chars`"))

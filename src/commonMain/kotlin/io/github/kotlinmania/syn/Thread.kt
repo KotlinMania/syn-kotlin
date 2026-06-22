@@ -1,9 +1,6 @@
 // port-lint: source thread.rs
-@file:OptIn(kotlin.experimental.ExperimentalObjCRefinement::class)
 
 package io.github.kotlinmania.syn
-
-import kotlin.native.HiddenFromObjC
 
 /**
  * A container that binds a value to the thread on which it was created.
@@ -17,7 +14,6 @@ import kotlin.native.HiddenFromObjC
  * Rust API surface without the runtime cost or panic path of the
  * original thread-check.
  */
-@HiddenFromObjC
 public class ThreadBound<T> private constructor(
     private val value: T,
 ) {
@@ -46,7 +42,6 @@ public class ThreadBound<T> private constructor(
  * allow safe cross-thread transfer. In Kotlin, all objects are already
  * safe to share across coroutines, so `SendBox` is a simple wrapper.
  */
-@HiddenFromObjC
 public class SendBox<T> private constructor(
     private val value: T,
 ) {

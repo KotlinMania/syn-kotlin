@@ -2,7 +2,6 @@
 package io.github.kotlinmania.syn
 
 import io.github.kotlinmania.procmacro2.Span
-import io.github.kotlinmania.procmacro2.TokenStream
 import io.github.kotlinmania.quote.ToTokens
 import io.github.kotlinmania.quote.__span
 
@@ -36,4 +35,3 @@ internal interface SpannedSealed
 /** Auto-implement [Spanned] for all [ToTokens] implementations. */
 internal fun <T : ToTokens> spanOf(value: T): Span =
     value.__span()
-

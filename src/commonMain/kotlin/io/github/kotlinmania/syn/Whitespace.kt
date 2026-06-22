@@ -69,9 +69,7 @@ internal fun skipWhitespace(input: String): String {
     return s
 }
 
-private fun isWhitespaceChar(ch: Char): Boolean {
-    return ch.isWhitespace() || ch == '\u200E' || ch == '\u200F'
-}
+private fun isWhitespaceChar(ch: Char): Boolean = ch.isWhitespace() || ch == '\u200E' || ch == '\u200F'
 
 /**
  * Returns whether the character is considered whitespace.
@@ -93,7 +91,6 @@ public fun skip(input: String): String =
  */
 public fun isWhitespace(ch: Char): Boolean =
     charIsWhitespace(ch)
-
 
 /**
  * Skips all whitespace and comments in the parse stream, advancing the cursor.

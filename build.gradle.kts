@@ -756,6 +756,35 @@ tasks.register("swiftExportSmokeTest") {
                 .get()
                 .asFile
                 .absolutePath
+
+        val generatedPackageSwift =
+            layout.buildDirectory
+                .file("SPMPackage/macosArm64/Debug/Package.swift")
+                .get()
+                .asFile
+
+        fun patchPackageSwiftPlatforms() {
+            if (generatedPackageSwift.exists()) {
+                val text = generatedPackageSwift.readText()
+                if (!text.contains("platforms:")) {
+                    val packageDecl = text.indexOf("let package = Package(")
+                    if (packageDecl >= 0) {
+                        val nameLineStart = text.indexOf("name:", packageDecl)
+                        if (nameLineStart > 0) {
+                            val nameLineEnd = text.indexOf('\n', nameLineStart)
+                            if (nameLineEnd > 0) {
+                                generatedPackageSwift.writeText(
+                                    text.substring(0, nameLineEnd + 1) +
+                                        "    platforms: [.macOS(.v14)],\n" +
+                                        text.substring(nameLineEnd + 1),
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         execOperations
             .exec {
                 workingDir = projectDir
@@ -778,24 +807,22 @@ tasks.register("swiftExportSmokeTest") {
                         "DEPLOYMENT_TARGET_SETTING_NAME" to "MACOSX_DEPLOYMENT_TARGET",
                     ),
                 )
-            }.assertNormalExitValue()
+                isIgnoreExitValue = true
+            }
 
-        val generatedPackageSwift =
+        patchPackageSwiftPlatforms()
+
+        val spmPackageDir =
             layout.buildDirectory
-                .file("SPMPackage/macosArm64/Debug/Package.swift")
+                .dir("SPMPackage/macosArm64/Debug")
                 .get()
                 .asFile
-        if (generatedPackageSwift.exists()) {
-            val text = generatedPackageSwift.readText()
-            if (!text.contains("platforms:")) {
-                generatedPackageSwift.writeText(
-                    text.replaceFirst(
-                        Regex("(name:\\s*\"[^\"]*\",)"),
-                        "\$1\n    platforms: [.macOS(.v14)],",
-                    ),
-                )
-            }
-        }
+
+        execOperations
+            .exec {
+                workingDir = spmPackageDir
+                commandLine("swift", "build")
+            }.assertNormalExitValue()
 
         execOperations
             .exec {

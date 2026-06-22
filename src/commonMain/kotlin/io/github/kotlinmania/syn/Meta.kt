@@ -1,9 +1,5 @@
 // port-lint: source meta.rs
-@file:OptIn(kotlin.experimental.ExperimentalObjCRefinement::class)
 package io.github.kotlinmania.syn
-
-import io.github.kotlinmania.procmacro2.TokenStream
-import kotlin.native.HiddenFromObjC
 
 /**
  * Facility for interpreting structured content inside an [Attribute].
