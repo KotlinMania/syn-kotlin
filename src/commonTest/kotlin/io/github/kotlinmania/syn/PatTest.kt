@@ -13,7 +13,7 @@ import kotlin.test.assertTrue
 /**
  * Tests for parsing of patterns.
  *
- * The pattern parser (`PatParse`, equivalent to upstream `Pat::parse_single`)
+ * The pattern parser (`PatParseImpl`, equivalent to upstream `Pat::parse_single`)
  * currently handles the wildcard, ident, type-ascripted ident, parenthesized,
  * and tuple forms. Path patterns, tuple-struct patterns, range patterns,
  * slice patterns, leading-vert or-patterns, and `Delimiter::None` group
@@ -21,22 +21,22 @@ import kotlin.test.assertTrue
  * an honest one-line comment naming the specific missing semantic.
  */
 class PatTest {
-    // Not ported: `PatParse` does not accept `self` as an identifier
+    // Not ported: `PatParseImpl` does not accept `self` as an identifier
     // pattern; the upstream test parses `self` and asserts `Pat::Ident`.
     @Test
     fun testPatIdent() {
         // Not ported: `self` is classified as a keyword by `acceptAsIdent`
-        // and `PatParse` has no `SelfValuePeek` branch, so the upstream
+        // and `PatParseImpl` has no `SelfValuePeek` branch, so the upstream
         // `Pat::Ident` shape for `self` cannot be reproduced yet.
         TokenStream.fromString("self").getOrThrow()
     }
 
-    // Not ported: `PatParse` has no path-pattern branch; the upstream
+    // Not ported: `PatParseImpl` has no path-pattern branch; the upstream
     // test parses `self::CONST` and asserts `Pat::Path`.
     @Test
     fun testPatPath() {
         // Not ported: path patterns (`self::CONST`) are not handled by
-        // `PatParse`; the upstream `Pat::Path` shape cannot be reproduced.
+        // `PatParseImpl`; the upstream `Pat::Path` shape cannot be reproduced.
         TokenStream.fromString("self::CONST").getOrThrow()
     }
 
@@ -52,24 +52,24 @@ class PatTest {
         TokenStream.fromString("let | () = ();").getOrThrow()
     }
 
-    // Not ported: `PatParse` has no tuple-struct or group branch; the
+    // Not ported: `PatParseImpl` has no tuple-struct or group branch; the
     // upstream test wraps `Some(_)` in a `Delimiter::None` group and
     // asserts `Pat::TupleStruct` with one `Pat::Wild` element.
     @Test
     fun testGroup() {
         // Not ported: `Delimiter::None` group patterns and tuple-struct
-        // patterns (`Some(_)`) are not handled by `PatParse`.
+        // patterns (`Some(_)`) are not handled by `PatParseImpl`.
         val group = Group(Delimiter.None, TokenStream.fromString("Some(_)").getOrThrow())
         TokenStream.fromTokenTrees(listOf(TokenTree.Group(group)))
     }
 
-    // Not ported: `PatParse` has no range or slice branch; the upstream
+    // Not ported: `PatParseImpl` has no range or slice branch; the upstream
     // test parses a series of range and slice patterns asserting which
     // forms are accepted and rejected.
     @Test
     fun testRanges() {
         // Not ported: range patterns (`..`, `..hi`, `lo..hi`, `..=hi`)
-        // and slice patterns (`[lo..]`) are not handled by `PatParse`.
+        // and slice patterns (`[lo..]`) are not handled by `PatParseImpl`.
         TokenStream.fromString("..").getOrThrow()
         TokenStream.fromString("..hi").getOrThrow()
         TokenStream.fromString("lo..").getOrThrow()
@@ -87,20 +87,20 @@ class PatTest {
     @Test
     fun testTupleComma() {
         // Empty tuple `()` parses as `Pat.Tuple` with zero elements.
-        val empty = parseStr(PatParse, "()").getOrThrow()
+        val empty = parseStr(PatParseImpl, "()").getOrThrow()
         assertIs<Pat.Tuple>(empty)
         assertEquals(0, empty.elems.size)
 
         // A single element with a trailing comma must parse as
         // `Pat.Tuple` (not `Pat.PatParen`); the element is a `Pat.Wild`.
-        val oneTrailing = parseStr(PatParse, "(_,)").getOrThrow()
+        val oneTrailing = parseStr(PatParseImpl, "(_,)").getOrThrow()
         assertIs<Pat.Tuple>(oneTrailing)
         assertEquals(1, oneTrailing.elems.size)
         assertTrue(oneTrailing.elems.trailingPunct())
         assertIs<Pat.Wild>(oneTrailing.elems.first())
 
         // Two elements without a trailing comma parse as `Pat.Tuple`.
-        val two = parseStr(PatParse, "(_, _)").getOrThrow()
+        val two = parseStr(PatParseImpl, "(_, _)").getOrThrow()
         assertIs<Pat.Tuple>(two)
         assertEquals(2, two.elems.size)
         val twoList = two.elems.toList()
@@ -109,7 +109,7 @@ class PatTest {
 
         // Two elements with a trailing comma parse as `Pat.Tuple` and
         // retain the trailing punctuation.
-        val twoTrailing = parseStr(PatParse, "(_, _,)").getOrThrow()
+        val twoTrailing = parseStr(PatParseImpl, "(_, _,)").getOrThrow()
         assertIs<Pat.Tuple>(twoTrailing)
         assertEquals(2, twoTrailing.elems.size)
         assertTrue(twoTrailing.elems.trailingPunct())
