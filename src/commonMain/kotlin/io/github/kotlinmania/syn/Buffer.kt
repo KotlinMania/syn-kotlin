@@ -230,8 +230,8 @@ public class Cursor internal constructor(
     }
 
     /**
-     * If the cursor is pointing at a lifetime token, returns it along with a
-     * cursor pointing at the next token tree.
+     * If the cursor is pointing at an apostrophe-prefixed token, returns it
+     * along with a cursor pointing at the next token tree.
      */
     public fun lifetime(): Pair<Lifetime, Cursor>? {
         val c = ignoreNone()

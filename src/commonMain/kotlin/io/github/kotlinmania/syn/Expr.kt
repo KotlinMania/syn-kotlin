@@ -368,7 +368,7 @@ public sealed class Expr : ToTokens {
         override fun deepCopy(): Loop = Loop(attrs.map { it.deepCopy() }, label?.deepCopy(), loopToken, body)
     }
 
-    /** A macro invocation expression: `format!("{}", q)`. */
+    /** A macro invocation expression. */
     public data class Macro(
         val attrs: List<Attribute>,
         val mac: io.github.kotlinmania.syn.Macro,
@@ -603,7 +603,7 @@ public sealed class Expr : ToTokens {
         override fun deepCopy(): Tuple = Tuple(attrs.map { it.deepCopy() }, parenToken, elems.copy({ it.deepCopy() }, { it }))
     }
 
-    /** A unary operation: `!x`, `*x`. */
+    /** A unary prefix operation: negation or dereference. */
     public data class Unary(
         public val attrs: List<Attribute>,
         public val op: UnOp,

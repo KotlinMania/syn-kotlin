@@ -10,7 +10,7 @@ Based on AST analysis, here are the concrete next steps.
 - **Combined symbol parity:** 238/1204 matched (target 2323) — 19.8%
 - **Average inline-code cosine:** 0.30 (function body across 53 matched files)
 - **Average documentation cosine:** 0.31 (doc text across 53 matched files)
-- **Cheat-zeroed Files:** 12
+- **Cheat-zeroed Files:** 11
 - **Critical Issues:** 46 files with <0.60 function similarity
 
 ## Priority 1: Fix Incomplete High-Dependency Files
@@ -226,10 +226,10 @@ Every matched file is listed below with function and type symbol parity.
 
 ### 15. gen.visit
 
-- **Target:** `gen.Visit [ZERO]`
-- **Similarity:** 0.00
+- **Target:** `gen.Visit`
+- **Similarity:** 0.02
 - **Dependents:** 1
-- **Priority Score:** 2758910.0
+- **Priority Score:** 2758909.8
 - **Functions:** 14/188 matched (target 14)
 - **Missing functions:** `visit_abi`, `visit_angle_bracketed_generic_arguments`, `visit_arm`, `visit_assoc_const`, `visit_assoc_type`, `visit_attr_style`, `visit_bare_fn_arg`, `visit_bare_variadic`, `visit_bin_op`, `visit_block`, `visit_bound_lifetimes`, `visit_captured_param`, `visit_const_param`, `visit_constraint`, `visit_data_enum`, `visit_data_struct`, `visit_data_union`, `visit_expr_array`, `visit_expr_assign`, `visit_expr_async`, `visit_expr_await`, `visit_expr_binary`, `visit_expr_block`, `visit_expr_break`, `visit_expr_call`, `visit_expr_cast`, `visit_expr_closure`, `visit_expr_const`, `visit_expr_continue`, `visit_expr_field`, `visit_expr_for_loop`, `visit_expr_group`, `visit_expr_if`, `visit_expr_index`, `visit_expr_infer`, `visit_expr_let`, `visit_expr_lit`, `visit_expr_loop`, `visit_expr_macro`, `visit_expr_match`, `visit_expr_method_call`, `visit_expr_paren`, `visit_expr_path`, `visit_expr_range`, `visit_expr_raw_addr`, `visit_expr_reference`, `visit_expr_repeat`, `visit_expr_return`, `visit_expr_struct`, `visit_expr_try`, `visit_expr_try_block`, `visit_expr_tuple`, `visit_expr_unary`, `visit_expr_unsafe`, `visit_expr_while`, `visit_expr_yield`, `visit_field`, `visit_field_mutability`, `visit_field_pat`, `visit_field_value`, `visit_fields`, `visit_fields_named`, `visit_fields_unnamed`, `visit_file`, `visit_fn_arg`, `visit_foreign_item`, `visit_foreign_item_fn`, `visit_foreign_item_macro`, `visit_foreign_item_static`, `visit_foreign_item_type`, `visit_generic_argument`, `visit_generic_param`, `visit_impl_item`, `visit_impl_item_const`, `visit_impl_item_fn`, `visit_impl_item_macro`, `visit_impl_item_type`, `visit_impl_restriction`, `visit_index`, `visit_item_const`, `visit_item_enum`, `visit_item_extern_crate`, `visit_item_fn`, `visit_item_foreign_mod`, `visit_item_impl`, `visit_item_macro`, `visit_item_mod`, `visit_item_static`, `visit_item_struct`, `visit_item_trait`, `visit_item_trait_alias`, `visit_item_type`, `visit_item_union`, `visit_item_use`, `visit_label`, `visit_lifetime_param`, `visit_lit_bool`, `visit_lit_byte`, `visit_lit_byte_str`, `visit_lit_cstr`, `visit_lit_char`, `visit_lit_float`, `visit_lit_int`, `visit_lit_str`, `visit_local`, `visit_local_init`, `visit_macro`, `visit_macro_delimiter`, `visit_member`, `visit_meta_list`, `visit_meta_name_value`, `visit_parenthesized_generic_arguments`, `visit_pat_ident`, `visit_pat_or`, `visit_pat_paren`, `visit_pat_reference`, `visit_pat_rest`, `visit_pat_slice`, `visit_pat_struct`, `visit_pat_tuple`, `visit_pat_tuple_struct`, `visit_pat_type`, `visit_pat_wild`, `visit_path_arguments`, `visit_path_segment`, `visit_pointer_mutability`, `visit_precise_capture`, `visit_predicate_lifetime`, `visit_predicate_type`, `visit_qself`, `visit_range_limits`, `visit_receiver`, `visit_return_type`, `visit_signature`, `visit_span`, `visit_static_mutability`, `visit_stmt_macro`, `visit_token_stream`, `visit_trait_bound`, `visit_trait_bound_modifier`, `visit_trait_item`, `visit_trait_item_const`, `visit_trait_item_fn`, `visit_trait_item_macro`, `visit_trait_item_type`, `visit_type_array`, `visit_type_bare_fn`, `visit_type_group`, `visit_type_impl_trait`, `visit_type_infer`, `visit_type_macro`, `visit_type_never`, `visit_type_param`, `visit_type_param_bound`, `visit_type_paren`, `visit_type_path`, `visit_type_ptr`, `visit_type_reference`, `visit_type_slice`, `visit_type_trait_object`, `visit_type_tuple`, `visit_un_op`, `visit_use_glob`, `visit_use_group`, `visit_use_name`, `visit_use_path`, `visit_use_rename`, `visit_use_tree`, `visit_variadic`, `visit_variant`, `visit_vis_restricted`, `visit_visibility`, `visit_where_clause`, `visit_where_predicate`
 - **Types:** 1/1 matched
