@@ -447,6 +447,33 @@ public class TypeParamBoundList : SynPunctuated {
         TypeParamBoundList(super.inner.mapTo(mutableListOf()) { (v, p) -> copyValue(v as TypeParamBound) to copyPunct(p) }, super.last?.let { copyValue(it as TypeParamBound) })
 }
 
+public class CapturedParamList : SynPunctuated {
+    public constructor() : super()
+    internal constructor(values: List<Pair<ToTokens, ToTokens>>, trailing: ToTokens?) : super(values, trailing)
+
+    public fun first(): CapturedParam? = super.inner.firstOrNull()?.first as? CapturedParam ?: super.last as? CapturedParam
+
+    public fun last(): CapturedParam? = super.last as? CapturedParam ?: super.inner.lastOrNull()?.first as? CapturedParam
+
+    public operator fun get(index: Int): CapturedParam = super.inner[index].first as CapturedParam
+
+    public fun toList(): List<CapturedParam> = map { it as CapturedParam }
+
+    public fun pushValue(value: CapturedParam) { pushValueRaw(value) }
+
+    public fun pushPunct(punctuation: ToTokens) { pushPunctRaw(punctuation) }
+
+    public fun push(value: CapturedParam, defaultPunctuation: () -> ToTokens) {
+        if (!emptyOrTrailing()) pushPunct(defaultPunctuation())
+        pushValue(value)
+    }
+
+    public fun pop(): CapturedParam? = popRaw() as? CapturedParam
+
+    public fun copy(copyValue: (CapturedParam) -> CapturedParam = { it }, copyPunct: (ToTokens) -> ToTokens = { it }): CapturedParamList =
+        CapturedParamList(super.inner.mapTo(mutableListOf()) { (v, p) -> copyValue(v as CapturedParam) to copyPunct(p) }, super.last?.let { copyValue(it as CapturedParam) })
+}
+
 public class WherePredicateList : SynPunctuated {
     public constructor() : super()
     internal constructor(values: List<Pair<ToTokens, ToTokens>>, trailing: ToTokens?) : super(values, trailing)

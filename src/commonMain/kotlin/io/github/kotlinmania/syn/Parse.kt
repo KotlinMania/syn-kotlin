@@ -250,6 +250,14 @@ public class ParseBuffer internal constructor(
             inner.value = Unexpected.Some(info.first, info.second)
         }
     }
+
+    /**
+     * Advances this stream's position to match the position of [other], a
+     * fork of this stream. Used to commit speculative parsing done in a fork.
+     */
+    public fun advanceTo(other: ParseBuffer) {
+        currentCursor = other.currentCursor
+    }
 }
 
 /**

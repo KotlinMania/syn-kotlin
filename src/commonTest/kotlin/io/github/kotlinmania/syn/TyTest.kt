@@ -10,30 +10,31 @@ import io.github.kotlinmania.procmacro2.Span
 import io.github.kotlinmania.procmacro2.TokenStream
 import io.github.kotlinmania.procmacro2.TokenTree
 import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertIs
+import kotlin.test.assertTrue
 
 /**
  * Tests for parsing of types.
  *
- * The upstream Rust tests drive `syn::parse_str::<Type>(...)` and the
- * `snapshot!` macro, which require a `Parse<SynType>` implementation
- * (the type parser entry point) that is not ported to this Kotlin
- * codebase yet. The `test_tuple_comma` test also requires `TypeTuple`
- * direct construction plus a `to_token_stream()` round-trip through
- * `Parse<SynType>`; the Kotlin port exposes `SynType.Tuple` but no
- * parser to round-trip it. Each test below carries an honest one-line
- * comment naming the specific missing semantic, rather than emitting a
- * fake simulation that tests a different invariant.
+ * The type parser (`SynTypeParseExpr`, equivalent to upstream
+ * `Parse<SynType>`) currently handles the infer (`_`), reference
+ * (`&` / `&'lt` / `&mut`), pointer (`*const` / `*mut`), parenthesized,
+ * tuple, and path forms. Bare-fn types, `dyn`/`impl Trait` trait-object
+ * types, `AngleBracketed` generic-argument disambiguation against
+ * `Delimiter::None` groups, `QSelf`-bearing path types, and the
+ * `PreciseCapture` `use<...>` bound are not yet handled; the
+ * corresponding upstream tests below carry an honest one-line comment
+ * naming the specific missing semantic.
  */
 class TyTest {
-    // Not ported: `Parse<SynType>` is not implemented in this Kotlin
-    // port, so `fn(mut self)` and its variants cannot be parsed into
-    // `SynType.BareFn` for shape assertion.
+    // Not ported: `SynTypeParseExpr` has no bare-fn branch; the upstream
+    // test parses `fn(mut self)` and variants as `Type::BareFn`.
     @Test
     fun testMutSelf() {
-        // Not ported: `Parse<SynType>` is not implemented; the upstream
-        // test parses `fn(mut self)`, `fn(mut self,)`, `fn(mut self: ())`
-        // as valid bare function types and `fn(mut self: ...)`,
-        // `fn(mut self: mut self)`, `fn(mut self::T)` as errors.
+        // Not ported: bare-fn types (`fn(...) -> ...`) are not handled by
+        // `SynTypeParseExpr`; the upstream `Type::BareFn` shape cannot be
+        // reproduced.
         TokenStream.fromString("fn(mut self)").getOrThrow()
         TokenStream.fromString("fn(mut self,)").getOrThrow()
         TokenStream.fromString("fn(mut self: ())").getOrThrow()
@@ -42,17 +43,15 @@ class TyTest {
         TokenStream.fromString("fn(mut self::T)").getOrThrow()
     }
 
-    // Not ported: `Parse<SynType>` is not implemented; the upstream test
-    // builds a token stream mimicking `$ty<T>` and `$ty::<T>` with a
-    // `Delimiter::None` group and parses it into `Type::Path` with an
-    // `AngleBracketed` argument list.
+    // Not ported: `SynTypeParseExpr` parses a path but does not fold a
+    // following `<` into `PathArguments::AngleBracketed` against a
+    // `Delimiter::None` group; the upstream test asserts the resulting
+    // `Type::Path` with a single `AngleBracketed` generic argument.
     @Test
     fun testMacroVariableType() {
-        // Not ported: `Parse<SynType>` is not implemented; the upstream
-        // test builds a `Delimiter::None` group containing `ty` followed
-        // by `<T>` (and `::<T>`) and asserts the parsed type is
-        // `Type::Path` with a single `PathSegment` whose arguments are
-        // `AngleBracketed` containing `GenericArgument::Type(Type::Path(T))`.
+        // Not ported: `AngleBracketed` generic-argument disambiguation
+        // against a `Delimiter::None` group (`$ty<T>`) is not handled by
+        // `SynTypeParseExpr`.
         val tokens =
             TokenStream.fromTokenTrees(
                 listOf(
@@ -65,17 +64,14 @@ class TyTest {
         tokens.toString()
     }
 
-    // Not ported: `Parse<SynType>` is not implemented; the upstream test
-    // builds a token stream mimicking `Option<$ty>` with a
-    // `Delimiter::None` group containing `Vec<u8>` and parses it into
-    // `Type::Path` with a `GenericArgument::Type(Type::Group)`.
+    // Not ported: same `AngleBracketed`-vs-group disambiguation gap as
+    // `testMacroVariableType`; the upstream test asserts a
+    // `GenericArgument::Type(Type::Group)` element.
     @Test
     fun testGroupAngleBrackets() {
-        // Not ported: `Parse<SynType>` is not implemented; the upstream
-        // test builds `Option<$ty>` where `$ty` is a `Delimiter::None`
-        // group containing `Vec<u8>` and asserts the parsed type is
-        // `Type::Path(Option)` with a `GenericArgument::Type(Type::Group
-        // { elem: Type::Path(Vec<u8>) })`.
+        // Not ported: `Option<$ty>` with `$ty` a `Delimiter::None` group
+        // requires folding the group into `Type::Group` inside
+        // `AngleBracketed` args; not handled by `SynTypeParseExpr`.
         val tokens =
             TokenStream.fromTokenTrees(
                 listOf(
@@ -88,18 +84,14 @@ class TyTest {
         tokens.toString()
     }
 
-    // Not ported: `Parse<SynType>` is not implemented; the upstream test
-    // builds `$ty::Item` and `[$ty]::Element` token streams with
-    // `Delimiter::None` groups and parses them into `Type::Path` and
-    // a qualified `Type::Path` with `QSelf`.
+    // Not ported: `SynTypeParseExpr` does not resolve a `Delimiter::None`
+    // group followed by `::` into a multi-segment path, nor into a
+    // `QSelf`-bearing path; the upstream test asserts both shapes.
     @Test
     fun testGroupColons() {
-        // Not ported: `Parse<SynType>` is not implemented; the upstream
-        // test builds a `Delimiter::None` group containing `Vec<u8>`
-        // followed by `::Item` and asserts the parsed type is
-        // `Type::Path` with two segments, then builds a group containing
-        // `[T]` followed by `::Element` and asserts a `QSelf` with
-        // `position: 0` and a leading-colon path.
+        // Not ported: `$ty::Item` and `[$ty]::Element` require group
+        // resolution plus `QSelf` construction; not handled by
+        // `SynTypeParseExpr`.
         val tokens =
             TokenStream.fromTokenTrees(
                 listOf(
@@ -112,77 +104,70 @@ class TyTest {
         tokens.toString()
     }
 
-    // Not ported: `Parse<SynType>` is not implemented; the upstream test
-    // parses `dyn for<'a> Trait<'a> + 'static` and `dyn 'a + Trait` into
-    // `Type::TraitObject` and asserts the bound list shape, then asserts
-    // `for<'a> dyn Trait<'a>` and `dyn for<'a> 'a + Trait` are errors.
+    // Not ported: `SynTypeParseExpr` has no `dyn`/`for`/trait-object
+    // branch; the upstream test parses `dyn for<'a> Trait<'a> + 'static`
+    // and `dyn 'a + Trait` into `Type::TraitObject`.
     @Test
     fun testTraitObject() {
-        // Not ported: `Parse<SynType>` is not implemented; the upstream
-        // test parses `dyn for<'a> Trait<'a> + 'static` into
-        // `Type::TraitObject` with a `BoundLifetimes` containing one
-        // `LifetimeParam('a)`, a `TraitBound` with an `AngleBracketed`
-        // lifetime argument, and a trailing `'static` lifetime bound;
-        // then parses `dyn 'a + Trait` with a leading lifetime and
-        // trailing trait bound; then asserts `for<'a> dyn Trait<'a>`
-        // and `dyn for<'a> 'a + Trait` are parse errors.
+        // Not ported: `dyn ...` and `for<'a> ...` trait-object types are
+        // not handled by `SynTypeParseExpr`.
         TokenStream.fromString("dyn for<'a> Trait<'a> + 'static").getOrThrow()
         TokenStream.fromString("dyn 'a + Trait").getOrThrow()
         TokenStream.fromString("for<'a> dyn Trait<'a>").getOrThrow()
         TokenStream.fromString("dyn for<'a> 'a + Trait").getOrThrow()
     }
 
-    // Not ported: `Parse<SynType>` is not implemented; the upstream test
-    // parses `impl Trait +`, `dyn Trait +`, and `Trait +` (with trailing
-    // `+`) and asserts the resulting `Type::ImplTrait` /
-    // `Type::TraitObject` bound list shape including the trailing
-    // punctuation.
+    // Not ported: `SynTypeParseExpr` has no `impl Trait +` / `Trait +`
+    // branch with trailing `+`; the upstream test asserts the bound
+    // list shape including the trailing punctuation.
     @Test
     fun testTrailingPlus() {
-        // Not ported: `Parse<SynType>` is not implemented; the upstream
-        // test parses `impl Trait +`, `dyn Trait +`, and `Trait +` and
-        // asserts each parses into `Type::ImplTrait` or
-        // `Type::TraitObject` with a `TypeParamBound::Trait(TraitBound)`
-        // followed by a trailing `Token![+]`.
+        // Not ported: `impl Trait +`, `dyn Trait +`, and `Trait +` with
+        // trailing `+` are not handled by `SynTypeParseExpr`.
         TokenStream.fromString("impl Trait +").getOrThrow()
         TokenStream.fromString("dyn Trait +").getOrThrow()
         TokenStream.fromString("Trait +").getOrThrow()
     }
 
-    // Not ported: requires `TypeTuple` direct construction with
-    // `token::Paren::default()` and a `to_token_stream()` round-trip
-    // through `Parse<SynType>`; the Kotlin port exposes
-    // `SynType.Tuple` but has no `Parse<SynType>` to round-trip the
-    // emitted tokens, and `TypeTuple` is not a standalone
-    // constructible type here.
     @Test
     fun testTupleComma() {
-        // Not ported: `Parse<SynType>` and a standalone `TypeTuple`
-        // builder are not implemented; the upstream test constructs a
-        // `TypeTuple` with zero, one, one-plus-comma, two, and
-        // two-plus-comma elements, emits each to a token stream, parses
-        // it back as `Type`, and asserts the snapshot shape (empty
-        // tuple, trailing comma forms, multi-element forms).
-        TokenStream.fromString("()").getOrThrow()
-        TokenStream.fromString("(_,)").getOrThrow()
-        TokenStream.fromString("(_, _)").getOrThrow()
-        TokenStream.fromString("(_, _,)").getOrThrow()
+        // Empty tuple `()` parses as `SynType.Tuple` with zero elements.
+        val empty = parseStr(SynTypeParseExpr, "()").getOrThrow()
+        assertIs<SynType.Tuple>(empty)
+        assertEquals(0, empty.elems.size)
+
+        // A single element with a trailing comma must parse as
+        // `SynType.Tuple` (not `SynType.Paren`); the element is a
+        // `SynType.Infer`.
+        val oneTrailing = parseStr(SynTypeParseExpr, "(_,)").getOrThrow()
+        assertIs<SynType.Tuple>(oneTrailing)
+        assertEquals(1, oneTrailing.elems.size)
+        assertTrue(oneTrailing.elems.trailingPunct())
+        assertIs<SynType.Infer>(oneTrailing.elems.first())
+
+        // Two elements without a trailing comma parse as `SynType.Tuple`.
+        val two = parseStr(SynTypeParseExpr, "(_, _)").getOrThrow()
+        assertIs<SynType.Tuple>(two)
+        assertEquals(2, two.elems.size)
+        val twoList = two.elems.toList()
+        assertIs<SynType.Infer>(twoList[0])
+        assertIs<SynType.Infer>(twoList[1])
+
+        // Two elements with a trailing comma parse as `SynType.Tuple`
+        // and retain the trailing punctuation.
+        val twoTrailing = parseStr(SynTypeParseExpr, "(_, _,)").getOrThrow()
+        assertIs<SynType.Tuple>(twoTrailing)
+        assertEquals(2, twoTrailing.elems.size)
+        assertTrue(twoTrailing.elems.trailingPunct())
     }
 
-    // Not ported: `Parse<SynType>` is not implemented; the upstream test
-    // parses `impl Sized + use<'_, 'a, A, Test>` and
-    // `impl Sized + use<'_,>` into `Type::ImplTrait` and asserts the
-    // `PreciseCapture` bound with `CapturedParam` lifetimes and idents.
+    // Not ported: `SynTypeParseExpr` has no `impl ... use<...>` branch;
+    // the upstream test parses `impl Sized + use<'_, 'a, A, Test>` into
+    // `Type::ImplTrait` with a `PreciseCapture` bound.
     @Test
     fun testImplTraitUse() {
-        // Not ported: `Parse<SynType>` is not implemented; the upstream
-        // test parses `impl Sized + use<'_, 'a, A, Test>` into
-        // `Type::ImplTrait` with a `TraitBound(Sized)` followed by a
-        // `PreciseCapture` bound containing `CapturedParam::Lifetime('_)`,
-        // `CapturedParam::Lifetime('a)`, `CapturedParam::Ident("A")`,
-        // `CapturedParam::Ident("Test")` separated by commas; and
-        // `impl Sized + use<'_,>` with a trailing comma after the
-        // single `'_` lifetime.
+        // Not ported: `impl Trait + use<...>` with a `PreciseCapture`
+        // bound is not handled by `SynTypeParseExpr`.
         TokenStream.fromString("impl Sized + use<'_, 'a, A, Test>").getOrThrow()
         TokenStream.fromString("impl Sized + use<'_,>").getOrThrow()
     }

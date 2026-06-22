@@ -219,13 +219,26 @@ public sealed class TypeParamBound : ToTokens {
     public abstract fun deepCopy(): TypeParamBound
 
     public data class Trait(
+        val parenToken: io.github.kotlinmania.syn.token.Paren?,
+        val modifier: TraitBoundModifier,
+        val lifetimes: BoundLifetimes?,
         val path: Path,
     ) : TypeParamBound() {
         override fun toTokens(tokens: TokenStream) {
-            path.toTokens(tokens)
+            if (parenToken != null) {
+                parenToken.surround(tokens) { inner ->
+                    modifier.toTokens(inner)
+                    lifetimes?.toTokens(inner)
+                    path.toTokens(inner)
+                }
+            } else {
+                modifier.toTokens(tokens)
+                lifetimes?.toTokens(tokens)
+                path.toTokens(tokens)
+            }
         }
 
-        override fun deepCopy(): Trait = Trait(path.deepCopy())
+        override fun deepCopy(): Trait = Trait(parenToken, modifier, lifetimes?.deepCopy(), path.deepCopy())
     }
 
     public data class LifetimeBound(
@@ -236,5 +249,81 @@ public sealed class TypeParamBound : ToTokens {
         }
 
         override fun deepCopy(): LifetimeBound = LifetimeBound(lifetime.deepCopy())
+    }
+
+    public data class PreciseCapture(
+        val useToken: io.github.kotlinmania.syn.token.Use,
+        val ltToken: Lt,
+        val params: CapturedParamList,
+        val gtToken: Gt,
+    ) : TypeParamBound() {
+        override fun toTokens(tokens: TokenStream) {
+            useToken.toTokens(tokens)
+            ltToken.toTokens(tokens)
+            params.toTokens(tokens)
+            gtToken.toTokens(tokens)
+        }
+
+        override fun deepCopy(): PreciseCapture = PreciseCapture(useToken, ltToken, params.copy({ it.deepCopy() }, { it }), gtToken)
+    }
+
+    public data class Verbatim(
+        val tokens: TokenStream,
+    ) : TypeParamBound() {
+        override fun toTokens(tokens: TokenStream) {
+            tokens.extendTokenStreams(listOf(this.tokens))
+        }
+
+        override fun deepCopy(): Verbatim = this
+    }
+}
+
+public sealed class TraitBoundModifier : ToTokens {
+    public abstract fun deepCopy(): TraitBoundModifier
+
+    public data object None : TraitBoundModifier() {
+        override fun toTokens(tokens: TokenStream) {}
+        override fun deepCopy(): None = this
+    }
+
+    public data class Maybe(
+        val token: io.github.kotlinmania.syn.token.Question,
+    ) : TraitBoundModifier() {
+        override fun toTokens(tokens: TokenStream) { token.toTokens(tokens) }
+        override fun deepCopy(): Maybe = this
+    }
+}
+
+public data class BoundLifetimes(
+    val forToken: io.github.kotlinmania.syn.token.For,
+    val ltToken: Lt,
+    val lifetimes: GenericParamList,
+    val gtToken: Gt,
+) : ToTokens {
+    override fun toTokens(tokens: TokenStream) {
+        forToken.toTokens(tokens)
+        ltToken.toTokens(tokens)
+        lifetimes.toTokens(tokens)
+        gtToken.toTokens(tokens)
+    }
+
+    public fun deepCopy(): BoundLifetimes = BoundLifetimes(forToken, ltToken, lifetimes.copy({ it.deepCopy() }, { it }), gtToken)
+}
+
+public sealed class CapturedParam : ToTokens {
+    public abstract fun deepCopy(): CapturedParam
+
+    public data class Lifetime(
+        val lifetime: io.github.kotlinmania.syn.Lifetime,
+    ) : CapturedParam() {
+        override fun toTokens(tokens: TokenStream) { lifetime.toTokens(tokens) }
+        override fun deepCopy(): Lifetime = Lifetime(lifetime.deepCopy())
+    }
+
+    public data class Ident(
+        val ident: io.github.kotlinmania.procmacro2.Ident,
+    ) : CapturedParam() {
+        override fun toTokens(tokens: TokenStream) { ident.toTokens(tokens) }
+        override fun deepCopy(): Ident = Ident(ident.copy())
     }
 }

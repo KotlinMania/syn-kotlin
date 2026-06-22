@@ -10,10 +10,8 @@ import io.github.kotlinmania.syn.token.Comma
 import io.github.kotlinmania.syn.token.Default
 import io.github.kotlinmania.syn.token.Eq
 import io.github.kotlinmania.syn.token.For
-import io.github.kotlinmania.syn.token.Impl
 import io.github.kotlinmania.syn.token.Paren
 import io.github.kotlinmania.syn.token.Semi
-import io.github.kotlinmania.syn.token.Trait
 import io.github.kotlinmania.syn.token.Unsafe
 
 /**
@@ -152,7 +150,7 @@ public sealed class Item : ToTokens {
         public val vis: Visibility,
         public val unsafety: Unsafe?,
         public val autoToken: io.github.kotlinmania.syn.token.Auto?,
-        public val traitToken: Trait,
+        public val traitToken: io.github.kotlinmania.syn.token.Trait,
         public val ident: Ident,
         public val generics: Generics,
         public val colonToken: Colon?,
@@ -184,7 +182,7 @@ public sealed class Item : ToTokens {
         public val attrs: List<Attribute>,
         public val defaultness: Default?,
         public val unsafety: Unsafe?,
-        public val implToken: Impl,
+        public val implToken: io.github.kotlinmania.syn.token.Impl,
         public val generics: Generics,
         public val traitPath: PathTrait?,
         public val selfType: SynType,
