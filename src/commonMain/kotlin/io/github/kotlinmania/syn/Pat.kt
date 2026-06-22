@@ -1,20 +1,18 @@
 // port-lint: source pat.rs
-@file:OptIn(kotlin.experimental.ExperimentalObjCRefinement::class)
 package io.github.kotlinmania.syn
 
 import io.github.kotlinmania.procmacro2.TokenStream
 import io.github.kotlinmania.syn.token.Colon
 import io.github.kotlinmania.syn.token.Comma
 import io.github.kotlinmania.syn.token.Or
+import io.github.kotlinmania.syn.token.Underscore
 import io.github.kotlinmania.quote.ToTokens
 import io.github.kotlinmania.quote.toTokens
-import kotlin.native.HiddenFromObjC
 
 /**
  * A pattern in a local binding, function signature, pattern-matching expression, or
  * various other places.
  */
-@HiddenFromObjC
 public sealed class Pat : ToTokens {
  public abstract fun deepCopy(): Pat
 
@@ -143,16 +141,31 @@ public sealed class Pat : ToTokens {
 
  /** A type ascription pattern: `v: Int`. */
  public data class Type(
+  public val attrs: List<Attribute>,
   public val pat: Pat,
   public val colonToken: Colon,
   public val ty: SynType,
  ) : Pat() {
-  override fun deepCopy(): Pat = copy(pat = pat.deepCopy(), ty = ty.deepCopy())
+  override fun deepCopy(): Pat = copy(attrs = attrs.map { it.deepCopy() }, pat = pat.deepCopy(), ty = ty.deepCopy())
 
   override fun toTokens(tokens: TokenStream) {
+   for (attr in attrs) attr.toTokens(tokens)
    pat.toTokens(tokens)
    colonToken.toTokens(tokens)
    ty.toTokens(tokens)
+  }
+ }
+
+  /** A pattern that matches any value. */
+ public data class Wild(
+  public val attrs: List<Attribute>,
+  public val underscoreToken: Underscore,
+ ) : Pat() {
+  override fun deepCopy(): Pat = copy(attrs = attrs.map { it.deepCopy() })
+
+  override fun toTokens(tokens: TokenStream) {
+   for (attr in attrs) attr.toTokens(tokens)
+   underscoreToken.toTokens(tokens)
   }
  }
 
@@ -192,4 +205,21 @@ public data class PatRest(
  }
 
  public fun deepCopy(): PatRest = this
+}
+
+/** A type ascription pattern. */
+public data class PatType(
+ public val attrs: List<Attribute>,
+ public val pat: Pat,
+ public val colonToken: Colon,
+ public val ty: SynType,
+) : ToTokens {
+ override fun toTokens(tokens: TokenStream) {
+  for (attr in attrs) attr.toTokens(tokens)
+  pat.toTokens(tokens)
+  colonToken.toTokens(tokens)
+  ty.toTokens(tokens)
+ }
+
+ public fun deepCopy(): PatType = PatType(attrs.map { it.deepCopy() }, pat.deepCopy(), colonToken, ty.deepCopy())
 }
