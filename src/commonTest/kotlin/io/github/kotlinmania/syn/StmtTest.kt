@@ -15,29 +15,31 @@ import kotlin.test.assertTrue
 
 /**
  * Tests for parsing of statements.
- *
- * The statement parser (`parseStmtFull`, equivalent to upstream
- * `Parse<Stmt>`) currently handles local bindings (`let pat = expr;`),
- * expression statements (`expr;`), and trailing expressions (`expr`
- * without a semicolon). The pattern parser backing the local binding
- * handles wildcard, ident, type-ascripted ident, parenthesized, and
- * tuple patterns. Item statements, macro statements, raw-address
- * expressions (`&raw const x`), rest patterns (`..`), tuple-struct
- * patterns (`Some(x)`), let-else, `Block.parseWithin`, and
- * `Delimiter::None` group items are not yet handled; the corresponding
- * upstream tests below carry an honest one-line comment naming the
- * specific missing semantic.
  */
 class StmtTest {
-    // Not ported: `parseStmtFull` parses `&raw const x` as a reference
-    // to a path (`raw const x`) rather than a raw-address expression;
-    // the upstream test asserts an `Expr::RawAddr` initializer.
+    private fun assertMacroPath(mac: Macro, ident: String) {
+        assertEquals(1, mac.path.segments.len())
+        assertEquals(ident, mac.path.segments.first()?.ident?.toString())
+    }
+
+    private fun assertPathExpr(expr: Expr, ident: String) {
+        val path = assertIs<Expr.Path>(expr)
+        assertEquals(1, path.path.segments.len())
+        assertEquals(ident, path.path.segments.first()?.ident?.toString())
+    }
+
     @Test
     fun testRawOperator() {
-        // Not ported: raw-address expressions (`&raw const x`) are not
-        // recognized by the expression parser; the upstream
-        // `Expr::RawAddr` shape cannot be reproduced.
-        TokenStream.fromString("let _ = &raw const x;").getOrThrow()
+        val stmt = parserFromFunction(::parseStmtFull).parseStr("let _ = &raw const x;").getOrThrow()
+        val local = assertIs<Stmt.Local>(stmt)
+        assertIs<Pat.Wild>(local.pat)
+        val init = local.init
+        assertTrue(init != null)
+        val raw = assertIs<Expr.RawAddr>(init.expr)
+        assertIs<PointerMutability.Const>(raw.mutability)
+        val path = assertIs<Expr.Path>(raw.expr)
+        assertEquals(1, path.path.segments.len())
+        assertEquals("x", path.path.segments.first()?.ident?.toString())
     }
 
     @Test
@@ -70,14 +72,8 @@ class StmtTest {
         assertTrue(result.isFailure || result.getOrNull()?.isFailure == true, "expected parse error for: let _ = &raw x;")
     }
 
-    // Not ported: `parseStmtFull` has no item-statement branch; the
-    // upstream test wraps `async fn f() {}` in a `Delimiter::None`
-    // group and asserts a `Stmt::Item(Item::Fn { ... })`.
     @Test
     fun testNoneGroup() {
-        // Not ported: `Delimiter::None` group items (`async fn f() {}`)
-        // are not handled by `parseStmtFull`; the upstream
-        // `Stmt::Item(Item::Fn)` shape cannot be reproduced.
         val tokens =
             TokenStream.fromTokenTrees(
                 listOf(
@@ -97,76 +93,146 @@ class StmtTest {
                     ),
                 ),
             )
-        tokens.toString()
+        val stmt = parse2(StmtParse, tokens).getOrThrow()
+        val itemStmt = assertIs<Stmt.ItemStmt>(stmt)
+        val fn = assertIs<Item.Fn>(itemStmt.item)
+        assertIs<Visibility.Inherited>(fn.vis)
+        assertTrue(fn.sig.asyncness != null)
+        assertEquals("f", fn.sig.ident.toString())
+        assertEquals(ReturnType.Default, fn.sig.output)
+        val block = fn.block
+        assertTrue(block != null)
+        assertEquals(0, block.stmts.size)
     }
 
-    // Not ported: `Block.parseWithin` (the statement-sequence parser
-    // used by block bodies) is not implemented; the upstream test
-    // parses a `Delimiter::None` group containing `let None = None` and
-    // asserts a one-element statement list wrapping a group expression.
     @Test
     fun testNoneGroupLetWithin() {
-        // Not ported: `Block.parseWithin` is not implemented; the
-        // upstream `Expr::Group { expr: Expr::Let { ... } }` shape
-        // cannot be reproduced.
         val tokens =
             Group(Delimiter.None, TokenStream.fromString("let None = None").getOrThrow())
                 .let { TokenStream.fromTokenTrees(listOf(TokenTree.Group(it))) }
-        tokens.toString()
+        val stmts = parserFromFunction(::parseWithin).parse2(tokens).getOrThrow()
+
+        assertEquals(1, stmts.size)
+        val stmt = assertIs<Stmt.ExprStmt>(stmts[0])
+        assertNull(stmt.semiToken)
+        val group = assertIs<Expr.Group>(stmt.expr)
+        val let = assertIs<Expr.Let>(group.expr)
+        val pat = assertIs<Pat.Ident>(let.pat)
+        assertEquals("None", pat.ident.toString())
+        assertPathExpr(let.expr, "None")
     }
 
-    // Not ported: `parsePatFull` has no rest-pattern (`..`) branch; the
-    // upstream test parses `let .. = 10;` and asserts a `Pat::Rest`
-    // pattern with a literal initializer.
     @Test
     fun testLetDotDot() {
-        // Not ported: rest patterns (`..`) are not handled by
-        // `parsePatFull`; the upstream `Pat::Rest` shape cannot be
-        // reproduced.
-        TokenStream.fromString("let .. = 10;").getOrThrow()
+        val stmt = parserFromFunction(::parseStmtFull).parseStr("let .. = 10;").getOrThrow()
+        val local = assertIs<Stmt.Local>(stmt)
+        assertIs<Pat.Rest>(local.pat)
+        val init = local.init
+        assertTrue(init != null)
+        val lit = assertIs<Expr.Lit>(init.expr)
+        assertEquals("10", assertIs<Lit.Int>(lit.lit).value.base10Digits())
     }
 
-    // Not ported: `parsePatFull` has no tuple-struct pattern branch and
-    // `parseStmtFull` has no let-else diverge block; the upstream test
-    // parses `let Some(x) = None else { return 0; };` and asserts the
-    // tuple-struct pattern, path initializer, and return-statement
-    // diverge block.
     @Test
     fun testLetElse() {
-        // Not ported: tuple-struct patterns (`Some(x)`) and let-else
-        // diverge blocks are not handled by `parseStmtFull`; the
-        // upstream `Stmt::Local { pat: Pat::TupleStruct, diverge: ... }`
-        // shape cannot be reproduced.
-        TokenStream.fromString("let Some(x) = None else { return 0; };").getOrThrow()
+        val stmt =
+            parserFromFunction(::parseStmtFull)
+                .parseStr("let Some(x) = None else { return 0; };")
+                .getOrThrow()
+
+        val local = assertIs<Stmt.Local>(stmt)
+        val pat = assertIs<Pat.TupleStruct>(local.pat)
+        assertEquals("Some", pat.path.getIdent()?.toString())
+        assertEquals(1, pat.elems.len())
+        assertEquals("x", assertIs<Pat.Ident>(pat.elems.first()).ident.toString())
+        val init = local.init
+        assertTrue(init != null)
+        assertPathExpr(init.expr, "None")
+        val diverge = init.diverge
+        assertTrue(diverge != null)
+        val block = assertIs<Expr.BlockExpr>(diverge.expr)
+        assertEquals(1, block.block.stmts.size)
+        val returnStmt = assertIs<Stmt.ExprStmt>(block.block.stmts.first())
+        assertTrue(returnStmt.semiToken != null)
+        val ret = assertIs<Expr.Return>(returnStmt.expr)
+        val retExpr = ret.expr
+        assertTrue(retExpr != null)
+        val lit = assertIs<Expr.Lit>(retExpr)
+        assertEquals("0", assertIs<Lit.Int>(lit.lit).value.base10Digits())
     }
 
-    // Not ported: `parseStmtFull` has no item-statement or
-    // macro-statement branch; the upstream test parses a function body
-    // containing `macro_rules!`, `thread_local!`, `println!`, and
-    // `vec![]` and asserts the four-statement shape.
     @Test
     fun testMacros() {
-        // Not ported: item statements (`macro_rules! mac {}`) and
-        // macro statements (`thread_local! { ... }`, `println!(...)`)
-        // are not handled by `parseStmtFull`; the upstream
-        // four-statement body shape cannot be reproduced.
-        TokenStream
-            .fromString(
-                "fn main() { macro_rules! mac {} thread_local! { static FOO } println!(\"\"); vec![] }",
-            ).getOrThrow()
+        val stmt =
+            parserFromFunction(::parseStmtFull)
+                .parseStr("fn main() { macro_rules! mac {} thread_local! { static FOO } println!(\"\"); vec![] }")
+                .getOrThrow()
+
+        val itemStmt = assertIs<Stmt.ItemStmt>(stmt)
+        val fn = assertIs<Item.Fn>(itemStmt.item)
+        assertEquals("main", fn.sig.ident.toString())
+        val block = fn.block
+        assertTrue(block != null)
+        assertEquals(4, block.stmts.size)
+
+        val macroRulesStmt = assertIs<Stmt.ItemStmt>(block.stmts[0])
+        val macroRules = assertIs<Item.Macro>(macroRulesStmt.item)
+        assertEquals("mac", macroRules.ident?.toString())
+        assertMacroPath(macroRules.mac, "macro_rules")
+        assertIs<MacroDelimiter.Brace>(macroRules.mac.delimiter)
+        assertNull(macroRules.semiToken)
+
+        val threadLocal = assertIs<Stmt.MacroStmt>(block.stmts[1])
+        assertMacroPath(threadLocal.mac, "thread_local")
+        assertIs<MacroDelimiter.Brace>(threadLocal.mac.delimiter)
+        assertNull(threadLocal.semiToken)
+        assertEquals("static FOO", threadLocal.mac.tokens.toString())
+
+        val println = assertIs<Stmt.MacroStmt>(block.stmts[2])
+        assertMacroPath(println.mac, "println")
+        assertIs<MacroDelimiter.Paren>(println.mac.delimiter)
+        assertTrue(println.semiToken != null)
+        assertEquals("\"\"", println.mac.tokens.toString())
+
+        val vecStmt = assertIs<Stmt.ExprStmt>(block.stmts[3])
+        assertNull(vecStmt.semiToken)
+        val vec = assertIs<Expr.Macro>(vecStmt.expr)
+        assertMacroPath(vec.mac, "vec")
+        assertIs<MacroDelimiter.Bracket>(vec.mac.delimiter)
+        assertEquals("", vec.mac.tokens.toString())
     }
 
-    // Not ported: `Block.parseWithin` is not implemented; the upstream
-    // test parses `loop {} ()` and `'a: loop {} ()` via
-    // `Block::parse_within.parse2(...)` and asserts each produces a
-    // two-element statement list (loop expression followed by unit
-    // tuple), distinguishing the shape from a call expression.
     @Test
     fun testEarlyParseLoop() {
-        // Not ported: `Block.parseWithin` is not implemented; the
-        // upstream two-element `[Stmt::Expr(Expr::Loop), Stmt::Expr(Expr::Tuple)]`
-        // shape cannot be reproduced.
-        TokenStream.fromString("loop {} ()").getOrThrow()
-        TokenStream.fromString("'a: loop {} ()").getOrThrow()
+        val stmts = parserFromFunction(::parseWithin).parseStr("loop {} ()").getOrThrow()
+
+        assertEquals(2, stmts.size)
+        val loopStmt = assertIs<Stmt.ExprStmt>(stmts[0])
+        assertIs<Expr.Loop>(loopStmt.expr)
+        assertNull(loopStmt.semiToken)
+        val tupleStmt = assertIs<Stmt.ExprStmt>(stmts[1])
+        assertIs<Expr.Tuple>(tupleStmt.expr)
+        assertNull(tupleStmt.semiToken)
+
+        val labeled = parserFromFunction(::parseWithin).parseStr("'a: loop {} ()").getOrThrow()
+        assertEquals(2, labeled.size)
+        val labeledLoopStmt = assertIs<Stmt.ExprStmt>(labeled[0])
+        val labeledLoop = assertIs<Expr.Loop>(labeledLoopStmt.expr)
+        assertEquals("a", labeledLoop.label?.name?.ident?.toString())
+        assertNull(labeledLoopStmt.semiToken)
+        val labeledTupleStmt = assertIs<Stmt.ExprStmt>(labeled[1])
+        assertIs<Expr.Tuple>(labeledTupleStmt.expr)
+        assertNull(labeledTupleStmt.semiToken)
+    }
+
+    @Test
+    fun testStatementSemicolonRules() {
+        assertTrue(parseStr(StmtParse, "x").isFailure)
+        assertTrue(parseStr(StmtParse, "return 1").isFailure)
+        assertTrue(parserFromFunction(::parseWithin).parseStr("x y").isFailure)
+
+        val loopStmt = assertIs<Stmt.ExprStmt>(parseStr(StmtParse, "loop {}").getOrThrow())
+        assertIs<Expr.Loop>(loopStmt.expr)
+        assertNull(loopStmt.semiToken)
     }
 }

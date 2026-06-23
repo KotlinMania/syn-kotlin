@@ -2,6 +2,7 @@
 package io.github.kotlinmania.syn
 
 import io.github.kotlinmania.procmacro2.Delimiter
+import io.github.kotlinmania.procmacro2.DelimSpan
 import io.github.kotlinmania.procmacro2.Group
 import io.github.kotlinmania.procmacro2.TokenStream
 import io.github.kotlinmania.procmacro2.TokenTree
@@ -28,6 +29,15 @@ public data class Macro(
 
     public fun deepCopy(): Macro =
         Macro(path.deepCopy(), bangToken, delimiter, tokens)
+
+    public fun span(): DelimSpan =
+        when (val value = delimiter) {
+            is MacroDelimiter.Paren -> value.token.span
+            is MacroDelimiter.Brace -> value.token.span
+            is MacroDelimiter.Bracket -> value.token.span
+        }
+
+    public fun isBrace(): Boolean = delimiter is MacroDelimiter.Brace
 }
 
 /**

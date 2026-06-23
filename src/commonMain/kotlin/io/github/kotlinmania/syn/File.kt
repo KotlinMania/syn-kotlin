@@ -3,7 +3,6 @@ package io.github.kotlinmania.syn
 
 import io.github.kotlinmania.procmacro2.TokenStream
 import io.github.kotlinmania.quote.ToTokens
-import io.github.kotlinmania.quote.append
 
 /**
  * A complete file of source code.
@@ -16,24 +15,47 @@ public data class File(
     public val items: List<Item>,
 ) : ToTokens {
     override fun toTokens(tokens: TokenStream) {
-        if (shebang != null) {
-            tokens.append(
-                io.github.kotlinmania.procmacro2.Literal
-                    .string(shebang),
-            )
-            tokens.append(
-                io.github.kotlinmania.procmacro2
-                    .Punct(
-                        '\n',
-                        io.github.kotlinmania.procmacro2.Spacing.Alone,
-                        io.github.kotlinmania.procmacro2.Span
-                            .callSite(),
-                    ),
-            )
-        }
         for (attr in attrs) attr.toTokens(tokens)
         for (item in items) item.toTokens(tokens)
     }
 
     public fun deepCopy(): File = File(shebang, attrs.map { it.deepCopy() }, items.map { it })
+}
+
+public object FileParse : Parse<File> {
+    override fun parse(input: ParseStream): SynResult<File> {
+        val attrs = parseInnerAttributes(input).getOrElse { return SynResult.failure(it) }
+        val items = mutableListOf<Item>()
+        while (!input.isEmpty()) {
+            items.add(input.parse(ItemParse).getOrElse { return SynResult.failure(it) })
+        }
+        return SynResult.success(File(null, attrs, items))
+    }
+}
+
+public fun parseFile(content: String): SynResult<File> {
+    var source = content
+    val bom = "\uFEFF"
+    if (source.startsWith(bom)) {
+        source = source.substring(bom.length)
+    }
+
+    var shebang: String? = null
+    if (source.startsWith("#!")) {
+        val rest = source.length - skipWhitespace(source.substring(2)).length
+        if (rest < source.length && source[rest] == '[') {
+            source = "#!" + source.substring(rest)
+        } else {
+            val newline = source.indexOf('\n')
+            if (newline >= 0) {
+                shebang = source.substring(0, newline)
+                source = source.substring(newline)
+            } else {
+                shebang = source
+                source = ""
+            }
+        }
+    }
+
+    return parseStr(FileParse, source).map { it.copy(shebang = shebang) }
 }

@@ -10,25 +10,19 @@ import kotlin.test.Test
  * tree, parses each file with `syn::parse_file`, runs a `FlattenParens`
  * visitor that discards attributes and folds redundant parentheses,
  * re-parses the printed token stream, and asserts structural equality
- * of the before and after trees. This requires several pieces not
- * ported to this Kotlin codebase: `Parse<File>` (the whole-file parser
- * entry point), `syn::visit_mut::VisitMut` (the mutable visitor trait),
- * the `FlattenParens` and `AsIfPrinted` visitors, and a `repo` helper
- * that clones the Rust source tree for filesystem traversal. The test
- * below carries an honest one-line comment naming the specific missing
- * semantics, rather than emitting a fake simulation that tests a
- * different invariant.
+ * of the before and after trees. The Kotlin port has the whole-file
+ * parser entry point, but the mutable visitor trait, the `FlattenParens`
+ * and `AsIfPrinted` visitors, and the source-tree traversal harness are
+ * not implemented.
  */
 class UnparenthesizeTest {
-    // Not ported: requires `Parse<File>`, `syn::visit_mut::VisitMut`,
-    // the `FlattenParens` and `AsIfPrinted` visitors, and a `repo`
-    // helper that clones the Rust source tree; none of these are
-    // implemented in this Kotlin port.
+    // Not ported: requires the mutable visitor trait, the FlattenParens
+    // and AsIfPrinted visitors, and a helper that clones and walks the
+    // Rust source tree.
     @Test
     fun testUnparenthesize() {
-        // Not ported: `Parse<File>`, `VisitMut`, `FlattenParens`, and
-        // `AsIfPrinted` are not implemented; the upstream test walks
-        // the Rust source tree, parses each file, folds redundant
-        // parentheses, re-parses, and asserts structural equality.
+        // Not ported: the upstream test walks the Rust source tree,
+        // folds redundant parentheses through mutable visitors,
+        // re-parses, and asserts structural equality.
     }
 }

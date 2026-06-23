@@ -1,6 +1,8 @@
 // port-lint: tests tests/test_parse_stream.rs
 package io.github.kotlinmania.syn
 
+import io.github.kotlinmania.procmacro2.Delimiter
+import io.github.kotlinmania.procmacro2.Group
 import io.github.kotlinmania.procmacro2.Ident
 import io.github.kotlinmania.procmacro2.Punct
 import io.github.kotlinmania.procmacro2.Spacing
@@ -8,6 +10,7 @@ import io.github.kotlinmania.procmacro2.Span
 import io.github.kotlinmania.procmacro2.TokenStream
 import io.github.kotlinmania.procmacro2.TokenTree
 import kotlin.test.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
@@ -43,9 +46,35 @@ class ParseStreamTest {
 
     @Test
     fun testPeekPunct() {
-        // The procmacro2 lexer does not emit Joint spacing for adjacent
-        // punctuation like "+=", so multi-character punct peeks (PlusEqPeek,
-        // EqEqPeek) never match; single-char peeks (PlusPeek, EqPeek) work.
+        val tokens =
+            TokenStream.fromTokenTrees(
+                listOf(
+                    TokenTree.Punct(Punct('+', Spacing.Joint, Span.callSite())),
+                    TokenTree.Punct(Punct('=', Spacing.Alone, Span.callSite())),
+                    TokenTree.Punct(Punct('+', Spacing.Alone, Span.callSite())),
+                    TokenTree.Punct(Punct('=', Spacing.Alone, Span.callSite())),
+                ),
+            )
+
+        runParserTokens(tokens) { input ->
+            assertTrue(input.peek(PlusPeek))
+            assertTrue(input.peek(PlusEqPeek))
+
+            PlusParse.parse(input).getOrThrow()
+
+            assertTrue(input.peek(EqPeek))
+            assertFalse(input.peek(EqEqPeek))
+            assertFalse(input.peek(PlusPeek))
+
+            EqParse.parse(input).getOrThrow()
+
+            assertTrue(input.peek(PlusPeek))
+            assertFalse(input.peek(PlusEqPeek))
+
+            PlusParse.parse(input).getOrThrow()
+            EqParse.parse(input).getOrThrow()
+            SynResult.success(Unit)
+        }
     }
 
     @Test
@@ -116,9 +145,91 @@ class ParseStreamTest {
 
     @Test
     fun testPeekGroups() {
-        // Depends on peek2/peek3 traversing None-delimited groups and on
-        // parseAnyDelimiter entering a None group; the buffer's skip/peek
-        // across mixed delimiter boundaries is not yet wired to satisfy this
-        // multi-slot arrangement.
+        val tokens =
+            TokenStream.fromTokenTrees(
+                listOf(
+                    TokenTree.Ident(Ident.new("pub", Span.callSite())),
+                    TokenTree.Group(
+                        Group(
+                            Delimiter.Parenthesis,
+                            TokenStream.fromTokenTrees(
+                                listOf(
+                                    TokenTree.Punct(Punct(':', Spacing.Joint, Span.callSite())),
+                                    TokenTree.Punct(Punct(':', Spacing.Alone, Span.callSite())),
+                                ),
+                            ),
+                        ),
+                    ),
+                    TokenTree.Group(
+                        Group(
+                            Delimiter.None,
+                            TokenStream.fromTokenTrees(
+                                listOf(
+                                    TokenTree.Punct(Punct('!', Spacing.Alone, Span.callSite())),
+                                    TokenTree.Punct(Punct('=', Spacing.Alone, Span.callSite())),
+                                ),
+                            ),
+                        ),
+                    ),
+                    TokenTree.Ident(Ident.new("static", Span.callSite())),
+                ),
+            )
+
+        runParserTokens(tokens) { input ->
+            assertTrue(input.peek2(ParenPeek))
+            assertTrue(input.peek3(GroupPeek))
+            assertTrue(input.peek3(NotPeek))
+
+            PubParse.parse(input).getOrThrow()
+
+            assertTrue(input.peek(ParenPeek))
+            assertFalse(input.peek(PathSepPeek))
+            assertFalse(input.peek2(PathSepPeek))
+            assertTrue(input.peek2(NotPeek))
+            assertTrue(input.peek2(GroupPeek))
+            assertTrue(input.peek3(EqPeek))
+            assertFalse(input.peek3(StaticPeek))
+
+            val content = parenthesized(input).getOrThrow().content
+
+            assertTrue(content.peek(PathSepPeek))
+            assertTrue(content.peek2(ColonPeek))
+            assertFalse(content.peek3(GroupPeek))
+            assertFalse(content.peek3(NotPeek))
+
+            assertTrue(input.peek(GroupPeek))
+            assertTrue(input.peek(NotPeek))
+
+            PathSepParse.parse(content).getOrThrow()
+
+            assertTrue(input.peek(GroupPeek))
+            assertTrue(input.peek(NotPeek))
+            assertTrue(input.peek2(EqPeek))
+            assertTrue(input.peek3(StaticPeek))
+            assertFalse(input.peek2(StaticPeek))
+
+            val implicit = input.fork()
+            val explicit = input.fork()
+
+            NotParse.parse(implicit).getOrThrow()
+            assertTrue(implicit.peek(EqPeek))
+            assertTrue(implicit.peek2(StaticPeek))
+            EqParse.parse(implicit).getOrThrow()
+            assertTrue(implicit.peek(StaticPeek))
+
+            val grouped = explicit.parseAnyDelimiter().getOrThrow()
+            assertEquals(Delimiter.None, grouped.delimiter)
+            assertTrue(grouped.content.peek(NotPeek))
+            assertTrue(grouped.content.peek2(EqPeek))
+            assertFalse(grouped.content.peek3(StaticPeek))
+            NotParse.parse(grouped.content).getOrThrow()
+            assertTrue(grouped.content.peek(EqPeek))
+            assertFalse(grouped.content.peek2(StaticPeek))
+            EqParse.parse(grouped.content).getOrThrow()
+            assertFalse(grouped.content.peek(StaticPeek))
+
+            TokenStreamParse.parse(input).getOrThrow()
+            SynResult.success(Unit)
+        }
     }
 }

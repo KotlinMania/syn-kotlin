@@ -12,6 +12,8 @@ import io.github.kotlinmania.procmacro2.TokenTree
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 /**
@@ -20,38 +22,40 @@ import kotlin.test.assertTrue
  * The type parser (`SynTypeParseExpr`, equivalent to upstream
  * `Parse<SynType>`) currently handles the infer (`_`), reference
  * (`&` / `&'lt` / `&mut`), pointer (`*const` / `*mut`), parenthesized,
- * tuple, and path forms. Bare-fn types, `dyn`/`impl Trait` trait-object
- * types, `AngleBracketed` generic-argument disambiguation against
- * `Delimiter::None` groups, `QSelf`-bearing path types, and the
- * `PreciseCapture` `use<...>` bound are not yet handled; the
- * corresponding upstream tests below carry an honest one-line comment
- * naming the specific missing semantic.
+ * tuple, path forms, invisible type groups, `impl Trait`, trait-object
+ * forms, bare-fn types, `PreciseCapture` `use<...>` bounds, and the
+ * none-delimited group path disambiguation covered by upstream `test_ty.rs`.
  */
 class TyTest {
-    // Not ported: `SynTypeParseExpr` has no bare-fn branch; the upstream
-    // test parses `fn(mut self)` and variants as `Type::BareFn`.
     @Test
     fun testMutSelf() {
-        // Not ported: bare-fn types (`fn(...) -> ...`) are not handled by
-        // `SynTypeParseExpr`; the upstream `Type::BareFn` shape cannot be
-        // reproduced.
-        TokenStream.fromString("fn(mut self)").getOrThrow()
-        TokenStream.fromString("fn(mut self,)").getOrThrow()
-        TokenStream.fromString("fn(mut self: ())").getOrThrow()
-        TokenStream.fromString("fn(mut self: ...)").getOrThrow()
-        TokenStream.fromString("fn(mut self: mut self)").getOrThrow()
-        TokenStream.fromString("fn(mut self::T)").getOrThrow()
+        val mutSelf = assertIs<SynType.BareFn>(parseType("fn(mut self)"))
+        assertNull(mutSelf.lifetimes)
+        assertNull(mutSelf.unsafety)
+        assertNull(mutSelf.abi)
+        assertEquals(1, mutSelf.inputs.size)
+        assertNull(mutSelf.inputs.first()!!.name)
+        assertEquals("mut self", assertIs<SynType.Verbatim>(mutSelf.inputs.first()!!.ty).tokens.toString())
+        assertNull(mutSelf.variadic)
+        assertIs<ReturnType.Default>(mutSelf.output)
+
+        val trailing = assertIs<SynType.BareFn>(parseType("fn(mut self,)"))
+        assertEquals(1, trailing.inputs.size)
+        assertTrue(trailing.inputs.trailingPunct())
+        assertEquals("mut self", assertIs<SynType.Verbatim>(trailing.inputs.first()!!.ty).tokens.toString())
+
+        val typed = assertIs<SynType.BareFn>(parseType("fn(mut self: ())"))
+        assertEquals(1, typed.inputs.size)
+        assertNull(typed.inputs.first()!!.name)
+        assertEquals("mut self : ()", assertIs<SynType.Verbatim>(typed.inputs.first()!!.ty).tokens.toString())
+
+        assertTrue(parseStr(SynTypeParseExpr, "fn(mut self: ...)").isFailure)
+        assertTrue(parseStr(SynTypeParseExpr, "fn(mut self: mut self)").isFailure)
+        assertTrue(parseStr(SynTypeParseExpr, "fn(mut self::T)").isFailure)
     }
 
-    // Not ported: `SynTypeParseExpr` parses a path but does not fold a
-    // following `<` into `PathArguments::AngleBracketed` against a
-    // `Delimiter::None` group; the upstream test asserts the resulting
-    // `Type::Path` with a single `AngleBracketed` generic argument.
     @Test
     fun testMacroVariableType() {
-        // Not ported: `AngleBracketed` generic-argument disambiguation
-        // against a `Delimiter::None` group (`$ty<T>`) is not handled by
-        // `SynTypeParseExpr`.
         val tokens =
             TokenStream.fromTokenTrees(
                 listOf(
@@ -61,17 +65,32 @@ class TyTest {
                     TokenTree.Punct(Punct('>', Spacing.Alone, Span.callSite())),
                 ),
             )
-        tokens.toString()
+        val tyGeneric = assertIs<SynType.Path>(parseType(tokens))
+        assertPath(tyGeneric.path, "ty")
+        val args = assertIs<PathArguments.AngleBracketed>(tyGeneric.path.segments.first()!!.arguments)
+        assertNull(args.colon2Token)
+        assertPathTypeArg(args, 0, "T")
+
+        val turbofishTokens =
+            TokenStream.fromTokenTrees(
+                listOf(
+                    TokenTree.Group(Group(Delimiter.None, TokenStream.fromString("ty").getOrThrow())),
+                    TokenTree.Punct(Punct(':', Spacing.Joint, Span.callSite())),
+                    TokenTree.Punct(Punct(':', Spacing.Alone, Span.callSite())),
+                    TokenTree.Punct(Punct('<', Spacing.Alone, Span.callSite())),
+                    TokenTree.Ident(Ident.new("T", Span.callSite())),
+                    TokenTree.Punct(Punct('>', Spacing.Alone, Span.callSite())),
+                ),
+            )
+        val tyTurbofish = assertIs<SynType.Path>(parseType(turbofishTokens))
+        assertPath(tyTurbofish.path, "ty")
+        val turbofishArgs = assertIs<PathArguments.AngleBracketed>(tyTurbofish.path.segments.first()!!.arguments)
+        assertNotNull(turbofishArgs.colon2Token)
+        assertPathTypeArg(turbofishArgs, 0, "T")
     }
 
-    // Not ported: same `AngleBracketed`-vs-group disambiguation gap as
-    // `testMacroVariableType`; the upstream test asserts a
-    // `GenericArgument::Type(Type::Group)` element.
     @Test
     fun testGroupAngleBrackets() {
-        // Not ported: `Option<$ty>` with `$ty` a `Delimiter::None` group
-        // requires folding the group into `Type::Group` inside
-        // `AngleBracketed` args; not handled by `SynTypeParseExpr`.
         val tokens =
             TokenStream.fromTokenTrees(
                 listOf(
@@ -81,17 +100,19 @@ class TyTest {
                     TokenTree.Punct(Punct('>', Spacing.Alone, Span.callSite())),
                 ),
             )
-        tokens.toString()
+        val option = assertIs<SynType.Path>(parseType(tokens))
+        assertPath(option.path, "Option")
+        val args = assertIs<PathArguments.AngleBracketed>(option.path.segments.first()!!.arguments)
+        val arg = assertIs<GenericArgument.TypeArg>(args.args.toList().single())
+        val group = assertIs<SynType.Group>(arg.type)
+        val vec = assertIs<SynType.Path>(group.elem)
+        assertPath(vec.path, "Vec")
+        val vecArgs = assertIs<PathArguments.AngleBracketed>(vec.path.segments.first()!!.arguments)
+        assertPathTypeArg(vecArgs, 0, "u8")
     }
 
-    // Not ported: `SynTypeParseExpr` does not resolve a `Delimiter::None`
-    // group followed by `::` into a multi-segment path, nor into a
-    // `QSelf`-bearing path; the upstream test asserts both shapes.
     @Test
     fun testGroupColons() {
-        // Not ported: `$ty::Item` and `[$ty]::Element` require group
-        // resolution plus `QSelf` construction; not handled by
-        // `SynTypeParseExpr`.
         val tokens =
             TokenStream.fromTokenTrees(
                 listOf(
@@ -101,32 +122,75 @@ class TyTest {
                     TokenTree.Ident(Ident.new("Item", Span.callSite())),
                 ),
             )
-        tokens.toString()
+        val path = assertIs<SynType.Path>(parseType(tokens))
+        assertPath(path.path, "Vec", "Item")
+        val vecArgs = assertIs<PathArguments.AngleBracketed>(path.path.segments.first()!!.arguments)
+        assertPathTypeArg(vecArgs, 0, "u8")
+
+        val qselfTokens =
+            TokenStream.fromTokenTrees(
+                listOf(
+                    TokenTree.Group(Group(Delimiter.None, TokenStream.fromString("[T]").getOrThrow())),
+                    TokenTree.Punct(Punct(':', Spacing.Joint, Span.callSite())),
+                    TokenTree.Punct(Punct(':', Spacing.Alone, Span.callSite())),
+                    TokenTree.Ident(Ident.new("Element", Span.callSite())),
+                ),
+            )
+        val qselfPath = assertIs<SynType.Path>(parseType(qselfTokens))
+        val qself = assertNotNull(qselfPath.qself)
+        assertEquals(0, qself.position)
+        assertNull(qself.asToken)
+        val slice = assertIs<SynType.Slice>(qself.ty)
+        val elem = assertIs<SynType.Path>(slice.elem)
+        assertPath(elem.path, "T")
+        assertNotNull(qselfPath.path.leadingColon)
+        assertPath(qselfPath.path, "Element")
     }
 
-    // Not ported: `SynTypeParseExpr` has no `dyn`/`for`/trait-object
-    // branch; the upstream test parses `dyn for<'a> Trait<'a> + 'static`
-    // and `dyn 'a + Trait` into `Type::TraitObject`.
     @Test
     fun testTraitObject() {
-        // Not ported: `dyn ...` and `for<'a> ...` trait-object types are
-        // not handled by `SynTypeParseExpr`.
-        TokenStream.fromString("dyn for<'a> Trait<'a> + 'static").getOrThrow()
-        TokenStream.fromString("dyn 'a + Trait").getOrThrow()
-        TokenStream.fromString("for<'a> dyn Trait<'a>").getOrThrow()
-        TokenStream.fromString("dyn for<'a> 'a + Trait").getOrThrow()
+        val withFor = assertIs<SynType.TraitObject>(parseType("dyn for<'a> Trait<'a> + 'static"))
+        assertNotNull(withFor.dynToken)
+        assertEquals(2, withFor.bounds.size)
+        val withForBounds = withFor.bounds.toList()
+        val trait = assertTraitBound(withForBounds[0], "Trait")
+        val lifetimes = assertNotNull(trait.lifetimes)
+        val lifetimeParam = assertIs<GenericParam.LifetimeParam>(lifetimes.lifetimes.toList().single())
+        assertEquals("'a", lifetimeParam.lifetime.toString())
+        val arguments = assertIs<PathArguments.AngleBracketed>(trait.path.segments.first()!!.arguments)
+        val lifetimeArg = assertIs<GenericArgument.LifetimeArg>(arguments.args.toList().single())
+        assertEquals("'a", lifetimeArg.lifetime.toString())
+        assertLifetimeBound(withForBounds[1], "'static")
+
+        val lifetimeFirst = assertIs<SynType.TraitObject>(parseType("dyn 'a + Trait"))
+        assertNotNull(lifetimeFirst.dynToken)
+        assertEquals(2, lifetimeFirst.bounds.size)
+        val lifetimeFirstBounds = lifetimeFirst.bounds.toList()
+        assertLifetimeBound(lifetimeFirstBounds[0], "'a")
+        assertTraitBound(lifetimeFirstBounds[1], "Trait")
+
+        assertTrue(parseStr(SynTypeParseExpr, "for<'a> dyn Trait<'a>").isFailure)
+        assertTrue(parseStr(SynTypeParseExpr, "dyn for<'a> 'a + Trait").isFailure)
     }
 
-    // Not ported: `SynTypeParseExpr` has no `impl Trait +` / `Trait +`
-    // branch with trailing `+`; the upstream test asserts the bound
-    // list shape including the trailing punctuation.
     @Test
     fun testTrailingPlus() {
-        // Not ported: `impl Trait +`, `dyn Trait +`, and `Trait +` with
-        // trailing `+` are not handled by `SynTypeParseExpr`.
-        TokenStream.fromString("impl Trait +").getOrThrow()
-        TokenStream.fromString("dyn Trait +").getOrThrow()
-        TokenStream.fromString("Trait +").getOrThrow()
+        val implTrait = assertIs<SynType.ImplTrait>(parseType("impl Trait +"))
+        assertEquals(1, implTrait.bounds.size)
+        assertTraitBound(implTrait.bounds.toList().single(), "Trait")
+        assertTrue(implTrait.bounds.trailingPunct())
+
+        val dynTrait = assertIs<SynType.TraitObject>(parseType("dyn Trait +"))
+        assertNotNull(dynTrait.dynToken)
+        assertEquals(1, dynTrait.bounds.size)
+        assertTraitBound(dynTrait.bounds.toList().single(), "Trait")
+        assertTrue(dynTrait.bounds.trailingPunct())
+
+        val bareTrait = assertIs<SynType.TraitObject>(parseType("Trait +"))
+        assertNull(bareTrait.dynToken)
+        assertEquals(1, bareTrait.bounds.size)
+        assertTraitBound(bareTrait.bounds.toList().single(), "Trait")
+        assertTrue(bareTrait.bounds.trailingPunct())
     }
 
     @Test
@@ -161,14 +225,53 @@ class TyTest {
         assertTrue(twoTrailing.elems.trailingPunct())
     }
 
-    // Not ported: `SynTypeParseExpr` has no `impl ... use<...>` branch;
-    // the upstream test parses `impl Sized + use<'_, 'a, A, Test>` into
-    // `Type::ImplTrait` with a `PreciseCapture` bound.
     @Test
     fun testImplTraitUse() {
-        // Not ported: `impl Trait + use<...>` with a `PreciseCapture`
-        // bound is not handled by `SynTypeParseExpr`.
-        TokenStream.fromString("impl Sized + use<'_, 'a, A, Test>").getOrThrow()
-        TokenStream.fromString("impl Sized + use<'_,>").getOrThrow()
+        val implTrait = assertIs<SynType.ImplTrait>(parseType("impl Sized + use<'_, 'a, A, Test>"))
+        assertEquals(2, implTrait.bounds.size)
+        val bounds = implTrait.bounds.toList()
+        assertTraitBound(bounds[0], "Sized")
+        val preciseCapture = assertIs<TypeParamBound.PreciseCapture>(bounds[1])
+        val params = preciseCapture.params.toList()
+        assertEquals(4, params.size)
+        assertEquals("'_", assertIs<CapturedParam.Lifetime>(params[0]).lifetime.toString())
+        assertEquals("'a", assertIs<CapturedParam.Lifetime>(params[1]).lifetime.toString())
+        assertEquals("A", assertIs<CapturedParam.Ident>(params[2]).ident.toString())
+        assertEquals("Test", assertIs<CapturedParam.Ident>(params[3]).ident.toString())
+
+        val trailing = assertIs<SynType.ImplTrait>(parseType("impl Sized + use<'_,>"))
+        val trailingCapture = assertIs<TypeParamBound.PreciseCapture>(trailing.bounds.toList()[1])
+        assertEquals(1, trailingCapture.params.size)
+        assertEquals("'_", assertIs<CapturedParam.Lifetime>(trailingCapture.params.first()!!).lifetime.toString())
+        assertTrue(trailingCapture.params.trailingPunct())
+    }
+
+    private fun parseType(source: String): SynType =
+        parseStr(SynTypeParseExpr, source).getOrThrow()
+
+    private fun parseType(tokens: TokenStream): SynType =
+        parse2(SynTypeParseExpr, tokens).getOrThrow()
+
+    private fun assertPathTypeArg(args: PathArguments.AngleBracketed, index: Int, vararg segments: String) {
+        val arg = assertIs<GenericArgument.TypeArg>(args.args.toList()[index])
+        val ty = assertIs<SynType.Path>(arg.type)
+        assertPath(ty.path, *segments)
+    }
+
+    private fun assertTraitBound(bound: TypeParamBound, vararg segments: String): TypeParamBound.Trait {
+        val trait = assertIs<TypeParamBound.Trait>(bound)
+        assertIs<TraitBoundModifier.None>(trait.modifier)
+        assertPath(trait.path, *segments)
+        return trait
+    }
+
+    private fun assertLifetimeBound(bound: TypeParamBound, lifetime: String): TypeParamBound.LifetimeBound {
+        val lifetimeBound = assertIs<TypeParamBound.LifetimeBound>(bound)
+        assertEquals(lifetime, lifetimeBound.lifetime.toString())
+        return lifetimeBound
+    }
+
+    private fun assertPath(path: Path, vararg segments: String) {
+        assertEquals(segments.toList(), path.segments.toList().map { it.ident.toString() })
     }
 }

@@ -144,6 +144,16 @@ public class SynError private constructor(
                 ),
             )
 
+        public fun new2(start: Span, end: Span, message: String): SynError =
+            SynError(
+                mutableListOf(
+                    ErrorMessage(
+                        span = ThreadBound.new(SpanRange(start, end)),
+                        message = message,
+                    ),
+                ),
+            )
+
         /**
          * Creates an error with the specified message spanning the given syntax
          * tree node.
@@ -235,6 +245,12 @@ public class SynError private constructor(
 
     public fun intoIterable(): Iterable<SynError> =
         messages.map { SynError(mutableListOf(it.copy())) }
+
+    public fun intoIter(): Iterator<SynError> =
+        intoIterable().iterator()
+
+    public fun clone(): SynError =
+        SynError(messages.map { it.copy() }.toMutableList())
 
     public fun extend(other: SynError) {
         messages.addAll(other.messages)

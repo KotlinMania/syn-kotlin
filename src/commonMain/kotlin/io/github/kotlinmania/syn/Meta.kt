@@ -1,6 +1,9 @@
 // port-lint: source meta.rs
 package io.github.kotlinmania.syn
 
+public fun parseMetaPath(input: ParseStream): SynResult<Path> =
+    parseModStylePath(input)
+
 /**
  * Facility for interpreting structured content inside an [Attribute].
  *
@@ -28,7 +31,7 @@ internal fun parseNestedMetaInternal(
     logic: (ParseNestedMeta) -> SynResult<Unit>,
 ): SynResult<Unit> {
     while (true) {
-        val path = input.parse(PathParse).getOrElse { return SynResult.failure(it) }
+        val path = parseMetaPath(input).getOrElse { return SynResult.failure(it) }
         val result = logic(ParseNestedMeta(path, input.currentCursor.tokenStream()))
         if (result.isFailure) return result
         if (input.isEmpty()) return SynResult.success(Unit)

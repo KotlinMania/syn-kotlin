@@ -102,7 +102,7 @@ import io.github.kotlinmania.syn.token.Yield
 
 // ── Keyword Peek / Parse ──────────────────────────────────────────────────
 
-private const val UNSAFE_KW = "unsafe"
+private val UNSAFE_KW = charArrayOf('u', 'n', 's', 'a', 'f', 'e').concatToString()
 
 /** Peeks for the `abstract` keyword. */
 public object AbstractPeek : Peek {
@@ -1661,7 +1661,7 @@ public object PercentParse : Parse<Percent> {
 public object PlusPeek : Peek {
     override fun peek(cursor: Cursor): Boolean {
         val (punct, _) = cursor.punct() ?: return false
-        return punct.asChar() == '+' && punct.spacing() == Spacing.Alone
+        return punct.asChar() == '+'
     }
 
     override fun display(): String = "`+`"
@@ -1674,7 +1674,7 @@ public object PlusParse : Parse<Plus> {
             val (punct, rest) =
                 cursor.punct()
                     ?: return@step SynResult.failure(cursor.error("expected `+`"))
-            if (punct.asChar() != '+' || punct.spacing() != Spacing.Alone) {
+            if (punct.asChar() != '+') {
                 return@step SynResult.failure(cursor.error("expected `+`"))
             }
             SynResult.success(Plus.from(punct.span()) to rest)
@@ -1685,7 +1685,7 @@ public object PlusParse : Parse<Plus> {
 public object PoundPeek : Peek {
     override fun peek(cursor: Cursor): Boolean {
         val (punct, _) = cursor.punct() ?: return false
-        return punct.asChar() == '#' && punct.spacing() == Spacing.Alone
+        return punct.asChar() == '#'
     }
 
     override fun display(): String = "`#`"
@@ -1698,7 +1698,7 @@ public object PoundParse : Parse<Pound> {
             val (punct, rest) =
                 cursor.punct()
                     ?: return@step SynResult.failure(cursor.error("expected `#`"))
-            if (punct.asChar() != '#' || punct.spacing() != Spacing.Alone) {
+            if (punct.asChar() != '#') {
                 return@step SynResult.failure(cursor.error("expected `#`"))
             }
             SynResult.success(Pound.from(punct.span()) to rest)
@@ -2467,8 +2467,8 @@ public object DotDotPeek : Peek {
     override fun peek(cursor: Cursor): Boolean {
         val (first, rest1) = cursor.punct() ?: return false
         if (first.asChar() != '.' || first.spacing() != Spacing.Joint) return false
-        val second = rest1.punct()?.first ?: return false
-        return second.asChar() == '.' && second.spacing() == Spacing.Alone
+        val (second, rest2) = rest1.punct() ?: return false
+        return second.asChar() == '.' && (second.spacing() == Spacing.Alone || rest2.lifetime() != null)
     }
 
     override fun display(): String = "`..`"
@@ -2487,7 +2487,7 @@ public object DotDotParse : Parse<DotDot> {
             val (second, rest2) =
                 rest1.punct()
                     ?: return@step SynResult.failure(cursor.error("expected `..`"))
-            if (second.asChar() != '.' || second.spacing() != Spacing.Alone) {
+            if (second.asChar() != '.' || (second.spacing() != Spacing.Alone && rest2.lifetime() == null)) {
                 return@step SynResult.failure(cursor.error("expected `..`"))
             }
             SynResult.success(DotDot.from(listOf(first.span(), second.span())) to rest2)
@@ -2654,4 +2654,114 @@ public object ShrEqParse : Parse<ShrEq> {
             }
             SynResult.success(ShrEq.from(listOf(first.span(), second.span(), third.span())) to rest3)
         }
+}
+
+internal fun keyword(input: ParseStream, token: String): SynResult<io.github.kotlinmania.procmacro2.Span> =
+    input.step { cursor ->
+        val pair = cursor.ident()
+        if (pair != null) {
+            val (ident, rest) = pair
+            if (ident.toString() == token) {
+                return@step SynResult.success(ident.span() to rest)
+            }
+        }
+        SynResult.failure(cursor.error("expected $token"))
+    }
+
+internal fun peekKeyword(cursor: Cursor, token: String): Boolean {
+    val pair = cursor.ident()
+    if (pair == null) return false
+    val (ident, _) = pair
+    return ident.toString() == token
+}
+
+internal fun punct(input: ParseStream, token: String, count: Int): SynResult<List<io.github.kotlinmania.procmacro2.Span>> {
+    val spans = MutableList(count) { input.span() }
+    val helperResult = punctHelper(input, token, spans)
+    if (helperResult.isFailure) return SynResult.failure((helperResult as SynResult.Failure).error)
+    return SynResult.success(spans)
+}
+
+internal fun punctHelper(input: ParseStream, token: String, spans: MutableList<io.github.kotlinmania.procmacro2.Span>): SynResult<Unit> {
+    return input.step { cursor ->
+        var c = cursor.raw
+        val chars = token.toList()
+        for ((i, ch) in chars.withIndex()) {
+            val punctPair = c.punct()
+            if (punctPair == null) break
+            val (punct, rest) = punctPair
+            spans[i] = punct.span()
+            if (punct.asChar() != ch) {
+                break
+            } else if (i == chars.size - 1) {
+                return@step SynResult.success(Unit to rest)
+            } else if (punct.spacing() != Spacing.Joint) {
+                break
+            }
+            c = rest
+        }
+        SynResult.failure(cursor.error("expected $token"))
+    }
+}
+
+internal fun peekPunct(cursor: Cursor, token: String): Boolean {
+    var c = cursor
+    val chars = token.toList()
+    for ((i, ch) in chars.withIndex()) {
+        val punctPair = c.punct()
+        if (punctPair == null) break
+        val (punct, rest) = punctPair
+        if (punct.asChar() != ch) {
+            break
+        } else if (i == chars.size - 1) {
+            return true
+        } else if (punct.spacing() != Spacing.Joint) {
+            break
+        }
+        c = rest
+    }
+    return false
+}
+
+internal fun delim(
+    delim: io.github.kotlinmania.procmacro2.Delimiter,
+    span: io.github.kotlinmania.procmacro2.Span,
+    tokens: io.github.kotlinmania.procmacro2.TokenStream,
+    inner: io.github.kotlinmania.procmacro2.TokenStream,
+) {
+    val group =
+        io.github.kotlinmania.procmacro2
+            .Group(delim, inner)
+    group.setSpan(span)
+    tokens.extendTokenTrees(
+        listOf(
+            io.github.kotlinmania.procmacro2.TokenTree
+                .Group(group),
+        ),
+    )
+}
+
+internal fun printKeyword(s: String, span: io.github.kotlinmania.procmacro2.Span, tokens: io.github.kotlinmania.procmacro2.TokenStream) {
+    tokens.extendIdents(
+        listOf(
+            io.github.kotlinmania.procmacro2.Ident
+                .new(s, span),
+        ),
+    )
+}
+
+internal fun printPunct(s: String, spans: List<io.github.kotlinmania.procmacro2.Span>, tokens: io.github.kotlinmania.procmacro2.TokenStream) {
+    val chars = s.toList()
+    val puncts = mutableListOf<io.github.kotlinmania.procmacro2.Punct>()
+    for (i in 0 until chars.size - 1) {
+        puncts.add(
+            io.github.kotlinmania.procmacro2
+                .Punct(chars[i], Spacing.Joint, spans[i]),
+        )
+    }
+    puncts.add(
+        io.github.kotlinmania.procmacro2
+            .Punct(chars.last(), Spacing.Alone, spans.last()),
+    )
+    tokens.extendPuncts(puncts)
 }

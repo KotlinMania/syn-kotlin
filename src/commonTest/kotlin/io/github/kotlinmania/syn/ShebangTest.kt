@@ -2,27 +2,35 @@
 package io.github.kotlinmania.syn
 
 import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertIs
+import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 class ShebangTest {
-    // Not ported: the upstream `syn::parse_file` entry point and its
-    // shebang-aware `FileParse` strategy are not yet ported to this Kotlin
-    // codebase, so a source string with a leading `#!` line cannot be parsed
-    // into a `File` here. Both `test_basic` and `test_comment` from
-    // `tests/test_shebang.rs` depend on that `parse_file` semantic.
-
     @Test
     fun testBasic() {
-        // Not ported: `syn::parse_file` (shebang-aware FileParse) is not
-        // implemented in this Kotlin port; the test parses a source string
-        // beginning with `#!/usr/bin/env rustx` into a `File` and asserts the
-        // shebang field and the single `fn main` item.
+        val file = parseFile("#!/usr/bin/env rustx\nfn main() {}").getOrThrow()
+
+        assertEquals("#!/usr/bin/env rustx", file.shebang)
+        assertTrue(file.attrs.isEmpty())
+        val item = assertIs<Item.Fn>(file.items.single())
+        assertEquals("main", item.ident.toString())
+        assertTrue(item.block?.stmts.orEmpty().isEmpty())
     }
 
     @Test
     fun testComment() {
-        // Not ported: `syn::parse_file` (shebang-aware FileParse) is not
-        // implemented in this Kotlin port; the test parses a source string
-        // beginning with `#!//am/i/a/comment` into a `File` and asserts the
-        // inner `#[allow(dead_code)]` attribute and the single `fn main` item.
+        val file = parseFile("#!//am/i/a/comment\n[allow(dead_code)] fn main() {}").getOrThrow()
+
+        assertNull(file.shebang)
+        val attr = file.attrs.single()
+        assertIs<AttrStyle.Inner>(attr.style)
+        val meta = assertIs<Meta.List>(attr.meta)
+        assertEquals("allow", meta.path.segments.first()?.ident.toString())
+        assertTrue(meta.delimiter is MacroDelimiter.Paren)
+        assertEquals("dead_code", meta.tokens.toString())
+        val item = assertIs<Item.Fn>(file.items.single())
+        assertEquals("main", item.ident.toString())
     }
 }

@@ -68,6 +68,10 @@ public fun tokenTreeHash(tree: TokenTree): Int {
 }
 
 /** Structural equality of two token streams, ignoring spans. */
+public fun eq(a: TokenTree, b: TokenTree): Boolean = tokenTreeEq(a, b)
+
+public fun hash(tree: TokenTree): Int = tokenTreeHash(tree)
+
 public fun tokenStreamEq(left: TokenStream, right: TokenStream): Boolean {
     val leftIter = left.iterator()
     val rightIter = right.iterator()

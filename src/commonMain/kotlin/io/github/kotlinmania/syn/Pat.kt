@@ -5,7 +5,6 @@ import io.github.kotlinmania.procmacro2.TokenStream
 import io.github.kotlinmania.quote.ToTokens
 import io.github.kotlinmania.quote.toTokens
 import io.github.kotlinmania.syn.token.Colon
-import io.github.kotlinmania.syn.token.Or
 import io.github.kotlinmania.syn.token.Underscore
 
 /**
@@ -52,7 +51,7 @@ public sealed class Pat : ToTokens {
 
     /** A pattern that matches any one of a set of cases. */
     public data class Or(
-        public val leadingVert: Or?,
+        public val leadingVert: io.github.kotlinmania.syn.token.Or?,
         public val cases: PatList,
     ) : Pat() {
         override fun deepCopy(): Pat = copy(cases = cases.copy({ it.deepCopy() }, { it }))
@@ -285,7 +284,7 @@ public sealed class Pat : ToTokens {
         override fun deepCopy(): Pat = this
 
         override fun toTokens(tokens: TokenStream) {
-            tokens.extendTokenStreams(listOf(tokens))
+            tokens.extendTokenStreams(listOf(this.tokens))
         }
     }
 }

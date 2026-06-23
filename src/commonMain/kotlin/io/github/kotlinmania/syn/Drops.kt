@@ -13,8 +13,19 @@ package io.github.kotlinmania.syn
 public class NoDrop<T>(
     public val value: T,
 ) {
-    /** Returns the wrapped value. */
+    public companion object {
+        public fun <T> new(value: T): NoDrop<T> = NoDrop(value)
+    }
+
     public fun get(): T = value
+
+    public fun deref(): T = value
+
+    public fun derefMut(): T = value
+
+    public fun testNeedsDrop(): Boolean = false
+
+    public fun drop() {}
 
     override fun toString(): String = "NoDrop($value)"
 

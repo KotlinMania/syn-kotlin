@@ -1,38 +1,8 @@
 // port-lint: source op.rs
 package io.github.kotlinmania.syn
 
-import io.github.kotlinmania.procmacro2.Spacing
 import io.github.kotlinmania.procmacro2.TokenStream
 import io.github.kotlinmania.quote.ToTokens
-import io.github.kotlinmania.syn.token.And
-import io.github.kotlinmania.syn.token.AndAnd
-import io.github.kotlinmania.syn.token.AndEq
-import io.github.kotlinmania.syn.token.Caret
-import io.github.kotlinmania.syn.token.CaretEq
-import io.github.kotlinmania.syn.token.EqEq
-import io.github.kotlinmania.syn.token.Ge
-import io.github.kotlinmania.syn.token.Gt
-import io.github.kotlinmania.syn.token.Le
-import io.github.kotlinmania.syn.token.Lt
-import io.github.kotlinmania.syn.token.Minus
-import io.github.kotlinmania.syn.token.MinusEq
-import io.github.kotlinmania.syn.token.Ne
-import io.github.kotlinmania.syn.token.Not
-import io.github.kotlinmania.syn.token.Or
-import io.github.kotlinmania.syn.token.OrEq
-import io.github.kotlinmania.syn.token.OrOr
-import io.github.kotlinmania.syn.token.Percent
-import io.github.kotlinmania.syn.token.PercentEq
-import io.github.kotlinmania.syn.token.Plus
-import io.github.kotlinmania.syn.token.PlusEq
-import io.github.kotlinmania.syn.token.Shl
-import io.github.kotlinmania.syn.token.ShlEq
-import io.github.kotlinmania.syn.token.Shr
-import io.github.kotlinmania.syn.token.ShrEq
-import io.github.kotlinmania.syn.token.Slash
-import io.github.kotlinmania.syn.token.SlashEq
-import io.github.kotlinmania.syn.token.Star
-import io.github.kotlinmania.syn.token.StarEq
 
 /** A binary operator. */
 public sealed class BinOp : ToTokens {
@@ -205,292 +175,39 @@ public sealed class UnOp : ToTokens {
     }
 }
 
-/** Parses a binary operator by examining punctuation at the current position. */
+/** Parses a binary operator. */
 public object BinOpParse : Parse<BinOp> {
     override fun parse(input: ParseStream): SynResult<BinOp> =
-        input.step { cursor ->
-            val (punct, rest) =
-                cursor.punct()
-                    ?: return@step SynResult.failure(cursor.error("expected binary operator"))
-            val ch = punct.asChar()
-            val span = punct.span()
-            val spaced = punct.spacing() == Spacing.Alone
-            // Multi-character operators need joint spacing on all but the last char
-            if (spaced) {
-                // Single-char operators with Alone spacing
-                return@step when (ch) {
-                    '+' ->
-                        SynResult.success(
-                            BinOp.Add(
-                                io.github.kotlinmania.syn.token.Plus
-                                    .from(span),
-                            ) to rest,
-                        )
-                    '-' ->
-                        SynResult.success(
-                            BinOp.Sub(
-                                io.github.kotlinmania.syn.token.Minus
-                                    .from(span),
-                            ) to rest,
-                        )
-                    '*' ->
-                        SynResult.success(
-                            BinOp.Mul(
-                                io.github.kotlinmania.syn.token.Star
-                                    .from(span),
-                            ) to rest,
-                        )
-                    '/' ->
-                        SynResult.success(
-                            BinOp.Div(
-                                io.github.kotlinmania.syn.token.Slash
-                                    .from(span),
-                            ) to rest,
-                        )
-                    '%' ->
-                        SynResult.success(
-                            BinOp.Rem(
-                                io.github.kotlinmania.syn.token.Percent
-                                    .from(span),
-                            ) to rest,
-                        )
-                    '^' ->
-                        SynResult.success(
-                            BinOp.BitXor(
-                                io.github.kotlinmania.syn.token.Caret
-                                    .from(span),
-                            ) to rest,
-                        )
-                    '&' ->
-                        SynResult.success(
-                            BinOp.BitAnd(
-                                io.github.kotlinmania.syn.token.And
-                                    .from(span),
-                            ) to rest,
-                        )
-                    '|' ->
-                        SynResult.success(
-                            BinOp.BitOr(
-                                io.github.kotlinmania.syn.token.Or
-                                    .from(span),
-                            ) to rest,
-                        )
-                    '<' ->
-                        SynResult.success(
-                            BinOp.Lt(
-                                io.github.kotlinmania.syn.token.Lt
-                                    .from(span),
-                            ) to rest,
-                        )
-                    '>' ->
-                        SynResult.success(
-                            BinOp.Gt(
-                                io.github.kotlinmania.syn.token.Gt
-                                    .from(span),
-                            ) to rest,
-                        )
-                    else -> SynResult.failure(cursor.error("expected binary operator"))
-                }
-            }
-            // Joint spacing: peek the second char
-            val secondPunct = rest.punct()
-            val second = secondPunct?.first
-            when (ch) {
-                '=' ->
-                    if (second != null && second.asChar() == '=' && second.spacing() == Spacing.Alone) {
-                        SynResult.success(
-                            BinOp.Eq(
-                                io.github.kotlinmania.syn.token.EqEq
-                                    .from(listOf(span, second.span())),
-                            ) to secondPunct.second,
-                        )
-                    } else {
-                        SynResult.failure(cursor.error("expected binary operator"))
-                    }
-                '!' ->
-                    if (second != null && second.asChar() == '=' && second.spacing() == Spacing.Alone) {
-                        SynResult.success(
-                            BinOp.Ne(
-                                io.github.kotlinmania.syn.token.Ne
-                                    .from(listOf(span, second.span())),
-                            ) to secondPunct.second,
-                        )
-                    } else {
-                        SynResult.failure(cursor.error("expected binary operator"))
-                    }
-                '<' ->
-                    when {
-                        second != null && second.asChar() == '=' && second.spacing() == Spacing.Alone ->
-                            SynResult.success(
-                                BinOp.Le(
-                                    io.github.kotlinmania.syn.token.Le
-                                        .from(listOf(span, second.span())),
-                                ) to secondPunct.second,
-                            )
-                        second != null && second.asChar() == '<' -> {
-                            val thirdPunct = secondPunct.second.punct()
-                            if (thirdPunct != null && thirdPunct.first.asChar() == '=' && thirdPunct.first.spacing() == Spacing.Alone) {
-                                SynResult.success(BinOp.ShlAssign(ShlEq.from(listOf(span, second.span(), thirdPunct.first.span()))) to thirdPunct.second)
-                            } else if (thirdPunct != null && second.spacing() == Spacing.Joint) {
-                                SynResult.success(
-                                    BinOp.Shl(
-                                        io.github.kotlinmania.syn.token.Shl
-                                            .from(listOf(span, second.span())),
-                                    ) to thirdPunct.second,
-                                )
-                            } else if (second.spacing() == Spacing.Joint) {
-                                SynResult.success(
-                                    BinOp.Shl(
-                                        io.github.kotlinmania.syn.token.Shl
-                                            .from(listOf(span, second.span())),
-                                    ) to secondPunct.second,
-                                )
-                            } else {
-                                SynResult.failure(cursor.error("expected binary operator"))
-                            }
-                        }
-                        else ->
-                            SynResult.success(
-                                BinOp.Lt(
-                                    io.github.kotlinmania.syn.token.Lt
-                                        .from(span),
-                                ) to rest,
-                            )
-                    }
-                '>' ->
-                    when {
-                        second != null && second.asChar() == '=' && second.spacing() == Spacing.Alone ->
-                            SynResult.success(
-                                BinOp.Ge(
-                                    io.github.kotlinmania.syn.token.Ge
-                                        .from(listOf(span, second.span())),
-                                ) to secondPunct.second,
-                            )
-                        second != null && second.asChar() == '>' -> {
-                            val thirdPunct = secondPunct.second.punct()
-                            if (thirdPunct != null && thirdPunct.first.asChar() == '=' && thirdPunct.first.spacing() == Spacing.Alone) {
-                                SynResult.success(BinOp.ShrAssign(ShrEq.from(listOf(span, second.span(), thirdPunct.first.span()))) to thirdPunct.second)
-                            } else if (thirdPunct != null && second.spacing() == Spacing.Joint) {
-                                SynResult.success(
-                                    BinOp.Shr(
-                                        io.github.kotlinmania.syn.token.Shr
-                                            .from(listOf(span, second.span())),
-                                    ) to thirdPunct.second,
-                                )
-                            } else if (second.spacing() == Spacing.Joint) {
-                                SynResult.success(
-                                    BinOp.Shr(
-                                        io.github.kotlinmania.syn.token.Shr
-                                            .from(listOf(span, second.span())),
-                                    ) to secondPunct.second,
-                                )
-                            } else {
-                                SynResult.failure(cursor.error("expected binary operator"))
-                            }
-                        }
-                        else ->
-                            SynResult.success(
-                                BinOp.Gt(
-                                    io.github.kotlinmania.syn.token.Gt
-                                        .from(span),
-                                ) to rest,
-                            )
-                    }
-                '&' ->
-                    if (second != null && second.asChar() == '&' && second.spacing() == Spacing.Alone) {
-                        SynResult.success(
-                            BinOp.And(
-                                io.github.kotlinmania.syn.token.AndAnd
-                                    .from(listOf(span, second.span())),
-                            ) to secondPunct.second,
-                        )
-                    } else {
-                        SynResult.success(
-                            BinOp.BitAnd(
-                                io.github.kotlinmania.syn.token.And
-                                    .from(span),
-                            ) to rest,
-                        )
-                    }
-                '|' ->
-                    if (second != null && second.asChar() == '|' && second.spacing() == Spacing.Alone) {
-                        SynResult.success(
-                            BinOp.Or(
-                                io.github.kotlinmania.syn.token.OrOr
-                                    .from(listOf(span, second.span())),
-                            ) to secondPunct.second,
-                        )
-                    } else {
-                        SynResult.success(
-                            BinOp.BitOr(
-                                io.github.kotlinmania.syn.token.Or
-                                    .from(span),
-                            ) to rest,
-                        )
-                    }
-                '+' ->
-                    if (second != null && second.asChar() == '=' && second.spacing() == Spacing.Alone) {
-                        SynResult.success(BinOp.AddAssign(PlusEq.from(listOf(span, second.span()))) to secondPunct.second)
-                    } else {
-                        SynResult.success(
-                            BinOp.Add(
-                                io.github.kotlinmania.syn.token.Plus
-                                    .from(span),
-                            ) to rest,
-                        )
-                    }
-                '-' ->
-                    if (second != null && second.asChar() == '=' && second.spacing() == Spacing.Alone) {
-                        SynResult.success(BinOp.SubAssign(MinusEq.from(listOf(span, second.span()))) to secondPunct.second)
-                    } else {
-                        SynResult.success(
-                            BinOp.Sub(
-                                io.github.kotlinmania.syn.token.Minus
-                                    .from(span),
-                            ) to rest,
-                        )
-                    }
-                '*' ->
-                    if (second != null && second.asChar() == '=' && second.spacing() == Spacing.Alone) {
-                        SynResult.success(BinOp.MulAssign(StarEq.from(listOf(span, second.span()))) to secondPunct.second)
-                    } else {
-                        SynResult.success(
-                            BinOp.Mul(
-                                io.github.kotlinmania.syn.token.Star
-                                    .from(span),
-                            ) to rest,
-                        )
-                    }
-                '/' ->
-                    if (second != null && second.asChar() == '=' && second.spacing() == Spacing.Alone) {
-                        SynResult.success(BinOp.DivAssign(SlashEq.from(listOf(span, second.span()))) to secondPunct.second)
-                    } else {
-                        SynResult.success(
-                            BinOp.Div(
-                                io.github.kotlinmania.syn.token.Slash
-                                    .from(span),
-                            ) to rest,
-                        )
-                    }
-                '%' ->
-                    if (second != null && second.asChar() == '=' && second.spacing() == Spacing.Alone) {
-                        SynResult.success(BinOp.RemAssign(PercentEq.from(listOf(span, second.span()))) to secondPunct.second)
-                    } else {
-                        SynResult.success(
-                            BinOp.Rem(
-                                io.github.kotlinmania.syn.token.Percent
-                                    .from(span),
-                            ) to rest,
-                        )
-                    }
-                '^' ->
-                    if (second != null && second.asChar() == '=' && second.spacing() == Spacing.Alone) {
-                        SynResult.success(BinOp.BitXorAssign(CaretEq.from(listOf(span, second.span()))) to secondPunct.second)
-                    } else {
-                        SynResult.failure(cursor.error("expected binary operator"))
-                    }
-                else -> SynResult.failure(cursor.error("expected binary operator"))
-            }
+        when {
+            input.peek(PlusEqPeek) -> input.parse(PlusEqParse).map(BinOp::AddAssign)
+            input.peek(MinusEqPeek) -> input.parse(MinusEqParse).map(BinOp::SubAssign)
+            input.peek(StarEqPeek) -> input.parse(StarEqParse).map(BinOp::MulAssign)
+            input.peek(SlashEqPeek) -> input.parse(SlashEqParse).map(BinOp::DivAssign)
+            input.peek(PercentEqPeek) -> input.parse(PercentEqParse).map(BinOp::RemAssign)
+            input.peek(CaretEqPeek) -> input.parse(CaretEqParse).map(BinOp::BitXorAssign)
+            input.peek(AndEqPeek) -> input.parse(AndEqParse).map(BinOp::BitAndAssign)
+            input.peek(OrEqPeek) -> input.parse(OrEqParse).map(BinOp::BitOrAssign)
+            input.peek(ShlEqPeek) -> input.parse(ShlEqParse).map(BinOp::ShlAssign)
+            input.peek(ShrEqPeek) -> input.parse(ShrEqParse).map(BinOp::ShrAssign)
+            input.peek(AndAndPeek) -> input.parse(AndAndParse).map(BinOp::And)
+            input.peek(OrOrPeek) -> input.parse(OrOrParse).map(BinOp::Or)
+            input.peek(ShlPeek) -> input.parse(ShlParse).map(BinOp::Shl)
+            input.peek(ShrPeek) -> input.parse(ShrParse).map(BinOp::Shr)
+            input.peek(EqEqPeek) -> input.parse(EqEqParse).map(BinOp::Eq)
+            input.peek(LePeek) -> input.parse(LeParse).map(BinOp::Le)
+            input.peek(NePeek) -> input.parse(NeParse).map(BinOp::Ne)
+            input.peek(GePeek) -> input.parse(GeParse).map(BinOp::Ge)
+            input.peek(PlusPeek) -> input.parse(PlusParse).map(BinOp::Add)
+            input.peek(MinusPeek) -> input.parse(MinusParse).map(BinOp::Sub)
+            input.peek(StarPeek) -> input.parse(StarParse).map(BinOp::Mul)
+            input.peek(SlashPeek) -> input.parse(SlashParse).map(BinOp::Div)
+            input.peek(PercentPeek) -> input.parse(PercentParse).map(BinOp::Rem)
+            input.peek(CaretPeek) -> input.parse(CaretParse).map(BinOp::BitXor)
+            input.peek(AndPeek) -> input.parse(AndParse).map(BinOp::BitAnd)
+            input.peek(OrPeek) -> input.parse(OrParse).map(BinOp::BitOr)
+            input.peek(LtPeek) -> input.parse(LtParse).map(BinOp::Lt)
+            input.peek(GtPeek) -> input.parse(GtParse).map(BinOp::Gt)
+            else -> SynResult.failure(input.error("expected binary operator"))
         }
 }
 

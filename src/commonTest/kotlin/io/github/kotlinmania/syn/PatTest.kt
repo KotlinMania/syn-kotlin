@@ -7,81 +7,91 @@ import io.github.kotlinmania.procmacro2.TokenStream
 import io.github.kotlinmania.procmacro2.TokenTree
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertIs
 import kotlin.test.assertTrue
 
 /**
  * Tests for parsing of patterns.
- *
- * The pattern parser (`PatParseImpl`, equivalent to upstream `Pat::parse_single`)
- * currently handles the wildcard, ident, type-ascripted ident, parenthesized,
- * and tuple forms. Path patterns, tuple-struct patterns, range patterns,
- * slice patterns, leading-vert or-patterns, and `Delimiter::None` group
- * patterns are not yet handled; the corresponding upstream tests below carry
- * an honest one-line comment naming the specific missing semantic.
  */
 class PatTest {
-    // Not ported: `PatParseImpl` does not accept `self` as an identifier
-    // pattern; the upstream test parses `self` and asserts `Pat::Ident`.
     @Test
     fun testPatIdent() {
-        // Not ported: `self` is classified as a keyword by `acceptAsIdent`
-        // and `PatParseImpl` has no `SelfValuePeek` branch, so the upstream
-        // `Pat::Ident` shape for `self` cannot be reproduced yet.
-        TokenStream.fromString("self").getOrThrow()
+        val pat = assertIs<Pat.Ident>(parsePat("self"))
+        assertEquals("self", pat.ident.toString())
     }
 
-    // Not ported: `PatParseImpl` has no path-pattern branch; the upstream
-    // test parses `self::CONST` and asserts `Pat::Path`.
     @Test
     fun testPatPath() {
-        // Not ported: path patterns (`self::CONST`) are not handled by
-        // `PatParseImpl`; the upstream `Pat::Path` shape cannot be reproduced.
-        TokenStream.fromString("self::CONST").getOrThrow()
+        val pat = assertIs<Pat.Path>(parsePat("self::CONST"))
+        assertPath(pat.path, "self", "CONST")
     }
 
-    // Not ported: requires `Parse<Item>` and a `Stmt` parser that
-    // rejects leading `|`; neither is implemented in this Kotlin port.
     @Test
     fun testLeadingVert() {
-        // Not ported: leading-vert or-patterns in item/stmt position
-        // require `Parse<Item>` and a `Stmt` parser that enforces the
-        // `|`-rejection rules; neither is ported.
-        TokenStream.fromString("fn f() {}").getOrThrow()
-        TokenStream.fromString("fn fun1(| A: E) {}").getOrThrow()
-        TokenStream.fromString("let | () = ();").getOrThrow()
+        assertIs<Item.Fn>(parseStr(ItemParse, "fn f() {}").getOrThrow())
+        assertTrue(parseStr(ItemParse, "fn fun1(| A: E) {}").isFailure)
+        assertTrue(parseStr(ItemParse, "fn fun2(|| A: E) {}").isFailure)
+
+        assertTrue(parseStr(StmtParse, "let | () = ();").isFailure)
+
+        assertSingleLeadingOr(assertIs<Pat.PatParen>(assertLocalType("let (| A): E;").pat).pat)
+        assertTrue(parseStr(StmtParse, "let (|| A): (E);").isFailure)
+
+        val tuple = assertIs<Pat.Tuple>(assertLocalType("let (| A,): (E,);").pat)
+        assertSingleLeadingOr(tuple.elems.toList().single())
+
+        val slice = assertIs<Pat.Slice>(assertLocalType("let [| A]: [E; 1];").pat)
+        assertSingleLeadingOr(slice.elems.toList().single())
+        assertTrue(parseStr(StmtParse, "let [|| A]: [E; 1];").isFailure)
+
+        val tupleStruct = assertIs<Pat.TupleStruct>(assertLocalType("let TS(| A): TS;").pat)
+        assertSingleLeadingOr(tupleStruct.elems.toList().single())
+        assertTrue(parseStr(StmtParse, "let TS(|| A): TS;").isFailure)
+
+        val struct = assertIs<Pat.Struct>(assertLocalType("let NS { f: | A }: NS;").pat)
+        assertSingleLeadingOr(struct.fields.toList().single().pat)
+        assertTrue(parseStr(StmtParse, "let NS { f: || A }: NS;").isFailure)
     }
 
-    // Not ported: `PatParseImpl` has no tuple-struct or group branch; the
-    // upstream test wraps `Some(_)` in a `Delimiter::None` group and
-    // asserts `Pat::TupleStruct` with one `Pat::Wild` element.
     @Test
     fun testGroup() {
-        // Not ported: `Delimiter::None` group patterns and tuple-struct
-        // patterns (`Some(_)`) are not handled by `PatParseImpl`.
         val group = Group(Delimiter.None, TokenStream.fromString("Some(_)").getOrThrow())
-        TokenStream.fromTokenTrees(listOf(TokenTree.Group(group)))
+        val pat = assertIs<Pat.TupleStruct>(parsePat(TokenStream.fromTokenTrees(listOf(TokenTree.Group(group)))))
+        assertPath(pat.path, "Some")
+        assertEquals(1, pat.elems.size)
+        assertIs<Pat.Wild>(pat.elems.first())
     }
 
-    // Not ported: `PatParseImpl` has no range or slice branch; the upstream
-    // test parses a series of range and slice patterns asserting which
-    // forms are accepted and rejected.
     @Test
     fun testRanges() {
-        // Not ported: range patterns (`..`, `..hi`, `lo..hi`, `..=hi`)
-        // and slice patterns (`[lo..]`) are not handled by `PatParseImpl`.
-        TokenStream.fromString("..").getOrThrow()
-        TokenStream.fromString("..hi").getOrThrow()
-        TokenStream.fromString("lo..").getOrThrow()
-        TokenStream.fromString("lo..hi").getOrThrow()
-        TokenStream.fromString("..=hi").getOrThrow()
-        TokenStream.fromString("lo..=hi").getOrThrow()
-        TokenStream.fromString("lo...hi").getOrThrow()
-        TokenStream.fromString("[lo..]").getOrThrow()
-        TokenStream.fromString("[..=hi]").getOrThrow()
-        TokenStream.fromString("[(lo..)]").getOrThrow()
-        TokenStream.fromString("[lo..=hi]").getOrThrow()
-        TokenStream.fromString("[_, lo..=hi, _]").getOrThrow()
+        assertIs<Pat.Rest>(parsePat(".."))
+
+        assertRange(parsePat("..hi"), start = null, end = "hi", closed = false)
+        assertRange(parsePat("lo.."), start = "lo", end = null, closed = false)
+        assertRange(parsePat("lo..hi"), start = "lo", end = "hi", closed = false)
+
+        assertFailsPat("..=")
+        assertRange(parsePat("..=hi"), start = null, end = "hi", closed = true)
+        assertFailsPat("lo..=")
+        assertRange(parsePat("lo..=hi"), start = "lo", end = "hi", closed = true)
+
+        assertFailsPat("...")
+        assertFailsPat("...hi")
+        assertFailsPat("lo...")
+        assertRange(parsePat("lo...hi"), start = "lo", end = "hi", closed = true)
+
+        assertFailsPat("[lo..]")
+        assertFailsPat("[..=hi]")
+        assertIs<Pat.Slice>(parsePat("[(lo..)]"))
+        assertIs<Pat.Slice>(parsePat("[(..=hi)]"))
+        assertIs<Pat.Slice>(parsePat("[lo..=hi]"))
+
+        assertFailsPat("[_, lo.., _]")
+        assertFailsPat("[_, ..=hi, _]")
+        assertIs<Pat.Slice>(parsePat("[_, (lo..), _]"))
+        assertIs<Pat.Slice>(parsePat("[_, (..=hi), _]"))
+        assertIs<Pat.Slice>(parsePat("[_, lo..=hi, _]"))
     }
 
     @Test
@@ -113,5 +123,59 @@ class PatTest {
         assertIs<Pat.Tuple>(twoTrailing)
         assertEquals(2, twoTrailing.elems.size)
         assertTrue(twoTrailing.elems.trailingPunct())
+    }
+
+    private fun parsePat(source: String): Pat =
+        parseStr(PatParseImpl, source).getOrThrow()
+
+    private fun parsePat(tokens: TokenStream): Pat =
+        parse2(PatParseImpl, tokens).getOrThrow()
+
+    private fun assertFailsPat(source: String) {
+        assertTrue(parseStr(PatParseImpl, source).isFailure, source)
+    }
+
+    private fun assertLocalType(source: String): Pat.TypeAscription {
+        val stmt = assertIs<Stmt.Local>(parseStr(StmtParse, source).getOrThrow())
+        return assertIs<Pat.TypeAscription>(stmt.pat)
+    }
+
+    private fun assertSingleLeadingOr(pat: Pat) {
+        val or = assertIs<Pat.Or>(pat)
+        assertTrue(or.leadingVert != null)
+        val cases = or.cases.toList()
+        assertEquals(1, cases.size)
+        val ident = assertIs<Pat.Ident>(cases.single())
+        assertEquals("A", ident.ident.toString())
+    }
+
+    private fun assertRange(
+        pat: Pat,
+        start: String?,
+        end: String?,
+        closed: Boolean,
+    ) {
+        val range = assertIs<Pat.Range>(pat)
+        if (closed) {
+            assertIs<RangeLimits.Closed>(range.limits)
+        } else {
+            assertIs<RangeLimits.HalfOpen>(range.limits)
+        }
+        assertPathExpr(range.start, start)
+        assertPathExpr(range.end, end)
+    }
+
+    private fun assertPathExpr(expr: Expr?, expected: String?) {
+        if (expected == null) {
+            assertEquals(null, expr)
+            return
+        }
+        val path = assertIs<Expr.Path>(expr).path
+        assertPath(path, expected)
+    }
+
+    private fun assertPath(path: Path, vararg segments: String) {
+        assertFalse(path.segments.isEmpty())
+        assertEquals(segments.toList(), path.segments.toList().map { it.ident.toString() })
     }
 }
