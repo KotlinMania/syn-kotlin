@@ -835,6 +835,8 @@ internal class Punctuated<T : ToTokens, P : ToTokens> private constructor(
         fun sizeHint(): RawPair<Int, Int> = cursor.sizeHint()
 
         fun len(): Int = cursor.len()
+
+        fun clone(): IntoPairs<T, P> = IntoPairs(cursor.copy())
     }
 
     internal class PrivateIter<T : ToTokens> private constructor(
@@ -934,6 +936,8 @@ internal class Punctuated<T : ToTokens, P : ToTokens> private constructor(
         fun sizeHint(): RawPair<Int, Int> = inner.sizeHint()
 
         fun len(): Int = inner.len()
+
+        fun clone(): IntoIter<T, P> = IntoIter(inner.clone())
     }
 
     public companion object {
@@ -1078,13 +1082,13 @@ internal class Punctuated<T : ToTokens, P : ToTokens> private constructor(
         pushValue(value)
     }
 
-    public fun pop(): T? {
+    public fun pop(): Pair<T, P>? {
         val tail = lastValue
         return if (tail != null) {
             lastValue = null
-            tail
+            Pair.End(tail)
         } else {
-            innerList.removeLastOrNull()?.first
+            innerList.removeLastOrNull()?.let { (value, punctuation) -> Pair.Punctuated(value, punctuation) }
         }
     }
 
@@ -1148,6 +1152,13 @@ internal class Punctuated<T : ToTokens, P : ToTokens> private constructor(
         for (e in elements) push(e, defaultPunctuation)
     }
 
+    public fun extend(elements: Sequence<Pair<T, P>>, defaultPunctuation: () -> P) {
+        if (!emptyOrTrailing()) {
+            pushPunct(defaultPunctuation())
+        }
+        doExtend(this, elements.iterator())
+    }
+
     public fun extendPairs(elements: Iterable<Pair<T, P>>, defaultPunctuation: () -> P) {
         if (!emptyOrTrailing()) {
             pushPunct(defaultPunctuation())
@@ -1170,6 +1181,9 @@ internal class Punctuated<T : ToTokens, P : ToTokens> private constructor(
             innerList = innerList.mapTo(mutableListOf()) { (v, p) -> copyValue(v) to copyPunctuation(p) },
             lastValue = lastValue?.let(copyValue),
         )
+
+    public fun clone(copyValue: (T) -> T = { it }, copyPunctuation: (P) -> P = { it }): Punctuated<T, P> =
+        copy(copyValue, copyPunctuation)
 
     public fun cloneFrom(
         other: Punctuated<T, P>,
