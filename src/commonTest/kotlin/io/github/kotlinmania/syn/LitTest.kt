@@ -31,7 +31,9 @@ class LitTest {
             assertEquals(value, parsed.value.value())
             val again = TokenStream.new()
             parsed.toTokens(again)
-            assertEquals(s.trim(), again.toString())
+            if (again.toString() != s.trim()) {
+                testString(again.toString(), value)
+            }
         }
 
         fun testStringLiteral(s: String, value: String) {
@@ -54,6 +56,18 @@ class LitTest {
         testString("\"🐕\"", "🐕")
         testStringLiteral("\"\\u{1F415}\"", "🐕")
         testString("\"\\u{1_2__3_}\"", "\u0123")
+        testString(
+            "\"contains\nnewlines\\\nescaped newlines\"",
+            "contains\nnewlinesescaped newlines",
+        )
+        testString(
+            "\"escaped newline\\\n \u000C unsupported whitespace\"",
+            "escaped newline\u000C unsupported whitespace",
+        )
+        testString("r\"raw\nstring\\\nhere\"", "raw\nstring\\\nhere")
+        testString("\"...\"q", "...")
+        testString("r\"...\"q", "...")
+        testString("r##\"...\"##q", "...")
         testString("r#\"a\\n\"#", "a\\n")
     }
 
@@ -64,7 +78,9 @@ class LitTest {
             assertEquals(value, parsed.value.value())
             val again = TokenStream.new()
             parsed.toTokens(again)
-            assertEquals(s.trim(), again.toString())
+            if (again.toString() != s.trim()) {
+                testByteString(again.toString(), value)
+            }
         }
 
         testByteString("b\"\"", emptyList())
@@ -75,6 +91,17 @@ class LitTest {
         testByteString("b\"\\\"\"", listOf('"'.code.toUByte()))
         testByteString("b\"'\"", listOf('\''.code.toUByte()))
         testByteString("b\"\\x41\"", listOf('A'.code.toUByte()))
+        testByteString(
+            "b\"contains\nnewlines\\\nescaped newlines\"",
+            "contains\nnewlinesescaped newlines".encodeToByteArray().map { it.toUByte() },
+        )
+        testByteString(
+            "br\"raw\nstring\\\nhere\"",
+            "raw\nstring\\\nhere".encodeToByteArray().map { it.toUByte() },
+        )
+        testByteString("b\"...\"q", "...".encodeToByteArray().map { it.toUByte() })
+        testByteString("br\"...\"q", "...".encodeToByteArray().map { it.toUByte() })
+        testByteString("br##\"...\"##q", "...".encodeToByteArray().map { it.toUByte() })
         testByteString("br#\"a\\n\"#", listOf('a'.code.toUByte(), '\\'.code.toUByte(), 'n'.code.toUByte()))
     }
 
@@ -85,7 +112,9 @@ class LitTest {
             assertTrue(value.contentEquals(parsed.value.value()))
             val again = TokenStream.new()
             parsed.toTokens(again)
-            assertEquals(s.trim(), again.toString())
+            if (again.toString() != s.trim()) {
+                testCString(again.toString(), value)
+            }
         }
 
         fun testCStringLiteral(s: String, value: ByteArray) {
@@ -99,8 +128,21 @@ class LitTest {
         testCString("c\"\"", byteArrayOf())
         testCString("c\"a\"", byteArrayOf('a'.code.toByte()))
         testCString("c\"\\n\"", byteArrayOf('\n'.code.toByte()))
+        testCString("c\"\\r\"", byteArrayOf('\r'.code.toByte()))
+        testCString("c\"\\t\"", byteArrayOf('\t'.code.toByte()))
+        testCString("c\"\\\\\"", byteArrayOf('\\'.code.toByte()))
+        testCString("c\"\\'\"", byteArrayOf('\''.code.toByte()))
+        testCString("c\"\\\"\"", byteArrayOf('"'.code.toByte()))
         testCString("c\"\\x41\"", byteArrayOf('A'.code.toByte()))
         testCString("c\"\\u{2764}\"", "❤".encodeToByteArray())
+        testCString(
+            "c\"contains\nnewlines\\\nescaped newlines\"",
+            "contains\nnewlinesescaped newlines".encodeToByteArray(),
+        )
+        testCString("cr\"raw\nstring\\\nhere\"", "raw\nstring\\\nhere".encodeToByteArray())
+        testCString("c\"...\"q", "...".encodeToByteArray())
+        testCString("cr\"...\"", "...".encodeToByteArray())
+        testCString("cr##\"...\"##", "...".encodeToByteArray())
         testCStringLiteral(
             "c\"hello\\x80我叫\\u{1F980}\"",
             byteArrayOf(
@@ -166,49 +208,65 @@ class LitTest {
 
     @Test
     fun ints() {
-        fun digits(s: String): String {
-            val parsed = lit(s)
-            assertIs<Lit.Int>(parsed)
-            return parsed.value.base10Digits()
+        fun testInt(s: String, value: Long, suffix: String) {
+            val parsed = assertIs<Lit.Int>(lit(s))
+            assertEquals(value, parsed.value.base10Digits().toLong())
+            assertEquals(suffix, parsed.value.suffix())
+            val again = TokenStream.new()
+            parsed.toTokens(again)
+            if (again.toString() != s) {
+                testInt(again.toString(), value, suffix)
+            }
         }
 
-        assertEquals("5", digits("5"))
-        assertEquals("50", digits("5_0"))
-        assertEquals("50", digits("5_____0_____"))
-        assertEquals("127", digits("0x7f"))
-        assertEquals("127", digits("0x7F"))
-        assertEquals("9", digits("0b1001"))
-        assertEquals("59", digits("0o73"))
-        assertEquals("127", digits("0x__7___f_"))
-        assertEquals("127", digits("0x__7___F_"))
-        assertEquals("9", digits("0b_1_0__01"))
-        assertEquals("59", digits("0o_7__3"))
+        testInt("5", 5, "")
+        testInt("5u32", 5, "u32")
+        testInt("0E", 0, "E")
+        testInt("0ECMA", 0, "ECMA")
+        testInt("0o0A", 0, "A")
+        testInt("5_0", 50, "")
+        testInt("5_____0_____", 50, "")
+        testInt("0x7f", 127, "")
+        testInt("0x7F", 127, "")
+        testInt("0b1001", 9, "")
+        testInt("0o73", 59, "")
+        testInt("0x7Fu8", 127, "u8")
+        testInt("0b1001i8", 9, "i8")
+        testInt("0o73u32", 59, "u32")
+        testInt("0x__7___f_", 127, "")
+        testInt("0x__7___F_", 127, "")
+        testInt("0b_1_0__01", 9, "")
+        testInt("0o_7__3", 59, "")
+        testInt("0x_7F__u8", 127, "u8")
+        testInt("0b__10__0_1i8", 9, "i8")
+        testInt("0o__7__________________3u32", 59, "u32")
 
-        val hex = assertIs<Lit.Int>(lit("0x7f"))
-        val hexTokens = TokenStream.new()
-        hex.toTokens(hexTokens)
-        assertEquals("0x7f", hexTokens.toString())
+        val unicodeSuffix = LitInt.new("0", "e1\u05c5", Span.callSite())
+        assertEquals("0", unicodeSuffix.base10Digits())
+        assertEquals("e1\u05c5", unicodeSuffix.suffix())
     }
 
     @Test
     fun floats() {
-        fun digits(s: String): String {
-            val parsed = lit(s)
-            assertIs<Lit.Float>(parsed)
-            return parsed.value.base10Digits()
+        fun testFloat(s: String, value: Double, suffix: String) {
+            val parsed = assertIs<Lit.Float>(lit(s))
+            assertEquals(value, parsed.value.base10Digits().toDouble())
+            assertEquals(suffix, parsed.value.suffix())
+            val again = TokenStream.new()
+            parsed.toTokens(again)
+            if (again.toString() != s) {
+                testFloat(again.toString(), value, suffix)
+            }
         }
 
-        assertEquals("1.5", digits("1.5"))
-        assertEquals("10.5", digits("1_0.5"))
-        assertEquals("1e0", digits("1e0"))
-        assertEquals("1e1", digits("1e+1"))
-        assertEquals("1e-1", digits("1e-1"))
-        assertEquals("1.0", digits("1.0f32"))
-
-        val exponent = assertIs<Lit.Float>(lit("1e+1"))
-        val exponentTokens = TokenStream.new()
-        exponent.toTokens(exponentTokens)
-        assertEquals("1e+1", exponentTokens.toString())
+        testFloat("5.5", 5.5, "")
+        testFloat("5.5E12", 5.5e12, "")
+        testFloat("5.5e12", 5.5e12, "")
+        testFloat("1.0__3e-12", 1.03e-12, "")
+        testFloat("1.03e+12", 1.03e12, "")
+        testFloat("9e99e99", 9e99, "e99")
+        testFloat("1e_0", 1.0, "")
+        testFloat("0.0ECMA", 0.0, "ECMA")
     }
 
     @Test

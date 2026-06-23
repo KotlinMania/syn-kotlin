@@ -32,11 +32,13 @@ import io.github.kotlinmania.syn.Fields
 import io.github.kotlinmania.syn.FieldsNamed
 import io.github.kotlinmania.syn.FieldsUnnamed
 import io.github.kotlinmania.syn.FnArg
+import io.github.kotlinmania.syn.ForeignItem
 import io.github.kotlinmania.syn.GenericArgument
 import io.github.kotlinmania.syn.GenericParam
 import io.github.kotlinmania.syn.Generics
 import io.github.kotlinmania.syn.Ident
 import io.github.kotlinmania.syn.ImplItem
+import io.github.kotlinmania.syn.ImplRestriction
 import io.github.kotlinmania.syn.Index
 import io.github.kotlinmania.syn.Item
 import io.github.kotlinmania.syn.Label
@@ -91,112 +93,46 @@ import io.github.kotlinmania.syn.WherePredicate
 public open class Fold {
     public open fun foldExpr(e: Expr): Expr =
         when (e) {
-            is Expr.Array -> e.copy(attrs = foldAttributes(e.attrs), elems = e.elems.copy({ foldExpr(it) }, { it }))
-            is Expr.Assign ->
-                e.copy(
-                    attrs = foldAttributes(e.attrs),
-                    left = foldExpr(e.left),
-                    right = foldExpr(e.right),
-                )
-            is Expr.Async -> e.copy(attrs = foldAttributes(e.attrs), block = foldBlock(e.block))
-            is Expr.Await -> e.copy(attrs = foldAttributes(e.attrs), base = foldExpr(e.base))
+            is Expr.Array -> foldExprArray(e)
+            is Expr.Assign -> foldExprAssign(e)
+            is Expr.Async -> foldExprAsync(e)
+            is Expr.Await -> foldExprAwait(e)
             is Expr.Binary -> foldExprBinary(e)
             is Expr.BlockExpr -> foldExprBlock(e)
-            is Expr.Break -> e.copy(attrs = foldAttributes(e.attrs), label = e.label?.let { foldLifetime(it) }, expr = e.expr?.let { foldExpr(it) })
-            is Expr.Call ->
-                e.copy(
-                    attrs = foldAttributes(e.attrs),
-                    func = foldExpr(e.func),
-                    args = e.args.copy({ foldExpr(it) }, { it }),
-                )
-            is Expr.Cast ->
-                e.copy(
-                    attrs = foldAttributes(e.attrs),
-                    expr = foldExpr(e.expr),
-                    ty = foldType(e.ty),
-                )
-            is Expr.Closure ->
-                e.copy(
-                    attrs = foldAttributes(e.attrs),
-                    inputs = e.inputs.copy({ foldPat(it) }, { it }),
-                    output = foldReturnType(e.output),
-                    body = foldExpr(e.body),
-                )
-            is Expr.Const -> e.copy(attrs = foldAttributes(e.attrs), block = foldBlock(e.block))
-            is Expr.Continue -> e.copy(attrs = foldAttributes(e.attrs), label = e.label?.let { foldLifetime(it) })
-            is Expr.Field ->
-                e.copy(
-                    attrs = foldAttributes(e.attrs),
-                    base = foldExpr(e.base),
-                    member = foldMember(e.member),
-                )
+            is Expr.Break -> foldExprBreak(e)
+            is Expr.Call -> foldExprCall(e)
+            is Expr.Cast -> foldExprCast(e)
+            is Expr.Closure -> foldExprClosure(e)
+            is Expr.Const -> foldExprConst(e)
+            is Expr.Continue -> foldExprContinue(e)
+            is Expr.Field -> foldExprField(e)
             is Expr.ForLoop -> foldExprForLoop(e)
-            is Expr.Group -> e.copy(attrs = foldAttributes(e.attrs), expr = foldExpr(e.expr))
-            is Expr.If ->
-                e.copy(
-                    attrs = foldAttributes(e.attrs),
-                    cond = foldExpr(e.cond),
-                    thenBranch = foldBlock(e.thenBranch),
-                    elseBranch = e.elseBranch?.let { foldElseExpr(it) },
-                )
-            is Expr.Index ->
-                e.copy(
-                    attrs = foldAttributes(e.attrs),
-                    expr = foldExpr(e.expr),
-                    index = foldExpr(e.index),
-                )
-            is Expr.Infer -> e.copy(attrs = foldAttributes(e.attrs))
-            is Expr.Let ->
-                e.copy(
-                    attrs = foldAttributes(e.attrs),
-                    pat = foldPat(e.pat),
-                    expr = foldExpr(e.expr),
-                )
-            is Expr.Lit -> e.copy(attrs = foldAttributes(e.attrs), lit = foldLit(e.lit))
+            is Expr.Group -> foldExprGroup(e)
+            is Expr.If -> foldExprIf(e)
+            is Expr.Index -> foldExprIndex(e)
+            is Expr.Infer -> foldExprInfer(e)
+            is Expr.Let -> foldExprLet(e)
+            is Expr.Lit -> foldExprLit(e)
             is Expr.Loop -> foldExprLoop(e)
-            is Expr.Macro -> e.copy(attrs = foldAttributes(e.attrs), mac = foldMacro(e.mac))
-            is Expr.Match ->
-                e.copy(
-                    attrs = foldAttributes(e.attrs),
-                    expr = foldExpr(e.expr),
-                    arms = e.arms.map { foldArm(it) },
-                )
-            is Expr.MethodCall ->
-                e.copy(
-                    attrs = foldAttributes(e.attrs),
-                    receiver = foldExpr(e.receiver),
-                    method = foldIdent(e.method),
-                    turbofish = e.turbofish?.let { foldPathArguments(it) as PathArguments.AngleBracketed },
-                    args = e.args.copy({ foldExpr(it) }, { it }),
-                )
-            is Expr.Paren -> e.copy(attrs = foldAttributes(e.attrs), expr = foldExpr(e.expr))
+            is Expr.Macro -> foldExprMacro(e)
+            is Expr.Match -> foldExprMatch(e)
+            is Expr.MethodCall -> foldExprMethodCall(e)
+            is Expr.Paren -> foldExprParen(e)
             is Expr.Path -> foldExprPath(e)
             is Expr.Range -> foldExprRange(e)
             is Expr.RawAddr -> foldExprRawAddr(e)
-            is Expr.Reference -> e.copy(attrs = foldAttributes(e.attrs), expr = foldExpr(e.expr))
-            is Expr.Repeat ->
-                e.copy(
-                    attrs = foldAttributes(e.attrs),
-                    expr = foldExpr(e.expr),
-                    len = foldExpr(e.len),
-                )
-            is Expr.Return -> e.copy(attrs = foldAttributes(e.attrs), expr = e.expr?.let { foldExpr(it) })
-            is Expr.Struct ->
-                e.copy(
-                    attrs = foldAttributes(e.attrs),
-                    qself = e.qself?.let { foldQSelf(it) },
-                    path = foldPath(e.path),
-                    fields = e.fields.copy({ foldFieldValue(it) }, { it }),
-                    rest = e.rest?.let { foldExpr(it) },
-                )
-            is Expr.Try -> e.copy(attrs = foldAttributes(e.attrs), expr = foldExpr(e.expr))
-            is Expr.TryBlock -> e.copy(attrs = foldAttributes(e.attrs), block = foldBlock(e.block))
-            is Expr.Tuple -> e.copy(attrs = foldAttributes(e.attrs), elems = e.elems.copy({ foldExpr(it) }, { it }))
+            is Expr.Reference -> foldExprReference(e)
+            is Expr.Repeat -> foldExprRepeat(e)
+            is Expr.Return -> foldExprReturn(e)
+            is Expr.Struct -> foldExprStruct(e)
+            is Expr.Try -> foldExprTry(e)
+            is Expr.TryBlock -> foldExprTryBlock(e)
+            is Expr.Tuple -> foldExprTuple(e)
             is Expr.Unary -> foldExprUnary(e)
-            is Expr.Unsafe -> e.copy(attrs = foldAttributes(e.attrs), block = foldBlock(e.block))
+            is Expr.Unsafe -> foldExprUnsafe(e)
             is Expr.While -> foldExprWhile(e)
-            is Expr.Yield -> e.copy(attrs = foldAttributes(e.attrs), expr = e.expr?.let { foldExpr(it) })
-            is Expr.Verbatim -> e
+            is Expr.Yield -> foldExprYield(e)
+            is Expr.Verbatim -> e.copy(tokens = foldTokenStream(e.tokens))
         }
 
     public open fun foldType(t: SynType): SynType =
@@ -255,7 +191,9 @@ public open class Fold {
         when (i) {
             is Item.Const -> foldItemConst(i)
             is Item.Enum -> foldItemEnum(i)
+            is Item.ExternCrate -> foldItemExternCrate(i)
             is Item.Fn -> foldItemFn(i)
+            is Item.ForeignMod -> foldItemForeignMod(i)
             is Item.Impl -> foldItemImpl(i)
             is Item.Macro -> foldItemMacro(i)
             is Item.Mod -> foldItemMod(i)
@@ -536,7 +474,30 @@ public open class Fold {
 
     public open fun foldTypeParen(ty: SynType.Paren): SynType.Paren = ty.copy(elem = foldType(ty.elem))
 
-    public open fun foldExprPath(exprPath: Expr.Path): Expr.Path = exprPath.copy(path = foldPath(exprPath.path))
+    public open fun foldExprArray(expr: Expr.Array): Expr.Array =
+        expr.copy(
+            attrs = foldAttributes(expr.attrs),
+            elems = expr.elems.copy({ foldExpr(it) }, { it }),
+        )
+
+    public open fun foldExprAssign(expr: Expr.Assign): Expr.Assign =
+        expr.copy(
+            attrs = foldAttributes(expr.attrs),
+            left = foldExpr(expr.left),
+            right = foldExpr(expr.right),
+        )
+
+    public open fun foldExprAsync(expr: Expr.Async): Expr.Async =
+        expr.copy(
+            attrs = foldAttributes(expr.attrs),
+            block = foldBlock(expr.block),
+        )
+
+    public open fun foldExprAwait(expr: Expr.Await): Expr.Await =
+        expr.copy(
+            attrs = foldAttributes(expr.attrs),
+            base = foldExpr(expr.base),
+        )
 
     public open fun foldExprBinary(expr: Expr.Binary): Expr.Binary =
         expr.copy(
@@ -553,6 +514,54 @@ public open class Fold {
             block = foldBlock(expr.block),
         )
 
+    public open fun foldExprBreak(expr: Expr.Break): Expr.Break =
+        expr.copy(
+            attrs = foldAttributes(expr.attrs),
+            label = expr.label?.let { foldLifetime(it) },
+            expr = expr.expr?.let { foldExpr(it) },
+        )
+
+    public open fun foldExprCall(expr: Expr.Call): Expr.Call =
+        expr.copy(
+            attrs = foldAttributes(expr.attrs),
+            func = foldExpr(expr.func),
+            args = expr.args.copy({ foldExpr(it) }, { it }),
+        )
+
+    public open fun foldExprCast(expr: Expr.Cast): Expr.Cast =
+        expr.copy(
+            attrs = foldAttributes(expr.attrs),
+            expr = foldExpr(expr.expr),
+            ty = foldType(expr.ty),
+        )
+
+    public open fun foldExprClosure(expr: Expr.Closure): Expr.Closure =
+        expr.copy(
+            attrs = foldAttributes(expr.attrs),
+            inputs = expr.inputs.copy({ foldPat(it) }, { it }),
+            output = foldReturnType(expr.output),
+            body = foldExpr(expr.body),
+        )
+
+    public open fun foldExprConst(expr: Expr.Const): Expr.Const =
+        expr.copy(
+            attrs = foldAttributes(expr.attrs),
+            block = foldBlock(expr.block),
+        )
+
+    public open fun foldExprContinue(expr: Expr.Continue): Expr.Continue =
+        expr.copy(
+            attrs = foldAttributes(expr.attrs),
+            label = expr.label?.let { foldLifetime(it) },
+        )
+
+    public open fun foldExprField(expr: Expr.Field): Expr.Field =
+        expr.copy(
+            attrs = foldAttributes(expr.attrs),
+            base = foldExpr(expr.base),
+            member = foldMember(expr.member),
+        )
+
     public open fun foldExprForLoop(expr: Expr.ForLoop): Expr.ForLoop =
         expr.copy(
             attrs = foldAttributes(expr.attrs),
@@ -562,11 +571,83 @@ public open class Fold {
             body = foldBlock(expr.body),
         )
 
+    public open fun foldExprGroup(expr: Expr.Group): Expr.Group =
+        expr.copy(
+            attrs = foldAttributes(expr.attrs),
+            expr = foldExpr(expr.expr),
+        )
+
+    public open fun foldExprIf(expr: Expr.If): Expr.If =
+        expr.copy(
+            attrs = foldAttributes(expr.attrs),
+            cond = foldExpr(expr.cond),
+            thenBranch = foldBlock(expr.thenBranch),
+            elseBranch = expr.elseBranch?.let { foldElseExpr(it) },
+        )
+
+    public open fun foldExprIndex(expr: Expr.Index): Expr.Index =
+        expr.copy(
+            attrs = foldAttributes(expr.attrs),
+            expr = foldExpr(expr.expr),
+            index = foldExpr(expr.index),
+        )
+
+    public open fun foldExprInfer(expr: Expr.Infer): Expr.Infer =
+        expr.copy(attrs = foldAttributes(expr.attrs))
+
+    public open fun foldExprLet(expr: Expr.Let): Expr.Let =
+        expr.copy(
+            attrs = foldAttributes(expr.attrs),
+            pat = foldPat(expr.pat),
+            expr = foldExpr(expr.expr),
+        )
+
+    public open fun foldExprLit(expr: Expr.Lit): Expr.Lit =
+        expr.copy(
+            attrs = foldAttributes(expr.attrs),
+            lit = foldLit(expr.lit),
+        )
+
     public open fun foldExprLoop(expr: Expr.Loop): Expr.Loop =
         expr.copy(
             attrs = foldAttributes(expr.attrs),
             label = expr.label?.let { foldLabel(it) },
             body = foldBlock(expr.body),
+        )
+
+    public open fun foldExprMacro(expr: Expr.Macro): Expr.Macro =
+        expr.copy(
+            attrs = foldAttributes(expr.attrs),
+            mac = foldMacro(expr.mac),
+        )
+
+    public open fun foldExprMatch(expr: Expr.Match): Expr.Match =
+        expr.copy(
+            attrs = foldAttributes(expr.attrs),
+            expr = foldExpr(expr.expr),
+            arms = expr.arms.map { foldArm(it) },
+        )
+
+    public open fun foldExprMethodCall(expr: Expr.MethodCall): Expr.MethodCall =
+        expr.copy(
+            attrs = foldAttributes(expr.attrs),
+            receiver = foldExpr(expr.receiver),
+            method = foldIdent(expr.method),
+            turbofish = expr.turbofish?.let { foldAngleBracketedGenericArguments(it) },
+            args = expr.args.copy({ foldExpr(it) }, { it }),
+        )
+
+    public open fun foldExprParen(expr: Expr.Paren): Expr.Paren =
+        expr.copy(
+            attrs = foldAttributes(expr.attrs),
+            expr = foldExpr(expr.expr),
+        )
+
+    public open fun foldExprPath(exprPath: Expr.Path): Expr.Path =
+        exprPath.copy(
+            attrs = foldAttributes(exprPath.attrs),
+            qself = exprPath.qself?.let { foldQSelf(it) },
+            path = foldPath(exprPath.path),
         )
 
     public open fun foldExprRange(expr: Expr.Range): Expr.Range =
@@ -584,11 +665,63 @@ public open class Fold {
             expr = foldExpr(expr.expr),
         )
 
+    public open fun foldExprReference(expr: Expr.Reference): Expr.Reference =
+        expr.copy(
+            attrs = foldAttributes(expr.attrs),
+            expr = foldExpr(expr.expr),
+        )
+
+    public open fun foldExprRepeat(expr: Expr.Repeat): Expr.Repeat =
+        expr.copy(
+            attrs = foldAttributes(expr.attrs),
+            expr = foldExpr(expr.expr),
+            len = foldExpr(expr.len),
+        )
+
+    public open fun foldExprReturn(expr: Expr.Return): Expr.Return =
+        expr.copy(
+            attrs = foldAttributes(expr.attrs),
+            expr = expr.expr?.let { foldExpr(it) },
+        )
+
+    public open fun foldExprStruct(expr: Expr.Struct): Expr.Struct =
+        expr.copy(
+            attrs = foldAttributes(expr.attrs),
+            qself = expr.qself?.let { foldQSelf(it) },
+            path = foldPath(expr.path),
+            fields = expr.fields.copy({ foldFieldValue(it) }, { it }),
+            rest = expr.rest?.let { foldExpr(it) },
+        )
+
+    public open fun foldExprTry(expr: Expr.Try): Expr.Try =
+        expr.copy(
+            attrs = foldAttributes(expr.attrs),
+            expr = foldExpr(expr.expr),
+        )
+
+    public open fun foldExprTryBlock(expr: Expr.TryBlock): Expr.TryBlock =
+        expr.copy(
+            attrs = foldAttributes(expr.attrs),
+            block = foldBlock(expr.block),
+        )
+
+    public open fun foldExprTuple(expr: Expr.Tuple): Expr.Tuple =
+        expr.copy(
+            attrs = foldAttributes(expr.attrs),
+            elems = expr.elems.copy({ foldExpr(it) }, { it }),
+        )
+
     public open fun foldExprUnary(expr: Expr.Unary): Expr.Unary =
         expr.copy(
             attrs = foldAttributes(expr.attrs),
             op = foldUnOp(expr.op),
             expr = foldExpr(expr.expr),
+        )
+
+    public open fun foldExprUnsafe(expr: Expr.Unsafe): Expr.Unsafe =
+        expr.copy(
+            attrs = foldAttributes(expr.attrs),
+            block = foldBlock(expr.block),
         )
 
     public open fun foldExprWhile(expr: Expr.While): Expr.While =
@@ -597,6 +730,12 @@ public open class Fold {
             label = expr.label?.let { foldLabel(it) },
             cond = foldExpr(expr.cond),
             body = foldBlock(expr.body),
+        )
+
+    public open fun foldExprYield(expr: Expr.Yield): Expr.Yield =
+        expr.copy(
+            attrs = foldAttributes(expr.attrs),
+            expr = expr.expr?.let { foldExpr(it) },
         )
 
     public open fun foldBinOp(op: BinOp): BinOp =
@@ -825,6 +964,42 @@ public open class Fold {
             }
         }
 
+    public open fun foldForeignItem(item: ForeignItem): ForeignItem =
+        when (item) {
+            is ForeignItem.Fn -> foldForeignItemFn(item)
+            is ForeignItem.Static -> foldForeignItemStatic(item)
+            is ForeignItem.ItemType -> foldForeignItemType(item)
+            is ForeignItem.Macro -> foldForeignItemMacro(item)
+            is ForeignItem.Verbatim -> ForeignItem.Verbatim(foldTokenStream(item.tokens))
+        }
+
+    public open fun foldForeignItemFn(item: ForeignItem.Fn): ForeignItem.Fn =
+        item.copy(
+            attrs = foldAttributes(item.attrs),
+            vis = foldVisibility(item.vis),
+            sig = foldSignature(item.sig),
+        )
+
+    public open fun foldForeignItemMacro(item: ForeignItem.Macro): ForeignItem.Macro =
+        item.copy(attrs = foldAttributes(item.attrs), mac = foldMacro(item.mac))
+
+    public open fun foldForeignItemStatic(item: ForeignItem.Static): ForeignItem.Static =
+        item.copy(
+            attrs = foldAttributes(item.attrs),
+            vis = foldVisibility(item.vis),
+            mutability = foldStaticMutability(item.mutability),
+            ident = foldIdent(item.ident),
+            ty = foldType(item.ty),
+        )
+
+    public open fun foldForeignItemType(item: ForeignItem.ItemType): ForeignItem.ItemType =
+        item.copy(
+            attrs = foldAttributes(item.attrs),
+            vis = foldVisibility(item.vis),
+            ident = foldIdent(item.ident),
+            generics = foldGenerics(item.generics),
+        )
+
     public open fun foldImplItemConst(item: ImplItem.Const): ImplItem.Const =
         item.copy(
             attrs = foldAttributes(item.attrs),
@@ -873,12 +1048,27 @@ public open class Fold {
             variants = item.variants.copy({ foldVariant(it) }, { it }),
         )
 
+    public open fun foldItemExternCrate(item: Item.ExternCrate): Item.ExternCrate =
+        item.copy(
+            attrs = foldAttributes(item.attrs),
+            vis = foldVisibility(item.vis),
+            ident = foldIdent(item.ident),
+            rename = item.rename?.let { it.copy(ident = foldIdent(it.ident)) },
+        )
+
     public open fun foldItemFn(item: Item.Fn): Item.Fn =
         item.copy(
             attrs = foldAttributes(item.attrs),
             vis = foldVisibility(item.vis),
             sig = foldSignature(item.sig),
             block = item.block?.let { foldBlock(it) },
+        )
+
+    public open fun foldItemForeignMod(item: Item.ForeignMod): Item.ForeignMod =
+        item.copy(
+            attrs = foldAttributes(item.attrs),
+            abi = foldAbi(item.abi),
+            items = item.items.map { foldForeignItem(it) },
         )
 
     public open fun foldItemImpl(item: Item.Impl): Item.Impl =
@@ -930,6 +1120,7 @@ public open class Fold {
             vis = foldVisibility(item.vis),
             ident = foldIdent(item.ident),
             generics = foldGenerics(item.generics),
+            restriction = item.restriction?.let { foldImplRestriction(it) },
             supertraits = item.supertraits.copy({ foldTypeParamBound(it) }, { it }),
             items = item.items.map { foldTraitItem(it) },
         )
@@ -969,6 +1160,8 @@ public open class Fold {
         )
 
     public open fun foldStaticMutability(mutability: StaticMutability): StaticMutability = mutability
+
+    public open fun foldImplRestriction(restriction: ImplRestriction): ImplRestriction = restriction
 
     public open fun foldModContent(modContent: ModContent): ModContent =
         when (modContent) {

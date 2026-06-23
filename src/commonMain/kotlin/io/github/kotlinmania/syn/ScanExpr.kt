@@ -1711,17 +1711,8 @@ private fun parseTraitObjectBounds(
     input: ParseStream,
     allowPlus: Boolean,
 ): SynResult<TypeParamBoundList> {
-    val bounds =
-        parseTypeParamBoundsMultiple(
-            input,
-            allowPlus = allowPlus,
-            allowPreciseCapture = false,
-            allowConst = false,
-        ).getOrElse { return SynResult.failure(it) }
-    if (!bounds.hasTraitBound()) {
-        return SynResult.failure(input.error("at least one trait is required for an object type"))
-    }
-    return SynResult.success(bounds)
+    val dynSpan = input.span()
+    return SynType.TraitObject.parseBounds(dynSpan, input, allowPlus)
 }
 
 private fun canStartTypeParamBound(
@@ -1811,7 +1802,7 @@ private fun parseBareFnType(
         val attrs = parseOuterAttributes(args).getOrElse { return SynResult.failure(it) }
         if (inputs.emptyOrTrailing() &&
             (args.peek(DotDotDotPeek) ||
-                (args.peek(IdentPeekAny) || args.peek(UnderscorePeek)) &&
+                (args.peek(IdentPeek) || args.peek(UnderscorePeek)) &&
                 args.peek2(ColonPeek) &&
                 args.peek3(DotDotDotPeek))
         ) {
@@ -1829,79 +1820,6 @@ private fun parseBareFnType(
     args.finishChildBuffer()
     val output = parseReturnTypeWithoutPlus(input).getOrElse { return SynResult.failure(it) }
     return SynResult.success(SynType.BareFn(lifetimes, unsafety, abi, fnToken, parens.token, inputs, variadic, output))
-}
-
-private fun parseBareFnArg(
-    input: ParseStream,
-    attrs: List<Attribute>,
-    allowSelf: Boolean,
-): SynResult<BareFnArg> {
-    val begin = input.fork()
-    val hasMutSelf = allowSelf && input.peek(MutPeek) && input.peek2(SelfValuePeek)
-    if (hasMutSelf) {
-        input.parse(MutParse).getOrElse { return SynResult.failure(it) }
-    }
-
-    val selfAtHead = allowSelf && input.peek(SelfValuePeek)
-    var hasSelf = false
-    var name =
-        if ((input.peek(IdentPeekAny) || input.peek(UnderscorePeek) || selfAtHead) &&
-            input.peek2(ColonPeek) &&
-            !input.peek2(PathSepPeek)
-        ) {
-            hasSelf = selfAtHead
-            val ident = parseBareFnName(input).getOrElse { return SynResult.failure(it) }
-            val colon = input.parse(ColonParse).getOrElse { return SynResult.failure(it) }
-            IdentColon(ident, colon)
-        } else {
-            null
-        }
-
-    val parsedTy =
-        if (allowSelf && !hasSelf && input.peek(MutPeek) && input.peek2(SelfValuePeek)) {
-            input.parse(MutParse).getOrElse { return SynResult.failure(it) }
-            input.parse(SelfValueParse).getOrElse { return SynResult.failure(it) }
-            null
-        } else if (hasMutSelf && name == null) {
-            input.parse(SelfValueParse).getOrElse { return SynResult.failure(it) }
-            null
-        } else {
-            parseTypeFull(input).getOrElse { return SynResult.failure(it) }
-        }
-
-    val ty =
-        if (parsedTy != null && !hasMutSelf) {
-            parsedTy
-        } else {
-            name = null
-            SynType.Verbatim(between(begin, input))
-        }
-    return SynResult.success(BareFnArg(attrs, name, ty))
-}
-
-private fun parseBareVariadic(
-    input: ParseStream,
-    attrs: List<Attribute>,
-): SynResult<BareVariadic> {
-    val name =
-        if (input.peek(IdentPeekAny) || input.peek(UnderscorePeek)) {
-            val ident = parseBareFnName(input).getOrElse { return SynResult.failure(it) }
-            val colon = input.parse(ColonParse).getOrElse { return SynResult.failure(it) }
-            IdentColon(ident, colon)
-        } else {
-            null
-        }
-    val dots = input.parse(DotDotDotParse).getOrElse { return SynResult.failure(it) }
-    val comma = input.parse(CommaParse).getOrNull()
-    return SynResult.success(BareVariadic(attrs, name, dots, comma))
-}
-
-private fun parseBareFnName(input: ParseStream): SynResult<Ident> {
-    if (input.peek(UnderscorePeek)) {
-        val underscore = input.parse(UnderscoreParse).getOrElse { return SynResult.failure(it) }
-        return SynResult.success(from(underscore))
-    }
-    return identParseAny(input)
 }
 
 private fun parsePathRest(input: ParseStream, path: Path): SynResult<Unit> {

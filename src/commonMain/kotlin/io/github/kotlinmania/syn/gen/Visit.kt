@@ -10,6 +10,7 @@ import io.github.kotlinmania.syn.AttrStyle
 import io.github.kotlinmania.syn.Attribute
 import io.github.kotlinmania.syn.BareFnArg
 import io.github.kotlinmania.syn.BareVariadic
+import io.github.kotlinmania.syn.BinOp
 import io.github.kotlinmania.syn.Block
 import io.github.kotlinmania.syn.BoundLifetimes
 import io.github.kotlinmania.syn.CapturedParam
@@ -19,8 +20,10 @@ import io.github.kotlinmania.syn.DataEnum
 import io.github.kotlinmania.syn.DataStruct
 import io.github.kotlinmania.syn.DataUnion
 import io.github.kotlinmania.syn.DeriveInput
+import io.github.kotlinmania.syn.ElseExpr
 import io.github.kotlinmania.syn.Expr
 import io.github.kotlinmania.syn.Field
+import io.github.kotlinmania.syn.FieldValue
 import io.github.kotlinmania.syn.FieldPat
 import io.github.kotlinmania.syn.FieldMutability
 import io.github.kotlinmania.syn.File
@@ -28,11 +31,13 @@ import io.github.kotlinmania.syn.Fields
 import io.github.kotlinmania.syn.FieldsNamed
 import io.github.kotlinmania.syn.FieldsUnnamed
 import io.github.kotlinmania.syn.FnArg
+import io.github.kotlinmania.syn.ForeignItem
 import io.github.kotlinmania.syn.GenericArgument
 import io.github.kotlinmania.syn.GenericParam
 import io.github.kotlinmania.syn.Generics
 import io.github.kotlinmania.syn.Ident
 import io.github.kotlinmania.syn.ImplItem
+import io.github.kotlinmania.syn.ImplRestriction
 import io.github.kotlinmania.syn.Index
 import io.github.kotlinmania.syn.Item
 import io.github.kotlinmania.syn.Label
@@ -59,6 +64,7 @@ import io.github.kotlinmania.syn.Path
 import io.github.kotlinmania.syn.PathArguments
 import io.github.kotlinmania.syn.PathSegment
 import io.github.kotlinmania.syn.PathTrait
+import io.github.kotlinmania.syn.PointerMutability
 import io.github.kotlinmania.syn.QSelf
 import io.github.kotlinmania.syn.RangeLimits
 import io.github.kotlinmania.syn.ReturnType
@@ -86,7 +92,277 @@ import io.github.kotlinmania.syn.WherePredicate
  * to continue walking.
  */
 public open class Visit {
-    public open fun visitExpr(e: Expr) { /* default: no-op */ }
+    public open fun visitExpr(e: Expr) {
+        when (e) {
+            is Expr.Array -> visitExprArray(e)
+            is Expr.Assign -> visitExprAssign(e)
+            is Expr.Async -> visitExprAsync(e)
+            is Expr.Await -> visitExprAwait(e)
+            is Expr.Binary -> visitExprBinary(e)
+            is Expr.BlockExpr -> visitExprBlock(e)
+            is Expr.Break -> visitExprBreak(e)
+            is Expr.Call -> visitExprCall(e)
+            is Expr.Cast -> visitExprCast(e)
+            is Expr.Closure -> visitExprClosure(e)
+            is Expr.Const -> visitExprConst(e)
+            is Expr.Continue -> visitExprContinue(e)
+            is Expr.Field -> visitExprField(e)
+            is Expr.ForLoop -> visitExprForLoop(e)
+            is Expr.Group -> visitExprGroup(e)
+            is Expr.If -> visitExprIf(e)
+            is Expr.Index -> visitExprIndex(e)
+            is Expr.Infer -> visitExprInfer(e)
+            is Expr.Let -> visitExprLet(e)
+            is Expr.Lit -> visitExprLit(e)
+            is Expr.Loop -> visitExprLoop(e)
+            is Expr.Macro -> visitExprMacro(e)
+            is Expr.Match -> visitExprMatch(e)
+            is Expr.MethodCall -> visitExprMethodCall(e)
+            is Expr.Paren -> visitExprParen(e)
+            is Expr.Path -> visitExprPath(e)
+            is Expr.Range -> visitExprRange(e)
+            is Expr.RawAddr -> visitExprRawAddr(e)
+            is Expr.Reference -> visitExprReference(e)
+            is Expr.Repeat -> visitExprRepeat(e)
+            is Expr.Return -> visitExprReturn(e)
+            is Expr.Struct -> visitExprStruct(e)
+            is Expr.Try -> visitExprTry(e)
+            is Expr.TryBlock -> visitExprTryBlock(e)
+            is Expr.Tuple -> visitExprTuple(e)
+            is Expr.Unary -> visitExprUnary(e)
+            is Expr.Unsafe -> visitExprUnsafe(e)
+            is Expr.While -> visitExprWhile(e)
+            is Expr.Yield -> visitExprYield(e)
+            is Expr.Verbatim -> visitTokenStream(e.tokens)
+        }
+    }
+
+    public open fun visitExprArray(e: Expr.Array) {
+        e.attrs.forEach { visitAttribute(it) }
+        e.elems.toList().forEach { visitExpr(it) }
+    }
+
+    public open fun visitExprAssign(e: Expr.Assign) {
+        e.attrs.forEach { visitAttribute(it) }
+        visitExpr(e.left)
+        visitExpr(e.right)
+    }
+
+    public open fun visitExprAsync(e: Expr.Async) {
+        e.attrs.forEach { visitAttribute(it) }
+        visitBlock(e.block)
+    }
+
+    public open fun visitExprAwait(e: Expr.Await) {
+        e.attrs.forEach { visitAttribute(it) }
+        visitExpr(e.base)
+    }
+
+    public open fun visitExprBinary(e: Expr.Binary) {
+        e.attrs.forEach { visitAttribute(it) }
+        visitExpr(e.left)
+        visitBinOp(e.op)
+        visitExpr(e.right)
+    }
+
+    public open fun visitExprBlock(e: Expr.BlockExpr) {
+        e.attrs.forEach { visitAttribute(it) }
+        e.label?.let { visitLabel(it) }
+        visitBlock(e.block)
+    }
+
+    public open fun visitExprBreak(e: Expr.Break) {
+        e.attrs.forEach { visitAttribute(it) }
+        e.label?.let { visitLifetime(it) }
+        e.expr?.let { visitExpr(it) }
+    }
+
+    public open fun visitExprCall(e: Expr.Call) {
+        e.attrs.forEach { visitAttribute(it) }
+        visitExpr(e.func)
+        e.args.toList().forEach { visitExpr(it) }
+    }
+
+    public open fun visitExprCast(e: Expr.Cast) {
+        e.attrs.forEach { visitAttribute(it) }
+        visitExpr(e.expr)
+        visitType(e.ty)
+    }
+
+    public open fun visitExprClosure(e: Expr.Closure) {
+        e.attrs.forEach { visitAttribute(it) }
+        e.inputs.toList().forEach { visitPat(it) }
+        visitReturnType(e.output)
+        visitExpr(e.body)
+    }
+
+    public open fun visitExprConst(e: Expr.Const) {
+        e.attrs.forEach { visitAttribute(it) }
+        visitBlock(e.block)
+    }
+
+    public open fun visitExprContinue(e: Expr.Continue) {
+        e.attrs.forEach { visitAttribute(it) }
+        e.label?.let { visitLifetime(it) }
+    }
+
+    public open fun visitExprField(e: Expr.Field) {
+        e.attrs.forEach { visitAttribute(it) }
+        visitExpr(e.base)
+        visitMember(e.member)
+    }
+
+    public open fun visitExprForLoop(e: Expr.ForLoop) {
+        e.attrs.forEach { visitAttribute(it) }
+        e.label?.let { visitLabel(it) }
+        visitPat(e.pat)
+        visitExpr(e.expr)
+        visitBlock(e.body)
+    }
+
+    public open fun visitExprGroup(e: Expr.Group) {
+        e.attrs.forEach { visitAttribute(it) }
+        visitExpr(e.expr)
+    }
+
+    public open fun visitExprIf(e: Expr.If) {
+        e.attrs.forEach { visitAttribute(it) }
+        visitExpr(e.cond)
+        visitBlock(e.thenBranch)
+        e.elseBranch?.let { visitElseExpr(it) }
+    }
+
+    public open fun visitExprIndex(e: Expr.Index) {
+        e.attrs.forEach { visitAttribute(it) }
+        visitExpr(e.expr)
+        visitExpr(e.index)
+    }
+
+    public open fun visitExprInfer(e: Expr.Infer) {
+        e.attrs.forEach { visitAttribute(it) }
+    }
+
+    public open fun visitExprLet(e: Expr.Let) {
+        e.attrs.forEach { visitAttribute(it) }
+        visitPat(e.pat)
+        visitExpr(e.expr)
+    }
+
+    public open fun visitExprLit(e: Expr.Lit) {
+        e.attrs.forEach { visitAttribute(it) }
+        visitLit(e.lit)
+    }
+
+    public open fun visitExprLoop(e: Expr.Loop) {
+        e.attrs.forEach { visitAttribute(it) }
+        e.label?.let { visitLabel(it) }
+        visitBlock(e.body)
+    }
+
+    public open fun visitExprMacro(e: Expr.Macro) {
+        e.attrs.forEach { visitAttribute(it) }
+        visitMacro(e.mac)
+    }
+
+    public open fun visitExprMatch(e: Expr.Match) {
+        e.attrs.forEach { visitAttribute(it) }
+        visitExpr(e.expr)
+        e.arms.forEach { visitArm(it) }
+    }
+
+    public open fun visitExprMethodCall(e: Expr.MethodCall) {
+        e.attrs.forEach { visitAttribute(it) }
+        visitExpr(e.receiver)
+        visitIdent(e.method)
+        e.turbofish?.let { visitAngleBracketedGenericArguments(it) }
+        e.args.toList().forEach { visitExpr(it) }
+    }
+
+    public open fun visitExprParen(e: Expr.Paren) {
+        e.attrs.forEach { visitAttribute(it) }
+        visitExpr(e.expr)
+    }
+
+    public open fun visitExprPath(e: Expr.Path) {
+        e.attrs.forEach { visitAttribute(it) }
+        e.qself?.let { visitQSelf(it) }
+        visitPath(e.path)
+    }
+
+    public open fun visitExprRange(e: Expr.Range) {
+        e.attrs.forEach { visitAttribute(it) }
+        e.start?.let { visitExpr(it) }
+        visitRangeLimits(e.limits)
+        e.end?.let { visitExpr(it) }
+    }
+
+    public open fun visitExprRawAddr(e: Expr.RawAddr) {
+        e.attrs.forEach { visitAttribute(it) }
+        visitPointerMutability(e.mutability)
+        visitExpr(e.expr)
+    }
+
+    public open fun visitExprReference(e: Expr.Reference) {
+        e.attrs.forEach { visitAttribute(it) }
+        visitExpr(e.expr)
+    }
+
+    public open fun visitExprRepeat(e: Expr.Repeat) {
+        e.attrs.forEach { visitAttribute(it) }
+        visitExpr(e.expr)
+        visitExpr(e.len)
+    }
+
+    public open fun visitExprReturn(e: Expr.Return) {
+        e.attrs.forEach { visitAttribute(it) }
+        e.expr?.let { visitExpr(it) }
+    }
+
+    public open fun visitExprStruct(e: Expr.Struct) {
+        e.attrs.forEach { visitAttribute(it) }
+        e.qself?.let { visitQSelf(it) }
+        visitPath(e.path)
+        e.fields.toList().forEach { visitFieldValue(it) }
+        e.rest?.let { visitExpr(it) }
+    }
+
+    public open fun visitExprTry(e: Expr.Try) {
+        e.attrs.forEach { visitAttribute(it) }
+        visitExpr(e.expr)
+    }
+
+    public open fun visitExprTryBlock(e: Expr.TryBlock) {
+        e.attrs.forEach { visitAttribute(it) }
+        visitBlock(e.block)
+    }
+
+    public open fun visitExprTuple(e: Expr.Tuple) {
+        e.attrs.forEach { visitAttribute(it) }
+        e.elems.toList().forEach { visitExpr(it) }
+    }
+
+    public open fun visitExprUnary(e: Expr.Unary) {
+        e.attrs.forEach { visitAttribute(it) }
+        visitUnOp(e.op)
+        visitExpr(e.expr)
+    }
+
+    public open fun visitExprUnsafe(e: Expr.Unsafe) {
+        e.attrs.forEach { visitAttribute(it) }
+        visitBlock(e.block)
+    }
+
+    public open fun visitExprWhile(e: Expr.While) {
+        e.attrs.forEach { visitAttribute(it) }
+        e.label?.let { visitLabel(it) }
+        visitExpr(e.cond)
+        visitBlock(e.body)
+    }
+
+    public open fun visitExprYield(e: Expr.Yield) {
+        e.attrs.forEach { visitAttribute(it) }
+        e.expr?.let { visitExpr(it) }
+    }
 
     public open fun visitType(t: SynType) {
         when (t) {
@@ -138,7 +414,9 @@ public open class Visit {
         when (i) {
             is Item.Const -> visitItemConst(i)
             is Item.Enum -> visitItemEnum(i)
+            is Item.ExternCrate -> visitItemExternCrate(i)
             is Item.Fn -> visitItemFn(i)
+            is Item.ForeignMod -> visitItemForeignMod(i)
             is Item.Impl -> visitItemImpl(i)
             is Item.Macro -> visitItemMacro(i)
             is Item.Mod -> visitItemMod(i)
@@ -372,6 +650,42 @@ public open class Visit {
         }
     }
 
+    public open fun visitForeignItem(i: ForeignItem) {
+        when (i) {
+            is ForeignItem.Fn -> visitForeignItemFn(i)
+            is ForeignItem.Static -> visitForeignItemStatic(i)
+            is ForeignItem.ItemType -> visitForeignItemType(i)
+            is ForeignItem.Macro -> visitForeignItemMacro(i)
+            is ForeignItem.Verbatim -> visitTokenStream(i.tokens)
+        }
+    }
+
+    public open fun visitForeignItemFn(i: ForeignItem.Fn) {
+        i.attrs.forEach { visitAttribute(it) }
+        visitVisibility(i.vis)
+        visitSignature(i.sig)
+    }
+
+    public open fun visitForeignItemMacro(i: ForeignItem.Macro) {
+        i.attrs.forEach { visitAttribute(it) }
+        visitMacro(i.mac)
+    }
+
+    public open fun visitForeignItemStatic(i: ForeignItem.Static) {
+        i.attrs.forEach { visitAttribute(it) }
+        visitVisibility(i.vis)
+        visitStaticMutability(i.mutability)
+        visitIdent(i.ident)
+        visitType(i.ty)
+    }
+
+    public open fun visitForeignItemType(i: ForeignItem.ItemType) {
+        i.attrs.forEach { visitAttribute(it) }
+        visitVisibility(i.vis)
+        visitIdent(i.ident)
+        visitGenerics(i.generics)
+    }
+
     public open fun visitGenericArgument(g: GenericArgument) {
         when (g) {
             is GenericArgument.LifetimeArg -> visitLifetime(g.lifetime)
@@ -475,6 +789,9 @@ public open class Visit {
         visitType(i.ty)
     }
 
+    public open fun visitImplRestriction(i: ImplRestriction) {
+    }
+
     public open fun visitItemConst(i: Item.Const) {
         i.attrs.forEach { visitAttribute(it) }
         visitVisibility(i.vis)
@@ -491,11 +808,24 @@ public open class Visit {
         i.variants.toList().forEach { visitVariant(it) }
     }
 
+    public open fun visitItemExternCrate(i: Item.ExternCrate) {
+        i.attrs.forEach { visitAttribute(it) }
+        visitVisibility(i.vis)
+        visitIdent(i.ident)
+        i.rename?.let { visitIdent(it.ident) }
+    }
+
     public open fun visitItemFn(i: Item.Fn) {
         i.attrs.forEach { visitAttribute(it) }
         visitVisibility(i.vis)
         visitSignature(i.sig)
         i.block?.let { visitBlock(it) }
+    }
+
+    public open fun visitItemForeignMod(i: Item.ForeignMod) {
+        i.attrs.forEach { visitAttribute(it) }
+        visitAbi(i.abi)
+        i.items.forEach { visitForeignItem(it) }
     }
 
     public open fun visitItemImpl(i: Item.Impl) {
@@ -539,6 +869,7 @@ public open class Visit {
     public open fun visitItemTrait(i: Item.Trait) {
         i.attrs.forEach { visitAttribute(it) }
         visitVisibility(i.vis)
+        i.restriction?.let { visitImplRestriction(it) }
         visitIdent(i.ident)
         visitGenerics(i.generics)
         i.supertraits.toList().forEach { visitTypeParamBound(it) }
@@ -705,6 +1036,23 @@ public open class Visit {
     public open fun visitPathSegment(p: PathSegment) {
         visitIdent(p.ident)
         visitPathArguments(p.arguments)
+    }
+
+    public open fun visitArm(arm: io.github.kotlinmania.syn.Arm) {
+        arm.attrs.forEach { visitAttribute(it) }
+        visitPat(arm.pat)
+        arm.guard?.let { visitExpr(it.expr) }
+        visitExpr(arm.body)
+    }
+
+    public open fun visitElseExpr(elseExpr: ElseExpr) {
+        visitExpr(elseExpr.expr)
+    }
+
+    public open fun visitFieldValue(fieldValue: FieldValue) {
+        fieldValue.attrs.forEach { visitAttribute(it) }
+        visitMember(fieldValue.member)
+        visitExpr(fieldValue.expr)
     }
 
     public open fun visitPredicateLifetime(p: WherePredicate.LifetimePredicate) {
@@ -887,7 +1235,47 @@ public open class Visit {
         }
     }
 
+    public open fun visitBinOp(op: BinOp) {
+        when (op) {
+            is BinOp.Add -> {}
+            is BinOp.Sub -> {}
+            is BinOp.Mul -> {}
+            is BinOp.Div -> {}
+            is BinOp.Rem -> {}
+            is BinOp.And -> {}
+            is BinOp.Or -> {}
+            is BinOp.BitXor -> {}
+            is BinOp.BitAnd -> {}
+            is BinOp.BitOr -> {}
+            is BinOp.Shl -> {}
+            is BinOp.Shr -> {}
+            is BinOp.Eq -> {}
+            is BinOp.Lt -> {}
+            is BinOp.Le -> {}
+            is BinOp.Ne -> {}
+            is BinOp.Ge -> {}
+            is BinOp.Gt -> {}
+            is BinOp.AddAssign -> {}
+            is BinOp.SubAssign -> {}
+            is BinOp.MulAssign -> {}
+            is BinOp.DivAssign -> {}
+            is BinOp.RemAssign -> {}
+            is BinOp.BitXorAssign -> {}
+            is BinOp.BitAndAssign -> {}
+            is BinOp.BitOrAssign -> {}
+            is BinOp.ShlAssign -> {}
+            is BinOp.ShrAssign -> {}
+        }
+    }
+
     public open fun visitPointerMutability(mutability: io.github.kotlinmania.syn.token.Mut?) { /* leaf */ }
+
+    public open fun visitPointerMutability(mutability: PointerMutability) {
+        when (mutability) {
+            is PointerMutability.Const -> {}
+            is PointerMutability.Mut -> {}
+        }
+    }
 
     public open fun visitUseGlob(u: UseTree.Glob) { /* leaf */ }
 

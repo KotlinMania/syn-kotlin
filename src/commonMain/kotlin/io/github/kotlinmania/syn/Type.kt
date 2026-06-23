@@ -1,6 +1,8 @@
 // port-lint: source ty.rs
 package io.github.kotlinmania.syn
 
+import io.github.kotlinmania.procmacro2.Ident
+import io.github.kotlinmania.procmacro2.Span
 import io.github.kotlinmania.procmacro2.TokenStream
 import io.github.kotlinmania.quote.ToTokens
 import io.github.kotlinmania.quote.toTokens
@@ -155,13 +157,7 @@ public sealed class SynType : ToTokens {
         val path: io.github.kotlinmania.syn.Path,
     ) : SynType() {
         override fun toTokens(tokens: TokenStream) {
-            qself?.let {
-                it.ltToken.toTokens(tokens)
-                it.ty.toTokens(tokens)
-                it.asToken?.toTokens(tokens)
-                it.gtToken.toTokens(tokens)
-            }
-            path.toTokens(tokens)
+            printQpath(tokens, qself, path, PathStyle.AsWritten)
         }
 
         override fun deepCopy(): Path = Path(qself, path.deepCopy())
@@ -218,6 +214,45 @@ public sealed class SynType : ToTokens {
 
             public fun withoutPlus(input: ParseStream): SynResult<TraitObject> =
                 parseTypeTraitObject(input, allowPlus = false)
+
+            internal fun parseBounds(
+                dynSpan: Span,
+                input: ParseStream,
+                allowPlus: Boolean,
+            ): SynResult<TypeParamBoundList> {
+                val bounds =
+                    parseTypeParamBoundsMultiple(
+                        input,
+                        allowPlus = allowPlus,
+                        allowPreciseCapture = false,
+                        allowConst = false,
+                    ).getOrElse { return SynResult.failure(it) }
+                var lastLifetimeSpan: Span? = null
+                var atLeastOneTrait = false
+                for (bound in bounds.toList()) {
+                    when (bound) {
+                        is TypeParamBound.Trait -> {
+                            atLeastOneTrait = true
+                            break
+                        }
+                        is TypeParamBound.LifetimeBound ->
+                            lastLifetimeSpan = bound.lifetime.ident.span()
+                        is TypeParamBound.PreciseCapture,
+                        is TypeParamBound.Verbatim,
+                        -> Unit
+                    }
+                }
+                if (!atLeastOneTrait) {
+                    return SynResult.failure(
+                        SynError.new2(
+                            dynSpan,
+                            lastLifetimeSpan ?: dynSpan,
+                            "at least one trait is required for an object type",
+                        ),
+                    )
+                }
+                return SynResult.success(bounds)
+            }
         }
 
         override fun toTokens(tokens: TokenStream) {
@@ -259,6 +294,13 @@ public data class BareFnArg(
     public val name: IdentColon?,
     public val ty: SynType,
 ) : ToTokens {
+    public companion object : Parse<BareFnArg> {
+        override fun parse(input: ParseStream): SynResult<BareFnArg> {
+            val allowSelf = false
+            return parseBareFnArg(input, allowSelf)
+        }
+    }
+
     override fun toTokens(tokens: TokenStream) {
         for (attr in attrs) attr.toTokens(tokens)
         name?.ident?.toTokens(tokens)
@@ -317,6 +359,89 @@ public sealed class ReturnType : ToTokens {
     }
 
     public abstract fun deepCopy(): ReturnType
+}
+
+internal fun parseBareFnArg(
+    input: ParseStream,
+    allowSelf: Boolean,
+): SynResult<BareFnArg> {
+    val attrs = parseOuterAttributes(input).getOrElse { return SynResult.failure(it) }
+    return parseBareFnArg(input, attrs, allowSelf)
+}
+
+internal fun parseBareFnArg(
+    input: ParseStream,
+    attrs: List<Attribute>,
+    allowSelf: Boolean,
+): SynResult<BareFnArg> {
+    val begin = input.fork()
+    val hasMutSelf = allowSelf && input.peek(MutPeek) && input.peek2(SelfValuePeek)
+    if (hasMutSelf) {
+        input.parse(MutParse).getOrElse { return SynResult.failure(it) }
+    }
+
+    var hasSelf = false
+    var name =
+        if ((input.peek(IdentPeek) || input.peek(UnderscorePeek) || run {
+                hasSelf = allowSelf && input.peek(SelfValuePeek)
+                hasSelf
+            }) &&
+            input.peek2(ColonPeek) &&
+            !input.peek2(PathSepPeek)
+        ) {
+            val ident = parseBareFnName(input).getOrElse { return SynResult.failure(it) }
+            val colon = input.parse(ColonParse).getOrElse { return SynResult.failure(it) }
+            IdentColon(ident, colon)
+        } else {
+            hasSelf = false
+            null
+        }
+
+    val parsedTy =
+        if (allowSelf && !hasSelf && input.peek(MutPeek) && input.peek2(SelfValuePeek)) {
+            input.parse(MutParse).getOrElse { return SynResult.failure(it) }
+            input.parse(SelfValueParse).getOrElse { return SynResult.failure(it) }
+            null
+        } else if (hasMutSelf && name == null) {
+            input.parse(SelfValueParse).getOrElse { return SynResult.failure(it) }
+            null
+        } else {
+            parseTypeFull(input).getOrElse { return SynResult.failure(it) }
+        }
+
+    val ty =
+        if (parsedTy != null && !hasMutSelf) {
+            parsedTy
+        } else {
+            name = null
+            SynType.Verbatim(between(begin, input))
+        }
+    return SynResult.success(BareFnArg(attrs, name, ty))
+}
+
+internal fun parseBareVariadic(
+    input: ParseStream,
+    attrs: List<Attribute>,
+): SynResult<BareVariadic> {
+    val name =
+        if (input.peek(IdentPeek) || input.peek(UnderscorePeek)) {
+            val ident = parseBareFnName(input).getOrElse { return SynResult.failure(it) }
+            val colon = input.parse(ColonParse).getOrElse { return SynResult.failure(it) }
+            IdentColon(ident, colon)
+        } else {
+            null
+        }
+    val dots = input.parse(DotDotDotParse).getOrElse { return SynResult.failure(it) }
+    val comma = input.parse(CommaParse).getOrNull()
+    return SynResult.success(BareVariadic(attrs, name, dots, comma))
+}
+
+private fun parseBareFnName(input: ParseStream): SynResult<Ident> {
+    if (input.peek(UnderscorePeek)) {
+        val underscore = input.parse(UnderscoreParse).getOrElse { return SynResult.failure(it) }
+        return SynResult.success(from(underscore))
+    }
+    return identParseAny(input)
 }
 
 public sealed class MacroDelimiter : ToTokens {

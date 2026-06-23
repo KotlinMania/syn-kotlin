@@ -519,7 +519,16 @@ public class PathSegmentList : SynPunctuated {
 
     public fun last(): PathSegment? = super.last as? PathSegment ?: super.inner.lastOrNull()?.first as? PathSegment
 
-    public operator fun get(index: Int): PathSegment = super.inner[index].first as PathSegment
+    public operator fun get(index: Int): PathSegment {
+        if (index < 0 || index >= len()) {
+            throw IndexOutOfBoundsException("index: $index, size: ${len()}")
+        }
+        return if (index < super.inner.size) {
+            super.inner[index].first as PathSegment
+        } else {
+            super.last as PathSegment
+        }
+    }
 
     public fun toList(): List<PathSegment> = map { it as PathSegment }
 

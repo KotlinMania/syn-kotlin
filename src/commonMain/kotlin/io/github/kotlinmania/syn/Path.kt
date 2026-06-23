@@ -131,8 +131,7 @@ public class Path(
     }
 
     public fun toTokens(tokens: TokenStream) {
-        leadingColon?.toTokens(tokens)
-        segments.toTokens(tokens)
+        printPath(tokens, this, PathStyle.AsWritten)
     }
 
     override fun toString(): String =
@@ -196,8 +195,7 @@ public data class PathSegment(
         PathSegment(ident.copy(), arguments.deepCopy())
 
     override fun toTokens(tokens: TokenStream) {
-        ident.toTokens(tokens)
-        arguments.toTokens(tokens)
+        printPathSegment(tokens, this, PathStyle.AsWritten)
     }
 
     override fun toString(): String =
@@ -213,7 +211,6 @@ public sealed class PathArguments : ToTokens {
 
     public data object None : PathArguments() {
         override fun toTokens(tokens: TokenStream) {
-            // no arguments to emit
         }
     }
 
@@ -247,14 +244,14 @@ public sealed class PathArguments : ToTokens {
             ): SynResult<AngleBracketed> {
                 val ltToken = parseGenericLt(input).getOrElse { return SynResult.failure(it) }
                 val args = GenericArgumentList()
-                while (!input.peek(GtPeek)) {
+                while (!input.peek(GenericsGtPeek)) {
                     val value = input.parse(GenericArgumentParse).getOrElse { return SynResult.failure(it) }
                     args.pushValue(value)
-                    if (input.peek(GtPeek)) break
+                    if (input.peek(GenericsGtPeek)) break
                     val punct = input.parse(CommaParse).getOrElse { return SynResult.failure(it) }
                     args.pushPunct(punct)
                 }
-                val gtToken = input.parse(GtParse).getOrElse { return SynResult.failure(it) }
+                val gtToken = input.parse(GenericsGtParse).getOrElse { return SynResult.failure(it) }
                 return SynResult.success(AngleBracketed(colon2Token, ltToken, args, gtToken))
             }
         }
@@ -278,21 +275,7 @@ public sealed class PathArguments : ToTokens {
         this is None
 
     override fun toTokens(tokens: TokenStream) {
-        when (this) {
-            None -> { }
-            is AngleBracketed -> {
-                colon2Token?.toTokens(tokens)
-                ltToken.toTokens(tokens)
-                args.toTokens(tokens)
-                gtToken.toTokens(tokens)
-            }
-            is Parenthesized -> {
-                parenToken.surround(tokens) { inner ->
-                    inputs.toTokens(inner)
-                }
-                output.toTokens(tokens)
-            }
-        }
+        printPathArguments(tokens, this, PathStyle.AsWritten)
     }
 
     public fun deepCopy(): PathArguments =
@@ -413,8 +396,137 @@ public data class QSelf(
 
 /** Style of path parsing. */
 public enum class PathStyle {
+    Expr,
     Recursion,
     Mod,
+    AsWritten,
+}
+
+internal fun printPath(
+    tokens: TokenStream,
+    path: Path,
+    style: PathStyle,
+) {
+    path.leadingColon?.toTokens(tokens)
+    for ((segment, punct) in path.segments.pairsList()) {
+        printPathSegment(tokens, segment as PathSegment, style)
+        punct?.toTokens(tokens)
+    }
+}
+
+private fun printPathSegment(
+    tokens: TokenStream,
+    segment: PathSegment,
+    style: PathStyle,
+) {
+    segment.ident.toTokens(tokens)
+    printPathArguments(tokens, segment.arguments, style)
+}
+
+private fun printPathArguments(
+    tokens: TokenStream,
+    arguments: PathArguments,
+    style: PathStyle,
+) {
+    when (arguments) {
+        PathArguments.None -> Unit
+        is PathArguments.AngleBracketed -> printAngleBracketedGenericArguments(tokens, arguments, style)
+        is PathArguments.Parenthesized -> printParenthesizedGenericArguments(tokens, arguments, style)
+    }
+}
+
+internal fun printAngleBracketedGenericArguments(
+    tokens: TokenStream,
+    arguments: PathArguments.AngleBracketed,
+    style: PathStyle,
+) {
+    if (style == PathStyle.Mod) return
+
+    conditionallyPrintTurbofish(tokens, arguments.colon2Token, style)
+    arguments.ltToken.toTokens(tokens)
+
+    var trailingOrEmpty = true
+    for ((argument, punct) in arguments.args.pairsList()) {
+        if (argument is GenericArgument.LifetimeArg) {
+            argument.toTokens(tokens)
+            punct?.toTokens(tokens)
+            trailingOrEmpty = punct != null
+        }
+    }
+    for ((argument, punct) in arguments.args.pairsList()) {
+        if (argument !is GenericArgument.LifetimeArg) {
+            if (!trailingOrEmpty) Comma.default().toTokens(tokens)
+            (argument as GenericArgument).toTokens(tokens)
+            punct?.toTokens(tokens)
+            trailingOrEmpty = punct != null
+        }
+    }
+
+    arguments.gtToken.toTokens(tokens)
+}
+
+private fun printParenthesizedGenericArguments(
+    tokens: TokenStream,
+    arguments: PathArguments.Parenthesized,
+    style: PathStyle,
+) {
+    if (style == PathStyle.Mod) return
+
+    conditionallyPrintTurbofish(tokens, null, style)
+    arguments.parenToken.surround(tokens) { inner ->
+        arguments.inputs.toTokens(inner)
+    }
+    arguments.output.toTokens(tokens)
+}
+
+internal fun printQpath(
+    tokens: TokenStream,
+    qself: QSelf?,
+    path: Path,
+    style: PathStyle,
+) {
+    if (qself == null) {
+        printPath(tokens, path, style)
+        return
+    }
+
+    qself.ltToken.toTokens(tokens)
+    qself.ty.toTokens(tokens)
+
+    val position = minOf(qself.position, path.segments.len())
+    val segments = path.segments.pairsList()
+    if (position > 0) {
+        TokensOrDefault(qself.asToken, io.github.kotlinmania.syn.token.As::default).toTokens(tokens)
+        path.leadingColon?.toTokens(tokens)
+        for (index in 0 until position) {
+            val (segment, punct) = segments[index]
+            printPathSegment(tokens, segment as PathSegment, PathStyle.AsWritten)
+            if (index + 1 == position) qself.gtToken.toTokens(tokens)
+            punct?.toTokens(tokens)
+        }
+    } else {
+        qself.gtToken.toTokens(tokens)
+        path.leadingColon?.toTokens(tokens)
+    }
+    for (index in position until segments.size) {
+        val (segment, punct) = segments[index]
+        printPathSegment(tokens, segment as PathSegment, style)
+        punct?.toTokens(tokens)
+    }
+}
+
+private fun conditionallyPrintTurbofish(
+    tokens: TokenStream,
+    colon2Token: PathSep?,
+    style: PathStyle,
+) {
+    when (style) {
+        PathStyle.Expr,
+        PathStyle.Recursion,
+        -> TokensOrDefault(colon2Token, PathSep::default).toTokens(tokens)
+        PathStyle.Mod -> error("module-style paths do not print path arguments")
+        PathStyle.AsWritten -> colon2Token?.toTokens(tokens)
+    }
 }
 
 public object PathParse : Parse<Path> {
@@ -556,7 +668,7 @@ internal fun qpath(input: ParseStream, exprStyle: Boolean): SynResult<Pair<QSelf
             } else {
                 null
             }
-        val gtToken = input.parse(GtParse).getOrElse { return SynResult.failure(it) }
+        val gtToken = input.parse(GenericsGtParse).getOrElse { return SynResult.failure(it) }
         val colon2Token = input.parse(PathSepParse).getOrElse { return SynResult.failure(it) }
         val rest = PathSegmentList()
         while (true) {

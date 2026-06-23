@@ -82,6 +82,17 @@ class FoldTest {
                 ),
                 parseItem("trait Alias<T> = Iterator<Item = T> + Send;"),
                 parseItem("static mut COUNT: usize = 0;"),
+                parseItem("extern crate alloc as memory;"),
+                parseItem(
+                    """
+                    extern "C" {
+                        pub fn puts(s: *const c_char);
+                        static errno: i32;
+                        type Opaque;
+                        callback!();
+                    }
+                    """.trimIndent(),
+                ),
                 parseItem(
                     """
                     mod nested {
@@ -106,6 +117,12 @@ class FoldTest {
         folder.assertEvent("implItem:fn:call")
         folder.assertEvent("item:traitalias:Alias")
         folder.assertEvent("item:static:COUNT")
+        folder.assertEvent("item:externcrate:alloc")
+        folder.assertEvent("item:foreignmod")
+        folder.assertEvent("foreignItem:fn:puts")
+        folder.assertEvent("foreignItem:static:errno")
+        folder.assertEvent("foreignItem:type:Opaque")
+        folder.assertEvent("foreignItem:macro")
         folder.assertEvent("item:mod:nested")
         folder.assertEvent("item:macro")
         folder.assertEvent("item:use")
@@ -354,12 +371,26 @@ class FoldTest {
             return super.foldImplItem(item)
         }
 
+        override fun foldForeignItem(item: ForeignItem): ForeignItem {
+            events +=
+                when (item) {
+                    is ForeignItem.Fn -> "foreignItem:fn:${item.sig.ident}"
+                    is ForeignItem.Static -> "foreignItem:static:${item.ident}"
+                    is ForeignItem.ItemType -> "foreignItem:type:${item.ident}"
+                    is ForeignItem.Macro -> "foreignItem:macro"
+                    is ForeignItem.Verbatim -> "foreignItem:verbatim"
+                }
+            return super.foldForeignItem(item)
+        }
+
         override fun foldItem(i: Item): Item {
             events +=
                 when (i) {
                     is Item.Const -> "item:const:${i.ident}"
                     is Item.Enum -> "item:enum:${i.ident}"
+                    is Item.ExternCrate -> "item:externcrate:${i.ident}"
                     is Item.Fn -> "item:fn:${i.ident}"
+                    is Item.ForeignMod -> "item:foreignmod"
                     is Item.Impl -> "item:impl"
                     is Item.Macro -> "item:macro"
                     is Item.Mod -> "item:mod:${i.ident}"
