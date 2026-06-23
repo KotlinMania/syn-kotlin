@@ -206,6 +206,17 @@ class VisitMutTest {
         visitor.assertEvent("binop:add")
     }
 
+    @Test
+    fun qselfAndCstrVisitMutDispatchThroughGeneratedHelpers() {
+        val visitor = RecordingVisitMut()
+
+        visitor.visitLit(parseStr(LitParse, "c\"hello\"").getOrThrow())
+        visitor.visitType(parseStr(SynTypeParseExpr, "<Self as Trait>::Assoc").getOrThrow())
+
+        visitor.assertEvent("lit:cstr")
+        visitor.assertEvent("qself")
+    }
+
     private fun parseItem(source: String): Item =
         parseStr(ItemParse, source).getOrThrow()
 
@@ -375,9 +386,19 @@ class VisitMutTest {
             return super.visitPath(p)
         }
 
+        override fun visitLitCstrMut(l: LitCStr): LitCStr {
+            events += "lit:cstr"
+            return super.visitLitCstrMut(l)
+        }
+
         override fun visitSignature(sig: Signature): Signature {
             events += "signature:${sig.ident}"
             return super.visitSignature(sig)
+        }
+
+        override fun visitQselfMut(qself: QSelf): QSelf {
+            events += "qself"
+            return super.visitQselfMut(qself)
         }
 
         override fun visitTraitItem(item: TraitItem): TraitItem {

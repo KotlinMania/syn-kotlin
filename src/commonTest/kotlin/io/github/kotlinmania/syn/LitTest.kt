@@ -83,6 +83,16 @@ class LitTest {
             }
         }
 
+        fun testByteStringLiteral(s: String, value: List<UByte>) {
+            val parsed = assertIs<Lit.ByteStr>(litLiteral(s))
+            assertEquals(value, parsed.value.value())
+            val again = TokenStream.new()
+            parsed.toTokens(again)
+            if (again.toString() != s.trim()) {
+                testByteStringLiteral(again.toString(), value)
+            }
+        }
+
         testByteString("b\"\"", emptyList())
         testByteString("b\"a\"", listOf('a'.code.toUByte()))
         testByteString("b\"\\n\"", listOf('\n'.code.toUByte()))
@@ -91,7 +101,7 @@ class LitTest {
         testByteString("b\"\\\"\"", listOf('"'.code.toUByte()))
         testByteString("b\"'\"", listOf('\''.code.toUByte()))
         testByteString("b\"\\x41\"", listOf('A'.code.toUByte()))
-        testByteString(
+        testByteStringLiteral(
             "b\"contains\nnewlines\\\nescaped newlines\"",
             "contains\nnewlinesescaped newlines".encodeToByteArray().map { it.toUByte() },
         )

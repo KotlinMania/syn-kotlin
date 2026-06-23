@@ -302,3 +302,5 @@ public fun DeriveInput.debug(): String =
             "data" to data,
         ),
     )
+
+public fun fmt(value: Any?): String = debugValue(value)

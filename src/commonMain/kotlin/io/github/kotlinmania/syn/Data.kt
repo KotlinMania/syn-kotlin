@@ -65,6 +65,9 @@ public sealed class Fields :
     public fun iterMut(): Iterator<Field> =
         iter()
 
+    public fun intoIter(): Iterator<Field> =
+        iter()
+
     public fun len(): Int =
         when (this) {
             Unit -> 0

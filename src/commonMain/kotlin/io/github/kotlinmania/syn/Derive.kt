@@ -212,11 +212,11 @@ internal data class DataUnionParts(
 )
 
 internal fun dataStruct(input: ParseStream): SynResult<DataStructParts> {
-    var whereClause = parseWhereClause(input).getOrNull()
+    var whereClause = parseOptionalWhereClause(input).getOrElse { return SynResult.failure(it) }
 
     if (whereClause == null && input.peek(ParenPeek)) {
         val fields = input.parse(FieldsUnnamedParse).getOrElse { return SynResult.failure(it) }
-        whereClause = parseWhereClause(input).getOrNull()
+        whereClause = parseOptionalWhereClause(input).getOrElse { return SynResult.failure(it) }
         val semi = input.parse(SemiParse).getOrElse { return SynResult.failure(it) }
         return SynResult.success(DataStructParts(whereClause, Fields.Unnamed(fields), semi))
     }
@@ -235,7 +235,7 @@ internal fun dataStruct(input: ParseStream): SynResult<DataStructParts> {
 }
 
 internal fun dataEnum(input: ParseStream): SynResult<DataEnumParts> {
-    val whereClause = parseWhereClause(input).getOrNull()
+    val whereClause = parseOptionalWhereClause(input).getOrElse { return SynResult.failure(it) }
     val braces = braced(input).getOrElse { return SynResult.failure(it) }
     val variants = parseVariantList(braces.content).getOrElse { return SynResult.failure(it) }
     braces.content.finishChildBuffer()
@@ -243,7 +243,14 @@ internal fun dataEnum(input: ParseStream): SynResult<DataEnumParts> {
 }
 
 internal fun dataUnion(input: ParseStream): SynResult<DataUnionParts> {
-    val whereClause = parseWhereClause(input).getOrNull()
+    val whereClause = parseOptionalWhereClause(input).getOrElse { return SynResult.failure(it) }
     val fields = input.parse(FieldsNamedParse).getOrElse { return SynResult.failure(it) }
     return SynResult.success(DataUnionParts(whereClause, fields))
 }
+
+private fun parseOptionalWhereClause(input: ParseStream): SynResult<WhereClause?> =
+    if (input.peek(WherePeek)) {
+        parseWhereClause(input).map { it }
+    } else {
+        SynResult.success(null)
+    }

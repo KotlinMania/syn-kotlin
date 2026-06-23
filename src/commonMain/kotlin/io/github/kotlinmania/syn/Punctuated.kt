@@ -106,6 +106,21 @@ public sealed class SynPunctuated :
     override fun hashCode(): Int = inner.hashCode() * 31 + (last?.hashCode() ?: 0)
 
     override fun toString(): String = inner.map { it.first.toString() }.joinToString(", ", "[", "]")
+
+    public fun eq(other: SynPunctuated): Boolean = equals(other)
+
+    public fun hash(): Int = hashCode()
+
+    public fun fmt(): String = toString()
+
+    public fun index(index: Int): ToTokens =
+        if (index + 1 == len()) {
+            last ?: inner[index].first
+        } else {
+            inner[index].first
+        }
+
+    public fun indexMut(index: Int): ToTokens = index(index)
 }
 
 public class VariantList : SynPunctuated {

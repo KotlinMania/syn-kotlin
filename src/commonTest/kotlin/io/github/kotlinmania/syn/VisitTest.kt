@@ -175,10 +175,14 @@ class VisitTest {
         visitor.visitPat(parsePat("1..=2"))
         visitor.visitLabel(Label(Lifetime.new("'lbl", span), io.github.kotlinmania.syn.token.Colon.from(span)))
         visitor.visitUnOp(UnOp.NotOp(io.github.kotlinmania.syn.token.Not.from(span)))
+        visitor.visitLit(parseStr(LitParse, "c\"hello\"").getOrThrow())
+        visitor.visitType(parseStr(SynTypeParseExpr, "<Self as Trait>::Assoc").getOrThrow())
 
         visitor.assertEvent("range:closed")
         visitor.assertEvent("label:'lbl")
         visitor.assertEvent("unop:not")
+        visitor.assertEvent("lit:cstr")
+        visitor.assertEvent("qself")
     }
 
     private fun parseItem(source: String): Item =
@@ -304,9 +308,19 @@ class VisitTest {
             super.visitPath(p)
         }
 
+        override fun visitLitCstr(l: LitCStr) {
+            events += "lit:cstr"
+            super.visitLitCstr(l)
+        }
+
         override fun visitLabel(label: Label) {
             events += "label:${label.name}"
             super.visitLabel(label)
+        }
+
+        override fun visitQself(q: QSelf) {
+            events += "qself"
+            super.visitQself(q)
         }
 
         override fun visitRangeLimits(limits: RangeLimits) {

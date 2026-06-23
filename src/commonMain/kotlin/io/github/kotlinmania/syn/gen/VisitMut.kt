@@ -235,7 +235,7 @@ public open class VisitMut {
         e.copy(attrs = visitAttributesMut(e.attrs), expr = e.expr?.let { visitExprMut(it) })
 
     public open fun visitExprStructMut(e: Expr.Struct): Expr =
-        e.copy(attrs = visitAttributesMut(e.attrs), qself = e.qself?.let { visitQSelfMut(it) }, path = visitPathMut(e.path), fields = e.fields.copy({ visitFieldValueMut(it) }, { it }), rest = e.rest?.let { visitExprMut(it) })
+        e.copy(attrs = visitAttributesMut(e.attrs), qself = e.qself?.let { visitQselfMut(it) }, path = visitPathMut(e.path), fields = e.fields.copy({ visitFieldValueMut(it) }, { it }), rest = e.rest?.let { visitExprMut(it) })
 
     public open fun visitExprTryMut(e: Expr.Try): Expr =
         e.copy(attrs = visitAttributesMut(e.attrs), expr = visitExprMut(e.expr))
@@ -294,7 +294,7 @@ public open class VisitMut {
             is Pat.Macro -> p.copy(attrs = visitAttributesMut(p.attrs), mac = visitMacroMut(p.mac))
             is Pat.Or -> visitPatOrMut(p)
             is Pat.PatParen -> visitPatParenMut(p)
-            is Pat.Path -> p.copy(attrs = visitAttributesMut(p.attrs), qself = p.qself?.let { visitQSelfMut(it) }, path = visitPathMut(p.path))
+            is Pat.Path -> p.copy(attrs = visitAttributesMut(p.attrs), qself = p.qself?.let { visitQselfMut(it) }, path = visitPathMut(p.path))
             is Pat.Range -> p.copy(attrs = visitAttributesMut(p.attrs), start = p.start?.let { visitExprMut(it) }, limits = visitRangeLimitsMut(p.limits), end = p.end?.let { visitExprMut(it) })
             is Pat.Reference -> visitPatReferenceMut(p)
             is Pat.Rest -> visitPatRestMut(p)
@@ -375,7 +375,7 @@ public open class VisitMut {
         when (l) {
             is Lit.Str -> Lit.Str(visitLitStrMut(l.value))
             is Lit.ByteStr -> Lit.ByteStr(visitLitByteStrMut(l.value))
-            is Lit.CStr -> Lit.CStr(visitLitCStrMut(l.value))
+            is Lit.CStr -> Lit.CStr(visitLitCstrMut(l.value))
             is Lit.Byte -> Lit.Byte(visitLitByteMut(l.value))
             is Lit.Char -> Lit.Char(visitLitCharMut(l.value))
             is Lit.Int -> Lit.Int(visitLitIntMut(l.value))
@@ -560,7 +560,7 @@ public open class VisitMut {
     public open fun visitPatStructMut(pat: Pat.Struct): Pat =
         pat.copy(
             attrs = visitAttributesMut(pat.attrs),
-            qself = pat.qself?.let { visitQSelfMut(it) },
+            qself = pat.qself?.let { visitQselfMut(it) },
             path = visitPathMut(pat.path),
             fields = pat.fields.copy({ visitFieldPatMut(it) }, { it }),
             rest = pat.rest?.let { visitPatRestMut(it) },
@@ -572,7 +572,7 @@ public open class VisitMut {
     public open fun visitPatTupleStructMut(pat: Pat.TupleStruct): Pat =
         pat.copy(
             attrs = visitAttributesMut(pat.attrs),
-            qself = pat.qself?.let { visitQSelfMut(it) },
+            qself = pat.qself?.let { visitQselfMut(it) },
             path = visitPathMut(pat.path),
             elems = pat.elems.copy({ visitPatMut(it) }, { it }),
         )
@@ -584,7 +584,7 @@ public open class VisitMut {
         pat.copy(attrs = visitAttributesMut(pat.attrs), pat = visitPatMut(pat.pat), ty = visitTypeMut(pat.ty))
 
     public open fun visitTypePath(typePath: SynType.Path): SynType =
-        typePath.copy(qself = typePath.qself?.let { visitQSelfMut(it) }, path = visitPathMut(typePath.path))
+        typePath.copy(qself = typePath.qself?.let { visitQselfMut(it) }, path = visitPathMut(typePath.path))
 
     public open fun visitTypeReference(ty: SynType.Reference): SynType = ty.copy(lifetime = ty.lifetime?.let { visitLifetimeMut(it) }, elem = visitTypeMut(ty.elem))
 
@@ -643,7 +643,7 @@ public open class VisitMut {
     public open fun visitExprPath(exprPath: Expr.Path): Expr =
         exprPath.copy(
             attrs = visitAttributesMut(exprPath.attrs),
-            qself = exprPath.qself?.let { visitQSelfMut(it) },
+            qself = exprPath.qself?.let { visitQselfMut(it) },
             path = visitPathMut(exprPath.path),
         )
 

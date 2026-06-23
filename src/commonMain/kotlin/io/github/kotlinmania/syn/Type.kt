@@ -469,3 +469,9 @@ public sealed class MacroDelimiter : ToTokens {
         }
     }
 }
+
+public fun ambigTy(
+    input: ParseStream,
+    allowPlus: Boolean,
+    allowGroupGeneric: Boolean,
+): SynResult<SynType> = ambigTyWrapper(input, allowPlus, allowGroupGeneric)

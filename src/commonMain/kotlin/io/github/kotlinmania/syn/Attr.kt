@@ -66,6 +66,12 @@ public data class Attribute(
 
     public fun deepCopy(): Attribute =
         copy(meta = meta.copy())
+
+    public fun isOuter(): Boolean = style is AttrStyle.Outer
+
+    public fun isInner(): Boolean = style is AttrStyle.Inner
+
+    public fun fmt(): String = toString()
 }
 
 public object AttributeParse : Parse<Attribute> {

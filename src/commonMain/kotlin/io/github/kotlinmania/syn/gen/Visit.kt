@@ -285,7 +285,7 @@ public open class Visit {
 
     public open fun visitExprPath(e: Expr.Path) {
         e.attrs.forEach { visitAttribute(it) }
-        e.qself?.let { visitQSelf(it) }
+        e.qself?.let { visitQself(it) }
         visitPath(e.path)
     }
 
@@ -320,7 +320,7 @@ public open class Visit {
 
     public open fun visitExprStruct(e: Expr.Struct) {
         e.attrs.forEach { visitAttribute(it) }
-        e.qself?.let { visitQSelf(it) }
+        e.qself?.let { visitQself(it) }
         visitPath(e.path)
         e.fields.toList().forEach { visitFieldValue(it) }
         e.rest?.let { visitExpr(it) }
@@ -471,7 +471,7 @@ public open class Visit {
         when (l) {
             is Lit.Str -> visitLitStr(l.value)
             is Lit.ByteStr -> visitLitByteStr(l.value)
-            is Lit.CStr -> visitLitCStr(l.value)
+            is Lit.CStr -> visitLitCstr(l.value)
             is Lit.Byte -> visitLitByte(l.value)
             is Lit.Char -> visitLitChar(l.value)
             is Lit.Int -> visitLitInt(l.value)
@@ -488,6 +488,10 @@ public open class Visit {
     public open fun visitLitByte(l: LitByte) { /* leaf */ }
 
     public open fun visitLitByteStr(l: LitByteStr) { /* leaf */ }
+
+    public open fun visitLitCstr(l: LitCStr) {
+        visitLitCStr(l)
+    }
 
     public open fun visitLitCStr(l: LitCStr) { /* leaf */ }
 
@@ -955,7 +959,7 @@ public open class Visit {
 
     public open fun visitPatPath(p: Pat.Path) {
         p.attrs.forEach { visitAttribute(it) }
-        p.qself?.let { visitQSelf(it) }
+        p.qself?.let { visitQself(it) }
         visitPath(p.path)
     }
 
@@ -987,7 +991,7 @@ public open class Visit {
 
     public open fun visitPatStruct(p: Pat.Struct) {
         p.attrs.forEach { visitAttribute(it) }
-        p.qself?.let { visitQSelf(it) }
+        p.qself?.let { visitQself(it) }
         visitPath(p.path)
         p.fields.toList().forEach { visitFieldPat(it) }
         p.rest?.let { visitPatRest(it) }
@@ -1000,7 +1004,7 @@ public open class Visit {
 
     public open fun visitPatTupleStruct(p: Pat.TupleStruct) {
         p.attrs.forEach { visitAttribute(it) }
-        p.qself?.let { visitQSelf(it) }
+        p.qself?.let { visitQself(it) }
         visitPath(p.path)
         p.elems.toList().forEach { visitPat(it) }
     }
@@ -1068,6 +1072,10 @@ public open class Visit {
 
     public open fun visitLabel(label: Label) {
         visitLifetime(label.name)
+    }
+
+    public open fun visitQself(q: QSelf) {
+        visitQSelf(q)
     }
 
     public open fun visitQSelf(q: QSelf) {
@@ -1201,7 +1209,7 @@ public open class Visit {
     }
 
     public open fun visitTypePath(t: SynType.Path) {
-        t.qself?.let { visitQSelf(it) }
+        t.qself?.let { visitQself(it) }
         visitPath(t.path)
     }
 

@@ -102,6 +102,8 @@ public class ParseBuffer internal constructor(
     AnyDelimiter {
     override fun toString(): String = currentCursor.tokenStream().toString()
 
+    public fun fmt(): String = toString()
+
     /**
      * Parses a syntax tree node of type [T], advancing the position of our
      * parse stream past it.
@@ -593,6 +595,12 @@ public object Nothing : Parse<Nothing>, ToTokens {
     override fun equals(other: Any?): Boolean = other === Nothing
 
     override fun hashCode(): Int = 0
+
+    public fun fmt(): String = toString()
+
+    public fun eq(other: Nothing): Boolean = true
+
+    public fun hash(): Int = 0
 }
 
 /**

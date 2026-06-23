@@ -212,6 +212,17 @@ class FoldTest {
     }
 
     @Test
+    fun qselfAndCstrFoldDispatchThroughGeneratedHelpers() {
+        val folder = RecordingFold()
+
+        folder.foldLit(parseStr(LitParse, "c\"hello\"").getOrThrow())
+        folder.foldType(parseStr(SynTypeParseExpr, "<Self as Trait>::Assoc").getOrThrow())
+
+        folder.assertEvent("lit:cstr")
+        folder.assertEvent("qself")
+    }
+
+    @Test
     fun foldReturnsRewrittenTree() {
         val input =
             parseStr(
@@ -473,6 +484,11 @@ class FoldTest {
             return super.foldPath(p)
         }
 
+        override fun foldLitCstr(l: LitCStr): LitCStr {
+            events += "lit:cstr"
+            return super.foldLitCstr(l)
+        }
+
         override fun foldParenthesizedGenericArguments(pathArgs: PathArguments.Parenthesized): PathArguments.Parenthesized {
             events += "args:paren"
             return super.foldParenthesizedGenericArguments(pathArgs)
@@ -483,8 +499,13 @@ class FoldTest {
                 when (mutability) {
                     is PointerMutability.Const -> "pointer:const"
                     is PointerMutability.Mut -> "pointer:mut"
-                }
+            }
             return super.foldPointerMutability(mutability)
+        }
+
+        override fun foldQself(qself: QSelf): QSelf {
+            events += "qself"
+            return super.foldQself(qself)
         }
 
         override fun foldPredicateLifetime(predicate: WherePredicate.LifetimePredicate): WherePredicate.LifetimePredicate {

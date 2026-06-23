@@ -116,7 +116,7 @@ class Underscore private constructor(
 }
 
 /** None-delimited group. */
-class Group private constructor(
+class Group(
     override val span: Span,
 ) : SingleSpanToken,
     ToTokens {
@@ -139,6 +139,12 @@ class Group private constructor(
 
     fun clone(): Group =
         Group(span)
+
+    fun fmt(): String = toString()
+
+    fun eq(other: Group): Boolean = equals(other)
+
+    fun hash(): Int = hashCode()
 
     override fun toTokens(tokens: TokenStream) {
         surround(tokens) { }

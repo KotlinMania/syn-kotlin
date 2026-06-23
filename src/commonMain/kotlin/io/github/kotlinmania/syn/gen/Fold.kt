@@ -171,7 +171,7 @@ public open class Fold {
             is Pat.Macro -> p.copy(attrs = foldAttributes(p.attrs), mac = foldMacro(p.mac))
             is Pat.Or -> foldPatOr(p)
             is Pat.PatParen -> foldPatParen(p)
-            is Pat.Path -> p.copy(attrs = foldAttributes(p.attrs), qself = p.qself?.let { foldQSelf(it) }, path = foldPath(p.path))
+            is Pat.Path -> p.copy(attrs = foldAttributes(p.attrs), qself = p.qself?.let { foldQself(it) }, path = foldPath(p.path))
             is Pat.Range -> foldPatRange(p)
             is Pat.Reference -> foldPatReference(p)
             is Pat.Rest -> foldPatRest(p)
@@ -243,7 +243,7 @@ public open class Fold {
         when (l) {
             is Lit.Str -> Lit.Str(foldLitStr(l.value))
             is Lit.ByteStr -> Lit.ByteStr(foldLitByteStr(l.value))
-            is Lit.CStr -> Lit.CStr(foldLitCStr(l.value))
+            is Lit.CStr -> Lit.CStr(foldLitCstr(l.value))
             is Lit.Byte -> Lit.Byte(foldLitByte(l.value))
             is Lit.Char -> Lit.Char(foldLitChar(l.value))
             is Lit.Int -> Lit.Int(foldLitInt(l.value))
@@ -260,6 +260,8 @@ public open class Fold {
     public open fun foldLitByte(l: LitByte): LitByte = l
 
     public open fun foldLitByteStr(l: LitByteStr): LitByteStr = l
+
+    public open fun foldLitCstr(l: LitCStr): LitCStr = foldLitCStr(l)
 
     public open fun foldLitCStr(l: LitCStr): LitCStr = l
 
@@ -392,7 +394,7 @@ public open class Fold {
     public open fun foldPatStruct(pat: Pat.Struct): Pat.Struct =
         pat.copy(
             attrs = foldAttributes(pat.attrs),
-            qself = pat.qself?.let { foldQSelf(it) },
+            qself = pat.qself?.let { foldQself(it) },
             path = foldPath(pat.path),
             fields = pat.fields.copy({ foldFieldPat(it) }, { it }),
             rest = pat.rest?.let { foldPatRest(it) },
@@ -404,7 +406,7 @@ public open class Fold {
     public open fun foldPatTupleStruct(pat: Pat.TupleStruct): Pat.TupleStruct =
         pat.copy(
             attrs = foldAttributes(pat.attrs),
-            qself = pat.qself?.let { foldQSelf(it) },
+            qself = pat.qself?.let { foldQself(it) },
             path = foldPath(pat.path),
             elems = pat.elems.copy({ foldPat(it) }, { it }),
         )
@@ -413,7 +415,7 @@ public open class Fold {
         pat.copy(attrs = foldAttributes(pat.attrs))
 
     public open fun foldTypePath(typePath: SynType.Path): SynType.Path =
-        typePath.copy(qself = typePath.qself?.let { foldQSelf(it) }, path = foldPath(typePath.path))
+        typePath.copy(qself = typePath.qself?.let { foldQself(it) }, path = foldPath(typePath.path))
 
     public open fun foldTypeArray(ty: SynType.Array): SynType.Array =
         ty.copy(elem = foldType(ty.elem), len = foldExpr(ty.len))
@@ -646,7 +648,7 @@ public open class Fold {
     public open fun foldExprPath(exprPath: Expr.Path): Expr.Path =
         exprPath.copy(
             attrs = foldAttributes(exprPath.attrs),
-            qself = exprPath.qself?.let { foldQSelf(it) },
+            qself = exprPath.qself?.let { foldQself(it) },
             path = foldPath(exprPath.path),
         )
 
@@ -687,7 +689,7 @@ public open class Fold {
     public open fun foldExprStruct(expr: Expr.Struct): Expr.Struct =
         expr.copy(
             attrs = foldAttributes(expr.attrs),
-            qself = expr.qself?.let { foldQSelf(it) },
+            qself = expr.qself?.let { foldQself(it) },
             path = foldPath(expr.path),
             fields = expr.fields.copy({ foldFieldValue(it) }, { it }),
             rest = expr.rest?.let { foldExpr(it) },
@@ -1194,6 +1196,8 @@ public open class Fold {
     public open fun foldIndex(index: Index): Index =
         index.copy(span = foldSpan(index.span))
 
+    public open fun foldQself(qself: QSelf): QSelf = foldQSelf(qself)
+
     public open fun foldQSelf(qself: QSelf): QSelf =
         qself.copy(ty = foldType(qself.ty))
 
@@ -1323,3 +1327,6 @@ public open class Fold {
 
     public open fun foldTokenStream(tokens: TokenStream): TokenStream = tokens
 }
+
+internal fun <T, V> foldVec(vec: List<T>, fold: V, f: (V, T) -> T): List<T> =
+    vec.map { f(fold, it) }

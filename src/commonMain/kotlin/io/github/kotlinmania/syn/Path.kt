@@ -150,6 +150,8 @@ public class Path(
             leadingColon = leadingColon,
             segments = segments.copy({ it.deepCopy() }, { it }),
         )
+
+    public fun clone(): Path = deepCopy()
 }
 
 /** A segment of a path together with any path arguments on that segment. */

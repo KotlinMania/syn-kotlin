@@ -6,6 +6,7 @@ import io.github.kotlinmania.procmacro2.TokenStream
 import io.github.kotlinmania.quote.ToTokens
 import io.github.kotlinmania.quote.append
 import io.github.kotlinmania.quote.toTokens
+import kotlin.jvm.JvmInline
 
 private enum class ExprPosition {
     LeftOperand,
@@ -1150,6 +1151,12 @@ public sealed class Expr : ToTokens {
     }
 
     public abstract fun deepCopy(): Expr
+
+    public fun eq(other: Expr): Boolean = equals(other)
+
+    public fun hash(): Int = hashCode()
+
+    public fun fmt(): String = toString()
 }
 
 /** A member of a data structure or tuple. */
@@ -1169,6 +1176,8 @@ public sealed class Member : ToTokens {
             index.toTokens(tokens)
         }
     }
+
+    public fun isNamed(): Boolean = this is Named
 }
 
 /** A tuple field index such as `0` in `obj.0`. */
@@ -1866,3 +1875,29 @@ public fun multiIndex(e: Expr, dotToken: io.github.kotlinmania.syn.token.Dot, fl
     }
     return SynResult.success(MultiIndexResult(currentExpr, !trailingDot))
 }
+
+@JvmInline
+internal value class AllowStruct(val value: Boolean)
+
+public fun parseWithoutEagerBrace(input: ParseStream): SynResult<Expr> =
+    ambiguousExprImpl(input, allowStruct = false)
+
+public fun parseWithEarlierBoundaryRule(input: ParseStream): SynResult<Expr> =
+    parseExprWithEarlierBoundaryRuleImpl(input)
+
+public fun peek(input: ParseStream): Boolean = peekExpr(input)
+
+public fun from(ident: io.github.kotlinmania.procmacro2.Ident): Member = Member.Named(ident)
+
+public fun from(index: Index): Member = Member.Unnamed(index)
+
+public fun from(index: Int): Member = Member.Unnamed(Index(index.toUInt(), Span.callSite()))
+
+public fun exprGroup(input: ParseStream, allowStruct: Boolean): SynResult<Expr> =
+    parseExprGroupImpl(input)
+
+internal fun clone(allowStruct: AllowStruct): AllowStruct = allowStruct
+
+public fun parseObsolete(input: ParseStream): SynResult<RangeLimits> = parseObsoleteRangeLimits(input)
+
+public fun parseMultiple(input: ParseStream): SynResult<List<Arm>> = parseMultipleArms(input)

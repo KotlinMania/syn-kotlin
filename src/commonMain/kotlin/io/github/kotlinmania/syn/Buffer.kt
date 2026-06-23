@@ -94,6 +94,8 @@ public class TokenBuffer internal constructor(
             entries.add(Entry.End(-entries.size, 0))
             return TokenBuffer(entries.toTypedArray())
         }
+
+        public fun new(stream: TokenStream): TokenBuffer = new2(stream)
     }
 
     /**
@@ -423,6 +425,8 @@ public class Cursor internal constructor(
     }
 
     override fun hashCode(): Int = index
+
+    public fun eq(other: Cursor): Boolean = entries === other.entries && index == other.index
 }
 
 /**

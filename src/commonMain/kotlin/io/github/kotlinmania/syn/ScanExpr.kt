@@ -1106,13 +1106,19 @@ private fun peekItemMacro(input: ParseStream): Boolean {
 internal fun parsePatFull(input: ParseStream): SynResult<Pat> = PatParseImpl.parse(input)
 
 internal fun parseTypeFull(input: ParseStream): SynResult<SynType> =
-    ambigTy(input, allowPlus = true, allowGroupGeneric = true)
+    ambigTyImpl(input, allowPlus = true, allowGroupGeneric = true)
 
 internal fun parseTypeWithoutPlus(
     input: ParseStream,
     allowGroupGeneric: Boolean = true,
 ): SynResult<SynType> =
-    ambigTy(input, allowPlus = false, allowGroupGeneric = allowGroupGeneric)
+    ambigTyImpl(input, allowPlus = false, allowGroupGeneric = allowGroupGeneric)
+
+internal fun ambigTyWrapper(
+    input: ParseStream,
+    allowPlus: Boolean,
+    allowGroupGeneric: Boolean,
+): SynResult<SynType> = ambigTyImpl(input, allowPlus, allowGroupGeneric)
 
 internal object PatParseImpl : Parse<Pat> {
     override fun parse(input: ParseStream): SynResult<Pat> = parsePatSingle(input)
@@ -1419,10 +1425,10 @@ private fun parsePatSlice(input: ParseStream): SynResult<Pat.Slice> {
 
 internal object SynTypeParseExpr : Parse<SynType> {
     override fun parse(input: ParseStream): SynResult<SynType> =
-        ambigTy(input, allowPlus = true, allowGroupGeneric = true)
+        ambigTyImpl(input, allowPlus = true, allowGroupGeneric = true)
 }
 
-private fun ambigTy(
+private fun ambigTyImpl(
     input: ParseStream,
     allowPlus: Boolean,
     allowGroupGeneric: Boolean,
@@ -1512,13 +1518,13 @@ private fun ambigTy(
                 return SynResult.success(SynType.TraitObject(null, traitBounds))
             }
 
-            val first = ambigTy(content, allowPlus = true, allowGroupGeneric = true).getOrElse { return SynResult.failure(it) }
+            val first = ambigTyImpl(content, allowPlus = true, allowGroupGeneric = true).getOrElse { return SynResult.failure(it) }
             if (content.peek(CommaPeek)) {
                 val elems = SynTypeList()
                 elems.pushValue(first)
                 elems.pushPunct(content.parse(CommaParse).getOrElse { return SynResult.failure(it) })
                 while (!content.isEmpty()) {
-                    elems.pushValue(ambigTy(content, allowPlus = true, allowGroupGeneric = true).getOrElse { return SynResult.failure(it) })
+                    elems.pushValue(ambigTyImpl(content, allowPlus = true, allowGroupGeneric = true).getOrElse { return SynResult.failure(it) })
                     if (content.isEmpty()) break
                     elems.pushPunct(content.parse(CommaParse).getOrElse { return SynResult.failure(it) })
                 }
