@@ -2,181 +2,297 @@
 package io.github.kotlinmania.syn
 
 import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertIs
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
-/**
- * Tests for parsing of derive macro inputs.
- *
- * The upstream Rust tests drive `syn::parse2::<DeriveInput>` and
- * `syn::parse_quote!` to parse struct, enum, and union declarations,
- * then assert the structural shape via the `snapshot!` macro (which
- * expands to `insta::assert_debug_snapshot!` against a `Lite` debug
- * wrapper). The `Parse<DeriveInput>` entry point
- * ([DeriveInputParse]) exists in this Kotlin port but returns
- * `SynResult.failure` with "derive input parsing not yet fully
- * implemented", so no input can be driven through to a structural
- * assertion. The `Lite` snapshot helper is also not ported. Each test
- * below carries an honest one-line comment naming the specific missing
- * semantic, rather than emitting a fake simulation that tests a
- * different invariant.
- */
 class DeriveInputTest {
-    // Not ported: `Parse<DeriveInput>` (DeriveInputParse) returns
-    // failure for all inputs; the upstream test parses `struct Unit;`
-    // and asserts the result is a `DeriveInput` with
-    // `vis: Inherited`, `ident: "Unit"`, `data: Data::Struct` with
-    // `Fields::Unit` and a present `semi_token`.
     @Test
     fun testUnit() {
-        // Not ported: `Parse<DeriveInput>` is not implemented; the
-        // upstream test parses `struct Unit;` and asserts the
-        // unit-struct shape via snapshot.
+        val input = parse("struct Unit;")
+
+        assertIs<Visibility.Inherited>(input.vis)
+        assertEquals("Unit", input.ident.toString())
+        assertTrue(input.generics.params.isEmpty())
+        val data = assertIs<Data.Struct>(input.data).value
+        assertIs<Fields.Unit>(data.fields)
+        assertNotNull(data.semiToken)
     }
 
-    // Not ported: `Parse<DeriveInput>` is not implemented; the upstream
-    // test parses a `#[derive(Debug, Clone)] pub struct Item { ... }`
-    // with two named fields and asserts the attribute, visibility,
-    // identifier, and field shapes via snapshot.
     @Test
     fun testStruct() {
-        // Not ported: `Parse<DeriveInput>` is not implemented; the
-        // upstream test parses a derived pub struct with two named
-        // fields and asserts the full shape including the `derive`
-        // attribute meta and each field's visibility, identifier, and
-        // type path.
+        val input =
+            parse(
+                """
+                #[derive(Debug, Clone)]
+                pub struct Item {
+                    pub ident: Ident,
+                    pub attrs: Vec<Attribute>
+                }
+                """.trimIndent(),
+            )
+
+        val derive = assertIs<Meta.List>(input.attrs.single().meta)
+        assertEquals("derive", derive.path.toString())
+        assertEquals("Debug , Clone", derive.tokens.toString())
+        assertIs<Visibility.Public>(input.vis)
+        assertEquals("Item", input.ident.toString())
+        assertTrue(input.generics.params.isEmpty())
+
+        val fields = namedFields(assertIs<Data.Struct>(input.data).fields)
+        assertEquals(2, fields.size)
+        assertPublicNamedPathField(fields[0], "ident", "Ident")
+        assertPublicNamedPathField(fields[1], "attrs", "Vec")
+        val vecArgs = assertIs<PathArguments.AngleBracketed>(assertPathType(fields[1].ty, "Vec").segments.toList().single().arguments)
+        val arg = assertIs<GenericArgument.TypeArg>(vecArgs.args.toList().single())
+        assertPathType(arg.type, "Attribute")
     }
 
-    // Not ported: `Parse<DeriveInput>` is not implemented; the upstream
-    // test parses `union MaybeUninit<T> { uninit: (), value: T }` and
-    // asserts the generic parameter `T` and the two named union fields
-    // via snapshot.
     @Test
     fun testUnion() {
-        // Not ported: `Parse<DeriveInput>` is not implemented; the
-        // upstream test parses a generic union with two named fields
-        // and asserts the generics and `Data::Union` shape via
-        // snapshot.
+        val input =
+            parse(
+                """
+                union MaybeUninit<T> {
+                    uninit: (),
+                    value: T
+                }
+                """.trimIndent(),
+            )
+
+        assertIs<Visibility.Inherited>(input.vis)
+        assertEquals("MaybeUninit", input.ident.toString())
+        assertTypeParams(input.generics, "T")
+        val fields = assertIs<Data.Union>(input.data).fields.named.toList()
+        assertEquals(2, fields.size)
+        assertEquals("uninit", fields[0].ident.toString())
+        assertIs<SynType.Tuple>(fields[0].ty)
+        assertNamedPathField(fields[1], "value", "T")
     }
 
-    // Not ported: `Parse<DeriveInput>` is not implemented; the upstream
-    // test parses `pub enum Result<T, E> { Ok(T), Err(E), Surprise = 0isize, ProcMacroHack = (0, "data").0 }`
-    // and asserts the doc and `must_use` attributes, two type
-    // parameters, four variants (tuple, tuple, unit-with-discriminant,
-    // unit-with-field-access-discriminant) via snapshot.
     @Test
     fun testEnum() {
-        // Not ported: `Parse<DeriveInput>` is not implemented; the
-        // upstream test parses a generic pub enum with four variants
-        // and asserts the attributes, generics, and variant shapes
-        // including discriminant expressions via snapshot.
+        val input =
+            parse(
+                """
+                #[doc = " See the std::result module documentation for details."]
+                #[must_use]
+                pub enum Result<T, E> {
+                    Ok(T),
+                    Err(E),
+                    Surprise = 0isize,
+                    ProcMacroHack = (0, "data").0
+                }
+                """.trimIndent(),
+            )
+
+        val doc = assertIs<Meta.NameValue>(input.attrs[0].meta)
+        assertEquals("doc", doc.path.toString())
+        assertStringLiteral(" See the std::result module documentation for details.", doc.value)
+        assertEquals("must_use", assertIs<Meta.PathMeta>(input.attrs[1].meta).path.toString())
+        assertIs<Visibility.Public>(input.vis)
+        assertEquals("Result", input.ident.toString())
+        assertTypeParams(input.generics, "T", "E")
+
+        val variants = assertIs<Data.Enum>(input.data).variants.toList()
+        assertEquals(4, variants.size)
+        assertEquals("Ok", variants[0].ident.toString())
+        assertPathType(unnamedFields(variants[0].fields).single().ty, "T")
+        assertEquals("Err", variants[1].ident.toString())
+        assertPathType(unnamedFields(variants[1].fields).single().ty, "E")
+        assertEquals("Surprise", variants[2].ident.toString())
+        assertIs<Fields.Unit>(variants[2].fields)
+        assertIntLiteral("0isize", assertNotNull(variants[2].discriminant).expr)
+        assertEquals("ProcMacroHack", variants[3].ident.toString())
+        assertProcMacroHackDiscriminant(assertNotNull(variants[3].discriminant).expr)
     }
 
-    // Not ported: `Parse<DeriveInput>` is not implemented; the upstream
-    // test parses `#[inert <T>] struct S;` and asserts that parsing
-    // fails with an error (non-mod-style path in attribute).
     @Test
     fun testAttrWithNonModStylePath() {
-        // Not ported: `Parse<DeriveInput>` is not implemented; the
-        // upstream test asserts that `#[inert <T>] struct S;` fails
-        // to parse because `<T>` is not a valid mod-style path.
+        assertTrue(parseStr(DeriveInputParse, "#[inert <T>] struct S;").isFailure)
     }
 
-    // Not ported: `Parse<DeriveInput>` is not implemented; the upstream
-    // test parses `#[foo::self] struct S;` and asserts the attribute
-    // path has segments `foo` and `self` via snapshot.
     @Test
     fun testAttrWithModStylePathWithSelf() {
-        // Not ported: `Parse<DeriveInput>` is not implemented; the
-        // upstream test parses `#[foo::self] struct S;` and asserts
-        // the attribute path segments `foo` and `self` via snapshot.
+        val input = parse("#[foo::self] struct S;")
+
+        val meta = assertIs<Meta.PathMeta>(input.attrs.single().meta)
+        assertEquals(listOf("foo", "self"), pathSegments(meta.path))
+        assertEquals("S", input.ident.toString())
+        assertIs<Fields.Unit>(assertIs<Data.Struct>(input.data).fields)
     }
 
-    // Not ported: `Parse<DeriveInput>` is not implemented; the upstream
-    // test parses `pub(in m) struct Z(pub(in m::n) u8);` and asserts
-    // the restricted visibility on both the struct and the field via
-    // snapshot.
     @Test
     fun testPubRestricted() {
-        // Not ported: `Parse<DeriveInput>` is not implemented; the
-        // upstream test parses `pub(in m) struct Z(pub(in m::n) u8);`
-        // and asserts the `Visibility::Restricted` shapes on the item
-        // and the tuple field via snapshot.
+        val input = parse("pub(in m) struct Z(pub(in m::n) u8);")
+
+        assertRestrictedVisibility(input.vis, hasInToken = true, "m")
+        val fields = unnamedFields(assertIs<Data.Struct>(input.data).fields)
+        assertEquals(1, fields.size)
+        assertRestrictedVisibility(fields.single().vis, hasInToken = true, "m", "n")
+        assertPathType(fields.single().ty, "u8")
     }
 
-    // Not ported: `Parse<DeriveInput>` is not implemented; the upstream
-    // test parses `pub(crate) struct S;` and asserts the restricted
-    // visibility path is `crate` via snapshot.
     @Test
     fun testPubRestrictedCrate() {
-        // Not ported: `Parse<DeriveInput>` is not implemented; the
-        // upstream test parses `pub(crate) struct S;` and asserts the
-        // `Visibility::Restricted` path segment `crate` via snapshot.
+        assertRestrictedVisibility(parse("pub(crate) struct S;").vis, hasInToken = false, "crate")
     }
 
-    // Not ported: `Parse<DeriveInput>` is not implemented; the upstream
-    // test parses `pub(super) struct S;` and asserts the restricted
-    // visibility path is `super` via snapshot.
     @Test
     fun testPubRestrictedSuper() {
-        // Not ported: `Parse<DeriveInput>` is not implemented; the
-        // upstream test parses `pub(super) struct S;` and asserts the
-        // `Visibility::Restricted` path segment `super` via snapshot.
+        assertRestrictedVisibility(parse("pub(super) struct S;").vis, hasInToken = false, "super")
     }
 
-    // Not ported: `Parse<DeriveInput>` is not implemented; the upstream
-    // test parses `pub(in super) struct S;` and asserts the restricted
-    // visibility has `in_token: Some` and path `super` via snapshot.
     @Test
     fun testPubRestrictedInSuper() {
-        // Not ported: `Parse<DeriveInput>` is not implemented; the
-        // upstream test parses `pub(in super) struct S;` and asserts
-        // the `Visibility::Restricted` with `in_token` present and
-        // path segment `super` via snapshot.
+        assertRestrictedVisibility(parse("pub(in super) struct S;").vis, hasInToken = true, "super")
     }
 
-    // Not ported: `Parse<DeriveInput>` is not implemented; the upstream
-    // test parses `struct S;` and asserts the unit-struct shape, then
-    // matches `Data::Struct` and asserts `fields.iter().count() == 0`.
     @Test
     fun testFieldsOnUnitStruct() {
-        // Not ported: `Parse<DeriveInput>` is not implemented; the
-        // upstream test parses `struct S;`, matches `Data::Struct`,
-        // and asserts the field iterator yields zero elements.
+        val data = assertIs<Data.Struct>(parse("struct S;").data).value
+
+        assertIs<Fields.Unit>(data.fields)
+        assertEquals(0, data.fields.count())
     }
 
-    // Not ported: `Parse<DeriveInput>` is not implemented; the upstream
-    // test parses `struct S { foo: i32, pub bar: String }` and asserts
-    // the two named fields with their visibilities and types via
-    // snapshot, then collects the fields and asserts the collected
-    // vector shape.
     @Test
     fun testFieldsOnNamedStruct() {
-        // Not ported: `Parse<DeriveInput>` is not implemented; the
-        // upstream test parses a named-field struct, asserts the
-        // `Fields::Named` shape via snapshot, and collects the fields
-        // into a vector for a second snapshot.
+        val data =
+            assertIs<Data.Struct>(
+                parse(
+                    """
+                    struct S {
+                        foo: i32,
+                        pub bar: String,
+                    }
+                    """.trimIndent(),
+                ).data,
+            ).value
+
+        val fields = data.fields.toList()
+        assertEquals(2, fields.size)
+        assertNamedPathField(fields[0], "foo", "i32")
+        assertIs<Visibility.Inherited>(fields[0].vis)
+        assertPublicNamedPathField(fields[1], "bar", "String")
     }
 
-    // Not ported: `Parse<DeriveInput>` is not implemented; the upstream
-    // test parses `struct S(i32, pub String);` and asserts the two
-    // unnamed fields with their visibilities and types via snapshot,
-    // then iterates the fields and asserts the collected vector shape.
     @Test
     fun testFieldsOnTupleStruct() {
-        // Not ported: `Parse<DeriveInput>` is not implemented; the
-        // upstream test parses a tuple struct, asserts the
-        // `Fields::Unnamed` shape via snapshot, and iterates the
-        // fields for a second snapshot.
+        val data = assertIs<Data.Struct>(parse("struct S(i32, pub String);").data).value
+
+        val fields = data.fields.toList()
+        assertEquals(2, fields.size)
+        assertNull(fields[0].ident)
+        assertIs<Visibility.Inherited>(fields[0].vis)
+        assertPathType(fields[0].ty, "i32")
+        assertNull(fields[1].ident)
+        assertIs<Visibility.Public>(fields[1].vis)
+        assertPathType(fields[1].ty, "String")
     }
 
-    // Not ported: `Parse<DeriveInput>` is not implemented; the upstream
-    // test parses `struct S(crate::X);` and asserts the field type is
-    // a `Type::Path` with segments `crate` and `X` (not `crate (::X)`),
-    // documenting the disambiguation rule for the `crate` keyword in
-    // type position.
     @Test
     fun testAmbiguousCrate() {
-        // Not ported: `Parse<DeriveInput>` is not implemented; the
-        // upstream test parses `struct S(crate::X);` and asserts the
-        // field type path is `crate::X` via snapshot.
+        val data = assertIs<Data.Struct>(parse("struct S(crate::X);").data).value
+
+        val fields = unnamedFields(data.fields)
+        assertEquals(1, fields.size)
+        assertPathType(fields.single().ty, "crate", "X")
+    }
+
+    private fun parse(source: String): DeriveInput =
+        parseStr(DeriveInputParse, source).getOrThrow()
+
+    private fun namedFields(fields: Fields): List<Field> =
+        assertIs<Fields.Named>(fields).fields.named.toList()
+
+    private fun unnamedFields(fields: Fields): List<Field> =
+        assertIs<Fields.Unnamed>(fields).fields.unnamed.toList()
+
+    private fun assertPublicNamedPathField(
+        field: Field,
+        ident: String,
+        vararg segments: String,
+    ) {
+        assertIs<Visibility.Public>(field.vis)
+        assertNamedPathField(field, ident, *segments)
+    }
+
+    private fun assertNamedPathField(
+        field: Field,
+        ident: String,
+        vararg segments: String,
+    ) {
+        assertEquals(ident, field.ident.toString())
+        assertNotNull(field.colonToken)
+        assertPathType(field.ty, *segments)
+    }
+
+    private fun assertPathType(
+        type: SynType,
+        vararg segments: String,
+    ): Path {
+        val path = assertIs<SynType.Path>(type).path
+        assertEquals(segments.toList(), pathSegments(path))
+        return path
+    }
+
+    private fun pathSegments(path: Path): List<String> =
+        path.segments.toList().map { it.ident.toString() }
+
+    private fun assertTypeParams(
+        generics: Generics,
+        vararg names: String,
+    ) {
+        assertNotNull(generics.ltToken)
+        assertNotNull(generics.gtToken)
+        val params = generics.params.toList()
+        assertEquals(names.size, params.size)
+        for ((param, name) in params.zip(names)) {
+            assertEquals(name, assertIs<GenericParam.TypeParam>(param).ident.toString())
+        }
+    }
+
+    private fun assertRestrictedVisibility(
+        vis: Visibility,
+        hasInToken: Boolean,
+        vararg segments: String,
+    ) {
+        val restricted = assertIs<Visibility.Restricted>(vis)
+        if (hasInToken) {
+            assertNotNull(restricted.inToken)
+        } else {
+            assertNull(restricted.inToken)
+        }
+        assertEquals(segments.toList(), pathSegments(restricted.path))
+    }
+
+    private fun assertIntLiteral(
+        token: String,
+        expr: Expr,
+    ) {
+        val lit = assertIs<Lit.Int>(assertIs<Expr.Lit>(expr).lit)
+        assertEquals(token, lit.value.toString())
+    }
+
+    private fun assertStringLiteral(
+        value: String,
+        expr: Expr,
+    ) {
+        val lit = assertIs<Lit.Str>(assertIs<Expr.Lit>(expr).lit)
+        assertEquals(value, lit.value.value())
+    }
+
+    private fun assertProcMacroHackDiscriminant(expr: Expr) {
+        val field = assertIs<Expr.Field>(expr)
+        val member = assertIs<Member.Unnamed>(field.member)
+        assertEquals(0u, member.index.index)
+        val tuple = assertIs<Expr.Tuple>(field.base)
+        val elems = tuple.elems.toList()
+        assertEquals(2, elems.size)
+        assertIntLiteral("0", elems[0])
+        assertStringLiteral("data", elems[1])
     }
 }

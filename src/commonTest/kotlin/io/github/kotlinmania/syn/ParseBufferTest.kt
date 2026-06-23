@@ -10,6 +10,7 @@ import io.github.kotlinmania.procmacro2.Span
 import io.github.kotlinmania.procmacro2.TokenStream
 import io.github.kotlinmania.procmacro2.TokenTree
 import kotlin.test.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
@@ -124,9 +125,20 @@ class ParseBufferTest {
 
     @Test
     fun parseStreamCursorReturnsIdent() {
-        // cursor().ident() does not advance the stream, and parserFromFunction
-        // rejects leftover tokens; the non-advancing cursor read cannot be
-        // observed through the full-stream parse entry point.
+        val parser =
+            parserFromFunction { input ->
+                val cursor = input.cursor()
+                val pair = cursor.ident()
+                assertNotNull(pair)
+                assertEquals("foo", pair.first.toString())
+                assertFalse(input.isEmpty())
+
+                val ident = IdentParse.parse(input).getOrThrow()
+                assertEquals("foo", ident.toString())
+                assertTrue(input.isEmpty())
+                SynResult.success(Unit)
+            }
+        parser.parseStr("foo").getOrThrow()
     }
 
     @Test
@@ -186,9 +198,21 @@ class ParseBufferTest {
 
     @Test
     fun parseStreamStepDoesNotAdvanceOnFailure() {
-        // parserFromFunction rejects leftover tokens after the body returns,
-        // so a step that deliberately fails (leaving the stream unconsumed)
-        // surfaces as an unexpected-token error rather than a step-no-advance success.
+        val parser =
+            parserFromFunction { input ->
+                val parsed: SynResult<Unit> =
+                    input.step { cursor ->
+                        SynResult.failure<Pair<Unit, Cursor>>(cursor.error("expected failure"))
+                    }
+                assertTrue(parsed.isFailure)
+                assertTrue(input.peek(IdentPeek))
+
+                val ident = IdentParse.parse(input).getOrThrow()
+                assertEquals("foo", ident.toString())
+                assertTrue(input.isEmpty())
+                SynResult.success(Unit)
+            }
+        parser.parseStr("foo").getOrThrow()
     }
 }
 

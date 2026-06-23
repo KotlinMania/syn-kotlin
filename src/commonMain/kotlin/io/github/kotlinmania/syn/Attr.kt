@@ -43,6 +43,44 @@ public data class Attribute(
         copy(meta = meta.copy())
 }
 
+public object AttributeParse : Parse<Attribute> {
+    override fun parse(input: ParseStream): SynResult<Attribute> =
+        parseAttribute(input)
+}
+
+internal fun parseInnerAttributes(input: ParseStream): SynResult<List<Attribute>> =
+    parseAttributes(input, inner = true)
+
+internal fun parseOuterAttributes(input: ParseStream): SynResult<List<Attribute>> =
+    parseAttributes(input, inner = false)
+
+private fun parseAttributes(
+    input: ParseStream,
+    inner: Boolean,
+): SynResult<List<Attribute>> {
+    val attrs = mutableListOf<Attribute>()
+    while (input.peek(PoundPeek) && (inner == input.peek2(NotPeek))) {
+        attrs.add(parseAttribute(input).getOrElse { return SynResult.failure(it) })
+    }
+    return SynResult.success(attrs)
+}
+
+private fun parseAttribute(input: ParseStream): SynResult<Attribute> {
+    val pound = input.parse(PoundParse).getOrElse { return SynResult.failure(it) }
+    val style: AttrStyle =
+        if (input.peek(NotPeek)) {
+            AttrStyle.Inner(input.parse(NotParse).getOrElse { return SynResult.failure(it) })
+        } else {
+            AttrStyle.Outer
+        }
+    val brackets = bracketed(input).getOrElse { return SynResult.failure(it) }
+    val meta = brackets.content.parse(MetaParse).getOrElse { return SynResult.failure(it) }
+    brackets.content.finishChildBuffer()
+    val check = brackets.content.checkUnexpected()
+    if (check.isFailure) return SynResult.failure(check.exceptionOrNull()!!)
+    return SynResult.success(Attribute(pound, style, brackets.token, meta))
+}
+
 public sealed class AttrStyle : ToTokens {
     public data object Outer : AttrStyle() {
         override fun toTokens(tokens: TokenStream) {
@@ -76,8 +114,7 @@ public sealed class Meta : ToTokens {
     ) : Meta() {
         override fun toTokens(tokens: TokenStream) {
             path.toTokens(tokens)
-            delimiter.toTokens(tokens)
-            tokens.extendTokenStreams(listOf(tokens))
+            delimiter.surround(tokens, this.tokens)
         }
     }
 
@@ -111,7 +148,7 @@ public sealed class Meta : ToTokens {
 /** Parser for [Meta]: a path, a path followed by a delimited token stream, or a path followed by `=` and an expression. */
 public object MetaParse : Parse<Meta> {
     override fun parse(input: ParseStream): SynResult<Meta> {
-        val path = input.parse(PathParse).getOrElse { return SynResult.failure(it) }
+        val path = parseMetaPath(input).getOrElse { return SynResult.failure(it) }
         return parseMetaAfterPath(path, input)
     }
 }
@@ -119,7 +156,7 @@ public object MetaParse : Parse<Meta> {
 /** Parser for [Meta.List]: a path followed by a delimited token stream. */
 public object MetaListParse : Parse<Meta.List> {
     override fun parse(input: ParseStream): SynResult<Meta.List> {
-        val path = input.parse(PathParse).getOrElse { return SynResult.failure(it) }
+        val path = parseMetaPath(input).getOrElse { return SynResult.failure(it) }
         return parseMetaListAfterPath(path, input)
     }
 }
@@ -127,7 +164,7 @@ public object MetaListParse : Parse<Meta.List> {
 /** Parser for [Meta.NameValue]: a path followed by `=` and an expression. */
 public object MetaNameValueParse : Parse<Meta.NameValue> {
     override fun parse(input: ParseStream): SynResult<Meta.NameValue> {
-        val path = input.parse(PathParse).getOrElse { return SynResult.failure(it) }
+        val path = parseMetaPath(input).getOrElse { return SynResult.failure(it) }
         return parseMetaNameValueAfterPath(path, input)
     }
 }

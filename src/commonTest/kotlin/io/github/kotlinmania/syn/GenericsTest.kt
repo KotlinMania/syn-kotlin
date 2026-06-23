@@ -1,74 +1,186 @@
 // port-lint: tests tests/test_generics.rs
 package io.github.kotlinmania.syn
 
+import io.github.kotlinmania.procmacro2.Span
 import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertIs
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 class GenericsTest {
-    // Not ported: DeriveInput parsing is not implemented (DeriveInputParse
-    // returns a failure), so the struct `S<'a, 'b: 'a, #[may_dangle] T: 'a = ()>
-    // where T: Debug` cannot be parsed and splitForImpl cannot be exercised
-    // end-to-end.
     @Test
     fun testSplitForImpl() {
-        // Not ported: DeriveInputParse is not implemented; the upstream test
-        // parses a struct with lifetimes, a `#[may_dangle]` type param with
-        // default `= ()`, and a `where T: Debug` clause, then asserts
-        // splitForImpl produces `impl<'a, 'b: 'a, #[may_dangle] T: 'a> ...`
-        // and the turbofish renders as `::<'a, 'b, T>`.
+        val input =
+            parseStr(
+                DeriveInputParse,
+                "struct S<'a, 'b: 'a, #[may_dangle] T: 'a = ()> where T: Debug;",
+            ).getOrThrow()
+
+        val generics = input.generics
+        assertEquals("S", input.ident.toString())
+        assertNotNull(generics.ltToken)
+        assertNotNull(generics.gtToken)
+        val params = generics.params.toList()
+        assertEquals(3, params.size)
+
+        val a = assertIs<GenericParam.LifetimeParam>(params[0])
+        assertEquals("'a", a.lifetime.toString())
+        assertNull(a.colonToken)
+
+        val b = assertIs<GenericParam.LifetimeParam>(params[1])
+        assertEquals("'b", b.lifetime.toString())
+        assertNotNull(b.colonToken)
+        assertEquals(listOf("'a"), b.bounds.toList().map { it.toString() })
+
+        val t = assertIs<GenericParam.TypeParam>(params[2])
+        assertEquals("may_dangle", t.attrs.single().path().toString())
+        assertEquals("T", t.ident.toString())
+        assertNotNull(t.colonToken)
+        assertEquals("'a", assertIs<TypeParamBound.LifetimeBound>(t.bounds.toList().single()).lifetime.toString())
+        assertNotNull(t.eqToken)
+        assertIs<SynType.Tuple>(t.default)
+
+        val whereClause = assertNotNull(generics.whereClause)
+        val predicate = assertIs<WherePredicate.TypePredicate>(whereClause.predicates.toList().single())
+        assertPathType(predicate.boundedTy, "T")
+        assertEquals("Debug", assertIs<TypeParamBound.Trait>(predicate.bounds.toList().single()).path.toString())
+
+        val split = generics.splitForImpl()
+        val implParams = split.implGenerics.params.toList()
+        assertEquals(3, implParams.size)
+        assertNotNull(assertIs<GenericParam.LifetimeParam>(implParams[1]).colonToken)
+        val implType = assertIs<GenericParam.TypeParam>(implParams[2])
+        assertEquals("T", implType.ident.toString())
+        assertNotNull(implType.colonToken)
+        assertNull(implType.eqToken)
+        assertNull(implType.default)
+
+        val typeParams = split.typeGenerics.params.toList()
+        assertEquals(listOf("'a", "'b"), typeParams.filterIsInstance<GenericParam.LifetimeParam>().map { it.lifetime.toString() })
+        val typeOnlyT = assertIs<GenericParam.TypeParam>(typeParams[2])
+        assertEquals("T", typeOnlyT.ident.toString())
+        assertNull(typeOnlyT.colonToken)
+        assertTrue(typeOnlyT.bounds.isEmpty())
+
+        val turbofishArg = assertIs<GenericArgument.TypeArg>(split.turbofish.params.toList().single())
+        assertPathType(turbofishArg.type, "T")
     }
 
-    // Not ported: TypeParamBound parsing is not implemented, and the Kotlin
-    // TypeParamBound.Trait type carries only `path` (no `modifier`, `lifetimes`,
-    // or `paren_token`), so `'a`, `'_`, `Debug`, `?Sized`, and `for<'a> Trait`
-    // cannot be parsed or compared against the upstream shapes.
     @Test
     fun testTypeParamBound() {
-        // Not ported: TypeParamBoundParse is not implemented and
-        // TypeParamBound.Trait lacks the `modifier`, `lifetimes`, and
-        // `paren_token` fields needed to represent `?Sized`, `for<'a> Trait`,
-        // and the `for<> ?Trait` / `?for<> Trait` error cases.
+        val lifetime = assertIs<TypeParamBound.LifetimeBound>(parseStr(TypeParamBoundParse, "'a").getOrThrow())
+        assertEquals("'a", lifetime.lifetime.toString())
+
+        val inferred = assertIs<TypeParamBound.LifetimeBound>(parseStr(TypeParamBoundParse, "'_").getOrThrow())
+        assertEquals("'_", inferred.lifetime.toString())
+
+        val debug = assertIs<TypeParamBound.Trait>(parseStr(TypeParamBoundParse, "Debug").getOrThrow())
+        assertIs<TraitBoundModifier.None>(debug.modifier)
+        assertEquals("Debug", debug.path.toString())
+
+        val sized = assertIs<TypeParamBound.Trait>(parseStr(TypeParamBoundParse, "?Sized").getOrThrow())
+        assertIs<TraitBoundModifier.Maybe>(sized.modifier)
+        assertEquals("Sized", sized.path.toString())
+
+        val bounded = assertIs<TypeParamBound.Trait>(parseStr(TypeParamBoundParse, "for<'a> Trait").getOrThrow())
+        val boundLifetimes = assertNotNull(bounded.lifetimes)
+        val boundParams = boundLifetimes.lifetimes.toList()
+        assertEquals(1, boundParams.size)
+        assertEquals("'a", assertIs<GenericParam.LifetimeParam>(boundParams.single()).lifetime.toString())
+        assertEquals("Trait", bounded.path.toString())
+
+        val forThenMaybe = parseStr(TypeParamBoundParse, "for<> ?Trait")
+        assertTrue(forThenMaybe.isFailure)
+        assertEquals(
+            "`for<...>` binder not allowed with `?` trait polarity modifier",
+            (forThenMaybe as SynResult.Failure).error.toString(),
+        )
+
+        val maybeThenFor = parseStr(TypeParamBoundParse, "?for<> Trait")
+        assertTrue(maybeThenFor.isFailure)
+        assertEquals(
+            "`for<...>` binder not allowed with `?` trait polarity modifier",
+            (maybeThenFor as SynResult.Failure).error.toString(),
+        )
     }
 
-    // Not ported: ItemFn parsing is not implemented, and PathArguments.Parenthesized
-    // is not produced by PathSegmentParse (it always yields PathArguments.None), so
-    // `G: FnOnce() -> i32 + Send` cannot be parsed into two bounds.
     @Test
     fun testFnPrecedenceInWhereClause() {
-        // Not ported: ItemFn parsing is not implemented and
-        // PathSegmentParse never produces PathArguments.Parenthesized, so
-        // the `G: FnOnce() -> i32 + Send` where-clause cannot be parsed
-        // and checked for two separate bounds.
+        val item =
+            assertIs<Item.Fn>(
+                parseStr(
+                    ItemParse,
+                    """
+                    fn f<G>()
+                    where
+                        G: FnOnce() -> i32 + Send,
+                    {
+                    }
+                    """.trimIndent(),
+                ).getOrThrow(),
+            )
+
+        assertEquals("f", item.sig.ident.toString())
+        val params = item.sig.generics.params.toList()
+        assertEquals(1, params.size)
+        assertEquals("G", assertIs<GenericParam.TypeParam>(params.single()).ident.toString())
+
+        val whereClause = assertNotNull(item.sig.generics.whereClause)
+        val predicate = assertIs<WherePredicate.TypePredicate>(whereClause.predicates.toList().single())
+        assertPathType(predicate.boundedTy, "G")
+        val bounds = predicate.bounds.toList()
+        assertEquals(2, bounds.size)
+
+        val fnOnce = assertIs<TypeParamBound.Trait>(bounds[0])
+        val fnOnceSegment = fnOnce.path.segments.toList().single()
+        assertEquals("FnOnce", fnOnceSegment.ident.toString())
+        val args = assertIs<PathArguments.Parenthesized>(fnOnceSegment.arguments)
+        assertEquals(0, args.inputs.len())
+        val output = assertIs<ReturnType.TypeReturn>(args.output)
+        assertPathType(output.ty, "i32")
+
+        val send = assertIs<TypeParamBound.Trait>(bounds[1])
+        assertEquals("Send", send.path.toString())
     }
 
-    // Not ported: WhereClauseParse is not implemented, so a bare `where`
-    // cannot be parsed into a WhereClause with zero predicates.
     @Test
     fun testWhereClauseAtEndOfInput() {
-        // Not ported: WhereClauseParse is not implemented; the upstream
-        // test parses `where` at end of input into a WhereClause with
-        // `predicates.len() == 0`.
+        val whereClause = parseStr(WhereClauseParse, "where").getOrThrow()
+
+        assertEquals(0, whereClause.predicates.len())
     }
 
-    // Not ported: the upstream test exercises Generics::lifetimes iteration
-    // and insertion into a Punctuated via parse_quote, which depends on
-    // LifetimeParam::parse and the parse_quote macro helper; neither is
-    // ported. The Kotlin Generics.lifetimes() helper exists, but the
-    // setup requires constructing a LifetimeParam through parsing.
     @Test
     fun noOpaqueDrop() {
-        // Not ported: depends on LifetimeParam::parse and parse_quote
-        // helpers that are not ported; the upstream test inserts a
-        // `'a` lifetime into a default Generics when none is present.
+        val generics = Generics.default()
+
+        val lifetime =
+            generics.lifetimes().firstOrNull()?.lifetime
+                ?: Lifetime.new("'a", Span.callSite()).also {
+                    generics.params.pushValue(GenericParam.LifetimeParam(emptyList(), it, null, LifetimeList()))
+                }
+
+        assertEquals("'a", lifetime.toString())
+        assertEquals(listOf("'a"), generics.lifetimes().map { it.lifetime.toString() })
     }
 
-    // Not ported: GenericParamParse is not implemented, and TypeParam::parse
-    // (which would consume the `:` and stop with empty bounds) is not ported,
-    // so `T:` cannot be parsed into a GenericParam::Type with colon_token set
-    // and an empty bounds list.
     @Test
     fun typeParamWithColonAndNoBounds() {
-        // Not ported: GenericParamParse / TypeParam::parse are not
-        // implemented; the upstream test parses `T:` into a TypeParam
-        // with `colon_token: Some` and no bounds.
+        val param = assertIs<GenericParam.TypeParam>(parseStr(GenericParamParse, "T:").getOrThrow())
+
+        assertEquals("T", param.ident.toString())
+        assertNotNull(param.colonToken)
+        assertTrue(param.bounds.isEmpty())
+    }
+
+    private fun assertPathType(
+        type: SynType,
+        vararg segments: String,
+    ): Path {
+        val path = assertIs<SynType.Path>(type).path
+        assertEquals(segments.toList(), path.segments.toList().map { it.ident.toString() })
+        return path
     }
 }

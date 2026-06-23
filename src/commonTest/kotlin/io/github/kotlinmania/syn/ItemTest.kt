@@ -8,36 +8,15 @@ import io.github.kotlinmania.procmacro2.Span
 import io.github.kotlinmania.procmacro2.TokenStream
 import io.github.kotlinmania.procmacro2.TokenTree
 import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertIs
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
-/**
- * Tests for parsing of items.
- *
- * The upstream Rust tests rely on the `snapshot!` macro, which expands to
- * `syn::parse_quote!` followed by `insta::assert_debug_snapshot!` against a
- * `Lite` debug wrapper. Neither the `ItemParse` / `Parse<Item>` entry point,
- * the `ItemTraitParse` / `Parse<ItemTrait>` entry point, nor the `Lite`
- * snapshot helper are ported to this Kotlin codebase yet. Each test below
- * carries an honest one-line comment naming the specific missing semantic,
- * rather than emitting a fake simulation that tests a different invariant.
- *
- * The Rust source also constructs token streams via `quote!` and
- * `TokenStream::from_iter`; the equivalent constructors
- * ([TokenStream.fromString] and [TokenStream.fromTokenTrees]) are available
- * here, but without a `Parse<Item>` implementation they cannot be driven
- * through to a structural assertion.
- */
 class ItemTest {
-    // Not ported: `Parse<Item>` (the top-level item parser entry point) is
-    // not implemented in this Kotlin port, so the interpolated attribute
-    // token stream `$attr fn f() {}` cannot be parsed into an `Item.Fn` for
-    // snapshot comparison.
     @Test
     fun testMacroVariableAttr() {
-        // Not ported: `Parse<Item>` is not implemented; the upstream test
-        // builds a token stream with a `Delimiter::None` group containing
-        // `#[test]` and parses it into `Item::Fn` with one outer `test`
-        // attribute, asserting the attribute path and signature shape via
-        // `insta::assert_debug_snapshot!`.
         val tokens =
             TokenStream.fromTokenTrees(
                 listOf(
@@ -53,40 +32,40 @@ class ItemTest {
                     TokenTree.Group(Group(Delimiter.Brace, TokenStream.new())),
                 ),
             )
-        // A `Parse<Item>` implementation would turn `tokens` into an
-        // `Item.Fn` whose `attrs` has one outer `test` attribute, `vis` is
-        // `Visibility.Inherited`, `ident` is `"f"`, `generics` is empty, and
-        // `block` is an empty `Block`.
-        tokens.toString()
+
+        val item = assertIs<Item.Fn>(parseItem(tokens))
+        assertEquals(1, item.attrs.size)
+        assertIs<AttrStyle.Outer>(item.attrs.single().style)
+        assertPath(item.attrs.single().path(), "test")
+        assertIs<Visibility.Inherited>(item.vis)
+        assertEquals("f", item.ident.toString())
+        assertTrue(item.generics.params.isEmpty())
+        assertIs<ReturnType.Default>(item.output)
+        assertTrue(item.inputs.isEmpty())
+        assertTrue(item.block?.stmts.orEmpty().isEmpty())
     }
 
-    // Not ported: `Parse<Item>` is not implemented; the upstream test parses
-    // `impl ! {}` into `Item::Impl` with `self_ty: Type::Never`, and asserts
-    // that `impl !Trait {}` fails with "inherent impls cannot be negative",
-    // then parses `impl !Trait for T {}` as a negative trait impl.
     @Test
     fun testNegativeImpl() {
-        // Not ported: `Parse<Item>` is not implemented; the upstream test
-        // parses `impl ! {}` into an `Item::Impl` whose `self_ty` is
-        // `Type::Never`, asserts that `impl !Trait {}` fails with the
-        // specific error message "inherent impls cannot be negative", and
-        // parses `impl !Trait for T {}` as a negative trait impl with
-        // `trait_` polarity `Some(!)` and `self_ty` `Type::Path(T)`.
-        TokenStream.fromString("impl ! {}").getOrThrow()
-        TokenStream.fromString("impl !Trait {}").getOrThrow()
-        TokenStream.fromString("impl !Trait for T {}").getOrThrow()
+        val neverImpl = assertIs<Item.Impl>(parseItem("impl ! {}"))
+        assertNull(neverImpl.traitPath)
+        assertIs<SynType.Never>(neverImpl.selfType)
+        assertTrue(neverImpl.generics.params.isEmpty())
+        assertTrue(neverImpl.items.isEmpty())
+
+        val failure = parseStr(ItemParse, "impl !Trait {}")
+        assertTrue(failure.isFailure)
+        assertEquals("inherent impls cannot be negative", failure.exceptionOrNull()?.toString())
+
+        val negativeTrait = assertIs<Item.Impl>(parseItem("impl !Trait for T {}"))
+        val traitPath = assertNotNull(negativeTrait.traitPath)
+        assertNotNull(traitPath.polarity)
+        assertPath(traitPath.path, "Trait")
+        assertTypePath(negativeTrait.selfType, "T")
     }
 
-    // Not ported: `Parse<Item>` is not implemented; the upstream test builds
-    // an `impl $trait for $ty {}` token stream with two `Delimiter::None`
-    // groups and parses it into an `Item::Impl` with a non-negative trait
-    // path and a `Type::Group` self type.
     @Test
     fun testMacroVariableImpl() {
-        // Not ported: `Parse<Item>` is not implemented; the upstream test
-        // parses an `impl $trait for $ty {}` interpolation into
-        // `Item::Impl` with `trait_: Some((None, Path(Trait)))` and
-        // `self_ty: Type::Group { elem: Type::Path { path: Path(Type) } }`.
         val tokens =
             TokenStream.fromTokenTrees(
                 listOf(
@@ -97,76 +76,104 @@ class ItemTest {
                     TokenTree.Group(Group(Delimiter.Brace, TokenStream.new())),
                 ),
             )
-        tokens.toString()
+
+        val item = assertIs<Item.Impl>(parseItem(tokens))
+        val traitPath = assertNotNull(item.traitPath)
+        assertNull(traitPath.polarity)
+        assertPath(traitPath.path, "Trait")
+        val group = assertIs<SynType.Group>(item.selfType)
+        assertTypePath(group.elem, "Type")
+        assertTrue(item.items.isEmpty())
     }
 
-    // Not ported: `Parse<ItemTrait>` is not implemented; the upstream test
-    // parses four trait declarations (`trait Trait where {}`,
-    // `trait Trait: where {}`, `trait Trait: Sized where {}`,
-    // `trait Trait: Sized + where {}`) and asserts the `colon_token`,
-    // `supertraits`, and `where_clause` shape of each via snapshot.
     @Test
     fun testSupertraits() {
-        // Not ported: `Parse<ItemTrait>` is not implemented; the upstream
-        // test asserts that `trait Trait where {}` has a `where_clause` but
-        // no `colon_token`, `trait Trait: where {}` has both, `trait Trait:
-        // Sized where {}` adds a single `Sized` supertrait, and `trait
-        // Trait: Sized + where {}` adds a trailing `+` punctuation to the
-        // supertraits list.
-        TokenStream.fromString("trait Trait where {}").getOrThrow()
-        TokenStream.fromString("trait Trait: where {}").getOrThrow()
-        TokenStream.fromString("trait Trait: Sized where {}").getOrThrow()
-        TokenStream.fromString("trait Trait: Sized + where {}").getOrThrow()
+        val noColon = assertIs<Item.Trait>(parseItem("trait Trait where {}"))
+        assertNull(noColon.colonToken)
+        assertTrue(noColon.supertraits.isEmpty())
+        assertNotNull(noColon.generics.whereClause)
+
+        val emptyColon = assertIs<Item.Trait>(parseItem("trait Trait: where {}"))
+        assertNotNull(emptyColon.colonToken)
+        assertTrue(emptyColon.supertraits.isEmpty())
+        assertNotNull(emptyColon.generics.whereClause)
+
+        val sized = assertIs<Item.Trait>(parseItem("trait Trait: Sized where {}"))
+        assertNotNull(sized.colonToken)
+        assertEquals(1, sized.supertraits.size)
+        assertTraitBound(sized.supertraits.toList().single(), "Sized")
+        assertTrue(!sized.supertraits.trailingPunct())
+        assertNotNull(sized.generics.whereClause)
+
+        val sizedTrailingPlus = assertIs<Item.Trait>(parseItem("trait Trait: Sized + where {}"))
+        assertNotNull(sizedTrailingPlus.colonToken)
+        assertEquals(1, sizedTrailingPlus.supertraits.size)
+        assertTraitBound(sizedTrailingPlus.supertraits.toList().single(), "Sized")
+        assertTrue(sizedTrailingPlus.supertraits.trailingPunct())
+        assertNotNull(sizedTrailingPlus.generics.whereClause)
     }
 
-    // Not ported: `Parse<ItemTrait>` is not implemented; the upstream test
-    // parses `trait Foo { type Bar: ; }` and asserts the associated type
-    // item has `ident: "Bar"`, empty `generics`, and a `colon_token` with
-    // empty bounds.
     @Test
     fun testTypeEmptyBounds() {
-        // Not ported: `Parse<ItemTrait>` is not implemented; the upstream
-        // test asserts that `trait Foo { type Bar: ; }` parses into an
-        // `ItemTrait` whose `items` contains a single `TraitItem::Type`
-        // with `ident: "Bar"`, `colon_token: Some`, and no bounds.
-        TokenStream.fromString("trait Foo { type Bar: ; }").getOrThrow()
+        val item = assertIs<Item.Trait>(parseItem("trait Foo { type Bar: ; }"))
+        val assocType = assertIs<TraitItem.AssocType>(item.items.single())
+        assertEquals("Bar", assocType.ident.toString())
+        assertTrue(assocType.generics.params.isEmpty())
+        assertNotNull(assocType.colonToken)
+        assertTrue(assocType.bounds.isEmpty())
+        assertNull(assocType.default)
     }
 
-    // Not ported: `Parse<Item>` is not implemented; the upstream test parses
-    // `pub default unsafe impl union {}` and asserts it round-trips as
-    // `Item::Verbatim` with the exact token span.
     @Test
     fun testImplVisibility() {
-        // Not ported: `Parse<Item>` is not implemented; the upstream test
-        // asserts that `pub default unsafe impl union {}` parses into
-        // `Item::Verbatim("pub default unsafe impl union { }")` because the
-        // combination of `pub default` visibility on an impl is not a
-        // recognized item shape and falls through to verbatim.
-        TokenStream.fromString("pub default unsafe impl union {}").getOrThrow()
+        val item = assertIs<Item.Verbatim>(parseItem("pub default unsafe impl union {}"))
+        assertEquals("pub default unsafe impl union { }", item.tokens.toString())
     }
 
-    // Not ported: `Parse<Item>` is not implemented; the upstream test parses
-    // `impl<T = ()> () {}` and asserts the generic parameter has
-    // `eq_token: Some` and `default: Some(Type::Tuple)`.
     @Test
     fun testImplTypeParameterDefaults() {
-        // Not ported: `Parse<Item>` is not implemented; the upstream test
-        // asserts that `impl<T = ()> () {}` parses into an `Item::Impl`
-        // whose `generics.params` contains a single `GenericParam::Type`
-        // with `ident: "T"`, `eq_token: Some`, and `default: Some(Type::Tuple)`.
-        TokenStream.fromString("impl<T = ()> () {}").getOrThrow()
+        val item = assertIs<Item.Impl>(parseItem("impl<T = ()> () {}"))
+        assertNull(item.traitPath)
+        assertIs<SynType.Tuple>(item.selfType)
+        val typeParam = assertIs<GenericParam.TypeParam>(item.generics.params.toList().single())
+        assertEquals("T", typeParam.ident.toString())
+        assertNotNull(typeParam.eqToken)
+        assertIs<SynType.Tuple>(typeParam.default)
     }
 
-    // Not ported: `Parse<Item>` is not implemented; the upstream test parses
-    // `fn f() -> impl Sized + {}` and asserts the return type is an
-    // `impl Trait` bound with a trailing `+` punctuation.
     @Test
     fun testImplTraitTrailingPlus() {
-        // Not ported: `Parse<Item>` is not implemented; the upstream test
-        // asserts that `fn f() -> impl Sized + {}` parses into an
-        // `Item::Fn` whose `sig.output` is `ReturnType::Type(Type::ImplTrait
-        // { bounds: [TraitBound(Sized), Token![+]] })`, exercising the
-        // trailing-plus-on-impl-trait parser path.
-        TokenStream.fromString("fn f() -> impl Sized + {}").getOrThrow()
+        val item = assertIs<Item.Fn>(parseItem("fn f() -> impl Sized + {}"))
+        val output = assertIs<ReturnType.TypeReturn>(item.output)
+        val implTrait = assertIs<SynType.ImplTrait>(output.ty)
+        assertEquals(1, implTrait.bounds.size)
+        assertTraitBound(implTrait.bounds.toList().single(), "Sized")
+        assertTrue(implTrait.bounds.trailingPunct())
+        assertTrue(item.block?.stmts.orEmpty().isEmpty())
+    }
+
+    private fun parseItem(source: String): Item =
+        parseStr(ItemParse, source).getOrThrow()
+
+    private fun parseItem(tokens: TokenStream): Item =
+        parse2(ItemParse, tokens).getOrThrow()
+
+    private fun assertPath(path: Path, vararg segments: String) {
+        assertEquals(segments.toList(), path.segments.toList().map { it.ident.toString() })
+    }
+
+    private fun assertTypePath(type: SynType, vararg segments: String): SynType.Path {
+        val path = assertIs<SynType.Path>(type)
+        assertPath(path.path, *segments)
+        return path
+    }
+
+    private fun assertTraitBound(bound: TypeParamBound, vararg segments: String): TypeParamBound.Trait {
+        val trait = assertIs<TypeParamBound.Trait>(bound)
+        assertIs<TraitBoundModifier.None>(trait.modifier)
+        assertNull(trait.lifetimes)
+        assertNull(trait.parenToken)
+        assertPath(trait.path, *segments)
+        return trait
     }
 }

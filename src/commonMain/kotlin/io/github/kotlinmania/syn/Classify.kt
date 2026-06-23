@@ -53,6 +53,7 @@ internal object Classify {
             is Expr.MethodCall -> true
             is Expr.Paren -> true
             is Expr.Path -> true
+            is Expr.RawAddr -> true
             is Expr.Range -> true
 
             is Expr.Reference -> true

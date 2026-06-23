@@ -66,3 +66,9 @@ public fun DelimSpan.intoDelimSpan(): DelimSpan = this
 
 /** Converts a single [Span] into a [Span] (identity). */
 public fun Span.intoSpan(): Span = this
+
+public fun Span.intoSpans(): Span = this
+
+public fun List<Span>.intoSpans(): List<Span> = this
+
+public fun DelimSpan.intoSpans(): DelimSpan = this

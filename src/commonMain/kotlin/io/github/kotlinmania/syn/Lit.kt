@@ -11,7 +11,7 @@ import io.github.kotlinmania.quote.append
 import io.github.kotlinmania.quote.toTokens
 
 /** A literal such as a string or integer or boolean. */
-public sealed class Lit {
+public sealed class Lit : ToTokens {
     public data class Str(
         val value: LitStr,
     ) : Lit()
@@ -56,7 +56,7 @@ public sealed class Lit {
             is Verbatim -> value.span()
         }
 
-    public fun toTokens(tokens: TokenStream) {
+    public override fun toTokens(tokens: TokenStream) {
         when (this) {
             is Str -> value.toTokens(tokens)
             is ByteStr -> value.toTokens(tokens)
@@ -128,20 +128,24 @@ public class LitByteStr(
 /** A byte literal: `bf`. */
 public class LitByte(
     public val value: UByte,
+    public val suffix: String,
     public val span: Span,
 ) : ToTokens {
     public companion object {
         public fun new(value: UByte, span: Span): LitByte =
-            LitByte(value, span)
+            LitByte(value, "", span)
     }
 
     override fun toTokens(tokens: TokenStream) {
-        val literal = Literal.string(value.toInt().toChar().toString())
+        val base = Literal.byteCharacter(value).toString()
+        val literal = Literal.fromStrUnchecked(base + suffix)
         literal.setSpan(span)
         tokens.append(TokenTree.Literal(literal))
     }
 
-    public fun copy(): LitByte = LitByte(value, span)
+    public fun copy(): LitByte = LitByte(value, suffix, span)
+
+    override fun toString(): String = Literal.byteCharacter(value).toString() + suffix
 }
 
 /** A character literal: `a`. */
@@ -179,13 +183,13 @@ public class LitInt(
     public fun base10Parse(): Long = base10Digits().toLong()
 
     public fun token(): Literal {
-        val token = Literal.string(digits + suffix)
+        val token = Literal.fromStrUnchecked(digits + suffix)
         token.setSpan(span)
         return token
     }
 
     override fun toTokens(tokens: TokenStream) {
-        val literal = Literal.string(digits + suffix)
+        val literal = Literal.fromStrUnchecked(digits + suffix)
         literal.setSpan(span)
         tokens.append(TokenTree.Literal(literal))
     }
@@ -209,13 +213,13 @@ public class LitFloat(
     public fun base10Digits(): String = digits.replace("_", "")
 
     public fun token(): Literal {
-        val token = Literal.string(digits + suffix)
+        val token = Literal.fromStrUnchecked(digits + suffix)
         token.setSpan(span)
         return token
     }
 
     override fun toTokens(tokens: TokenStream) {
-        val literal = Literal.string(digits + suffix)
+        val literal = Literal.fromStrUnchecked(digits + suffix)
         literal.setSpan(span)
         tokens.append(TokenTree.Literal(literal))
     }
@@ -240,6 +244,14 @@ public data class LitBool(
 public object LitParse : Parse<Lit> {
     override fun parse(input: ParseStream): SynResult<Lit> =
         input.step { cursor ->
+            val identPair = cursor.ident()
+            if (identPair != null) {
+                val (ident, rest) = identPair
+                when (ident.toString()) {
+                    "true" -> return@step SynResult.success(Lit.Bool(LitBool(true, ident.span())) to rest)
+                    "false" -> return@step SynResult.success(Lit.Bool(LitBool(false, ident.span())) to rest)
+                }
+            }
             val (lit, rest) =
                 cursor.literal()
                     ?: return@step SynResult.failure(cursor.error("expected literal"))
@@ -249,6 +261,8 @@ public object LitParse : Parse<Lit> {
                 when {
                     text.startsWith('"') || text.startsWith("r\"") || text.startsWith("r#") ->
                         Lit.Str(LitStr.new(text.removeSurrounding("\""), span))
+                    text.startsWith("b'") ->
+                        parseLitByte(text, span)?.let { Lit.Byte(it) } ?: Lit.Verbatim(lit)
                     text.startsWith('\'') ->
                         Lit.Char(
                             io.github.kotlinmania.syn
@@ -267,6 +281,39 @@ public object LitParse : Parse<Lit> {
                 }
             SynResult.success(result to rest)
         }
+}
+
+private fun parseLitByte(text: String, span: Span): LitByte? {
+    if (!text.startsWith("b'")) return null
+    var index = 2
+    if (index >= text.length) return null
+    val byte =
+        if (text[index] == '\\') {
+            index += 1
+            if (index >= text.length) return null
+            when (val escaped = text[index++]) {
+                '0' -> 0u
+                'n' -> '\n'.code.toUInt()
+                'r' -> '\r'.code.toUInt()
+                't' -> '\t'.code.toUInt()
+                '\'', '"', '\\' -> escaped.code.toUInt()
+                'x' -> {
+                    if (index + 2 > text.length) return null
+                    val value = text.substring(index, index + 2).toUIntOrNull(16) ?: return null
+                    index += 2
+                    value
+                }
+                else -> return null
+            }
+        } else {
+            val ch = text[index++]
+            if (ch.code > UByte.MAX_VALUE.toInt()) return null
+            ch.code.toUInt()
+        }
+    if (byte > UByte.MAX_VALUE.toUInt()) return null
+    if (index >= text.length || text[index] != '\'') return null
+    val suffix = text.substring(index + 1)
+    return LitByte(byte.toUByte(), suffix, span)
 }
 
 public object LitStrParse : Parse<LitStr> {
@@ -300,25 +347,24 @@ public object LitFloatParse : Parse<LitFloat> {
 }
 
 public object LitBoolParse : Parse<LitBool> {
-    override fun parse(input: ParseStream): SynResult<LitBool> {
-        val lookahead = input.lookahead1()
-        return when {
-            lookahead.peek(IdentPeek) -> {
-                val ident = input.parse(IdentParse).getOrElse { return SynResult.failure(it) }
+    override fun parse(input: ParseStream): SynResult<LitBool> =
+        input.step { cursor ->
+            val pair = cursor.ident()
+            if (pair != null) {
+                val (ident, rest) = pair
                 when (ident.toString()) {
-                    "true" -> SynResult.success(LitBool(true, ident.span()))
-                    "false" -> SynResult.success(LitBool(false, ident.span()))
-                    else -> SynResult.failure(input.error("expected `true` or `false`"))
+                    "true" -> return@step SynResult.success(LitBool(true, ident.span()) to rest)
+                    "false" -> return@step SynResult.success(LitBool(false, ident.span()) to rest)
                 }
             }
-            else -> SynResult.failure(lookahead.error())
+            SynResult.failure(cursor.error("expected `true` or `false`"))
         }
-    }
 }
 
 public object LitPeek : Peek {
     override fun peek(cursor: Cursor): Boolean =
-        cursor.literal() != null
+        cursor.literal() != null ||
+            cursor.ident()?.first?.toString()?.let { it == "true" || it == "false" } == true
 
     override fun display(): String = "literal"
 }

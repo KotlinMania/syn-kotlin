@@ -78,3 +78,49 @@ public fun <T> parseQuoteFromParse(parse: Parse<T>): ParseQuote<T> =
     object : ParseQuote<T> {
         override fun parse(input: ParseStream): SynResult<T> = parse.parse(input)
     }
+
+public object AttributeParseQuote : ParseQuote<Attribute> {
+    override fun parse(input: ParseStream): SynResult<Attribute> =
+        AttributeParse.parse(input)
+}
+
+public object AttributeListParseQuote : ParseQuote<List<Attribute>> {
+    override fun parse(input: ParseStream): SynResult<List<Attribute>> {
+        val attrs = mutableListOf<Attribute>()
+        while (!input.isEmpty()) {
+            attrs += AttributeParseQuote.parse(input).getOrElse { return SynResult.failure(it) }
+        }
+        return SynResult.success(attrs)
+    }
+}
+
+public object FieldParseQuote : ParseQuote<Field> {
+    override fun parse(input: ParseStream): SynResult<Field> {
+        val attrs = parseOuterAttributes(input).getOrElse { return SynResult.failure(it) }
+        val vis = input.parse(VisibilityParse).getOrElse { return SynResult.failure(it) }
+
+        val ident: Ident?
+        val colonToken: io.github.kotlinmania.syn.token.Colon?
+        val isNamed = input.peek(IdentPeek) && input.peek2(ColonPeek) && !input.peek2(PathSepPeek)
+        if (isNamed) {
+            ident = input.parse(IdentParse).getOrElse { return SynResult.failure(it) }
+            colonToken = input.parse(ColonParse).getOrElse { return SynResult.failure(it) }
+        } else {
+            ident = null
+            colonToken = null
+        }
+
+        val ty = parseTypeFull(input).getOrElse { return SynResult.failure(it) }
+        return SynResult.success(Field(attrs, vis, FieldMutability.None, ident, colonToken, ty))
+    }
+}
+
+public object PatParseQuote : ParseQuote<Pat> {
+    override fun parse(input: ParseStream): SynResult<Pat> =
+        parsePatMultiWithLeadingVert(input)
+}
+
+public object StmtListParseQuote : ParseQuote<List<Stmt>> {
+    override fun parse(input: ParseStream): SynResult<List<Stmt>> =
+        parseWithin(input)
+}

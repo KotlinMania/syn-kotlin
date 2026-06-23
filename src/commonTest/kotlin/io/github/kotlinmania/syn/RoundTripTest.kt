@@ -3,6 +3,11 @@ package io.github.kotlinmania.syn
 
 import io.github.kotlinmania.procmacro2.TokenStream
 import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertIs
+import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 /**
  * Round-trip parse-then-emit parity tests.
@@ -12,28 +17,41 @@ import kotlin.test.Test
  * then parses both the original and re-emitted source with the nightly
  * `librustc_parse` and compares the resulting `rustc_ast::ast::Crate`
  * nodes with `SpanlessEq`, after normalizing generic-argument ordering.
- * None of `Parse<File>`, `librustc_parse`, `rustc_ast`, `rustc_span`, or
- * `SpanlessEq` are available in this Kotlin port, and the rust-lang/rust
- * checkout the harness depends on is not part of the workspace, so the
- * single upstream test cannot be faithfully ported. Each entry below
- * carries an honest one-line comment naming the specific missing
- * semantic, rather than emitting a fake simulation that tests a
- * different invariant.
+ * The portable `syn::parse_file` and `File::to_tokens` parts are covered
+ * below. The repo-wide nightly `librustc_parse` comparison still has no
+ * Kotlin counterpart because the rustc parser, rustc AST, span-ignoring
+ * rustc equality helper, and rust-lang/rust checkout harness are not
+ * available in this port.
  */
 class RoundTripTest {
-    // Not ported: the upstream test requires `Parse<File>` (the
-    // top-level file parser entry point), `quote!(#krate)` round-trip
-    // emission, `librustc_parse` for the reference parser, and
-    // `SpanlessEq` for span-ignoring AST equality against `rustc_ast`;
-    // none are implemented in this Kotlin port.
+    private fun emit(file: File): TokenStream {
+        val tokens = TokenStream.new()
+        file.toTokens(tokens)
+        return tokens
+    }
+
     @Test
     fun testRoundTrip() {
-        // Not ported: `Parse<File>` is not implemented; the upstream
-        // test parses every file in a rust-lang/rust checkout with
-        // `syn::parse_file`, re-emits via `quote!(#krate).to_string()`,
-        // parses both forms with `librustc_parse`, and compares the
-        // `rustc_ast::ast::Crate` nodes with `SpanlessEq` after a
-        // `MutVisitor` normalizes generic-argument group ordering.
-        TokenStream.fromString("fn main() {}").getOrThrow()
+        val file =
+            parseFile("\uFEFF#!/usr/bin/env rustx\n#![allow(dead_code)]\nfn main() {}")
+                .getOrThrow()
+
+        assertEquals("#!/usr/bin/env rustx", file.shebang)
+        assertEquals(1, file.attrs.size)
+        assertIs<AttrStyle.Inner>(file.attrs.single().style)
+        assertEquals("allow", file.attrs.single().path().toString())
+        val item = assertIs<Item.Fn>(file.items.single())
+        assertEquals("main", item.ident.toString())
+
+        val emitted = emit(file)
+        val emittedString = emitted.toString()
+        assertFalse(emittedString.contains("rustx"))
+        assertFalse(emittedString.contains("#!/"))
+
+        val reparsed = parse2(FileParse, emitted).getOrThrow()
+        assertNull(reparsed.shebang)
+        assertEquals(1, reparsed.attrs.size)
+        assertIs<AttrStyle.Inner>(reparsed.attrs.single().style)
+        assertIs<Item.Fn>(reparsed.items.single())
     }
 }

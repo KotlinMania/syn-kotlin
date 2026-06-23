@@ -2,6 +2,7 @@
 package io.github.kotlinmania.syn
 
 import io.github.kotlinmania.procmacro2.Span
+import io.github.kotlinmania.procmacro2.TokenStream
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
@@ -39,8 +40,21 @@ class LitTest {
 
     @Test
     fun bytes() {
-        // LitParse does not yet recognize the b'…' byte-literal prefix;
-        // it falls through to Lit.Int, so the Byte variant is never produced.
+        fun testByte(s: String, value: UByte) {
+            val parsed = assertIs<Lit.Byte>(lit(s))
+            assertEquals(value, parsed.value.value)
+            val again = TokenStream.new()
+            parsed.toTokens(again)
+            assertEquals(s.trim(), again.toString())
+        }
+
+        testByte("  b'a'  ", 'a'.code.toUByte())
+        testByte("  b'\\n'  ", '\n'.code.toUByte())
+        testByte("  b'\\r'  ", '\r'.code.toUByte())
+        testByte("  b'\\t'  ", '\t'.code.toUByte())
+        testByte("  b'\\''  ", '\''.code.toUByte())
+        testByte("  b'\"'  ", '"'.code.toUByte())
+        testByte("  b'a'q  ", 'a'.code.toUByte())
     }
 
     @Test

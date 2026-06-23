@@ -143,6 +143,14 @@ public object ParenPeek : Peek {
     override fun display(): String = "`(`"
 }
 
+/** Peek for an invisible delimiter group. */
+public object GroupPeek : Peek {
+    override fun peek(cursor: Cursor): Boolean =
+        cursor.group(Delimiter.None) != null
+
+    override fun display(): String = "invisible group"
+}
+
 /** Strongly-typed parse for an opening brace `{`. */
 public object BraceParse : Parse<Brace> {
     override fun parse(input: ParseStream): SynResult<Brace> =

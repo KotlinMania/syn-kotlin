@@ -49,15 +49,32 @@ public data class Generics(
         for ((value, punct) in params.pairsList()) {
             when (value) {
                 is GenericParam.LifetimeParam -> {
-                    implGenerics.params.push(value) { Comma(Span.callSite()) }
-                    typeGenerics.params.push(value) { Comma(Span.callSite()) }
+                    implGenerics.params.push(value.deepCopy()) { Comma(Span.callSite()) }
+                    typeGenerics.params.push(
+                        GenericParam.LifetimeParam(
+                            emptyList(),
+                            value.lifetime.deepCopy(),
+                            null,
+                            LifetimeList(),
+                        ),
+                    ) { Comma(Span.callSite()) }
                 }
                 is GenericParam.TypeParam -> {
-                    implGenerics.params.push(value) { Comma(Span.callSite()) }
+                    implGenerics.params.push(value.deepCopy().also { it.eqToken = null; it.default = null }) { Comma(Span.callSite()) }
+                    typeGenerics.params.push(
+                        GenericParam.TypeParam(
+                            emptyList(),
+                            value.ident.copy(),
+                            null,
+                            TypeParamBoundList(),
+                            null,
+                            null,
+                        ),
+                    ) { Comma(Span.callSite()) }
                     turbofish.params.pushValue(GenericArgument.TypeArg(SynType.Path(null, Path.from(value.ident))))
                 }
                 is GenericParam.ConstParam -> {
-                    implGenerics.params.push(value) { Comma(Span.callSite()) }
+                    implGenerics.params.push(value.deepCopy().also { it.eqToken = null; it.default = null }) { Comma(Span.callSite()) }
                 }
             }
         }

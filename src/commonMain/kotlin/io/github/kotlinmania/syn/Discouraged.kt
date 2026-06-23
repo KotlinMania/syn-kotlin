@@ -76,6 +76,14 @@ public data class AnyDelimiterResult(
     public val content: ParseBuffer,
 )
 
+public interface Speculative {
+    public fun advanceTo(fork: ParseBuffer)
+}
+
+public interface AnyDelimiter {
+    public fun parseAnyDelimiter(): SynResult<AnyDelimiterResult>
+}
+
 /**
  * Returns the delimiter, the span of the delimiter token, and the nested
  * contents for further parsing.

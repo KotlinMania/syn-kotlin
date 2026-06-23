@@ -69,24 +69,48 @@ public sealed class Item : ToTokens {
     public data class Fn(
         public val attrs: List<Attribute>,
         public val vis: Visibility,
-        public val fnToken: io.github.kotlinmania.syn.token.Fn,
-        public val ident: Ident,
-        public val generics: Generics,
-        public val parenToken: Paren,
-        public val inputs: FnArgList,
-        public val output: ReturnType?,
+        public val sig: Signature,
         public val block: Block?,
     ) : Item() {
+        public constructor(
+            attrs: List<Attribute>,
+            vis: Visibility,
+            fnToken: io.github.kotlinmania.syn.token.Fn,
+            ident: Ident,
+            generics: Generics,
+            parenToken: Paren,
+            inputs: FnArgList,
+            output: ReturnType?,
+            block: Block?,
+        ) : this(
+            attrs,
+            vis,
+            Signature(null, null, null, null, fnToken, ident, generics, parenToken, inputs, null, output ?: ReturnType.Default),
+            block,
+        )
+
+        public val fnToken: io.github.kotlinmania.syn.token.Fn
+            get() = sig.fnToken
+
+        public val ident: Ident
+            get() = sig.ident
+
+        public val generics: Generics
+            get() = sig.generics
+
+        public val parenToken: Paren
+            get() = sig.parenToken
+
+        public val inputs: FnArgList
+            get() = sig.inputs
+
+        public val output: ReturnType
+            get() = sig.output
+
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
             vis.toTokens(tokens)
-            fnToken.toTokens(tokens)
-            ident.toTokens(tokens)
-            generics.toTokens(tokens)
-            parenToken.surround(tokens) { inner ->
-                inputs.toTokens(inner)
-            }
-            output?.toTokens(tokens)
+            sig.toTokens(tokens)
             block?.toTokens(tokens)
         }
     }
@@ -205,6 +229,23 @@ public sealed class Item : ToTokens {
             braceToken.surround(tokens) { inner ->
                 for (item in items) item.toTokens(inner)
             }
+        }
+    }
+
+    /** A macro invocation, including `macro_rules!` definitions. */
+    public data class Macro(
+        public val attrs: List<Attribute>,
+        public val ident: Ident?,
+        public val mac: io.github.kotlinmania.syn.Macro,
+        public val semiToken: Semi?,
+    ) : Item() {
+        override fun toTokens(tokens: TokenStream) {
+            for (attr in attrs) attr.toTokens(tokens)
+            mac.path.toTokens(tokens)
+            mac.bangToken.toTokens(tokens)
+            ident?.toTokens(tokens)
+            mac.delimiter.surround(tokens, mac.tokens)
+            semiToken?.toTokens(tokens)
         }
     }
 

@@ -14,6 +14,18 @@ public typealias Ident = io.github.kotlinmania.procmacro2.Ident
 public fun Ident.copy(): Ident =
     Ident.new(toString(), span())
 
+public fun from(token: SelfValue): Ident = Ident.new("self", token.span)
+
+public fun from(token: SelfType): Ident = Ident.new("Self", token.span)
+
+public fun from(token: Super): Ident = Ident.new("super", token.span)
+
+public fun from(token: Crate): Ident = Ident.new("crate", token.span)
+
+public fun from(token: Extern): Ident = Ident.new("extern", token.span)
+
+public fun from(token: Underscore): Ident = Ident.new("_", token.span)
+
 internal fun xidOk(symbol: String): Boolean {
     val first = symbol.first()
     if (first != '_' && !isXidStart(first)) {

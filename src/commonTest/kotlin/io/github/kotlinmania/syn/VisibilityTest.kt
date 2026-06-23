@@ -1,8 +1,19 @@
 // port-lint: tests tests/test_visibility.rs
 package io.github.kotlinmania.syn
 
+import io.github.kotlinmania.procmacro2.Delimiter
+import io.github.kotlinmania.procmacro2.Group
+import io.github.kotlinmania.procmacro2.Ident
+import io.github.kotlinmania.procmacro2.Punct
+import io.github.kotlinmania.procmacro2.Spacing
+import io.github.kotlinmania.procmacro2.Span
+import io.github.kotlinmania.procmacro2.TokenStream
+import io.github.kotlinmania.procmacro2.TokenTree
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertIs
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class VisibilityTest {
@@ -37,7 +48,8 @@ class VisibilityTest {
             "expected ${expectedClass.simpleName}, got ${vis::class.simpleName}",
         )
         // Round-trip through toString to avoid potential whitespace diffs.
-        assertEquals(expectedRest, rest)
+        val expected = TokenStream.fromString(expectedRest).getOrThrow().toString()
+        assertEquals(expected, rest)
     }
 
     private fun assertVisErr(input: String) {
@@ -68,50 +80,132 @@ class VisibilityTest {
 
     @Test
     fun testIn() {
-        // VisibilityParse consumes the "in" ident during its crate/self/super
-        // probe before reaching the InPeek branch, so pub(in path) is reported as Public.
+        assertRestrictedVisibility(visRestParse("pub(in foo::bar)").first, hasInToken = true, "foo", "bar")
     }
 
     @Test
     fun testPubCrate() {
-        // VisibilityParse does not recognise pub(crate) as Restricted;
-        // the crate/self/super probe fails to match and the parser falls back to Public.
+        assertRestrictedVisibility(visRestParse("pub(crate)").first, hasInToken = false, "crate")
     }
 
     @Test
     fun testPubSelf() {
-        // VisibilityParse does not recognise pub(self) as Restricted;
-        // the crate/self/super probe fails to match and the parser falls back to Public.
+        assertRestrictedVisibility(visRestParse("pub(self)").first, hasInToken = false, "self")
     }
 
     @Test
     fun testPubSuper() {
-        // VisibilityParse does not recognise pub(super) as Restricted;
-        // the crate/self/super probe fails to match and the parser falls back to Public.
+        assertRestrictedVisibility(visRestParse("pub(super)").first, hasInToken = false, "super")
     }
 
     @Test
     fun testMissingIn() {
-        // VisibilityParse does not yet distinguish pub(foo::bar) (missing "in")
-        // from a restricted path; falls back to Public leaving the parens unconsumed.
+        assertVisClassRest("pub(foo::bar)", Visibility.Public::class, "(foo::bar)")
     }
 
     @Test
     fun testMissingInPath() {
-        // VisibilityParse accepts pub(in) without error because the InPeek path
-        // parser does not enforce that a path follows the "in" keyword.
+        assertVisErr("pub(in)")
     }
 
     @Test
     fun testCratePath() {
-        // VisibilityParse advances the forked buffer through the parens during
-        // the crate/self/super probe but does not roll back, so pub(crate::A, crate::B)
-        // reports Public with an empty remainder instead of leaving the parens untouched.
+        assertVisClassRest("pub(crate::A, crate::B)", Visibility.Public::class, "(crate::A , crate::B)")
     }
 
     @Test
     fun testJunkAfterIn() {
-        // VisibilityParse does not reject trailing garbage after the path in
-        // pub(in some::path @@garbage); the junk-after-path check is not implemented.
+        assertVisErr("pub(in some::path @@garbage)")
+    }
+
+    @Test
+    fun testInheritedVisNamedField() {
+        val tokens =
+            TokenStream.fromTokenTrees(
+                listOf(
+                    TokenTree.Ident(Ident.new("struct", Span.callSite())),
+                    TokenTree.Ident(Ident.new("S", Span.callSite())),
+                    TokenTree.Group(
+                        Group(
+                            Delimiter.Brace,
+                            TokenStream.fromTokenTrees(
+                                listOf(
+                                    TokenTree.Group(Group(Delimiter.None, TokenStream.new())),
+                                    TokenTree.Group(Group(Delimiter.None, TokenStream.fromString("f").getOrThrow())),
+                                    TokenTree.Punct(Punct(':', Spacing.Alone, Span.callSite())),
+                                    TokenTree.Group(Group(Delimiter.Parenthesis, TokenStream.new())),
+                                ),
+                            ),
+                        ),
+                    ),
+                ),
+            )
+
+        val input = parse2(DeriveInputParse, tokens).getOrThrow()
+        assertIs<Visibility.Inherited>(input.vis)
+        assertEquals("S", input.ident.toString())
+        val fields = assertIs<Fields.Named>(assertIs<Data.Struct>(input.data).fields).fields.named.toList()
+        val field = fields.single()
+        assertIs<Visibility.Inherited>(field.vis)
+        assertEquals("f", field.ident.toString())
+        assertNotNull(field.colonToken)
+        assertIs<SynType.Tuple>(field.ty)
+    }
+
+    @Test
+    fun testInheritedVisUnnamedField() {
+        val tokens =
+            TokenStream.fromTokenTrees(
+                listOf(
+                    TokenTree.Ident(Ident.new("struct", Span.callSite())),
+                    TokenTree.Ident(Ident.new("S", Span.callSite())),
+                    TokenTree.Group(
+                        Group(
+                            Delimiter.Parenthesis,
+                            TokenStream.fromTokenTrees(
+                                listOf(
+                                    TokenTree.Group(Group(Delimiter.None, TokenStream.new())),
+                                    TokenTree.Group(Group(Delimiter.None, TokenStream.fromString("str").getOrThrow())),
+                                ),
+                            ),
+                        ),
+                    ),
+                    TokenTree.Punct(Punct(';', Spacing.Alone, Span.callSite())),
+                ),
+            )
+
+        val input = parse2(DeriveInputParse, tokens).getOrThrow()
+        assertIs<Visibility.Inherited>(input.vis)
+        assertEquals("S", input.ident.toString())
+        val data = assertIs<Data.Struct>(input.data).value
+        assertNotNull(data.semiToken)
+        val fields = assertIs<Fields.Unnamed>(data.fields).fields.unnamed.toList()
+        val field = fields.single()
+        assertIs<Visibility.Inherited>(field.vis)
+        assertNull(field.ident)
+        val group = assertIs<SynType.Group>(field.ty)
+        assertTypePath(group.elem, "str")
+    }
+
+    private fun assertRestrictedVisibility(
+        vis: Visibility,
+        hasInToken: Boolean,
+        vararg segments: String,
+    ) {
+        val restricted = assertIs<Visibility.Restricted>(vis)
+        if (hasInToken) {
+            assertNotNull(restricted.inToken)
+        } else {
+            assertNull(restricted.inToken)
+        }
+        assertEquals(segments.toList(), restricted.path.segments.toList().map { it.ident.toString() })
+    }
+
+    private fun assertTypePath(
+        type: SynType,
+        vararg segments: String,
+    ) {
+        val path = assertIs<SynType.Path>(type).path
+        assertEquals(segments.toList(), path.segments.toList().map { it.ident.toString() })
     }
 }

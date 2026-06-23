@@ -52,6 +52,10 @@ public class BigInt private constructor(
         }
     }
 
+    public fun addAssign(increment: Int) {
+        plusAssign(increment)
+    }
+
     public operator fun timesAssign(base: Int) {
         require(base in 0..16) { "base must be at most 16" }
         reserveTwoDigits()
@@ -62,6 +66,10 @@ public class BigInt private constructor(
             digits[index] = product % 10
             carry = product / 10
         }
+    }
+
+    public fun mulAssign(base: Int) {
+        timesAssign(base)
     }
 }
 
