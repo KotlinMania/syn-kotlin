@@ -124,8 +124,8 @@ class ExprTest {
         assertTrue(end != null)
         val lit = assertIs<Expr.Lit>(end)
         val intLit = assertIs<Lit.Int>(lit.lit)
-        assertTrue(intLit.value.digits.startsWith("100"))
-        assertTrue(intLit.value.digits.contains("u32"))
+        assertEquals("100", intLit.value.base10Digits())
+        assertEquals("u32", intLit.value.suffix())
     }
 
     // Upstream parses `fut.await` as `Expr::Await` with

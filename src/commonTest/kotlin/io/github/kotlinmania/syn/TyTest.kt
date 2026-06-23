@@ -171,6 +171,69 @@ class TyTest {
 
         assertTrue(parseStr(SynTypeParseExpr, "for<'a> dyn Trait<'a>").isFailure)
         assertTrue(parseStr(SynTypeParseExpr, "dyn for<'a> 'a + Trait").isFailure)
+        assertTrue(parseStr(SynTypeParseExpr, "dyn 'a").isFailure)
+        assertTrue(parseStr(SynTypeParseExpr, "'a + 'b").isFailure)
+    }
+
+    @Test
+    fun testBareForBoundTraitObject() {
+        val ty = assertIs<SynType.TraitObject>(parseType("for<'a> Trait<'a>"))
+        assertNull(ty.dynToken)
+        val trait = assertTraitBound(ty.bounds.toList().single(), "Trait")
+        val lifetimes = assertNotNull(trait.lifetimes)
+        val lifetimeParam = assertIs<GenericParam.LifetimeParam>(lifetimes.lifetimes.toList().single())
+        assertEquals("'a", lifetimeParam.lifetime.toString())
+        val arguments = assertIs<PathArguments.AngleBracketed>(trait.path.segments.first()!!.arguments)
+        val lifetimeArg = assertIs<GenericArgument.LifetimeArg>(arguments.args.toList().single())
+        assertEquals("'a", lifetimeArg.lifetime.toString())
+    }
+
+    @Test
+    fun testParenthesizedTraitObjectHead() {
+        val ty = assertIs<SynType.TraitObject>(parseType("(Trait) + Send"))
+        assertNull(ty.dynToken)
+        val bounds = ty.bounds.toList()
+        val trait = assertTraitBound(bounds[0], "Trait")
+        assertNotNull(trait.parenToken)
+        assertTraitBound(bounds[1], "Send")
+
+        val maybe = assertIs<SynType.TraitObject>(parseType("(?Trait) + Send"))
+        val maybeBounds = maybe.bounds.toList()
+        val maybeTrait = assertIs<TypeParamBound.Trait>(maybeBounds[0])
+        assertPath(maybeTrait.path, "Trait")
+        assertNotNull(maybeTrait.parenToken)
+        assertIs<TraitBoundModifier.Maybe>(maybeTrait.modifier)
+        assertTraitBound(maybeBounds[1], "Send")
+    }
+
+    @Test
+    fun testMacroType() {
+        val ty = assertIs<SynType.Macro>(parseType("m!()"))
+        assertPath(ty.mac.path, "m")
+        assertIs<MacroDelimiter.Paren>(ty.mac.delimiter)
+        assertTrue(ty.mac.tokens.isEmpty())
+    }
+
+    @Test
+    fun testPointerTypeRequiresMutabilityKeyword() {
+        val constPtr = assertIs<SynType.Ptr>(parseType("*const T"))
+        assertNotNull(constPtr.constToken)
+        assertNull(constPtr.mutability)
+        assertPath(assertIs<SynType.Path>(constPtr.elem).path, "T")
+
+        val mutPtr = assertIs<SynType.Ptr>(parseType("*mut T"))
+        assertNull(mutPtr.constToken)
+        assertNotNull(mutPtr.mutability)
+        assertPath(assertIs<SynType.Path>(mutPtr.elem).path, "T")
+
+        assertTrue(parseStr(SynTypeParseExpr, "*T").isFailure)
+        assertTrue(parseStr(SynTypeParseExpr, "*const mut T").isFailure)
+    }
+
+    @Test
+    fun testDynStarTraitObjectIsVerbatim() {
+        val ty = assertIs<SynType.Verbatim>(parseType("dyn *Trait"))
+        assertEquals("dyn * Trait", ty.tokens.toString())
     }
 
     @Test
@@ -191,6 +254,39 @@ class TyTest {
         assertEquals(1, bareTrait.bounds.size)
         assertTraitBound(bareTrait.bounds.toList().single(), "Trait")
         assertTrue(bareTrait.bounds.trailingPunct())
+    }
+
+    @Test
+    fun testImplTraitRequiresTrait() {
+        assertTrue(parseStr(SynTypeParseExpr, "impl 'static").isFailure)
+        assertTrue(parseStr(SynTypeParseExpr, "impl use<'_>").isFailure)
+    }
+
+    @Test
+    fun testWithoutPlusParsers() {
+        val typeWithoutPlus =
+            object : Parse<SynType> {
+                override fun parse(input: ParseStream): SynResult<SynType> =
+                    SynType.withoutPlus(input)
+            }
+        assertIs<SynType.Path>(parseStr(typeWithoutPlus, "Trait").getOrThrow())
+        assertTrue(parseStr(typeWithoutPlus, "Trait + Send").isFailure)
+
+        val returnTypeWithoutPlus =
+            object : Parse<ReturnType> {
+                override fun parse(input: ParseStream): SynResult<ReturnType> =
+                    ReturnType.withoutPlus(input)
+            }
+        assertIs<ReturnType.TypeReturn>(parseStr(returnTypeWithoutPlus, "-> Trait").getOrThrow())
+        assertTrue(parseStr(returnTypeWithoutPlus, "-> Trait + Send").isFailure)
+
+        val implTraitWithoutPlus =
+            object : Parse<SynType.ImplTrait> {
+                override fun parse(input: ParseStream): SynResult<SynType.ImplTrait> =
+                    SynType.ImplTrait.withoutPlus(input)
+            }
+        assertIs<SynType.ImplTrait>(parseStr(implTraitWithoutPlus, "impl Trait").getOrThrow())
+        assertTrue(parseStr(implTraitWithoutPlus, "impl Trait + Send").isFailure)
     }
 
     @Test

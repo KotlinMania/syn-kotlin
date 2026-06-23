@@ -27,7 +27,7 @@ public class Brackets internal constructor(
 )
 
 /** Not public API. */
-public class GroupContent internal constructor(
+public class Group internal constructor(
     public val token: GroupToken,
     public val content: ParseBuffer,
 )
@@ -50,9 +50,9 @@ public fun parseBrackets(input: ParseBuffer): SynResult<Brackets> =
         Brackets(token = Bracket.from(span), content = content)
     }
 
-internal fun parseGroup(input: ParseBuffer): SynResult<GroupContent> =
+internal fun parseGroup(input: ParseBuffer): SynResult<Group> =
     parseDelimited(input, Delimiter.None).map { (span, content) ->
-        GroupContent(token = GroupToken.from(span.join()), content = content)
+        Group(token = GroupToken.from(span.join()), content = content)
     }
 
 private fun parseDelimited(

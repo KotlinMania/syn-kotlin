@@ -123,11 +123,16 @@ public class Cursor internal constructor(
     internal val scope: Int,
 ) {
     public companion object {
+        private class UnsafeSyncEntry(
+            val entry: Entry,
+        )
+
         // It is fine in this situation for us to put an [Entry] object in global
         // storage, despite the note about thread confinement
         // (Ident was a pointer into a thread-confined table). This is because
         // this entry never includes an `Ident` object.
-        private val EMPTY_ENTRIES: Array<Entry> = arrayOf(Entry.End(0, 0))
+        private val EMPTY_ENTRY: UnsafeSyncEntry = UnsafeSyncEntry(Entry.End(0, 0))
+        private val EMPTY_ENTRIES: Array<Entry> = arrayOf(EMPTY_ENTRY.entry)
 
         /** Creates a cursor referencing a static empty token stream. */
         public fun empty(): Cursor = Cursor(EMPTY_ENTRIES, 0, 0)
@@ -405,6 +410,11 @@ public class Cursor internal constructor(
         val target = entries[scope + scopeEntry.toGroup]
         return if (target is Entry.GroupEntry) target.group.delimiter() else Delimiter.None
     }
+
+    public fun clone(): Cursor = this
+
+    public fun partialCmp(other: Cursor): Int? =
+        if (sameBuffer(this, other)) cmpAssumingSameBuffer(this, other) else null
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

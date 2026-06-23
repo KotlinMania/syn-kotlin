@@ -4,6 +4,8 @@ package io.github.kotlinmania.syn
 import io.github.kotlinmania.procmacro2.TokenStream
 import io.github.kotlinmania.quote.ToTokens
 
+internal typealias RawPair<T, P> = kotlin.Pair<T, P>
+
 /**
  * Base class for strongly-typed punctuated sequences.
  *
@@ -15,11 +17,11 @@ import io.github.kotlinmania.quote.ToTokens
 public sealed class SynPunctuated :
     ToTokens,
     Iterable<ToTokens> {
-    internal val inner: MutableList<Pair<ToTokens, ToTokens>> = mutableListOf()
+    internal val inner: MutableList<RawPair<ToTokens, ToTokens>> = mutableListOf()
     internal var last: ToTokens? = null
 
     protected constructor()
-    protected constructor(values: List<Pair<ToTokens, ToTokens>>, trailing: ToTokens?) {
+    protected constructor(values: List<RawPair<ToTokens, ToTokens>>, trailing: ToTokens?) {
         inner.addAll(values)
         last = trailing
     }
@@ -86,14 +88,14 @@ public sealed class SynPunctuated :
         last?.toTokens(tokens)
     }
 
-    internal fun pairsIterator(): Iterator<Pair<ToTokens, ToTokens?>> =
+    internal fun pairsIterator(): Iterator<RawPair<ToTokens, ToTokens?>> =
         sequence {
             for ((v, p) in inner) yield(v to p)
             val tail = last
             if (tail != null) yield(tail to null)
         }.iterator()
 
-    internal fun pairsList(): List<Pair<ToTokens, ToTokens?>> = pairsIterator().asSequence().toList()
+    internal fun pairsList(): List<RawPair<ToTokens, ToTokens?>> = pairsIterator().asSequence().toList()
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -108,7 +110,7 @@ public sealed class SynPunctuated :
 
 public class VariantList : SynPunctuated {
     public constructor() : super()
-    internal constructor(values: List<Pair<ToTokens, ToTokens>>, trailing: ToTokens?) : super(values, trailing)
+    internal constructor(values: List<RawPair<ToTokens, ToTokens>>, trailing: ToTokens?) : super(values, trailing)
 
     public fun first(): Variant? = super.inner.firstOrNull()?.first as? Variant ?: super.last as? Variant
 
@@ -139,7 +141,7 @@ public class VariantList : SynPunctuated {
 
 public class FieldList : SynPunctuated {
     public constructor() : super()
-    internal constructor(values: List<Pair<ToTokens, ToTokens>>, trailing: ToTokens?) : super(values, trailing)
+    internal constructor(values: List<RawPair<ToTokens, ToTokens>>, trailing: ToTokens?) : super(values, trailing)
 
     public fun first(): Field? = super.inner.firstOrNull()?.first as? Field ?: super.last as? Field
 
@@ -170,7 +172,7 @@ public class FieldList : SynPunctuated {
 
 public class FnArgList : SynPunctuated {
     public constructor() : super()
-    internal constructor(values: List<Pair<ToTokens, ToTokens>>, trailing: ToTokens?) : super(values, trailing)
+    internal constructor(values: List<RawPair<ToTokens, ToTokens>>, trailing: ToTokens?) : super(values, trailing)
 
     public fun first(): FnArg? = super.inner.firstOrNull()?.first as? FnArg ?: super.last as? FnArg
 
@@ -201,7 +203,7 @@ public class FnArgList : SynPunctuated {
 
 public class ExprList : SynPunctuated {
     public constructor() : super()
-    internal constructor(values: List<Pair<ToTokens, ToTokens>>, trailing: ToTokens?) : super(values, trailing)
+    internal constructor(values: List<RawPair<ToTokens, ToTokens>>, trailing: ToTokens?) : super(values, trailing)
 
     public fun first(): Expr? = super.inner.firstOrNull()?.first as? Expr ?: super.last as? Expr
 
@@ -232,7 +234,7 @@ public class ExprList : SynPunctuated {
 
 public class PatList : SynPunctuated {
     public constructor() : super()
-    internal constructor(values: List<Pair<ToTokens, ToTokens>>, trailing: ToTokens?) : super(values, trailing)
+    internal constructor(values: List<RawPair<ToTokens, ToTokens>>, trailing: ToTokens?) : super(values, trailing)
 
     public fun first(): Pat? = super.inner.firstOrNull()?.first as? Pat ?: super.last as? Pat
 
@@ -263,7 +265,7 @@ public class PatList : SynPunctuated {
 
 public class FieldPatList : SynPunctuated {
     public constructor() : super()
-    internal constructor(values: List<Pair<ToTokens, ToTokens>>, trailing: ToTokens?) : super(values, trailing)
+    internal constructor(values: List<RawPair<ToTokens, ToTokens>>, trailing: ToTokens?) : super(values, trailing)
 
     public fun first(): FieldPat? = super.inner.firstOrNull()?.first as? FieldPat ?: super.last as? FieldPat
 
@@ -294,7 +296,7 @@ public class FieldPatList : SynPunctuated {
 
 public class FieldValueList : SynPunctuated {
     public constructor() : super()
-    internal constructor(values: List<Pair<ToTokens, ToTokens>>, trailing: ToTokens?) : super(values, trailing)
+    internal constructor(values: List<RawPair<ToTokens, ToTokens>>, trailing: ToTokens?) : super(values, trailing)
 
     public fun first(): FieldValue? = super.inner.firstOrNull()?.first as? FieldValue ?: super.last as? FieldValue
 
@@ -325,7 +327,7 @@ public class FieldValueList : SynPunctuated {
 
 public class GenericParamList : SynPunctuated {
     public constructor() : super()
-    internal constructor(values: List<Pair<ToTokens, ToTokens>>, trailing: ToTokens?) : super(values, trailing)
+    internal constructor(values: List<RawPair<ToTokens, ToTokens>>, trailing: ToTokens?) : super(values, trailing)
 
     public fun first(): GenericParam? = super.inner.firstOrNull()?.first as? GenericParam ?: super.last as? GenericParam
 
@@ -356,7 +358,7 @@ public class GenericParamList : SynPunctuated {
 
 public class GenericArgumentList : SynPunctuated {
     public constructor() : super()
-    internal constructor(values: List<Pair<ToTokens, ToTokens>>, trailing: ToTokens?) : super(values, trailing)
+    internal constructor(values: List<RawPair<ToTokens, ToTokens>>, trailing: ToTokens?) : super(values, trailing)
 
     public fun first(): GenericArgument? = super.inner.firstOrNull()?.first as? GenericArgument ?: super.last as? GenericArgument
 
@@ -387,7 +389,7 @@ public class GenericArgumentList : SynPunctuated {
 
 public class LifetimeList : SynPunctuated {
     public constructor() : super()
-    internal constructor(values: List<Pair<ToTokens, ToTokens>>, trailing: ToTokens?) : super(values, trailing)
+    internal constructor(values: List<RawPair<ToTokens, ToTokens>>, trailing: ToTokens?) : super(values, trailing)
 
     public fun first(): Lifetime? = super.inner.firstOrNull()?.first as? Lifetime ?: super.last as? Lifetime
 
@@ -418,7 +420,7 @@ public class LifetimeList : SynPunctuated {
 
 public class TypeParamBoundList : SynPunctuated {
     public constructor() : super()
-    internal constructor(values: List<Pair<ToTokens, ToTokens>>, trailing: ToTokens?) : super(values, trailing)
+    internal constructor(values: List<RawPair<ToTokens, ToTokens>>, trailing: ToTokens?) : super(values, trailing)
 
     public fun first(): TypeParamBound? = super.inner.firstOrNull()?.first as? TypeParamBound ?: super.last as? TypeParamBound
 
@@ -449,7 +451,7 @@ public class TypeParamBoundList : SynPunctuated {
 
 public class CapturedParamList : SynPunctuated {
     public constructor() : super()
-    internal constructor(values: List<Pair<ToTokens, ToTokens>>, trailing: ToTokens?) : super(values, trailing)
+    internal constructor(values: List<RawPair<ToTokens, ToTokens>>, trailing: ToTokens?) : super(values, trailing)
 
     public fun first(): CapturedParam? = super.inner.firstOrNull()?.first as? CapturedParam ?: super.last as? CapturedParam
 
@@ -480,7 +482,7 @@ public class CapturedParamList : SynPunctuated {
 
 public class WherePredicateList : SynPunctuated {
     public constructor() : super()
-    internal constructor(values: List<Pair<ToTokens, ToTokens>>, trailing: ToTokens?) : super(values, trailing)
+    internal constructor(values: List<RawPair<ToTokens, ToTokens>>, trailing: ToTokens?) : super(values, trailing)
 
     public fun first(): WherePredicate? = super.inner.firstOrNull()?.first as? WherePredicate ?: super.last as? WherePredicate
 
@@ -511,7 +513,7 @@ public class WherePredicateList : SynPunctuated {
 
 public class PathSegmentList : SynPunctuated {
     public constructor() : super()
-    internal constructor(values: List<Pair<ToTokens, ToTokens>>, trailing: ToTokens?) : super(values, trailing)
+    internal constructor(values: List<RawPair<ToTokens, ToTokens>>, trailing: ToTokens?) : super(values, trailing)
 
     public fun first(): PathSegment? = super.inner.firstOrNull()?.first as? PathSegment ?: super.last as? PathSegment
 
@@ -542,7 +544,7 @@ public class PathSegmentList : SynPunctuated {
 
 public class UseTreeList : SynPunctuated {
     public constructor() : super()
-    internal constructor(values: List<Pair<ToTokens, ToTokens>>, trailing: ToTokens?) : super(values, trailing)
+    internal constructor(values: List<RawPair<ToTokens, ToTokens>>, trailing: ToTokens?) : super(values, trailing)
 
     public fun first(): UseTree? = super.inner.firstOrNull()?.first as? UseTree ?: super.last as? UseTree
 
@@ -573,7 +575,7 @@ public class UseTreeList : SynPunctuated {
 
 public class BareFnArgList : SynPunctuated {
     public constructor() : super()
-    internal constructor(values: List<Pair<ToTokens, ToTokens>>, trailing: ToTokens?) : super(values, trailing)
+    internal constructor(values: List<RawPair<ToTokens, ToTokens>>, trailing: ToTokens?) : super(values, trailing)
 
     public fun first(): BareFnArg? = super.inner.firstOrNull()?.first as? BareFnArg ?: super.last as? BareFnArg
 
@@ -604,7 +606,7 @@ public class BareFnArgList : SynPunctuated {
 
 public class SynTypeList : SynPunctuated {
     public constructor() : super()
-    internal constructor(values: List<Pair<ToTokens, ToTokens>>, trailing: ToTokens?) : super(values, trailing)
+    internal constructor(values: List<RawPair<ToTokens, ToTokens>>, trailing: ToTokens?) : super(values, trailing)
 
     public fun first(): SynType? = super.inner.firstOrNull()?.first as? SynType ?: super.last as? SynType
 
@@ -633,19 +635,319 @@ public class SynTypeList : SynPunctuated {
         SynTypeList(super.inner.mapTo(mutableListOf()) { (v, p) -> copyValue(v as SynType) to copyPunct(p) }, super.last?.let { copyValue(it as SynType) })
 }
 
+internal class GenericPunctuatedList(
+    values: List<RawPair<ToTokens, ToTokens>>,
+    trailing: ToTokens?,
+) : SynPunctuated(values, trailing)
+
 /**
  * Internal two-type-parameter punctuated sequence used by the parser.
  * Kept internal so Swift Export never sees the two type parameters.
  */
 internal class Punctuated<T : ToTokens, P : ToTokens> private constructor(
-    private val innerList: MutableList<Pair<T, P>>,
+    private val innerList: MutableList<RawPair<T, P>>,
     private var lastValue: T?,
 ) : ToTokens,
     Iterable<T> {
     public constructor() : this(mutableListOf(), null)
 
+    internal sealed class Pair<T : ToTokens, P : ToTokens> : ToTokens {
+        internal abstract fun intoValue(): T
+
+        internal abstract fun value(): T
+
+        internal fun valueMut(): T = value()
+
+        internal abstract fun punct(): P?
+
+        internal fun punctMut(): P? = punct()
+
+        internal fun intoTuple(): RawPair<T, P?> = value() to punct()
+
+        internal fun cloned(
+            copyValue: (T) -> T = { it },
+            copyPunct: (P) -> P = { it },
+        ): Pair<T, P> = new(copyValue(value()), punct()?.let(copyPunct))
+
+        override fun toTokens(tokens: TokenStream) {
+            value().toTokens(tokens)
+            punct()?.toTokens(tokens)
+        }
+
+        internal data class Punctuated<T : ToTokens, P : ToTokens>(
+            val value: T,
+            val punctuation: P,
+        ) : Pair<T, P>() {
+            override fun intoValue(): T = value
+
+            override fun value(): T = value
+
+            override fun punct(): P = punctuation
+        }
+
+        internal data class End<T : ToTokens, P : ToTokens>(
+            val value: T,
+        ) : Pair<T, P>() {
+            override fun intoValue(): T = value
+
+            override fun value(): T = value
+
+            override fun punct(): P? = null
+        }
+
+        internal companion object {
+            fun <T : ToTokens, P : ToTokens> new(
+                value: T,
+                punctuation: P?,
+            ): Pair<T, P> =
+                if (punctuation == null) {
+                    End(value)
+                } else {
+                    Punctuated(value, punctuation)
+                }
+        }
+    }
+
+    internal interface IterTrait<T : ToTokens> : Iterator<T> {
+        fun nextBack(): T?
+
+        fun sizeHint(): RawPair<Int, Int>
+
+        fun len(): Int
+
+        fun cloneBox(): IterTrait<T>
+    }
+
+    internal interface IterMutTrait<T : ToTokens> : Iterator<T> {
+        fun nextBack(): T?
+
+        fun sizeHint(): RawPair<Int, Int>
+
+        fun len(): Int
+    }
+
+    private class Cursor<T>(
+        private val entries: List<T>,
+        private var front: Int = 0,
+        private var back: Int = entries.size,
+    ) {
+        fun hasNext(): Boolean = front < back
+
+        fun next(): T {
+            if (!hasNext()) throw NoSuchElementException()
+            return entries[front++]
+        }
+
+        fun nextBack(): T? =
+            if (hasNext()) {
+                entries[--back]
+            } else {
+                null
+            }
+
+        fun len(): Int = back - front
+
+        fun sizeHint(): RawPair<Int, Int> = len() to len()
+
+        fun copy(): Cursor<T> = Cursor(entries, front, back)
+    }
+
+    internal class Pairs<T : ToTokens, P : ToTokens> private constructor(
+        private val cursor: Cursor<Pair<T, P>>,
+    ) : Iterator<Pair<T, P>>,
+        Iterable<Pair<T, P>> {
+        constructor(entries: List<Pair<T, P>>) : this(Cursor(entries))
+
+        override fun iterator(): Iterator<Pair<T, P>> = clone()
+
+        override fun hasNext(): Boolean = cursor.hasNext()
+
+        override fun next(): Pair<T, P> = cursor.next()
+
+        fun nextBack(): Pair<T, P>? = cursor.nextBack()
+
+        fun sizeHint(): RawPair<Int, Int> = cursor.sizeHint()
+
+        fun len(): Int = cursor.len()
+
+        fun clone(): Pairs<T, P> = Pairs(cursor.copy())
+    }
+
+    internal class PairsMut<T : ToTokens, P : ToTokens> private constructor(
+        private val cursor: Cursor<Pair<T, P>>,
+    ) : Iterator<Pair<T, P>>,
+        Iterable<Pair<T, P>> {
+        constructor(entries: List<Pair<T, P>>) : this(Cursor(entries))
+
+        override fun iterator(): Iterator<Pair<T, P>> = clone()
+
+        override fun hasNext(): Boolean = cursor.hasNext()
+
+        override fun next(): Pair<T, P> = cursor.next()
+
+        fun nextBack(): Pair<T, P>? = cursor.nextBack()
+
+        fun sizeHint(): RawPair<Int, Int> = cursor.sizeHint()
+
+        fun len(): Int = cursor.len()
+
+        fun clone(): PairsMut<T, P> = PairsMut(cursor.copy())
+    }
+
+    internal class IntoPairs<T : ToTokens, P : ToTokens> private constructor(
+        private val cursor: Cursor<Pair<T, P>>,
+    ) : Iterator<Pair<T, P>>,
+        Iterable<Pair<T, P>> {
+        constructor(entries: List<Pair<T, P>>) : this(Cursor(entries))
+
+        override fun iterator(): Iterator<Pair<T, P>> = this
+
+        override fun hasNext(): Boolean = cursor.hasNext()
+
+        override fun next(): Pair<T, P> = cursor.next()
+
+        fun nextBack(): Pair<T, P>? = cursor.nextBack()
+
+        fun sizeHint(): RawPair<Int, Int> = cursor.sizeHint()
+
+        fun len(): Int = cursor.len()
+    }
+
+    internal class PrivateIter<T : ToTokens> private constructor(
+        private val cursor: Cursor<T>,
+    ) : IterTrait<T> {
+        constructor(entries: List<T>) : this(Cursor(entries))
+
+        override fun hasNext(): Boolean = cursor.hasNext()
+
+        override fun next(): T = cursor.next()
+
+        override fun nextBack(): T? = cursor.nextBack()
+
+        override fun sizeHint(): RawPair<Int, Int> = cursor.sizeHint()
+
+        override fun len(): Int = cursor.len()
+
+        override fun cloneBox(): IterTrait<T> = clone()
+
+        fun clone(): PrivateIter<T> = PrivateIter(cursor.copy())
+    }
+
+    internal class PrivateIterMut<T : ToTokens> private constructor(
+        private val cursor: Cursor<T>,
+    ) : IterMutTrait<T> {
+        constructor(entries: List<T>) : this(Cursor(entries))
+
+        override fun hasNext(): Boolean = cursor.hasNext()
+
+        override fun next(): T = cursor.next()
+
+        override fun nextBack(): T? = cursor.nextBack()
+
+        override fun sizeHint(): RawPair<Int, Int> = cursor.sizeHint()
+
+        override fun len(): Int = cursor.len()
+
+        fun clone(): PrivateIterMut<T> = PrivateIterMut(cursor.copy())
+    }
+
+    internal class Iter<T : ToTokens> private constructor(
+        private val inner: IterTrait<T>,
+    ) : Iterator<T>,
+        Iterable<T> {
+        constructor(entries: List<T>) : this(PrivateIter(entries))
+
+        override fun iterator(): Iterator<T> = clone()
+
+        override fun hasNext(): Boolean = inner.hasNext()
+
+        override fun next(): T = inner.next()
+
+        fun nextBack(): T? = inner.nextBack()
+
+        fun sizeHint(): RawPair<Int, Int> = inner.sizeHint()
+
+        fun len(): Int = inner.len()
+
+        fun clone(): Iter<T> = Iter(inner.cloneBox())
+    }
+
+    internal class IterMut<T : ToTokens> private constructor(
+        private val inner: PrivateIterMut<T>,
+    ) : Iterator<T>,
+        Iterable<T> {
+        constructor(entries: List<T>) : this(PrivateIterMut(entries))
+
+        override fun iterator(): Iterator<T> = clone()
+
+        override fun hasNext(): Boolean = inner.hasNext()
+
+        override fun next(): T = inner.next()
+
+        fun nextBack(): T? = inner.nextBack()
+
+        fun sizeHint(): RawPair<Int, Int> = inner.sizeHint()
+
+        fun len(): Int = inner.len()
+
+        fun clone(): IterMut<T> = IterMut(inner.clone())
+    }
+
+    internal class IntoIter<T : ToTokens, P : ToTokens> private constructor(
+        private val inner: IntoPairs<T, P>,
+    ) : Iterator<T>,
+        Iterable<T> {
+        constructor(entries: List<Pair<T, P>>) : this(IntoPairs(entries))
+
+        override fun iterator(): Iterator<T> = this
+
+        override fun hasNext(): Boolean = inner.hasNext()
+
+        override fun next(): T = inner.next().intoValue()
+
+        fun nextBack(): T? = inner.nextBack()?.intoValue()
+
+        fun sizeHint(): RawPair<Int, Int> = inner.sizeHint()
+
+        fun len(): Int = inner.len()
+    }
+
     public companion object {
         public fun <T : ToTokens, P : ToTokens> new(): Punctuated<T, P> = Punctuated()
+
+        public fun <T : ToTokens, P : ToTokens> default(): Punctuated<T, P> = new()
+
+        public fun <T : ToTokens, P : ToTokens> fromPairs(
+            pairs: Iterable<Pair<T, P>>,
+        ): Punctuated<T, P> {
+            val result = Punctuated<T, P>()
+            doExtend(result, pairs.iterator())
+            return result
+        }
+
+        public fun <T : ToTokens, P : ToTokens> fromIter(
+            elements: Iterable<T>,
+            defaultPunctuation: () -> P,
+        ): Punctuated<T, P> {
+            val result = Punctuated<T, P>()
+            result.extend(elements, defaultPunctuation)
+            return result
+        }
+
+        public fun <T : ToTokens, P : ToTokens> fromIter(
+            pairs: Sequence<Pair<T, P>>,
+        ): Punctuated<T, P> {
+            val result = Punctuated<T, P>()
+            doExtend(result, pairs.iterator())
+            return result
+        }
+
+        public fun <T : ToTokens, P : ToTokens> parseTerminated(
+            input: ParseStream,
+            parser: Parse<T>,
+            punctParse: Parse<P>,
+        ): SynResult<Punctuated<T, P>> =
+            parseTerminatedWith(input, parser::parse, punctParse)
 
         public fun <T : ToTokens, P : ToTokens> parseTerminatedWith(
             input: ParseStream,
@@ -663,6 +965,31 @@ internal class Punctuated<T : ToTokens, P : ToTokens> private constructor(
             }
             return SynResult.success(punctuated)
         }
+
+        public fun <T : ToTokens, P : ToTokens> parseSeparatedNonempty(
+            input: ParseStream,
+            parser: Parse<T>,
+            punctPeek: Peek,
+            punctParse: Parse<P>,
+        ): SynResult<Punctuated<T, P>> =
+            parseSeparatedNonemptyWith(input, parser::parse, punctPeek, punctParse)
+
+        public fun <T : ToTokens, P : ToTokens> parseSeparatedNonemptyWith(
+            input: ParseStream,
+            parser: (ParseStream) -> SynResult<T>,
+            punctPeek: Peek,
+            punctParse: Parse<P>,
+        ): SynResult<Punctuated<T, P>> {
+            val punctuated = Punctuated<T, P>()
+            while (true) {
+                val value = parser(input).getOrElse { return SynResult.failure(it) }
+                punctuated.pushValue(value)
+                if (!input.peek(punctPeek)) break
+                val punct = punctParse.parse(input).getOrElse { return SynResult.failure(it) }
+                punctuated.pushPunct(punct)
+            }
+            return SynResult.success(punctuated)
+        }
     }
 
     public fun isEmpty(): Boolean = innerList.isEmpty() && lastValue == null
@@ -673,7 +1000,11 @@ internal class Punctuated<T : ToTokens, P : ToTokens> private constructor(
 
     public fun first(): T? = innerList.firstOrNull()?.first ?: lastValue
 
+    public fun firstMut(): T? = first()
+
     public fun last(): T? = lastValue ?: innerList.lastOrNull()?.first
+
+    public fun lastMut(): T? = last()
 
     public operator fun get(index: Int): T =
         getOrNull(index)
@@ -685,6 +1016,8 @@ internal class Punctuated<T : ToTokens, P : ToTokens> private constructor(
         } else {
             innerList.getOrNull(index)?.first ?: if (index == innerList.size) lastValue else null
         }
+
+    public fun getMut(index: Int): T? = getOrNull(index)
 
     public fun trailingPunct(): Boolean = lastValue == null && !isEmpty()
 
@@ -705,6 +1038,15 @@ internal class Punctuated<T : ToTokens, P : ToTokens> private constructor(
     public fun push(value: T, defaultPunctuation: () -> P) {
         if (!emptyOrTrailing()) pushPunct(defaultPunctuation())
         pushValue(value)
+    }
+
+    public fun insert(index: Int, value: T, defaultPunctuation: () -> P) {
+        require(index <= len()) { "Punctuated::insert: index out of range" }
+        if (index == len()) {
+            push(value, defaultPunctuation)
+        } else {
+            innerList.add(index, value to defaultPunctuation())
+        }
     }
 
     public fun add(value: T) {
@@ -732,23 +1074,19 @@ internal class Punctuated<T : ToTokens, P : ToTokens> private constructor(
         return null
     }
 
-    public fun pairs(): Iterator<Pair<T, P?>> =
-        sequence {
-            for ((v, p) in innerList) yield(v to p)
-            val tail = lastValue
-            if (tail != null) yield(tail to null)
-        }.iterator()
+    public fun pairs(): Pairs<T, P> = Pairs(pairEntries())
 
-    public fun toList(): List<T> = iterator().asSequence().toList()
+    public fun pairsMut(): PairsMut<T, P> = PairsMut(pairEntries())
 
-    override fun iterator(): Iterator<T> =
-        sequence {
-            for ((v, _) in innerList) yield(v)
-            val tail = lastValue
-            if (tail != null) yield(tail)
-        }.iterator()
+    public fun toList(): List<T> = valueEntries()
 
-    public fun iter(): Iterator<T> = iterator()
+    override fun iterator(): Iterator<T> = iter()
+
+    public fun iter(): Iter<T> = Iter(valueEntries())
+
+    public fun iterMut(): IterMut<T> = IterMut(valueEntries())
+
+    public fun intoIter(): IntoIter<T, P> = IntoIter(pairEntries())
 
     public fun intoValue(): T? = if (len() == 1) first() else null
 
@@ -756,12 +1094,9 @@ internal class Punctuated<T : ToTokens, P : ToTokens> private constructor(
 
     public fun punct(index: Int): P? = innerList.getOrNull(index)?.second
 
-    internal fun intoPairs(): List<Pair<T, P?>> =
-        sequence {
-            for ((v, p) in innerList) yield(v to p)
-            val tail = lastValue
-            if (tail != null) yield(tail to null)
-        }.toList()
+    public fun punctMut(index: Int): P? = punct(index)
+
+    internal fun intoPairs(): IntoPairs<T, P> = IntoPairs(pairEntries())
 
     public fun <R> fold(initial: R, operation: (acc: R, T) -> R): R {
         var acc = initial
@@ -789,13 +1124,20 @@ internal class Punctuated<T : ToTokens, P : ToTokens> private constructor(
         for (e in elements) push(e, defaultPunctuation)
     }
 
+    public fun extendPairs(elements: Iterable<Pair<T, P>>, defaultPunctuation: () -> P) {
+        if (!emptyOrTrailing()) {
+            pushPunct(defaultPunctuation())
+        }
+        doExtend(this, elements.iterator())
+    }
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is Punctuated<*, *>) return false
-        return this.toList() == other.toList()
+        return innerList == other.innerList && lastValue == other.lastValue
     }
 
-    override fun hashCode(): Int = toList().hashCode()
+    override fun hashCode(): Int = innerList.hashCode() * 31 + (lastValue?.hashCode() ?: 0)
 
     override fun toString(): String = toList().joinToString(", ", "[", "]")
 
@@ -805,6 +1147,16 @@ internal class Punctuated<T : ToTokens, P : ToTokens> private constructor(
             lastValue = lastValue?.let(copyValue),
         )
 
+    public fun cloneFrom(
+        other: Punctuated<T, P>,
+        copyValue: (T) -> T = { it },
+        copyPunctuation: (P) -> P = { it },
+    ) {
+        innerList.clear()
+        innerList.addAll(other.innerList.map { (value, punctuation) -> copyValue(value) to copyPunctuation(punctuation) })
+        lastValue = other.lastValue?.let(copyValue)
+    }
+
     override fun toTokens(tokens: TokenStream) {
         for ((v, p) in innerList) {
             v.toTokens(tokens)
@@ -813,5 +1165,46 @@ internal class Punctuated<T : ToTokens, P : ToTokens> private constructor(
         lastValue?.toTokens(tokens)
     }
 
-    internal fun toSynPunctuated(): SynPunctuated = throw UnsupportedOperationException("use specific subclass")
+    internal fun toSynPunctuated(): SynPunctuated =
+        GenericPunctuatedList(
+            innerList.map { (value, punctuation) -> value to punctuation },
+            lastValue,
+        )
+
+    private fun pairEntries(): List<Pair<T, P>> =
+        buildList {
+            for ((value, punctuation) in innerList) add(Pair.Punctuated(value, punctuation))
+            val tail = lastValue
+            if (tail != null) add(Pair.End(tail))
+        }
+
+    private fun valueEntries(): List<T> =
+        buildList {
+            for ((value, _) in innerList) add(value)
+            val tail = lastValue
+            if (tail != null) add(tail)
+        }
 }
+
+private fun <T : ToTokens, P : ToTokens> doExtend(
+    punctuated: Punctuated<T, P>,
+    pairs: Iterator<Punctuated.Pair<T, P>>,
+) {
+    var noMore = false
+    for (pair in pairs) {
+        check(!noMore) { "punctuated extended with items after a Pair::End" }
+        val value = pair.value()
+        val punctuation = pair.punct()
+        if (punctuation == null) {
+            punctuated.pushValue(value)
+            noMore = true
+        } else {
+            punctuated.pushValue(value)
+            punctuated.pushPunct(punctuation)
+        }
+    }
+}
+
+internal fun <T> emptyPunctuatedIter(): Iterator<T> = emptyList<T>().iterator()
+
+internal fun <T> emptyPunctuatedIterMut(): Iterator<T> = emptyPunctuatedIter()

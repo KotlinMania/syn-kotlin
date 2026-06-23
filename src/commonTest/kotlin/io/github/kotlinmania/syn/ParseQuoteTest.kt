@@ -78,7 +78,7 @@ class ParseQuoteTest {
         val some = assertIs<Pat.TupleStruct>(cases[0])
         assertEquals("Some", some.path.toString())
         val lit = assertIs<Pat.Lit>(some.elems.single())
-        assertEquals(false, assertIs<Lit.Bool>(lit.lit).value.value)
+        assertEquals(false, assertIs<Lit.Bool>(lit.lit).value.value())
 
         val none = assertIs<Pat.Ident>(cases[1])
         assertEquals("None", none.ident.toString())
@@ -89,7 +89,7 @@ class ParseQuoteTest {
         val punctuated = parseLitOrPunctuated("true | true")
         assertEquals(2, punctuated.len())
         assertEquals(false, punctuated.trailingPunct())
-        assertTrue(punctuated.toList().all { assertIs<Lit.Bool>(it).value.value })
+        assertTrue(punctuated.toList().all { assertIs<Lit.Bool>(it).value.value() })
         assertIs<Or>(punctuated.punct(0))
     }
 
@@ -98,7 +98,7 @@ class ParseQuoteTest {
         val punctuated = parseLitOrPunctuated("true | true |")
         assertEquals(2, punctuated.len())
         assertEquals(true, punctuated.trailingPunct())
-        assertTrue(punctuated.toList().all { assertIs<Lit.Bool>(it).value.value })
+        assertTrue(punctuated.toList().all { assertIs<Lit.Bool>(it).value.value() })
         assertIs<Or>(punctuated.punct(0))
         assertIs<Or>(punctuated.punct(1))
     }
@@ -114,7 +114,7 @@ class ParseQuoteTest {
 
         val expr = assertIs<Stmt.ExprStmt>(stmts[1])
         val lit = assertIs<Expr.Lit>(expr.expr)
-        assertEquals(true, assertIs<Lit.Bool>(lit.lit).value.value)
+        assertEquals(true, assertIs<Lit.Bool>(lit.lit).value.value())
         assertNull(expr.semiToken)
     }
 }

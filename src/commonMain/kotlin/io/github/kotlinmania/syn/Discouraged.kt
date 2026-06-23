@@ -34,7 +34,7 @@ import io.github.kotlinmania.procmacro2.Delimiter
  * forking the receiver. Attempting to advance to any other stream will cause
  * a panic.
  */
-public fun ParseBuffer.advanceTo(fork: ParseBuffer) {
+internal fun ParseBuffer.advanceToSpeculative(fork: ParseBuffer) {
     require(sameScope(this.cursor(), fork.cursor())) {
         "fork was not derived from the advancing parse stream"
     }
@@ -88,7 +88,7 @@ public interface AnyDelimiter {
  * Returns the delimiter, the span of the delimiter token, and the nested
  * contents for further parsing.
  */
-public fun ParseBuffer.parseAnyDelimiter(): SynResult<AnyDelimiterResult> =
+internal fun ParseBuffer.parseAnyDelimiterImpl(): SynResult<AnyDelimiterResult> =
     step { cursor ->
         val any = cursor.anyGroup()
         if (any != null) {

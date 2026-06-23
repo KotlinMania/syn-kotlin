@@ -16,7 +16,7 @@ import io.github.kotlinmania.quote.__span
  * able to span the error correctly under the complete syntax tree node
  * without needing the unstable span join.
  */
-public interface Spanned {
+public sealed interface Spanned {
     /** Returns a span covering the complete contents of this syntax tree node. */
     public fun span(): Span
 }
@@ -30,7 +30,7 @@ public fun Span.span(): Span =
     this
 
 /** Private seal to prevent external implementation of [Spanned]. */
-internal interface SpannedSealed
+internal interface Sealed
 
 /** Auto-implement [Spanned] for all [ToTokens] implementations. */
 internal fun <T : ToTokens> spanOf(value: T): Span =

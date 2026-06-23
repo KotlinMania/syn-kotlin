@@ -96,22 +96,18 @@ public object AttributeListParseQuote : ParseQuote<List<Attribute>> {
 
 public object FieldParseQuote : ParseQuote<Field> {
     override fun parse(input: ParseStream): SynResult<Field> {
-        val attrs = parseOuterAttributes(input).getOrElse { return SynResult.failure(it) }
-        val vis = input.parse(VisibilityParse).getOrElse { return SynResult.failure(it) }
-
-        val ident: Ident?
-        val colonToken: io.github.kotlinmania.syn.token.Colon?
-        val isNamed = input.peek(IdentPeek) && input.peek2(ColonPeek) && !input.peek2(PathSepPeek)
-        if (isNamed) {
-            ident = input.parse(IdentParse).getOrElse { return SynResult.failure(it) }
-            colonToken = input.parse(ColonParse).getOrElse { return SynResult.failure(it) }
+        val ahead = input.fork()
+        parseOuterAttributes(ahead).getOrElse { return SynResult.failure(it) }
+        ahead.parse(VisibilityParse).getOrElse { return SynResult.failure(it) }
+        val isNamed =
+            (ahead.peek(IdentPeek) || ahead.peek(UnderscorePeek)) &&
+                ahead.peek2(ColonPeek) &&
+                !ahead.peek2(PathSepPeek)
+        return if (isNamed) {
+            Field.parseNamed(input)
         } else {
-            ident = null
-            colonToken = null
+            Field.parseUnnamed(input)
         }
-
-        val ty = parseTypeFull(input).getOrElse { return SynResult.failure(it) }
-        return SynResult.success(Field(attrs, vis, FieldMutability.None, ident, colonToken, ty))
     }
 }
 

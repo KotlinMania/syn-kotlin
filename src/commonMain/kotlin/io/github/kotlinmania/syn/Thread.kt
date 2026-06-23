@@ -2,45 +2,35 @@
 
 package io.github.kotlinmania.syn
 
-/**
- * A container that binds a value to the thread on which it was created.
- *
- * In Rust, `ThreadBound<T>` enforces that a value can only be accessed
- * from the thread that created it, using `std::thread::current()` to
- * validate access. In Kotlin, all code runs on the same thread within a
- * coroutine context, so the thread-safety check is unnecessary.
- *
- * The [get] method always returns the value directly. This mirrors the
- * Rust API surface without the runtime cost or panic path of the
- * original thread-check.
- */
+internal expect fun currentThreadBoundToken(): Any
+
+/** A container that binds a value to the context on which it was created. */
 public class ThreadBound<T> private constructor(
     private val value: T,
+    private val threadId: Any,
 ) {
     public companion object {
         /** Creates a new thread-bound container wrapping [value]. */
-        public fun <T> new(value: T): ThreadBound<T> = ThreadBound(value)
+        public fun <T> new(value: T): ThreadBound<T> = ThreadBound(value, currentThreadBoundToken())
     }
 
-    /** Returns the contained value. Always succeeds in Kotlin. */
-    public fun get(): T = value
+    /** Returns the contained value when accessed from the context that created it. */
+    public fun get(): T? =
+        if (currentThreadBoundToken() == threadId) value else null
 
-    override fun toString(): String = value.toString()
+    public fun clone(): ThreadBound<T> = ThreadBound(value, threadId)
+
+    override fun toString(): String = get()?.toString() ?: "unknown"
 
     override fun equals(other: Any?): Boolean =
-        other is ThreadBound<*> && value == other.value
+        other is ThreadBound<*> && value == other.value && threadId == other.threadId
 
-    override fun hashCode(): Int = value?.hashCode() ?: 0
+    override fun hashCode(): Int = 31 * (value?.hashCode() ?: 0) + threadId.hashCode()
 
-    public fun deepCopy(): ThreadBound<T> = ThreadBound(value)
+    public fun deepCopy(): ThreadBound<T> = clone()
 }
 
-/**
- * A reference that is safe to send across threads.
- *
- * In Kotlin, all objects are already safe to share across coroutines,
- * so this is a simple wrapper.
- */
+/** A reference that is safe to send across contexts. */
 public class SendBox<T> private constructor(
     private val value: T,
 ) {

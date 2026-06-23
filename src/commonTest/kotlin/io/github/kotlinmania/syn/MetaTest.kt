@@ -83,6 +83,40 @@ class MetaTest {
     }
 
     @Test
+    fun testParseKeywordPath() {
+        val meta = parseStr(MetaParse, "unsafe").getOrThrow()
+        assertTrue(meta is Meta.PathMeta)
+        assertEquals("unsafe", meta.path.toString())
+    }
+
+    @Test
+    fun testParserConsumesValues() {
+        var kind: String? = null
+        var hot = false
+        val teaParser =
+            parser { meta ->
+                when {
+                    meta.path.isIdent("kind") -> {
+                        val value = meta.value().getOrElse { return@parser SynResult.failure(it) }
+                        val lit = value.parse(LitStrParse).getOrElse { return@parser SynResult.failure(it) }
+                        kind = lit.value()
+                        SynResult.success(Unit)
+                    }
+                    meta.path.isIdent("hot") -> {
+                        hot = true
+                        SynResult.success(Unit)
+                    }
+                    else -> SynResult.failure(meta.error("unsupported tea property"))
+                }
+            }
+
+        val result = teaParser.parseStr("kind = \"EarlGrey\", hot,")
+        assertTrue(result.isSuccess)
+        assertEquals("EarlGrey", kind)
+        assertTrue(hot)
+    }
+
+    @Test
     fun testFatArrowAfterMeta() {
         val parser =
             parserFromFunction { input ->

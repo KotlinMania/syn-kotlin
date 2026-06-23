@@ -2503,8 +2503,9 @@ public object DotDotDotPeek : Peek {
         if (first.asChar() != '.' || first.spacing() != Spacing.Joint) return false
         val (second, rest2) = rest1.punct() ?: return false
         if (second.asChar() != '.' || second.spacing() != Spacing.Joint) return false
-        val third = rest2.punct()?.first ?: return false
-        return third.asChar() == '.' && third.spacing() == Spacing.Alone
+        val (third, rest3) = rest2.punct() ?: return false
+        return third.asChar() == '.' &&
+            (third.spacing() == Spacing.Alone || rest3.punct()?.first?.asChar() != '.')
     }
 
     override fun display(): String = "`...`"
@@ -2529,7 +2530,7 @@ public object DotDotDotParse : Parse<DotDotDot> {
             val (third, rest3) =
                 rest2.punct()
                     ?: return@step SynResult.failure(cursor.error("expected `...`"))
-            if (third.asChar() != '.' || third.spacing() != Spacing.Alone) {
+            if (third.asChar() != '.' || (third.spacing() != Spacing.Alone && rest3.punct()?.first?.asChar() == '.')) {
                 return@step SynResult.failure(cursor.error("expected `...`"))
             }
             SynResult.success(DotDotDot.from(listOf(first.span(), second.span(), third.span())) to rest3)

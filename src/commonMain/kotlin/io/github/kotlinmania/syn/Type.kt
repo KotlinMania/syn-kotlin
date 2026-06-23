@@ -16,6 +16,12 @@ import io.github.kotlinmania.syn.token.RArrow
  * preserves the original Kotlin API name.
  */
 public sealed class SynType : ToTokens {
+    public companion object : Parse<SynType> {
+        override fun parse(input: ParseStream): SynResult<SynType> = parseTypeFull(input)
+
+        public fun withoutPlus(input: ParseStream): SynResult<SynType> = parseTypeWithoutPlus(input)
+    }
+
     public data class Array(
         val elem: SynType,
         val len: Expr,
@@ -85,6 +91,14 @@ public sealed class SynType : ToTokens {
         val implToken: io.github.kotlinmania.syn.token.Impl,
         val bounds: TypeParamBoundList,
     ) : SynType() {
+        public companion object : Parse<ImplTrait> {
+            override fun parse(input: ParseStream): SynResult<ImplTrait> =
+                parseTypeImplTrait(input, allowPlus = true)
+
+            public fun withoutPlus(input: ParseStream): SynResult<ImplTrait> =
+                parseTypeImplTrait(input, allowPlus = false)
+        }
+
         override fun toTokens(tokens: TokenStream) {
             implToken.toTokens(tokens)
             bounds.toTokens(tokens)
@@ -198,6 +212,14 @@ public sealed class SynType : ToTokens {
         val dynToken: io.github.kotlinmania.syn.token.Dyn?,
         val bounds: TypeParamBoundList,
     ) : SynType() {
+        public companion object : Parse<TraitObject> {
+            override fun parse(input: ParseStream): SynResult<TraitObject> =
+                parseTypeTraitObject(input, allowPlus = true)
+
+            public fun withoutPlus(input: ParseStream): SynResult<TraitObject> =
+                parseTypeTraitObject(input, allowPlus = false)
+        }
+
         override fun toTokens(tokens: TokenStream) {
             dynToken?.toTokens(tokens)
             bounds.toTokens(tokens)
@@ -267,6 +289,13 @@ public data class BareVariadic(
 }
 
 public sealed class ReturnType : ToTokens {
+    public companion object : Parse<ReturnType> {
+        override fun parse(input: ParseStream): SynResult<ReturnType> = parseReturnType(input)
+
+        public fun withoutPlus(input: ParseStream): SynResult<ReturnType> =
+            parseReturnTypeWithoutPlus(input)
+    }
+
     public data object Default : ReturnType() {
         override fun toTokens(tokens: TokenStream) {
             // default return type emits nothing

@@ -11,6 +11,7 @@ import io.github.kotlinmania.procmacro2.Span
 import io.github.kotlinmania.procmacro2.TokenStream
 import io.github.kotlinmania.quote.ToTokens
 import io.github.kotlinmania.quote.append
+import io.github.kotlinmania.syn.Cursor
 import io.github.kotlinmania.syn.intoDelimSpan
 import io.github.kotlinmania.procmacro2.Group as ProcMacroGroup
 
@@ -20,17 +21,29 @@ import io.github.kotlinmania.procmacro2.Group as ProcMacroGroup
  * The type names in this package can be difficult to keep straight, so callers
  * usually use the root token facade when constructing syntax tree fields.
  */
-interface Token
+sealed interface Sealed
 
-interface SingleSpanToken : Token {
+sealed interface Token : Sealed
+
+data class WithSpan(
+    val span: Span,
+)
+
+sealed interface CustomToken : Token {
+    fun peek(cursor: Cursor): Boolean
+
+    fun display(): String
+}
+
+sealed interface SingleSpanToken : Token {
     val span: Span
 }
 
-interface MultiSpanToken : Token {
+sealed interface MultiSpanToken : Token {
     val spans: List<Span>
 }
 
-abstract class KeywordToken(
+sealed class KeywordToken(
     final override val span: Span,
 ) : SingleSpanToken,
     ToTokens {
@@ -50,7 +63,7 @@ abstract class KeywordToken(
         this::class.simpleName ?: text
 }
 
-abstract class PunctuationToken(
+sealed class PunctuationToken(
     final override val spans: List<Span>,
     private val text: String,
 ) : MultiSpanToken,
@@ -124,6 +137,9 @@ class Group private constructor(
         printingDelim(Delimiter.None, span, tokens, inner)
     }
 
+    fun clone(): Group =
+        Group(span)
+
     override fun toTokens(tokens: TokenStream) {
         surround(tokens) { }
     }
@@ -138,7 +154,7 @@ class Group private constructor(
         "Group"
 }
 
-abstract class DelimiterToken(
+sealed class DelimiterToken(
     val span: DelimSpan,
     private val delimiter: Delimiter,
 ) : Token {

@@ -102,6 +102,12 @@ public sealed class SynResult<out T> {
     }
 }
 
+/** The result of a Syn parser. */
+public typealias Result<T> = SynResult<T>
+
+/** Error returned when a Syn parser cannot parse the input tokens. */
+public typealias Error = SynError
+
 /**
  * Error returned when a Syn parser cannot parse the input tokens.
  *
@@ -204,7 +210,7 @@ public class SynError private constructor(
 
     /** The source location of the error. */
     public fun span(): Span {
-        val range = messages[0].span.get()
+        val range = messages[0].span.get() ?: return Span.callSite()
         return range.start.join(range.end) ?: range.start
     }
 
@@ -235,19 +241,29 @@ public class SynError private constructor(
     }
 
     override fun iterator(): Iterator<SynError> =
-        messages.map { SynError(mutableListOf(it.copy())) }.iterator()
+        iter()
 
-    public fun iter(): Iterator<SynError> =
-        iterator()
+    public fun iter(): Iter =
+        Iter(messages.map { SynError(mutableListOf(it.copy())) }.iterator())
 
     override fun toString(): String =
         messages.first().message
 
-    public fun intoIterable(): Iterable<SynError> =
-        messages.map { SynError(mutableListOf(it.copy())) }
+    public fun debugString(): String =
+        if (messages.size == 1) {
+            "Error(${messages[0].debugString()})"
+        } else {
+            "Error(${messages.joinToString(prefix = "[", postfix = "]") { it.debugString() }})"
+        }
 
-    public fun intoIter(): Iterator<SynError> =
-        intoIterable().iterator()
+    internal fun fmt(): String =
+        debugString()
+
+    public fun intoIterable(): Iterable<SynError> =
+        Iterable { intoIter() }
+
+    public fun intoIter(): IntoIter =
+        IntoIter(messages.map { SynError(mutableListOf(it.copy())) }.iterator())
 
     public fun clone(): SynError =
         SynError(messages.map { it.copy() }.toMutableList())
@@ -256,18 +272,56 @@ public class SynError private constructor(
         messages.addAll(other.messages)
     }
 
+    public fun extend(errors: Iterable<SynError>) {
+        for (error in errors) {
+            combine(error)
+        }
+    }
+
+    public fun extend(errors: Iterator<SynError>) {
+        while (errors.hasNext()) {
+            combine(errors.next())
+        }
+    }
+
     public fun deepCopy(): SynError =
         SynError(messages.mapTo(mutableListOf()) { it.copy() })
+}
+
+public class IntoIter internal constructor(
+    private val errors: Iterator<SynError>,
+) : Iterator<SynError> {
+    override fun hasNext(): Boolean =
+        errors.hasNext()
+
+    override fun next(): SynError =
+        errors.next()
+}
+
+public class Iter internal constructor(
+    private val errors: Iterator<SynError>,
+) : Iterator<SynError> {
+    override fun hasNext(): Boolean =
+        errors.hasNext()
+
+    override fun next(): SynError =
+        errors.next()
 }
 
 private data class ErrorMessage(
     val span: ThreadBound<SpanRange>,
     val message: String,
 ) {
+    fun debugString(): String =
+        message.debugStringLiteral()
+
+    fun fmt(): String =
+        debugString()
+
     fun toCompileError(tokens: TokenStream) {
         val range = span.get()
-        val start = range.start
-        val end = range.end
+        val start = range?.start ?: Span.callSite()
+        val end = range?.end ?: Span.callSite()
 
         tokens.append(TokenTree.Punct(Punct(':', Spacing.Joint, start)))
         tokens.append(TokenTree.Punct(Punct(':', Spacing.Alone, start)))
@@ -294,10 +348,29 @@ private data class SpanRange(
     val end: Span,
 )
 
-internal fun errorNewAt(scope: Span, cursor: Cursor, message: Any): SynError =
+internal fun newAt(scope: Span, cursor: Cursor, message: Any): SynError =
     if (cursor.eof()) {
         SynError.new(scope, "unexpected end of input, $message")
     } else {
         val span = openSpanOfGroup(cursor)
         SynError.new(span, message)
+    }
+
+internal fun errorNewAt(scope: Span, cursor: Cursor, message: Any): SynError =
+    newAt(scope, cursor, message)
+
+private fun String.debugStringLiteral(): String =
+    buildString(length + 2) {
+        append('"')
+        for (ch in this@debugStringLiteral) {
+            when (ch) {
+                '\\' -> append("\\\\")
+                '"' -> append("\\\"")
+                '\n' -> append("\\n")
+                '\r' -> append("\\r")
+                '\t' -> append("\\t")
+                else -> append(ch)
+            }
+        }
+        append('"')
     }

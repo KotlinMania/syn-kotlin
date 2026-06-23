@@ -111,9 +111,14 @@ public object StmtParse : Parse<Stmt> {
         parseStmt(input)
 }
 
-public fun parseStmt(input: ParseStream): SynResult<Stmt> {
+private data class AllowNoSemi(val value: Boolean)
+
+public fun parseStmt(input: ParseStream): SynResult<Stmt> =
+    parseStmt(input, AllowNoSemi(false))
+
+private fun parseStmt(input: ParseStream, allowNoSemi: AllowNoSemi): SynResult<Stmt> {
     val stmt = parseStmtFull(input).getOrElse { return SynResult.failure(it) }
-    if (stmtRequiresSemicolon(stmt)) {
+    if (!allowNoSemi.value && stmtRequiresSemicolon(stmt)) {
         return SynResult.failure(input.error("expected semicolon"))
     }
     return SynResult.success(stmt)
@@ -164,7 +169,7 @@ public fun parseWithin(input: ParseStream): SynResult<List<Stmt>> {
             stmts.add(Stmt.ExprStmt(Expr.Verbatim(TokenStream.new()), input.parse(SemiParse).getOrThrow()))
         }
         if (input.isEmpty()) break
-        val stmt = parseStmtFull(input).getOrElse { return SynResult.failure(it) }
+        val stmt = parseStmt(input, AllowNoSemi(true)).getOrElse { return SynResult.failure(it) }
         val requiresSemicolon = stmtRequiresSemicolon(stmt)
         stmts.add(stmt)
         if (!input.isEmpty() && requiresSemicolon) {
