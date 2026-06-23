@@ -6,6 +6,7 @@ import io.github.kotlinmania.procmacro2.Group as ProcMacroGroup
 import io.github.kotlinmania.procmacro2.TokenStream
 import io.github.kotlinmania.procmacro2.TokenTree
 import io.github.kotlinmania.syn.token.Group as TokenGroup
+import io.github.kotlinmania.syn.token.group as tokenGroup
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -68,5 +69,12 @@ class GroupTest {
 
         assertEquals(group, clone)
         assertEquals("Group", clone.toString())
+    }
+
+    @Test
+    fun tokenGroupFactoryMatchesCompanionConstructor() {
+        val span = Span.callSite()
+
+        assertEquals(TokenGroup.from(span), tokenGroup(span))
     }
 }

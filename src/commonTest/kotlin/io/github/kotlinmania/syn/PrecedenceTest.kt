@@ -43,7 +43,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class PrecedenceTest {
-    // Upstream test_rustc_precedence depends on nightly compiler internals and a full compiler source checkout.
+    // Upstream rustc precedence stress testing depends on nightly compiler internals and a full compiler source checkout.
 
     private fun intLit(): Expr.Lit =
         Expr.Lit(attrs = emptyList(), lit = Lit.Int(LitInt.new("1", "", Span.callSite())))
