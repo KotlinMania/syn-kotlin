@@ -5,12 +5,12 @@ Based on AST analysis, here are the concrete next steps.
 ## Summary
 
 - **Files Present:** 53/55 (96.4%)
-- **Function parity:** 240/1083 matched (target 1819) — 22.2%
+- **Function parity:** 280/1083 matched (target 1869) — 25.9%
 - **Class/type parity:** 41/121 matched (target 718) — 33.9%
-- **Combined symbol parity:** 281/1204 matched (target 2537) — 23.3%
-- **Average inline-code cosine:** 0.38 (function body across 53 matched files)
+- **Combined symbol parity:** 321/1204 matched (target 2587) — 26.7%
+- **Average inline-code cosine:** 0.39 (function body across 53 matched files)
 - **Average documentation cosine:** 0.32 (doc text across 53 matched files)
-- **Cheat-zeroed Files:** 10
+- **Cheat-zeroed Files:** 9
 - **Critical Issues:** 37 files with <0.60 function similarity
 
 ## Priority 1: Fix Incomplete High-Dependency Files
@@ -38,14 +38,14 @@ Based on AST analysis, here are the concrete next steps.
 - **Action:** Deep review - likely missing major functionality
 
 ### 3. expr
-- **Similarity:** 0.21 (needs 64% improvement)
+- **Similarity:** 0.37 (needs 48% improvement)
 - **Dependencies:** 10
-- **Priority Score:** 10656608.0
-- **Functions:** 1/65 matched (target 127)
-- **Missing functions:** `parse_without_eager_brace`, `parse_with_earlier_boundary_rule`, `peek`, `replace_attrs`, `from`, `eq`, `hash`, `fmt`, `span`, `is_named`, `parse`, `clone`, `parse_expr`, `parse_binop_rhs`, `peek_precedence`, `ambiguous_expr`, `expr_attrs`, `unary_expr`, `trailer_expr`, `trailer_helper`, `atom_expr`, `atom_labeled`, `expr_builtin`, `path_or_macro_or_struct`, `rest_of_path_or_macro_or_struct`, `paren_or_tuple`, `array_or_repeat`, `continue_parsing_early`, `expr_group`, `expr_let`, `expr_unary`, `expr_become`, `expr_closure`, `closure_arg`, `expr_break`, `expr_struct_helper`, `expr_range`, `parse_range_end`, `parse_obsolete`, `parse_multiple`, `multi_index`, `check_cast`, `outer_attrs_to_tokens`, `inner_attrs_to_tokens`, `print_subexpression`, `print_expr`, `print_expr_assign`, `print_expr_await`, `print_expr_binary`, `print_expr_break`, `print_expr_call`, `print_expr_cast`, `print_expr_closure`, `print_expr_field`, `print_expr_index`, `print_expr_let`, `print_expr_method_call`, `print_expr_range`, `print_expr_raw_addr`, `print_expr_reference`, `print_expr_return`, `print_expr_try`, `print_expr_unary`, `print_expr_yield`
-- **Types:** 0/1 matched (target 53)
+- **Priority Score:** 10256606.0
+- **Functions:** 41/65 matched (target 174)
+- **Missing functions:** `parse_without_eager_brace`, `parse_with_earlier_boundary_rule`, `peek`, `from`, `eq`, `hash`, `fmt`, `clone`, `atom_labeled`, `expr_builtin`, `rest_of_path_or_macro_or_struct`, `expr_group`, `expr_let`, `expr_unary`, `expr_become`, `expr_closure`, `closure_arg`, `expr_break`, `expr_struct_helper`, `expr_range`, `parse_range_end`, `parse_obsolete`, `parse_multiple`, `multi_index`
+- **Types:** 0/1 matched (target 54)
 - **Missing types:** `AllowStruct`
-- **Symbol Deficit:** 65 (functions: 64, types: 1)
+- **Symbol Deficit:** 25 (functions: 24, types: 1)
 - **Action:** Deep review - likely missing major functionality
 
 ## Priority 2: Port Missing High-Value Files
@@ -94,12 +94,12 @@ Every matched file is listed below with function and type symbol parity.
 ### 4. expr
 
 - **Target:** `syn.Expr`
-- **Similarity:** 0.21
+- **Similarity:** 0.37
 - **Dependents:** 10
-- **Priority Score:** 10656608.0
-- **Functions:** 1/65 matched (target 127)
-- **Missing functions:** `parse_without_eager_brace`, `parse_with_earlier_boundary_rule`, `peek`, `replace_attrs`, `from`, `eq`, `hash`, `fmt`, `span`, `is_named`, `parse`, `clone`, `parse_expr`, `parse_binop_rhs`, `peek_precedence`, `ambiguous_expr`, `expr_attrs`, `unary_expr`, `trailer_expr`, `trailer_helper`, `atom_expr`, `atom_labeled`, `expr_builtin`, `path_or_macro_or_struct`, `rest_of_path_or_macro_or_struct`, `paren_or_tuple`, `array_or_repeat`, `continue_parsing_early`, `expr_group`, `expr_let`, `expr_unary`, `expr_become`, `expr_closure`, `closure_arg`, `expr_break`, `expr_struct_helper`, `expr_range`, `parse_range_end`, `parse_obsolete`, `parse_multiple`, `multi_index`, `check_cast`, `outer_attrs_to_tokens`, `inner_attrs_to_tokens`, `print_subexpression`, `print_expr`, `print_expr_assign`, `print_expr_await`, `print_expr_binary`, `print_expr_break`, `print_expr_call`, `print_expr_cast`, `print_expr_closure`, `print_expr_field`, `print_expr_index`, `print_expr_let`, `print_expr_method_call`, `print_expr_range`, `print_expr_raw_addr`, `print_expr_reference`, `print_expr_return`, `print_expr_try`, `print_expr_unary`, `print_expr_yield`
-- **Types:** 0/1 matched (target 53)
+- **Priority Score:** 10256606.0
+- **Functions:** 41/65 matched (target 174)
+- **Missing functions:** `parse_without_eager_brace`, `parse_with_earlier_boundary_rule`, `peek`, `from`, `eq`, `hash`, `fmt`, `clone`, `atom_labeled`, `expr_builtin`, `rest_of_path_or_macro_or_struct`, `expr_group`, `expr_let`, `expr_unary`, `expr_become`, `expr_closure`, `closure_arg`, `expr_break`, `expr_struct_helper`, `expr_range`, `parse_range_end`, `parse_obsolete`, `parse_multiple`, `multi_index`
+- **Types:** 0/1 matched (target 54)
 - **Missing types:** `AllowStruct`
 
 ### 5. path
@@ -227,11 +227,11 @@ Every matched file is listed below with function and type symbol parity.
 
 ### 16. item
 
-- **Target:** `syn.Item [ZERO]`
-- **Similarity:** 0.00
+- **Target:** `syn.Item`
+- **Similarity:** 0.38
 - **Dependents:** 2
-- **Priority Score:** 2253210.0
-- **Functions:** 7/28 matched (target 84)
+- **Priority Score:** 2253206.2
+- **Functions:** 7/28 matched (target 86)
 - **Missing functions:** `replace_attrs`, `from`, `parse_rest_of_item`, `parse_optional_bounds`, `parse_optional_definition`, `parse_macro2`, `parse_item_use`, `parse_rest_of_fn`, `parse_fn_arg_or_variadic`, `parse_fn_args`, `parse_foreign_item_type`, `parse_item_type`, `parse_trait_or_trait_alias`, `parse_rest_of_trait`, `parse_start_of_trait_alias`, `parse_rest_of_trait_alias`, `parse_trait_item_type`, `parse_impl`, `parse_impl_item_fn`, `parse_impl_item_type`, `is_inherited`
 - **Types:** 0/4 matched (target 47)
 - **Missing types:** `FlexibleItemType`, `TypeDefaultness`, `WhereClauseLocation`, `FnArgOrVariadic`
@@ -311,9 +311,9 @@ Every matched file is listed below with function and type symbol parity.
 - **Similarity:** 0.58
 - **Dependents:** 1
 - **Priority Score:** 1020304.2
-- **Functions:** 1/1 matched (target 78)
+- **Functions:** 1/1 matched (target 79)
 - **Missing functions:** _none_
-- **Types:** 0/2 matched (target 4)
+- **Types:** 0/2 matched (target 3)
 - **Missing types:** `Input`, `Action`
 - **Lint issues:** 1
 
