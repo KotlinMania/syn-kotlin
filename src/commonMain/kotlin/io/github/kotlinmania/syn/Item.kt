@@ -232,7 +232,7 @@ public sealed class Item : ToTokens {
         }
     }
 
-    /** A macro invocation, including `macro_rules!` definitions. */
+    /** A macro invocation, including declarative macro definitions. */
     public data class Macro(
         public val attrs: List<Attribute>,
         public val ident: Ident?,

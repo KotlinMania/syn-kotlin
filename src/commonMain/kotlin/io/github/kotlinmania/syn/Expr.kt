@@ -1271,3 +1271,114 @@ public sealed class PointerMutability : ToTokens {
         }
     }
 }
+
+public object ExprParse : Parse<Expr> {
+    override fun parse(input: ParseStream): SynResult<Expr> = parseExpr(input)
+}
+
+public fun parseExpr(input: ParseStream): SynResult<Expr> = parseExprFull(input)
+
+public fun parseExprWithEarlierBoundaryRule(input: ParseStream): SynResult<Expr> =
+    parseExprWithEarlierBoundaryRuleImpl(input)
+
+public fun peekPrecedence(input: ParseStream): Precedence = peekPrecedenceImpl(input)
+
+public fun checkCast(input: ParseStream): SynResult<Unit> = checkCastImpl(input)
+
+public fun ambiguousExpr(input: ParseStream, allowStruct: Boolean): SynResult<Expr> =
+    ambiguousExprImpl(input, allowStruct)
+
+public fun exprAttrs(input: ParseStream): SynResult<List<Attribute>> = exprAttrsImpl(input)
+
+public fun unaryExpr(input: ParseStream, allowStruct: Boolean): SynResult<Expr> =
+    unaryExprImpl(input, allowStruct)
+
+public fun trailerExpr(input: ParseStream, allowStruct: Boolean, attrs: List<Attribute> = emptyList()): SynResult<Expr> =
+    trailerExprImpl(input, allowStruct, attrs)
+
+public fun trailerHelper(input: ParseStream, e: Expr, allowStruct: Boolean): SynResult<Expr> =
+    trailerHelperImpl(input, e, allowStruct)
+
+public fun atomExpr(input: ParseStream, allowStruct: Boolean): SynResult<Expr> =
+    atomExprImpl(input, allowStruct)
+
+public fun pathOrMacroOrStruct(input: ParseStream, allowStruct: Boolean): SynResult<Expr> =
+    pathOrMacroOrStructImpl(input, allowStruct)
+
+public fun parenOrTuple(input: ParseStream): SynResult<Expr> = parenOrTupleImpl(input)
+
+public fun arrayOrRepeat(input: ParseStream): SynResult<Expr> = arrayOrRepeatImpl(input)
+
+public fun parseExprBinary(input: ParseStream, lhs: Expr, allowStruct: Boolean, base: Precedence): SynResult<Expr> =
+    parseExprBinaryImpl(input, lhs, allowStruct, base)
+
+public fun parseBinopRhs(input: ParseStream, allowStruct: Boolean, left: Precedence): SynResult<Expr> =
+    parseBinopRhsImpl(input, allowStruct, left)
+
+public fun parseExprGroup(input: ParseStream): SynResult<Expr> = parseExprGroupImpl(input)
+
+public fun parseExprLet(input: ParseStream, allowStruct: Boolean): SynResult<Expr.Let> =
+    parseExprLetImpl(input, allowStruct)
+
+public fun parseFieldValue(input: ParseStream): SynResult<FieldValue> = parseFieldValueImpl(input)
+
+public fun parseMember(input: ParseStream): SynResult<Member> = parseMemberImpl(input)
+
+public fun continueParsingEarly(expr: Expr): Boolean = continueParsingEarlyImpl(expr)
+
+public fun Expr.replaceAttrs(attrs: List<Attribute>): Expr {
+    return when (this) {
+        is Expr.Binary -> copy(attrs = attrs)
+        is Expr.Assign -> copy(attrs = attrs)
+        is Expr.Unary -> copy(attrs = attrs)
+        is Expr.Call -> copy(attrs = attrs)
+        is Expr.MethodCall -> copy(attrs = attrs)
+        is Expr.Field -> copy(attrs = attrs)
+        is Expr.Index -> copy(attrs = attrs)
+        is Expr.Try -> copy(attrs = attrs)
+        is Expr.Await -> copy(attrs = attrs)
+        is Expr.Paren -> copy(attrs = attrs)
+        is Expr.Tuple -> copy(attrs = attrs)
+        is Expr.Array -> copy(attrs = attrs)
+        is Expr.Repeat -> copy(attrs = attrs)
+        is Expr.Range -> copy(attrs = attrs)
+        is Expr.If -> copy(attrs = attrs)
+        is Expr.While -> copy(attrs = attrs)
+        is Expr.ForLoop -> copy(attrs = attrs)
+        is Expr.Loop -> copy(attrs = attrs)
+        is Expr.Match -> copy(attrs = attrs)
+        is Expr.BlockExpr -> copy(attrs = attrs)
+        is Expr.Async -> copy(attrs = attrs)
+        is Expr.Unsafe -> copy(attrs = attrs)
+        is Expr.Return -> copy(attrs = attrs)
+        is Expr.Break -> copy(attrs = attrs)
+        is Expr.Continue -> copy(attrs = attrs)
+        is Expr.Closure -> copy(attrs = attrs)
+        is Expr.Macro -> copy(attrs = attrs)
+        is Expr.Struct -> copy(attrs = attrs)
+        is Expr.Path -> copy(attrs = attrs)
+        is Expr.Lit -> copy(attrs = attrs)
+        is Expr.Group -> copy(attrs = attrs)
+        is Expr.Infer -> copy(attrs = attrs)
+        is Expr.Let -> copy(attrs = attrs)
+        is Expr.Yield -> copy(attrs = attrs)
+        is Expr.TryBlock -> copy(attrs = attrs)
+        is Expr.Const -> copy(attrs = attrs)
+        is Expr.Reference -> copy(attrs = attrs)
+        is Expr.RawAddr -> copy(attrs = attrs)
+        is Expr.Cast -> copy(attrs = attrs)
+        is Expr.Verbatim -> this
+    }
+}
+
+public fun Expr.isNamed(name: String): Boolean {
+    if (this is Expr.Path) {
+        val last = path.segments.last()
+        return last?.ident?.toString() == name
+    }
+    return false
+}
+
+public fun Expr.span(): io.github.kotlinmania.procmacro2.Span {
+    return spanOf(this)
+}

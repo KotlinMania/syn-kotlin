@@ -325,13 +325,24 @@ private fun parseFnArgList(content: ParseStream): SynResult<FnArgList> {
     return SynResult.success(inputs)
 }
 
-internal fun parseReturnType(input: ParseStream): SynResult<ReturnType> {
+internal fun parseReturnType(input: ParseStream): SynResult<ReturnType> =
+    parseReturnType(input, allowPlus = true)
+
+internal fun parseReturnTypeWithoutPlus(input: ParseStream): SynResult<ReturnType> =
+    parseReturnType(input, allowPlus = false)
+
+private fun parseReturnType(input: ParseStream, allowPlus: Boolean): SynResult<ReturnType> {
     if (!input.peek(RArrowPeek)) {
         return SynResult.success(ReturnType.Default)
     }
     val arrowResult = input.parse(RArrowParse)
     if (arrowResult.isFailure) return asFailure(arrowResult)
-    val tyResult = parseTypeFull(input)
+    val tyResult =
+        if (allowPlus) {
+            parseTypeFull(input)
+        } else {
+            parseTypeWithoutPlus(input)
+        }
     if (tyResult.isFailure) return asFailure(tyResult)
     return SynResult.success(ReturnType.TypeReturn(arrowResult.getOrThrow(), tyResult.getOrThrow()))
 }
@@ -571,12 +582,13 @@ internal fun parseTypeParamBounds(
     input: ParseStream,
     stopAtEq: Boolean,
     allowPreciseCapture: Boolean = false,
+    allowPlus: Boolean = true,
 ): SynResult<TypeParamBoundList> {
     val bounds = TypeParamBoundList()
     while (!input.isEmpty() && !input.peek(CommaPeek) && !input.peek(GenericsGtPeek) && !input.peek(BracePeek) && !input.peek(WherePeek) && !input.peek(SemiPeek) && !(stopAtEq && input.peek(EqPeek))) {
         val bound = parseTypeParamBound(input, allowPreciseCapture).getOrElse { return SynResult.failure(it) }
         bounds.pushValue(bound)
-        if (!input.peek(PlusPeek)) break
+        if (!allowPlus || !input.peek(PlusPeek)) break
         bounds.pushPunct(input.parse(PlusParse).getOrThrow())
     }
     return SynResult.success(bounds)

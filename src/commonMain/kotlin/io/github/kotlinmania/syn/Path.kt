@@ -402,14 +402,7 @@ internal fun parseParenthesizedPathArguments(input: ParseStream): SynResult<Path
         inputs.pushPunct(comma)
     }
     parens.content.finishChildBuffer()
-    val output =
-        if (input.peek(RArrowPeek)) {
-            val arrow = input.parse(RArrowParse).getOrElse { return SynResult.failure(it) }
-            val ty = parseTypeFull(input).getOrElse { return SynResult.failure(it) }
-            ReturnType.TypeReturn(arrow, ty)
-        } else {
-            ReturnType.Default
-        }
+    val output = parseReturnTypeWithoutPlus(input).getOrElse { return SynResult.failure(it) }
     return SynResult.success(PathArguments.Parenthesized(parens.token, inputs, output))
 }
 

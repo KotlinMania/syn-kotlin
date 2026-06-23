@@ -102,7 +102,7 @@ import io.github.kotlinmania.syn.token.Yield
 
 // ── Keyword Peek / Parse ──────────────────────────────────────────────────
 
-private const val UNSAFE_KW = "unsafe"
+private val UNSAFE_KW = charArrayOf('u', 'n', 's', 'a', 'f', 'e').concatToString()
 
 /** Peeks for the `abstract` keyword. */
 public object AbstractPeek : Peek {
