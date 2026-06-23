@@ -486,7 +486,6 @@ public object LiteralParse : Parse<Literal> {
  * Refer to the module documentation for details about parsing in Syn.
  */
 public interface Parser<T> {
-    public typealias Output = T
 
     /**
      * Parse a procmacro2 token stream into the chosen syntax tree node.
