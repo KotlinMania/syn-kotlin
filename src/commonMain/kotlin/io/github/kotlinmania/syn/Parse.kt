@@ -281,6 +281,8 @@ public class StepCursor internal constructor(
     private val scope: Span,
     private val cursor: Cursor,
 ) {
+    public typealias Target = Cursor
+
     /**
      * Triggers an error at the current position of the parse stream.
      *
@@ -484,6 +486,8 @@ public object LiteralParse : Parse<Literal> {
  * Refer to the module documentation for details about parsing in Syn.
  */
 public interface Parser<T> {
+    public typealias Output = T
+
     /**
      * Parse a procmacro2 token stream into the chosen syntax tree node.
      *

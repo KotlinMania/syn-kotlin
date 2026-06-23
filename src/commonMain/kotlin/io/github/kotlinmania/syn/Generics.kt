@@ -21,6 +21,8 @@ public data class Generics(
     public var gtToken: Gt? = null,
     public var whereClause: WhereClause? = null,
 ) : ToTokens {
+    public typealias Item = GenericParam
+
     public companion object {
         public fun default(): Generics = Generics()
 
