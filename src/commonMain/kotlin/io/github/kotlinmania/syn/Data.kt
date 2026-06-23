@@ -30,6 +30,9 @@ public data class Variant(
 public sealed class Fields :
     Iterable<Field>,
     ToTokens {
+    public typealias Item = Field
+    public typealias IntoIter = Iterator<Field>
+
     public data class Named(
         val fields: FieldsNamed,
     ) : Fields() {

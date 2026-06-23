@@ -4,6 +4,12 @@ package io.github.kotlinmania.syn
 import io.github.kotlinmania.procmacro2.Span
 import io.github.kotlinmania.procmacro2.TokenStream
 
+public typealias Formatter = Any
+
+public typealias FmtResult = Unit
+
+public typealias TokenStream2 = TokenStream
+
 /**
  * Re-export convenience aliases for types that live in other modules.
  *
