@@ -61,8 +61,8 @@ public sealed class FieldMutability : ToTokens {
 }
 
 /** Strongly-typed parser for visibility. */
-public object VisibilityParse : Parse<Visibility> {
-    override fun parse(input: ParseStream): SynResult<Visibility> {
+public object VisibilityParse {
+    fun parse(input: ParseStream): SynResult<Visibility> {
         val emptyGroup = input.fork()
         val group = parseGroup(emptyGroup)
         if (group.isSuccess && group.getOrThrow().content.isEmpty()) {
@@ -74,7 +74,7 @@ public object VisibilityParse : Parse<Visibility> {
             return SynResult.success(Visibility.Inherited)
         }
 
-        val pubToken = input.parse(PubParse).getOrThrow()
+        val pubToken = PubParse.parse(input).getOrThrow()
 
         if (input.peek(ParenPeek)) {
             val ahead = input.fork()
@@ -86,16 +86,16 @@ public object VisibilityParse : Parse<Visibility> {
             if (content.peek(CratePeek) || content.peek(SelfValuePeek) || content.peek(SuperPeek)) {
                 val ident =
                     when {
-                        content.peek(CratePeek) -> identFromCrate(content.parse(CrateParse).getOrThrow())
-                        content.peek(SelfValuePeek) -> identFromSelfValue(content.parse(SelfValueParse).getOrThrow())
-                        else -> identFromSuper(content.parse(SuperParse).getOrThrow())
+                        content.peek(CratePeek) -> identFromCrate(CrateParse.parse(content).getOrThrow())
+                        content.peek(SelfValuePeek) -> identFromSelfValue(SelfValueParse.parse(content).getOrThrow())
+                        else -> identFromSuper(SuperParse.parse(content).getOrThrow())
                     }
                 if (content.isEmpty()) {
                     input.advanceTo(ahead)
                     return SynResult.success(Visibility.Restricted(pubToken, parens.token, null, Path.from(ident)))
                 }
             } else if (content.peek(InPeek)) {
-                val inToken = content.parse(InParse).getOrElse { return SynResult.failure(it) }
+                val inToken = InParse.parse(content).getOrElse { return SynResult.failure(it) }
                 val path = parseModStylePath(content).getOrElse { return SynResult.failure(it) }
                 if (!content.isEmpty()) {
                     return SynResult.failure(content.error("unexpected token"))
@@ -118,8 +118,8 @@ public object PubPeek : Peek {
     override fun display(): String = "`pub`"
 }
 
-public object PubParse : Parse<Pub> {
-    override fun parse(input: ParseStream): SynResult<Pub> =
+public object PubParse {
+    fun parse(input: ParseStream): SynResult<Pub> =
         input.step { cursor ->
             val (ident, rest) = cursor.ident() ?: return@step SynResult.failure(cursor.error("expected `pub`"))
             if (ident.toString() != "pub") return@step SynResult.failure(cursor.error("expected `pub`"))
@@ -138,8 +138,8 @@ public object InPeek : Peek {
     override fun display(): String = "`in`"
 }
 
-public object InParse : Parse<In> {
-    override fun parse(input: ParseStream): SynResult<In> =
+public object InParse {
+    fun parse(input: ParseStream): SynResult<In> =
         input.step { cursor ->
             val (ident, rest) = cursor.ident() ?: return@step SynResult.failure(cursor.error("expected `in`"))
             if (ident.toString() != "in") return@step SynResult.failure(cursor.error("expected `in`"))
