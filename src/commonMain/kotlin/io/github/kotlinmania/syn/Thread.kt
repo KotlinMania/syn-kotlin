@@ -15,7 +15,7 @@ public class ThreadBound<T> private constructor(
     public fun get(): T? =
         if (currentThreadBoundToken() == threadId) value else null
 
-    public fun clone(): ThreadBound<T> = this
+    public fun clone(): ThreadBound<T> = ThreadBound(value, threadId)
 
     override fun toString(): String =
         when (val v = get()) {
