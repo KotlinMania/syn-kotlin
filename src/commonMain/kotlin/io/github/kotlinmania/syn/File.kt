@@ -22,12 +22,12 @@ public data class File(
     public fun deepCopy(): File = File(shebang, attrs.map { it.deepCopy() }, items.map { it })
 }
 
-public object FileParse : Parse<File> {
-    override fun parse(input: ParseStream): SynResult<File> {
+public object FileParse {
+    fun parse(input: ParseStream): SynResult<File> {
         val attrs = parseInnerAttributes(input).getOrElse { return SynResult.failure(it) }
         val items = mutableListOf<Item>()
         while (!input.isEmpty()) {
-            items.add(input.parse(ItemParse).getOrElse { return SynResult.failure(it) })
+            items.add(ItemParse.parse(input).getOrElse { return SynResult.failure(it) })
         }
         return SynResult.success(File(null, attrs, items))
     }

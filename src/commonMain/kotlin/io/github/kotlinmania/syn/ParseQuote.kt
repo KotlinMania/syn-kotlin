@@ -13,7 +13,7 @@ public interface ParseQuote {
     public fun parse(input: ParseStream): SynResult<Any?>
 }
 
-public fun parseQuoteFromParse(parse: Parse<Any?>): ParseQuote =
+public fun parseQuoteFromParse(parse: Parse): ParseQuote =
     object : ParseQuote {
         override fun parse(input: ParseStream): SynResult<Any?> = parse.parse(input)
     }
@@ -37,7 +37,7 @@ public object FieldParseQuote : ParseQuote {
     override fun parse(input: ParseStream): SynResult<Field> {
         val ahead = input.fork()
         parseOuterAttributes(ahead).getOrElse { return SynResult.failure(it) }
-        ahead.parse(VisibilityParse).getOrElse { return SynResult.failure(it) }
+        VisibilityParse.parse(ahead).getOrElse { return SynResult.failure(it) }
         val isNamed =
             (ahead.peek(IdentPeek) || ahead.peek(UnderscorePeek)) &&
                 ahead.peek2(ColonPeek) &&

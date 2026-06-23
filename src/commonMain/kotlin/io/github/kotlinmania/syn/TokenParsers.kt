@@ -115,8 +115,8 @@ public object AbstractPeek : Peek {
 }
 
 /** Parses the abstract keyword token. */
-public object AbstractParse : Parse<Abstract> {
-    override fun parse(input: ParseStream): SynResult<Abstract> =
+public object AbstractParse {
+    fun parse(input: ParseStream): SynResult<Abstract> =
         input.step { cursor ->
             val (ident, rest) =
                 cursor.ident()
@@ -139,8 +139,8 @@ public object AsPeek : Peek {
 }
 
 /** Parses the casting keyword token. */
-public object AsParse : Parse<As> {
-    override fun parse(input: ParseStream): SynResult<As> =
+public object AsParse {
+    fun parse(input: ParseStream): SynResult<As> =
         input.step { cursor ->
             val (ident, rest) =
                 cursor.ident()
@@ -163,8 +163,8 @@ public object AsyncPeek : Peek {
 }
 
 /** Parses the asynchronous keyword token. */
-public object AsyncParse : Parse<Async> {
-    override fun parse(input: ParseStream): SynResult<Async> =
+public object AsyncParse {
+    fun parse(input: ParseStream): SynResult<Async> =
         input.step { cursor ->
             val (ident, rest) =
                 cursor.ident()
@@ -187,8 +187,8 @@ public object AutoPeek : Peek {
 }
 
 /** Parses the auto keyword token. */
-public object AutoParse : Parse<Auto> {
-    override fun parse(input: ParseStream): SynResult<Auto> =
+public object AutoParse {
+    fun parse(input: ParseStream): SynResult<Auto> =
         input.step { cursor ->
             val (ident, rest) =
                 cursor.ident()
@@ -211,8 +211,8 @@ public object AwaitPeek : Peek {
 }
 
 /** Parses the await-expression keyword token. */
-public object AwaitParse : Parse<Await> {
-    override fun parse(input: ParseStream): SynResult<Await> =
+public object AwaitParse {
+    fun parse(input: ParseStream): SynResult<Await> =
         input.step { cursor ->
             val (ident, rest) =
                 cursor.ident()
@@ -235,8 +235,8 @@ public object BecomePeek : Peek {
 }
 
 /** Parses the become keyword token. */
-public object BecomeParse : Parse<Become> {
-    override fun parse(input: ParseStream): SynResult<Become> =
+public object BecomeParse {
+    fun parse(input: ParseStream): SynResult<Become> =
         input.step { cursor ->
             val (ident, rest) =
                 cursor.ident()
@@ -259,8 +259,8 @@ public object BoxPeek : Peek {
 }
 
 /** Parses the heap-alloc keyword token. */
-public object BoxParse : Parse<Box> {
-    override fun parse(input: ParseStream): SynResult<Box> =
+public object BoxParse {
+    fun parse(input: ParseStream): SynResult<Box> =
         input.step { cursor ->
             val (ident, rest) =
                 cursor.ident()
@@ -283,8 +283,8 @@ public object BreakPeek : Peek {
 }
 
 /** Parses the loop-break keyword token. */
-public object BreakParse : Parse<Break> {
-    override fun parse(input: ParseStream): SynResult<Break> =
+public object BreakParse {
+    fun parse(input: ParseStream): SynResult<Break> =
         input.step { cursor ->
             val (ident, rest) =
                 cursor.ident()
@@ -307,8 +307,8 @@ public object ConstPeek : Peek {
 }
 
 /** Parses the compile-time-constant keyword token. */
-public object ConstParse : Parse<Const> {
-    override fun parse(input: ParseStream): SynResult<Const> =
+public object ConstParse {
+    fun parse(input: ParseStream): SynResult<Const> =
         input.step { cursor ->
             val (ident, rest) =
                 cursor.ident()
@@ -331,8 +331,8 @@ public object ContinuePeek : Peek {
 }
 
 /** Parses the loop-continue keyword token. */
-public object ContinueParse : Parse<Continue> {
-    override fun parse(input: ParseStream): SynResult<Continue> =
+public object ContinueParse {
+    fun parse(input: ParseStream): SynResult<Continue> =
         input.step { cursor ->
             val (ident, rest) =
                 cursor.ident()
@@ -355,8 +355,8 @@ public object CratePeek : Peek {
 }
 
 /** Parses the crate-root keyword token. */
-public object CrateParse : Parse<Crate> {
-    override fun parse(input: ParseStream): SynResult<Crate> =
+public object CrateParse {
+    fun parse(input: ParseStream): SynResult<Crate> =
         input.step { cursor ->
             val (ident, rest) =
                 cursor.ident()
@@ -379,8 +379,8 @@ public object DefaultPeek : Peek {
 }
 
 /** Parses the default keyword token. */
-public object DefaultParse : Parse<Default> {
-    override fun parse(input: ParseStream): SynResult<Default> =
+public object DefaultParse {
+    fun parse(input: ParseStream): SynResult<Default> =
         input.step { cursor ->
             val (ident, rest) =
                 cursor.ident()
@@ -403,8 +403,8 @@ public object DoPeek : Peek {
 }
 
 /** Parses the do keyword token. */
-public object DoParse : Parse<Do> {
-    override fun parse(input: ParseStream): SynResult<Do> =
+public object DoParse {
+    fun parse(input: ParseStream): SynResult<Do> =
         input.step { cursor ->
             val (ident, rest) =
                 cursor.ident()
@@ -427,8 +427,8 @@ public object DynPeek : Peek {
 }
 
 /** Parses the dynamic-dispatch keyword token. */
-public object DynParse : Parse<Dyn> {
-    override fun parse(input: ParseStream): SynResult<Dyn> =
+public object DynParse {
+    fun parse(input: ParseStream): SynResult<Dyn> =
         input.step { cursor ->
             val (ident, rest) =
                 cursor.ident()
@@ -451,8 +451,8 @@ public object ElsePeek : Peek {
 }
 
 /** Parses the alternative keyword token. */
-public object ElseParse : Parse<Else> {
-    override fun parse(input: ParseStream): SynResult<Else> =
+public object ElseParse {
+    fun parse(input: ParseStream): SynResult<Else> =
         input.step { cursor ->
             val (ident, rest) =
                 cursor.ident()
@@ -475,8 +475,8 @@ public object EnumPeek : Peek {
 }
 
 /** Parses the enumeration keyword token. */
-public object EnumParse : Parse<Enum> {
-    override fun parse(input: ParseStream): SynResult<Enum> =
+public object EnumParse {
+    fun parse(input: ParseStream): SynResult<Enum> =
         input.step { cursor ->
             val (ident, rest) =
                 cursor.ident()
@@ -499,8 +499,8 @@ public object ExternPeek : Peek {
 }
 
 /** Parses the foreign-function keyword token. */
-public object ExternParse : Parse<Extern> {
-    override fun parse(input: ParseStream): SynResult<Extern> =
+public object ExternParse {
+    fun parse(input: ParseStream): SynResult<Extern> =
         input.step { cursor ->
             val (ident, rest) =
                 cursor.ident()
@@ -523,8 +523,8 @@ public object FinalPeek : Peek {
 }
 
 /** Parses the final keyword token. */
-public object FinalParse : Parse<Final> {
-    override fun parse(input: ParseStream): SynResult<Final> =
+public object FinalParse {
+    fun parse(input: ParseStream): SynResult<Final> =
         input.step { cursor ->
             val (ident, rest) =
                 cursor.ident()
@@ -547,8 +547,8 @@ public object FnPeek : Peek {
 }
 
 /** Parses the function keyword token. */
-public object FnParse : Parse<Fn> {
-    override fun parse(input: ParseStream): SynResult<Fn> =
+public object FnParse {
+    fun parse(input: ParseStream): SynResult<Fn> =
         input.step { cursor ->
             val (ident, rest) =
                 cursor.ident()
@@ -571,8 +571,8 @@ public object ForPeek : Peek {
 }
 
 /** Parses the for-loop keyword token. */
-public object ForParse : Parse<For> {
-    override fun parse(input: ParseStream): SynResult<For> =
+public object ForParse {
+    fun parse(input: ParseStream): SynResult<For> =
         input.step { cursor ->
             val (ident, rest) =
                 cursor.ident()
@@ -595,8 +595,8 @@ public object IfPeek : Peek {
 }
 
 /** Parses the conditional keyword token. */
-public object IfParse : Parse<If> {
-    override fun parse(input: ParseStream): SynResult<If> =
+public object IfParse {
+    fun parse(input: ParseStream): SynResult<If> =
         input.step { cursor ->
             val (ident, rest) =
                 cursor.ident()
@@ -619,8 +619,8 @@ public object ImplPeek : Peek {
 }
 
 /** Parses the implementation keyword token. */
-public object ImplParse : Parse<Impl> {
-    override fun parse(input: ParseStream): SynResult<Impl> =
+public object ImplParse {
+    fun parse(input: ParseStream): SynResult<Impl> =
         input.step { cursor ->
             val (ident, rest) =
                 cursor.ident()
@@ -643,8 +643,8 @@ public object LetPeek : Peek {
 }
 
 /** Parses the binding keyword token. */
-public object LetParse : Parse<Let> {
-    override fun parse(input: ParseStream): SynResult<Let> =
+public object LetParse {
+    fun parse(input: ParseStream): SynResult<Let> =
         input.step { cursor ->
             val (ident, rest) =
                 cursor.ident()
@@ -667,8 +667,8 @@ public object LoopPeek : Peek {
 }
 
 /** Parses the infinite-loop keyword token. */
-public object LoopParse : Parse<Loop> {
-    override fun parse(input: ParseStream): SynResult<Loop> =
+public object LoopParse {
+    fun parse(input: ParseStream): SynResult<Loop> =
         input.step { cursor ->
             val (ident, rest) =
                 cursor.ident()
@@ -691,8 +691,8 @@ public object MacroPeek : Peek {
 }
 
 /** Parses the macro-definition keyword token. */
-public object MacroParse : Parse<Macro> {
-    override fun parse(input: ParseStream): SynResult<Macro> =
+public object MacroParse {
+    fun parse(input: ParseStream): SynResult<Macro> =
         input.step { cursor ->
             val (ident, rest) =
                 cursor.ident()
@@ -715,8 +715,8 @@ public object MatchPeek : Peek {
 }
 
 /** Parses the pattern-match keyword token. */
-public object MatchParse : Parse<Match> {
-    override fun parse(input: ParseStream): SynResult<Match> =
+public object MatchParse {
+    fun parse(input: ParseStream): SynResult<Match> =
         input.step { cursor ->
             val (ident, rest) =
                 cursor.ident()
@@ -739,8 +739,8 @@ public object ModPeek : Peek {
 }
 
 /** Parses the module keyword token. */
-public object ModParse : Parse<Mod> {
-    override fun parse(input: ParseStream): SynResult<Mod> =
+public object ModParse {
+    fun parse(input: ParseStream): SynResult<Mod> =
         input.step { cursor ->
             val (ident, rest) =
                 cursor.ident()
@@ -763,8 +763,8 @@ public object MovePeek : Peek {
 }
 
 /** Parses the capture keyword token. */
-public object MoveParse : Parse<Move> {
-    override fun parse(input: ParseStream): SynResult<Move> =
+public object MoveParse {
+    fun parse(input: ParseStream): SynResult<Move> =
         input.step { cursor ->
             val (ident, rest) =
                 cursor.ident()
@@ -787,8 +787,8 @@ public object MutPeek : Peek {
 }
 
 /** Parses the mutable keyword token. */
-public object MutParse : Parse<Mut> {
-    override fun parse(input: ParseStream): SynResult<Mut> =
+public object MutParse {
+    fun parse(input: ParseStream): SynResult<Mut> =
         input.step { cursor ->
             val (ident, rest) =
                 cursor.ident()
@@ -811,8 +811,8 @@ public object OverridePeek : Peek {
 }
 
 /** Parses the override keyword token. */
-public object OverrideParse : Parse<Override> {
-    override fun parse(input: ParseStream): SynResult<Override> =
+public object OverrideParse {
+    fun parse(input: ParseStream): SynResult<Override> =
         input.step { cursor ->
             val (ident, rest) =
                 cursor.ident()
@@ -835,8 +835,8 @@ public object PrivPeek : Peek {
 }
 
 /** Parses the priv keyword token. */
-public object PrivParse : Parse<Priv> {
-    override fun parse(input: ParseStream): SynResult<Priv> =
+public object PrivParse {
+    fun parse(input: ParseStream): SynResult<Priv> =
         input.step { cursor ->
             val (ident, rest) =
                 cursor.ident()
@@ -859,8 +859,8 @@ public object RawPeek : Peek {
 }
 
 /** Parses the raw-identifier keyword token. */
-public object RawParse : Parse<Raw> {
-    override fun parse(input: ParseStream): SynResult<Raw> =
+public object RawParse {
+    fun parse(input: ParseStream): SynResult<Raw> =
         input.step { cursor ->
             val (ident, rest) =
                 cursor.ident()
@@ -883,8 +883,8 @@ public object RefPeek : Peek {
 }
 
 /** Parses the reference-binding keyword token. */
-public object RefParse : Parse<Ref> {
-    override fun parse(input: ParseStream): SynResult<Ref> =
+public object RefParse {
+    fun parse(input: ParseStream): SynResult<Ref> =
         input.step { cursor ->
             val (ident, rest) =
                 cursor.ident()
@@ -907,8 +907,8 @@ public object ReturnPeek : Peek {
 }
 
 /** Parses the return-value keyword token. */
-public object ReturnParse : Parse<Return> {
-    override fun parse(input: ParseStream): SynResult<Return> =
+public object ReturnParse {
+    fun parse(input: ParseStream): SynResult<Return> =
         input.step { cursor ->
             val (ident, rest) =
                 cursor.ident()
@@ -931,8 +931,8 @@ public object StaticPeek : Peek {
 }
 
 /** Parses the static-storage keyword token. */
-public object StaticParse : Parse<Static> {
-    override fun parse(input: ParseStream): SynResult<Static> =
+public object StaticParse {
+    fun parse(input: ParseStream): SynResult<Static> =
         input.step { cursor ->
             val (ident, rest) =
                 cursor.ident()
@@ -955,8 +955,8 @@ public object StructPeek : Peek {
 }
 
 /** Parses the structure keyword token. */
-public object StructParse : Parse<Struct> {
-    override fun parse(input: ParseStream): SynResult<Struct> =
+public object StructParse {
+    fun parse(input: ParseStream): SynResult<Struct> =
         input.step { cursor ->
             val (ident, rest) =
                 cursor.ident()
@@ -979,8 +979,8 @@ public object SuperPeek : Peek {
 }
 
 /** Parses the parent-scope keyword token. */
-public object SuperParse : Parse<Super> {
-    override fun parse(input: ParseStream): SynResult<Super> =
+public object SuperParse {
+    fun parse(input: ParseStream): SynResult<Super> =
         input.step { cursor ->
             val (ident, rest) =
                 cursor.ident()
@@ -1003,8 +1003,8 @@ public object TraitPeek : Peek {
 }
 
 /** Parses the trait-definition keyword token. */
-public object TraitParse : Parse<io.github.kotlinmania.syn.token.Trait> {
-    override fun parse(input: ParseStream): SynResult<io.github.kotlinmania.syn.token.Trait> =
+public object TraitParse {
+    fun parse(input: ParseStream): SynResult<io.github.kotlinmania.syn.token.Trait> =
         input.step { cursor ->
             val (ident, rest) =
                 cursor.ident()
@@ -1030,8 +1030,8 @@ public object TryPeek : Peek {
 }
 
 /** Parses the try keyword token. */
-public object TryParse : Parse<Try> {
-    override fun parse(input: ParseStream): SynResult<Try> =
+public object TryParse {
+    fun parse(input: ParseStream): SynResult<Try> =
         input.step { cursor ->
             val (ident, rest) =
                 cursor.ident()
@@ -1054,8 +1054,8 @@ public object UnionPeek : Peek {
 }
 
 /** Parses the union-definition keyword token. */
-public object UnionParse : Parse<Union> {
-    override fun parse(input: ParseStream): SynResult<Union> =
+public object UnionParse {
+    fun parse(input: ParseStream): SynResult<Union> =
         input.step { cursor ->
             val (ident, rest) =
                 cursor.ident()
@@ -1078,8 +1078,8 @@ public object UnsafePeek : Peek {
 }
 
 /** Parses the memory-safety keyword. */
-public object UnsafeParse : Parse<Unsafe> {
-    override fun parse(input: ParseStream): SynResult<Unsafe> =
+public object UnsafeParse {
+    fun parse(input: ParseStream): SynResult<Unsafe> =
         input.step { cursor ->
             val (ident, rest) =
                 cursor.ident()
@@ -1102,8 +1102,8 @@ public object UnsizedPeek : Peek {
 }
 
 /** Parses the unsized keyword token. */
-public object UnsizedParse : Parse<Unsized> {
-    override fun parse(input: ParseStream): SynResult<Unsized> =
+public object UnsizedParse {
+    fun parse(input: ParseStream): SynResult<Unsized> =
         input.step { cursor ->
             val (ident, rest) =
                 cursor.ident()
@@ -1126,8 +1126,8 @@ public object UsePeek : Peek {
 }
 
 /** Parses the import keyword token. */
-public object UseParse : Parse<Use> {
-    override fun parse(input: ParseStream): SynResult<Use> =
+public object UseParse {
+    fun parse(input: ParseStream): SynResult<Use> =
         input.step { cursor ->
             val (ident, rest) =
                 cursor.ident()
@@ -1150,8 +1150,8 @@ public object VirtualPeek : Peek {
 }
 
 /** Parses the virtual keyword token. */
-public object VirtualParse : Parse<Virtual> {
-    override fun parse(input: ParseStream): SynResult<Virtual> =
+public object VirtualParse {
+    fun parse(input: ParseStream): SynResult<Virtual> =
         input.step { cursor ->
             val (ident, rest) =
                 cursor.ident()
@@ -1174,8 +1174,8 @@ public object WherePeek : Peek {
 }
 
 /** Parses the constraint keyword token. */
-public object WhereParse : Parse<Where> {
-    override fun parse(input: ParseStream): SynResult<Where> =
+public object WhereParse {
+    fun parse(input: ParseStream): SynResult<Where> =
         input.step { cursor ->
             val (ident, rest) =
                 cursor.ident()
@@ -1198,8 +1198,8 @@ public object WhilePeek : Peek {
 }
 
 /** Parses the conditional-loop keyword token. */
-public object WhileParse : Parse<While> {
-    override fun parse(input: ParseStream): SynResult<While> =
+public object WhileParse {
+    fun parse(input: ParseStream): SynResult<While> =
         input.step { cursor ->
             val (ident, rest) =
                 cursor.ident()
@@ -1222,8 +1222,8 @@ public object YieldPeek : Peek {
 }
 
 /** Parses the generator-yield keyword token. */
-public object YieldParse : Parse<Yield> {
-    override fun parse(input: ParseStream): SynResult<Yield> =
+public object YieldParse {
+    fun parse(input: ParseStream): SynResult<Yield> =
         input.step { cursor ->
             val (ident, rest) =
                 cursor.ident()
@@ -1246,8 +1246,8 @@ public object SelfTypePeek : Peek {
 }
 
 /** Parses the capital-self keyword token. */
-public object SelfTypeParse : Parse<io.github.kotlinmania.syn.token.SelfType> {
-    override fun parse(input: ParseStream): SynResult<io.github.kotlinmania.syn.token.SelfType> =
+public object SelfTypeParse {
+    fun parse(input: ParseStream): SynResult<io.github.kotlinmania.syn.token.SelfType> =
         input.step { cursor ->
             val (ident, rest) =
                 cursor.ident()
@@ -1273,8 +1273,8 @@ public object SelfValuePeek : Peek {
 }
 
 /** Parses the lowercase-self keyword token. */
-public object SelfValueParse : Parse<io.github.kotlinmania.syn.token.SelfValue> {
-    override fun parse(input: ParseStream): SynResult<io.github.kotlinmania.syn.token.SelfValue> =
+public object SelfValueParse {
+    fun parse(input: ParseStream): SynResult<io.github.kotlinmania.syn.token.SelfValue> =
         input.step { cursor ->
             val (ident, rest) =
                 cursor.ident()
@@ -1300,8 +1300,8 @@ public object SynTypePeek : Peek {
 }
 
 /** Parses the type-alias keyword token. */
-public object SynTypeParse : Parse<io.github.kotlinmania.syn.token.SynTypeToken> {
-    override fun parse(input: ParseStream): SynResult<io.github.kotlinmania.syn.token.SynTypeToken> =
+public object SynTypeParse {
+    fun parse(input: ParseStream): SynResult<io.github.kotlinmania.syn.token.SynTypeToken> =
         input.step { cursor ->
             val (ident, rest) =
                 cursor.ident()
@@ -1327,8 +1327,8 @@ public object TypeofPeek : Peek {
 }
 
 /** Parses the typeof keyword token. */
-public object TypeofParse : Parse<io.github.kotlinmania.syn.token.Typeof> {
-    override fun parse(input: ParseStream): SynResult<io.github.kotlinmania.syn.token.Typeof> =
+public object TypeofParse {
+    fun parse(input: ParseStream): SynResult<io.github.kotlinmania.syn.token.Typeof> =
         input.step { cursor ->
             val (ident, rest) =
                 cursor.ident()
@@ -1356,8 +1356,8 @@ public object AndPeek : Peek {
 }
 
 /** Parses the `&` punctuation token. */
-public object AndParse : Parse<And> {
-    override fun parse(input: ParseStream): SynResult<And> =
+public object AndParse {
+    fun parse(input: ParseStream): SynResult<And> =
         input.step { cursor ->
             val (punct, rest) =
                 cursor.punct()
@@ -1380,8 +1380,8 @@ public object AtPeek : Peek {
 }
 
 /** Parses the `@` punctuation token. */
-public object AtParse : Parse<At> {
-    override fun parse(input: ParseStream): SynResult<At> =
+public object AtParse {
+    fun parse(input: ParseStream): SynResult<At> =
         input.step { cursor ->
             val (punct, rest) =
                 cursor.punct()
@@ -1404,8 +1404,8 @@ public object CaretPeek : Peek {
 }
 
 /** Parses the `^` punctuation token. */
-public object CaretParse : Parse<Caret> {
-    override fun parse(input: ParseStream): SynResult<Caret> =
+public object CaretParse {
+    fun parse(input: ParseStream): SynResult<Caret> =
         input.step { cursor ->
             val (punct, rest) =
                 cursor.punct()
@@ -1428,8 +1428,8 @@ public object ColonPeek : Peek {
 }
 
 /** Parses the `:` punctuation token. */
-public object ColonParse : Parse<Colon> {
-    override fun parse(input: ParseStream): SynResult<Colon> =
+public object ColonParse {
+    fun parse(input: ParseStream): SynResult<Colon> =
         input.step { cursor ->
             val (punct, rest) =
                 cursor.punct()
@@ -1452,8 +1452,8 @@ public object DollarPeek : Peek {
 }
 
 /** Parses the `$` punctuation token. */
-public object DollarParse : Parse<Dollar> {
-    override fun parse(input: ParseStream): SynResult<Dollar> =
+public object DollarParse {
+    fun parse(input: ParseStream): SynResult<Dollar> =
         input.step { cursor ->
             val (punct, rest) =
                 cursor.punct()
@@ -1476,8 +1476,8 @@ public object DotPeek : Peek {
 }
 
 /** Parses the `.` punctuation token. */
-public object DotParse : Parse<Dot> {
-    override fun parse(input: ParseStream): SynResult<Dot> =
+public object DotParse {
+    fun parse(input: ParseStream): SynResult<Dot> =
         input.step { cursor ->
             val (punct, rest) =
                 cursor.punct()
@@ -1500,8 +1500,8 @@ public object EqPeek : Peek {
 }
 
 /** Parses the `=` punctuation token. */
-public object EqParse : Parse<Eq> {
-    override fun parse(input: ParseStream): SynResult<Eq> =
+public object EqParse {
+    fun parse(input: ParseStream): SynResult<Eq> =
         input.step { cursor ->
             val (punct, rest) =
                 cursor.punct()
@@ -1524,8 +1524,8 @@ public object GtPeek : Peek {
 }
 
 /** Parses the `>` punctuation token. */
-public object GtParse : Parse<Gt> {
-    override fun parse(input: ParseStream): SynResult<Gt> =
+public object GtParse {
+    fun parse(input: ParseStream): SynResult<Gt> =
         input.step { cursor ->
             val (punct, rest) =
                 cursor.punct()
@@ -1548,8 +1548,8 @@ public object LtPeek : Peek {
 }
 
 /** Parses the `<` punctuation token. */
-public object LtParse : Parse<Lt> {
-    override fun parse(input: ParseStream): SynResult<Lt> =
+public object LtParse {
+    fun parse(input: ParseStream): SynResult<Lt> =
         input.step { cursor ->
             val (punct, rest) =
                 cursor.punct()
@@ -1572,8 +1572,8 @@ public object MinusPeek : Peek {
 }
 
 /** Parses the `-` punctuation token. */
-public object MinusParse : Parse<Minus> {
-    override fun parse(input: ParseStream): SynResult<Minus> =
+public object MinusParse {
+    fun parse(input: ParseStream): SynResult<Minus> =
         input.step { cursor ->
             val (punct, rest) =
                 cursor.punct()
@@ -1596,8 +1596,8 @@ public object NotPeek : Peek {
 }
 
 /** Parses the `!` punctuation token. */
-public object NotParse : Parse<Not> {
-    override fun parse(input: ParseStream): SynResult<Not> =
+public object NotParse {
+    fun parse(input: ParseStream): SynResult<Not> =
         input.step { cursor ->
             val (punct, rest) =
                 cursor.punct()
@@ -1620,8 +1620,8 @@ public object OrPeek : Peek {
 }
 
 /** Parses the `|` punctuation token. */
-public object OrParse : Parse<Or> {
-    override fun parse(input: ParseStream): SynResult<Or> =
+public object OrParse {
+    fun parse(input: ParseStream): SynResult<Or> =
         input.step { cursor ->
             val (punct, rest) =
                 cursor.punct()
@@ -1644,8 +1644,8 @@ public object PercentPeek : Peek {
 }
 
 /** Parses the `%` punctuation token. */
-public object PercentParse : Parse<Percent> {
-    override fun parse(input: ParseStream): SynResult<Percent> =
+public object PercentParse {
+    fun parse(input: ParseStream): SynResult<Percent> =
         input.step { cursor ->
             val (punct, rest) =
                 cursor.punct()
@@ -1668,8 +1668,8 @@ public object PlusPeek : Peek {
 }
 
 /** Parses the `+` punctuation token. */
-public object PlusParse : Parse<Plus> {
-    override fun parse(input: ParseStream): SynResult<Plus> =
+public object PlusParse {
+    fun parse(input: ParseStream): SynResult<Plus> =
         input.step { cursor ->
             val (punct, rest) =
                 cursor.punct()
@@ -1692,8 +1692,8 @@ public object PoundPeek : Peek {
 }
 
 /** Parses the `#` punctuation token. */
-public object PoundParse : Parse<Pound> {
-    override fun parse(input: ParseStream): SynResult<Pound> =
+public object PoundParse {
+    fun parse(input: ParseStream): SynResult<Pound> =
         input.step { cursor ->
             val (punct, rest) =
                 cursor.punct()
@@ -1716,8 +1716,8 @@ public object QuestionPeek : Peek {
 }
 
 /** Parses the `?` punctuation token. */
-public object QuestionParse : Parse<Question> {
-    override fun parse(input: ParseStream): SynResult<Question> =
+public object QuestionParse {
+    fun parse(input: ParseStream): SynResult<Question> =
         input.step { cursor ->
             val (punct, rest) =
                 cursor.punct()
@@ -1740,8 +1740,8 @@ public object SemiPeek : Peek {
 }
 
 /** Parses the `;` punctuation token. */
-public object SemiParse : Parse<Semi> {
-    override fun parse(input: ParseStream): SynResult<Semi> =
+public object SemiParse {
+    fun parse(input: ParseStream): SynResult<Semi> =
         input.step { cursor ->
             val (punct, rest) =
                 cursor.punct()
@@ -1764,8 +1764,8 @@ public object SlashPeek : Peek {
 }
 
 /** Parses the `/` punctuation token. */
-public object SlashParse : Parse<Slash> {
-    override fun parse(input: ParseStream): SynResult<Slash> =
+public object SlashParse {
+    fun parse(input: ParseStream): SynResult<Slash> =
         input.step { cursor ->
             val (punct, rest) =
                 cursor.punct()
@@ -1788,8 +1788,8 @@ public object StarPeek : Peek {
 }
 
 /** Parses the `*` punctuation token. */
-public object StarParse : Parse<Star> {
-    override fun parse(input: ParseStream): SynResult<Star> =
+public object StarParse {
+    fun parse(input: ParseStream): SynResult<Star> =
         input.step { cursor ->
             val (punct, rest) =
                 cursor.punct()
@@ -1812,8 +1812,8 @@ public object TildePeek : Peek {
 }
 
 /** Parses the `~` punctuation token. */
-public object TildeParse : Parse<Tilde> {
-    override fun parse(input: ParseStream): SynResult<Tilde> =
+public object TildeParse {
+    fun parse(input: ParseStream): SynResult<Tilde> =
         input.step { cursor ->
             val (punct, rest) =
                 cursor.punct()
@@ -1836,8 +1836,8 @@ public object UnderscorePeek : Peek {
 }
 
 /** Parses the `_` token. */
-public object UnderscoreParse : Parse<io.github.kotlinmania.syn.token.Underscore> {
-    override fun parse(input: ParseStream): SynResult<io.github.kotlinmania.syn.token.Underscore> =
+public object UnderscoreParse {
+    fun parse(input: ParseStream): SynResult<io.github.kotlinmania.syn.token.Underscore> =
         input.step { cursor ->
             val (ident, rest) =
                 cursor.ident()
@@ -1867,8 +1867,8 @@ public object AndAndPeek : Peek {
 }
 
 /** Parses the `&&` punctuation token. */
-public object AndAndParse : Parse<AndAnd> {
-    override fun parse(input: ParseStream): SynResult<AndAnd> =
+public object AndAndParse {
+    fun parse(input: ParseStream): SynResult<AndAnd> =
         input.step { cursor ->
             val (first, rest1) =
                 cursor.punct()
@@ -1899,8 +1899,8 @@ public object AndEqPeek : Peek {
 }
 
 /** Parses the `&=` punctuation token. */
-public object AndEqParse : Parse<AndEq> {
-    override fun parse(input: ParseStream): SynResult<AndEq> =
+public object AndEqParse {
+    fun parse(input: ParseStream): SynResult<AndEq> =
         input.step { cursor ->
             val (first, rest1) =
                 cursor.punct()
@@ -1931,8 +1931,8 @@ public object CaretEqPeek : Peek {
 }
 
 /** Parses the `^=` punctuation token. */
-public object CaretEqParse : Parse<CaretEq> {
-    override fun parse(input: ParseStream): SynResult<CaretEq> =
+public object CaretEqParse {
+    fun parse(input: ParseStream): SynResult<CaretEq> =
         input.step { cursor ->
             val (first, rest1) =
                 cursor.punct()
@@ -1963,8 +1963,8 @@ public object EqEqPeek : Peek {
 }
 
 /** Parses the `==` punctuation token. */
-public object EqEqParse : Parse<EqEq> {
-    override fun parse(input: ParseStream): SynResult<EqEq> =
+public object EqEqParse {
+    fun parse(input: ParseStream): SynResult<EqEq> =
         input.step { cursor ->
             val (first, rest1) =
                 cursor.punct()
@@ -1995,8 +1995,8 @@ public object FatArrowPeek : Peek {
 }
 
 /** Parses the `=>` punctuation token. */
-public object FatArrowParse : Parse<FatArrow> {
-    override fun parse(input: ParseStream): SynResult<FatArrow> =
+public object FatArrowParse {
+    fun parse(input: ParseStream): SynResult<FatArrow> =
         input.step { cursor ->
             val (first, rest1) =
                 cursor.punct()
@@ -2027,8 +2027,8 @@ public object GePeek : Peek {
 }
 
 /** Parses the `>=` punctuation token. */
-public object GeParse : Parse<Ge> {
-    override fun parse(input: ParseStream): SynResult<Ge> =
+public object GeParse {
+    fun parse(input: ParseStream): SynResult<Ge> =
         input.step { cursor ->
             val (first, rest1) =
                 cursor.punct()
@@ -2059,8 +2059,8 @@ public object LePeek : Peek {
 }
 
 /** Parses the `<=` punctuation token. */
-public object LeParse : Parse<Le> {
-    override fun parse(input: ParseStream): SynResult<Le> =
+public object LeParse {
+    fun parse(input: ParseStream): SynResult<Le> =
         input.step { cursor ->
             val (first, rest1) =
                 cursor.punct()
@@ -2091,8 +2091,8 @@ public object LArrowPeek : Peek {
 }
 
 /** Parses the `<-` punctuation token. */
-public object LArrowParse : Parse<LArrow> {
-    override fun parse(input: ParseStream): SynResult<LArrow> =
+public object LArrowParse {
+    fun parse(input: ParseStream): SynResult<LArrow> =
         input.step { cursor ->
             val (first, rest1) =
                 cursor.punct()
@@ -2123,8 +2123,8 @@ public object MinusEqPeek : Peek {
 }
 
 /** Parses the `-=` punctuation token. */
-public object MinusEqParse : Parse<MinusEq> {
-    override fun parse(input: ParseStream): SynResult<MinusEq> =
+public object MinusEqParse {
+    fun parse(input: ParseStream): SynResult<MinusEq> =
         input.step { cursor ->
             val (first, rest1) =
                 cursor.punct()
@@ -2155,8 +2155,8 @@ public object NePeek : Peek {
 }
 
 /** Parses the `!=` punctuation token. */
-public object NeParse : Parse<Ne> {
-    override fun parse(input: ParseStream): SynResult<Ne> =
+public object NeParse {
+    fun parse(input: ParseStream): SynResult<Ne> =
         input.step { cursor ->
             val (first, rest1) =
                 cursor.punct()
@@ -2187,8 +2187,8 @@ public object OrEqPeek : Peek {
 }
 
 /** Parses the `|=` punctuation token. */
-public object OrEqParse : Parse<OrEq> {
-    override fun parse(input: ParseStream): SynResult<OrEq> =
+public object OrEqParse {
+    fun parse(input: ParseStream): SynResult<OrEq> =
         input.step { cursor ->
             val (first, rest1) =
                 cursor.punct()
@@ -2219,8 +2219,8 @@ public object OrOrPeek : Peek {
 }
 
 /** Parses the `||` punctuation token. */
-public object OrOrParse : Parse<OrOr> {
-    override fun parse(input: ParseStream): SynResult<OrOr> =
+public object OrOrParse {
+    fun parse(input: ParseStream): SynResult<OrOr> =
         input.step { cursor ->
             val (first, rest1) =
                 cursor.punct()
@@ -2251,8 +2251,8 @@ public object PercentEqPeek : Peek {
 }
 
 /** Parses the `%=` punctuation token. */
-public object PercentEqParse : Parse<PercentEq> {
-    override fun parse(input: ParseStream): SynResult<PercentEq> =
+public object PercentEqParse {
+    fun parse(input: ParseStream): SynResult<PercentEq> =
         input.step { cursor ->
             val (first, rest1) =
                 cursor.punct()
@@ -2283,8 +2283,8 @@ public object PlusEqPeek : Peek {
 }
 
 /** Parses the `+=` punctuation token. */
-public object PlusEqParse : Parse<PlusEq> {
-    override fun parse(input: ParseStream): SynResult<PlusEq> =
+public object PlusEqParse {
+    fun parse(input: ParseStream): SynResult<PlusEq> =
         input.step { cursor ->
             val (first, rest1) =
                 cursor.punct()
@@ -2315,8 +2315,8 @@ public object RArrowPeek : Peek {
 }
 
 /** Parses the `->` punctuation token. */
-public object RArrowParse : Parse<RArrow> {
-    override fun parse(input: ParseStream): SynResult<RArrow> =
+public object RArrowParse {
+    fun parse(input: ParseStream): SynResult<RArrow> =
         input.step { cursor ->
             val (first, rest1) =
                 cursor.punct()
@@ -2347,8 +2347,8 @@ public object SlashEqPeek : Peek {
 }
 
 /** Parses the `/=` punctuation token. */
-public object SlashEqParse : Parse<SlashEq> {
-    override fun parse(input: ParseStream): SynResult<SlashEq> =
+public object SlashEqParse {
+    fun parse(input: ParseStream): SynResult<SlashEq> =
         input.step { cursor ->
             val (first, rest1) =
                 cursor.punct()
@@ -2379,8 +2379,8 @@ public object StarEqPeek : Peek {
 }
 
 /** Parses the `*=` punctuation token. */
-public object StarEqParse : Parse<StarEq> {
-    override fun parse(input: ParseStream): SynResult<StarEq> =
+public object StarEqParse {
+    fun parse(input: ParseStream): SynResult<StarEq> =
         input.step { cursor ->
             val (first, rest1) =
                 cursor.punct()
@@ -2411,8 +2411,8 @@ public object ShlPeek : Peek {
 }
 
 /** Parses the `<<` punctuation token. */
-public object ShlParse : Parse<Shl> {
-    override fun parse(input: ParseStream): SynResult<Shl> =
+public object ShlParse {
+    fun parse(input: ParseStream): SynResult<Shl> =
         input.step { cursor ->
             val (first, rest1) =
                 cursor.punct()
@@ -2443,8 +2443,8 @@ public object ShrPeek : Peek {
 }
 
 /** Parses the `>>` punctuation token. */
-public object ShrParse : Parse<Shr> {
-    override fun parse(input: ParseStream): SynResult<Shr> =
+public object ShrParse {
+    fun parse(input: ParseStream): SynResult<Shr> =
         input.step { cursor ->
             val (first, rest1) =
                 cursor.punct()
@@ -2475,8 +2475,8 @@ public object DotDotPeek : Peek {
 }
 
 /** Parses the `..` punctuation token. */
-public object DotDotParse : Parse<DotDot> {
-    override fun parse(input: ParseStream): SynResult<DotDot> =
+public object DotDotParse {
+    fun parse(input: ParseStream): SynResult<DotDot> =
         input.step { cursor ->
             val (first, rest1) =
                 cursor.punct()
@@ -2512,8 +2512,8 @@ public object DotDotDotPeek : Peek {
 }
 
 /** Parses the `...` punctuation token. */
-public object DotDotDotParse : Parse<DotDotDot> {
-    override fun parse(input: ParseStream): SynResult<DotDotDot> =
+public object DotDotDotParse {
+    fun parse(input: ParseStream): SynResult<DotDotDot> =
         input.step { cursor ->
             val (first, rest1) =
                 cursor.punct()
@@ -2552,8 +2552,8 @@ public object DotDotEqPeek : Peek {
 }
 
 /** Parses the `..=` punctuation token. */
-public object DotDotEqParse : Parse<DotDotEq> {
-    override fun parse(input: ParseStream): SynResult<DotDotEq> =
+public object DotDotEqParse {
+    fun parse(input: ParseStream): SynResult<DotDotEq> =
         input.step { cursor ->
             val (first, rest1) =
                 cursor.punct()
@@ -2592,8 +2592,8 @@ public object ShlEqPeek : Peek {
 }
 
 /** Parses the `<<=` punctuation token. */
-public object ShlEqParse : Parse<ShlEq> {
-    override fun parse(input: ParseStream): SynResult<ShlEq> =
+public object ShlEqParse {
+    fun parse(input: ParseStream): SynResult<ShlEq> =
         input.step { cursor ->
             val (first, rest1) =
                 cursor.punct()
@@ -2632,8 +2632,8 @@ public object ShrEqPeek : Peek {
 }
 
 /** Parses the `>>=` punctuation token. */
-public object ShrEqParse : Parse<ShrEq> {
-    override fun parse(input: ParseStream): SynResult<ShrEq> =
+public object ShrEqParse {
+    fun parse(input: ParseStream): SynResult<ShrEq> =
         input.step { cursor ->
             val (first, rest1) =
                 cursor.punct()

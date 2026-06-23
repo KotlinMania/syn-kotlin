@@ -21,10 +21,10 @@ public data class Macro(
     public val delimiter: MacroDelimiter,
     public val tokens: TokenStream,
 ) : ToTokens {
-    public companion object : Parse<Macro> {
-        override fun parse(input: ParseStream): SynResult<Macro> {
+    public companion object {
+        fun parse(input: ParseStream): SynResult<Macro> {
             val path = Path.parseModStyle(input).getOrElse { return SynResult.failure(it) }
-            val bangToken = input.parse(NotParse).getOrElse { return SynResult.failure(it) }
+            val bangToken = NotParse.parse(input).getOrElse { return SynResult.failure(it) }
             val (delimiter, content) = parseDelimiter(input).getOrElse { return SynResult.failure(it) }
             return SynResult.success(Macro(path, bangToken, delimiter, content))
         }
@@ -72,14 +72,10 @@ public fun MacroDelimiter.surround(tokens: TokenStream, content: TokenStream) {
  * Parse the tokens within the macro invocation's delimiters into a syntax
  * tree node.
  */
-public fun <T> Macro.parseBody(parser: Parse<T>): SynResult<T> =
+public fun Macro.parseBody(parser: Parse): SynResult<*> =
     parseBodyWith(parser::parse)
 
-/**
- * Parse the tokens within the macro invocation's delimiters using the
- * given parser function.
- */
-public fun <T> Macro.parseBodyWith(parser: (ParseStream) -> SynResult<T>): SynResult<T> {
+public fun Macro.parseBodyWith(parser: (ParseStream) -> SynResult<*>): SynResult<*> {
     val scope =
         when (delimiter) {
             is MacroDelimiter.Paren -> delimiter.token.span.close()

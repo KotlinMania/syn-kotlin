@@ -6,7 +6,7 @@ import io.github.kotlinmania.procmacro2.Span
 public fun parseMetaPath(input: ParseStream): SynResult<Path> {
     val leadingColon =
         if (input.peek(PathSepPeek)) {
-            input.parse(PathSepParse).getOrElse { return SynResult.failure(it) }
+            PathSepParse.parse(input).getOrElse { return SynResult.failure(it) }
         } else {
             null
         }
@@ -24,7 +24,7 @@ public fun parseMetaPath(input: ParseStream): SynResult<Path> {
     }
 
     while (input.peek(PathSepPeek)) {
-        val punct = input.parse(PathSepParse).getOrElse { return SynResult.failure(it) }
+        val punct = PathSepParse.parse(input).getOrElse { return SynResult.failure(it) }
         segments.pushPunct(punct)
         val ident = identParseAny(input).getOrElse { return SynResult.failure(it) }
         segments.pushValue(PathSegment.from(ident))
@@ -46,7 +46,7 @@ public fun parseMetaPath(input: ParseStream): SynResult<Path> {
  * Creates a parser usable with [parseMacroInput] from a
  * handler function that processes each nested attribute property.
  */
-public fun parser(logic: (ParseNestedMeta) -> SynResult<Unit>): Parser<Unit> =
+public fun parser(logic: (ParseNestedMeta) -> SynResult<Unit>): Parser =
     parserFromFunction { input ->
         if (input.isEmpty()) {
             SynResult.success(Unit)
@@ -55,7 +55,7 @@ public fun parser(logic: (ParseNestedMeta) -> SynResult<Unit>): Parser<Unit> =
         }
     }
 
-public fun metaParser(logic: (ParseNestedMeta) -> SynResult<Unit>): Parser<Unit> =
+public fun metaParser(logic: (ParseNestedMeta) -> SynResult<Unit>): Parser =
     parser(logic)
 
 public class ParseNestedMeta(
@@ -95,7 +95,7 @@ internal fun parseNestedMetaInternal(
         val result = logic(ParseNestedMeta(path, input))
         if (result.isFailure) return result
         if (input.isEmpty()) return SynResult.success(Unit)
-        input.parse(CommaParse).getOrElse { return SynResult.failure(it) }
+        CommaParse.parse(input).getOrElse { return SynResult.failure(it) }
         if (input.isEmpty()) return SynResult.success(Unit)
     }
 }
