@@ -234,28 +234,28 @@ private fun parseItemExternCrate(
     vis: Visibility,
     input: ParseStream,
 ): SynResult<Item> {
-    val externToken = input.parse(ExternParse).getOrElse { return SynResult.failure(it) }
-    val crateToken = input.parse(CrateParse).getOrElse { return SynResult.failure(it) }
+    val externToken = ExternParse.parse(input).getOrElse { return SynResult.failure(it) }
+    val crateToken = CrateParse.parse(input).getOrElse { return SynResult.failure(it) }
     val ident =
         if (input.peek(SelfValuePeek)) {
-            from(input.parse(SelfValueParse).getOrElse { return SynResult.failure(it) })
+            from(SelfValueParse.parse(input).getOrElse { return SynResult.failure(it) })
         } else {
-            input.parse(IdentParse).getOrElse { return SynResult.failure(it) }
+            IdentParse.parse(input).getOrElse { return SynResult.failure(it) }
         }
     val rename =
         if (input.peek(AsPeek)) {
-            val asToken = input.parse(AsParse).getOrElse { return SynResult.failure(it) }
+            val asToken = AsParse.parse(input).getOrElse { return SynResult.failure(it) }
             val renamed =
                 if (input.peek(UnderscorePeek)) {
-                    from(input.parse(UnderscoreParse).getOrElse { return SynResult.failure(it) })
+                    from(UnderscoreParse.parse(input).getOrElse { return SynResult.failure(it) })
                 } else {
-                    input.parse(IdentParse).getOrElse { return SynResult.failure(it) }
+                    IdentParse.parse(input).getOrElse { return SynResult.failure(it) }
                 }
             AsIdent(asToken, renamed)
         } else {
             null
         }
-    val semiToken = input.parse(SemiParse).getOrElse { return SynResult.failure(it) }
+    val semiToken = SemiParse.parse(input).getOrElse { return SynResult.failure(it) }
     return SynResult.success(Item.ExternCrate(attrs, vis, externToken, crateToken, ident, rename, semiToken))
 }
 
@@ -264,7 +264,7 @@ private fun parseItemForeignMod(
     input: ParseStream,
 ): SynResult<Item> {
     val itemAttrs = attrs.toMutableList()
-    val unsafety = input.parse(UnsafeParse).getOrNull()
+    val unsafety = UnsafeParse.parse(input).getOrNull()
     val abi = parseAbi(input).getOrElse { return SynResult.failure(it) }
     val bracesVal = braced(input).getOrElse { return SynResult.failure(it) }
     parseInner(bracesVal.content, itemAttrs).getOrElse { return SynResult.failure(it) }
@@ -281,7 +281,7 @@ private fun parseItemForeignMod(
 internal fun parseForeignItem(input: ParseStream): SynResult<ForeignItem> {
     val begin = input.fork()
     val attrs = parseOuterAttributes(input).getOrElse { return SynResult.failure(it) }
-    val vis = input.parse(VisibilityParse).getOrElse { return SynResult.failure(it) }
+    val vis = VisibilityParse.parse(input).getOrElse { return SynResult.failure(it) }
 
     if (peekSignature(input)) {
         val sig = parseSignature(input).getOrElse { return SynResult.failure(it) }
@@ -289,23 +289,23 @@ internal fun parseForeignItem(input: ParseStream): SynResult<ForeignItem> {
             parseBlock(input).getOrElse { return SynResult.failure(it) }
             return SynResult.success(ForeignItem.Verbatim(between(begin, input)))
         }
-        val semiToken = input.parse(SemiParse).getOrElse { return SynResult.failure(it) }
+        val semiToken = SemiParse.parse(input).getOrElse { return SynResult.failure(it) }
         return SynResult.success(ForeignItem.Fn(attrs, vis, sig, semiToken))
     }
 
     if (input.peek(StaticPeek) || (input.peek(UnsafePeek) && input.peek2(StaticPeek))) {
-        val unsafety = input.parse(UnsafeParse).getOrNull()
-        val staticToken = input.parse(StaticParse).getOrElse { return SynResult.failure(it) }
-        val mutability = input.parse(StaticMutabilityParse).getOrElse { return SynResult.failure(it) }
-        val ident = input.parse(IdentParse).getOrElse { return SynResult.failure(it) }
-        val colonToken = input.parse(ColonParse).getOrElse { return SynResult.failure(it) }
+        val unsafety = UnsafeParse.parse(input).getOrNull()
+        val staticToken = StaticParse.parse(input).getOrElse { return SynResult.failure(it) }
+        val mutability = StaticMutabilityParse.parse(input).getOrElse { return SynResult.failure(it) }
+        val ident = IdentParse.parse(input).getOrElse { return SynResult.failure(it) }
+        val colonToken = ColonParse.parse(input).getOrElse { return SynResult.failure(it) }
         val ty = parseTypeFull(input).getOrElse { return SynResult.failure(it) }
         val hasValue = input.peek(EqPeek)
         if (hasValue) {
-            input.parse(EqParse).getOrElse { return SynResult.failure(it) }
+            EqParse.parse(input).getOrElse { return SynResult.failure(it) }
             parseExprFull(input).getOrElse { return SynResult.failure(it) }
         }
-        val semiToken = input.parse(SemiParse).getOrElse { return SynResult.failure(it) }
+        val semiToken = SemiParse.parse(input).getOrElse { return SynResult.failure(it) }
         return if (unsafety != null || hasValue) {
             SynResult.success(ForeignItem.Verbatim(between(begin, input)))
         } else {
@@ -679,8 +679,8 @@ private data class FlexibleItemType(
                     TypeDefaultness.Optional -> input.parse(DefaultParse).getOrNull()
                     TypeDefaultness.Disallowed -> null
                 }
-            val typeToken = input.parse(SynTypeParse).getOrElse { return SynResult.failure(it) }
-            val ident = input.parse(IdentParse).getOrElse { return SynResult.failure(it) }
+    val typeToken = SynTypeParse.parse(input).getOrElse { return SynResult.failure(it) }
+    val ident = IdentParse.parse(input).getOrElse { return SynResult.failure(it) }
             val generics = parseGenerics(input).getOrElse { return SynResult.failure(it) }
             val (colonToken, bounds) = parseOptionalBounds(input).getOrElse { return SynResult.failure(it) }
 
