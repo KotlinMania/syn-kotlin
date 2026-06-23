@@ -5,9 +5,9 @@ Based on AST analysis, here are the concrete next steps.
 ## Summary
 
 - **Files Present:** 53/55 (96.4%)
-- **Function parity:** 1081/1083 matched (target 3184) — 99.8%
-- **Class/type parity:** 96/121 matched (target 817) — 79.3%
-- **Combined symbol parity:** 1177/1204 matched (target 4001) — 97.8%
+- **Function parity:** 1080/1083 matched (target 3189) — 99.7%
+- **Class/type parity:** 97/121 matched (target 818) — 80.2%
+- **Combined symbol parity:** 1177/1204 matched (target 4007) — 97.8%
 - **Average inline-code cosine:** 0.55 (function body across 53 matched files)
 - **Average documentation cosine:** 0.32 (doc text across 53 matched files)
 - **Cheat-zeroed Files:** 3
@@ -27,10 +27,10 @@ Based on AST analysis, here are the concrete next steps.
 - **Action:** Review and complete missing sections
 
 ### 2. punctuated
-- **Similarity:** 0.47 (needs 38% improvement)
+- **Similarity:** 0.49 (needs 36% improvement)
 - **Dependencies:** 13
 - **Priority Score:** 13026805.0
-- **Functions:** 54/54 matched (target 301)
+- **Functions:** 54/54 matched (target 305)
 - **Missing functions:** _none_
 - **Types:** 12/14 matched (target 34)
 - **Missing types:** `Item`, `Output`
@@ -82,10 +82,10 @@ Every matched file is listed below with function and type symbol parity.
 ### 3. punctuated
 
 - **Target:** `syn.Punctuated`
-- **Similarity:** 0.47
+- **Similarity:** 0.49
 - **Dependents:** 13
 - **Priority Score:** 13026805.0
-- **Functions:** 54/54 matched (target 301)
+- **Functions:** 54/54 matched (target 305)
 - **Missing functions:** _none_
 - **Types:** 12/14 matched (target 34)
 - **Missing types:** `Item`, `Output`
@@ -104,13 +104,13 @@ Every matched file is listed below with function and type symbol parity.
 ### 5. path
 
 - **Target:** `syn.Path`
-- **Similarity:** 0.74
+- **Similarity:** 0.76
 - **Dependents:** 9
-- **Priority Score:** 9012803.0
-- **Functions:** 26/26 matched (target 65)
+- **Priority Score:** 9002802.0
+- **Functions:** 26/26 matched (target 67)
 - **Missing functions:** _none_
-- **Types:** 1/2 matched (target 27)
-- **Missing types:** `QSelfDelimiters`
+- **Types:** 2/2 matched (target 28)
+- **Missing types:** _none_
 - **Lint issues:** 1
 
 ### 6. lifetime
@@ -202,7 +202,18 @@ Every matched file is listed below with function and type symbol parity.
 - **Missing types:** `Item`
 - **Lint issues:** 1
 
-### 14. item
+### 14. precedence
+
+- **Target:** `syn.Precedence`
+- **Similarity:** 0.66
+- **Dependents:** 2
+- **Priority Score:** 2010703.4
+- **Functions:** 5/6 matched
+- **Missing functions:** `clone`
+- **Types:** 1/1 matched
+- **Missing types:** _none_
+
+### 15. item
 
 - **Target:** `syn.Item`
 - **Similarity:** 0.57
@@ -214,7 +225,7 @@ Every matched file is listed below with function and type symbol parity.
 - **Missing types:** _none_
 - **Lint issues:** 1
 
-### 15. pat
+### 16. pat
 
 - **Target:** `syn.Pat`
 - **Similarity:** 0.79
@@ -223,17 +234,6 @@ Every matched file is listed below with function and type symbol parity.
 - **Functions:** 23/23 matched (target 65)
 - **Missing functions:** _none_
 - **Types:** 1/1 matched (target 22)
-- **Missing types:** _none_
-
-### 16. precedence
-
-- **Target:** `syn.Precedence`
-- **Similarity:** 0.80
-- **Dependents:** 2
-- **Priority Score:** 2000702.0
-- **Functions:** 6/6 matched (target 7)
-- **Missing functions:** _none_
-- **Types:** 1/1 matched
 - **Missing types:** _none_
 
 ### 17. scan_expr

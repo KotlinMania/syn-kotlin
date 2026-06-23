@@ -83,6 +83,16 @@ class PathTest {
     }
 
     @Test
+    fun qselfSpanUsesDelimiters() {
+        val ty = assertIs<SynType.Path>(
+            parseStr(SynTypeParseExpr, "<Vec<T> as a::b::Trait>::AssociatedItem").getOrThrow(),
+        )
+        val qself = assertNotNull(ty.qself)
+
+        assertEquals(qself.ltToken.span.join(qself.gtToken.span), qself.span())
+    }
+
+    @Test
     fun parseSimplePath() {
         val path = parseStr(PathParse, "std::vec::Vec").getOrThrow()
         val segments = path.segments.toList()
@@ -187,9 +197,8 @@ class PathTest {
     }
 }
 
-private fun assertNotNull(value: Any?) {
+private fun <T : Any> assertNotNull(value: T?): T =
     kotlin.test.assertNotNull(value)
-}
 
 private fun tokensOf(value: ToTokens): String {
     val tokens = TokenStream.new()

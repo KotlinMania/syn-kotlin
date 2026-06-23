@@ -20,44 +20,44 @@ import kotlin.test.assertTrue
 class ParseBufferTest {
     @Test
     fun smuggledSpeculativeCursorBetweenSources() {
-        val parser =
-            parserFromFunction { input1 ->
-                val nested =
-                    parserFromFunction { input2 ->
-                        input1.advanceTo(input2)
-                        SynResult.success(Unit)
-                    }
-                nested.parse2(TokenStream.new())
-            }
+        fun parse(input1: ParseStream): SynResult<Unit> {
+            val nested =
+                parserFromFunction { input2 ->
+                    input1.advanceTo(input2)
+                    SynResult.success(Unit)
+                }
+            return nested.parse2(TokenStream.new())
+        }
+
         assertFailsWith<IllegalArgumentException> {
-            parser.parse2(TokenStream.new()).getOrThrow()
+            parserFromFunction(::parse).parse2(TokenStream.new()).getOrThrow()
         }
     }
 
     @Test
     fun smuggledSpeculativeCursorBetweenBrackets() {
-        val parser =
-            parserFromFunction { input ->
-                val a = parenthesized(input).getOrThrow()
-                val b = parenthesized(input).getOrThrow()
-                a.content.advanceTo(b.content)
-                SynResult.success(Unit)
-            }
+        fun parse(input: ParseStream): SynResult<Unit> {
+            val a = parenthesized(input).getOrThrow()
+            val b = parenthesized(input).getOrThrow()
+            a.content.advanceTo(b.content)
+            return SynResult.success(Unit)
+        }
+
         assertFailsWith<IllegalArgumentException> {
-            parser.parseStr("()()").getOrThrow()
+            parserFromFunction(::parse).parseStr("()()").getOrThrow()
         }
     }
 
     @Test
     fun smuggledSpeculativeCursorIntoBrackets() {
-        val parser =
-            parserFromFunction { input ->
-                val a = parenthesized(input).getOrThrow()
-                input.advanceTo(a.content)
-                SynResult.success(Unit)
-            }
+        fun parse(input: ParseStream): SynResult<Unit> {
+            val a = parenthesized(input).getOrThrow()
+            input.advanceTo(a.content)
+            return SynResult.success(Unit)
+        }
+
         assertFailsWith<IllegalArgumentException> {
-            parser.parseStr("()").getOrThrow()
+            parserFromFunction(::parse).parseStr("()").getOrThrow()
         }
     }
 
@@ -87,15 +87,15 @@ class ParseBufferTest {
                 ),
             )
 
-        val parser =
-            parserFromFunction { input ->
-                PlusParse.parse(input).getOrThrow()
-                val parens = parenthesized(input).getOrThrow()
-                PlusParse.parse(parens.content).getOrThrow()
-                parens.content.finishChildBuffer()
-                SynResult.success(Unit)
-            }
-        parser.parse2(tokens).getOrThrow()
+        fun parse(input: ParseStream): SynResult<Unit> {
+            PlusParse.parse(input).getOrThrow()
+            val parens = parenthesized(input).getOrThrow()
+            PlusParse.parse(parens.content).getOrThrow()
+            parens.content.finishChildBuffer()
+            return SynResult.success(Unit)
+        }
+
+        parserFromFunction(::parse).parse2(tokens).getOrThrow()
     }
 
     @Test
@@ -113,7 +113,15 @@ class ParseBufferTest {
         assertEquals("unexpected token, expected `)`", result.exceptionOrNull()?.toString())
     }
 
-    // Upstream test_unwind_safe depends on panic catching and unwind-safety marker traits, which Kotlin does not expose.
+    @Test
+    fun testUnwindSafe() {
+        fun parse(input: ParseStream): SynResult<Ident> {
+            val threadResult = runCatching { IdentParse.parse(input) }
+            return threadResult.getOrThrow()
+        }
+
+        parserFromFunction(::parse).parseStr("throw").getOrThrow()
+    }
 
     @Test
     fun parseStreamIsEmptyAtEof() {

@@ -394,7 +394,19 @@ public data class QSelf(
     public val position: Int,
     public val asToken: io.github.kotlinmania.syn.token.As?,
     public val gtToken: Gt,
-)
+) : Spanned {
+    override fun span(): Span =
+        QSelfDelimiters(this).span()
+}
+
+private class QSelfDelimiters(
+    private val qself: QSelf,
+) : ToTokens {
+    override fun toTokens(tokens: TokenStream) {
+        qself.ltToken.toTokens(tokens)
+        qself.gtToken.toTokens(tokens)
+    }
+}
 
 /** Style of path parsing. */
 public enum class PathStyle {

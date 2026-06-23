@@ -19,9 +19,9 @@ import kotlin.test.assertTrue
  * `step`, `cursor`, `fork`, `isEmpty`, `call`, and the discouraged
  * `parseAnyDelimiter` extension.
  *
- * The upstream Rust tests build token streams via `quote!` and
- * `TokenStream::from_iter`. Here we build them via [TokenStream.fromString]
- * (which lexes source text the same way `quote!` would for these inputs)
+ * The upstream tests build token streams with quoted input and iterable
+ * constructors. Here we build them via [TokenStream.fromString]
+ * (which lexes source text the same way quoted input would for these cases)
  * and, where a test depends on a specific joint/alone spacing arrangement
  * not preserved by the lexer, via [TokenStream.fromTokenTrees] with
  * explicit [Punct] spacing.
@@ -56,7 +56,7 @@ class ParseStreamTest {
                 ),
             )
 
-        runParserTokens(tokens) { input ->
+        fun assert(input: ParseStream): SynResult<Unit> {
             assertTrue(input.peek(PlusPeek))
             assertTrue(input.peek(PlusEqPeek))
 
@@ -73,13 +73,14 @@ class ParseStreamTest {
 
             PlusParse.parse(input).getOrThrow()
             EqParse.parse(input).getOrThrow()
-            SynResult.success(Unit)
+            return SynResult.success(Unit)
         }
+
+        parserFromFunction(::assert).parse2(tokens).getOrThrow()
     }
 
     @Test
     fun testPeekLifetime() {
-        // 'static ;
         val tokens =
             TokenStream.fromTokenTrees(
                 listOf(
@@ -88,7 +89,7 @@ class ParseStreamTest {
                     TokenTree.Punct(Punct(';', Spacing.Alone, Span.callSite())),
                 ),
             )
-        runParserTokens(tokens) { input ->
+        fun assert(input: ParseStream): SynResult<Unit> {
             assertTrue(input.peek(LifetimePeek))
             assertTrue(input.peek2(SemiPeek))
             assertFalse(input.peek2(StaticPeek))
@@ -98,13 +99,14 @@ class ParseStreamTest {
             assertTrue(input.peek(SemiPeek))
 
             SemiParse.parse(input).getOrThrow()
-            SynResult.success(Unit)
+            return SynResult.success(Unit)
         }
+
+        parserFromFunction(::assert).parse2(tokens).getOrThrow()
     }
 
     @Test
     fun testPeekNotLifetime() {
-        // ' static  — apostrophe is Alone, so it is not a lifetime.
         val tokens =
             TokenStream.fromTokenTrees(
                 listOf(
@@ -112,7 +114,8 @@ class ParseStreamTest {
                     TokenTree.Ident(Ident.new("static", Span.callSite())),
                 ),
             )
-        runParserTokens(tokens) { input ->
+
+        fun assert(input: ParseStream): SynResult<Unit> {
             assertFalse(input.peek(LifetimePeek))
             val optionalPunct = PunctParse.optional(NotPeek).parse(input).getOrThrow()
             assertTrue(optionalPunct == null)
@@ -122,13 +125,17 @@ class ParseStreamTest {
             assertTrue(input.peek(StaticPeek))
 
             StaticParse.parse(input).getOrThrow()
-            SynResult.success(Unit)
+            return SynResult.success(Unit)
         }
+
+        parserFromFunction(::assert).parse2(tokens).getOrThrow()
     }
 
     @Test
     fun testPeekIdent() {
-        runParser("static var") { input ->
+        val tokens = TokenStream.fromString("static var").getOrThrow()
+
+        fun assert(input: ParseStream): SynResult<Unit> {
             assertFalse(input.peek(IdentPeek))
             assertTrue(input.peek(IdentPeekAny))
             assertTrue(input.peek(Ident.peekAny))
@@ -141,8 +148,10 @@ class ParseStreamTest {
             assertTrue(input.peek(Ident.peekAny))
 
             IdentParse.parse(input).getOrThrow()
-            SynResult.success(Unit)
+            return SynResult.success(Unit)
         }
+
+        parserFromFunction(::assert).parse2(tokens).getOrThrow()
     }
 
     @Test
@@ -193,7 +202,7 @@ class ParseStreamTest {
                 ),
             )
 
-        runParserTokens(tokens) { input ->
+        fun assert(input: ParseStream): SynResult<Unit> {
             assertTrue(input.peek2(ParenPeek))
             assertTrue(input.peek3(GroupPeek))
             assertTrue(input.peek3(NotPeek))
@@ -247,8 +256,10 @@ class ParseStreamTest {
             assertFalse(grouped.content.peek(StaticPeek))
 
             TokenStreamParse.parse(input).getOrThrow()
-            SynResult.success(Unit)
+            return SynResult.success(Unit)
         }
+
+        parserFromFunction(::assert).parse2(tokens).getOrThrow()
     }
 
     @Test

@@ -115,6 +115,25 @@ class PunctuatedTest {
     }
 
     @Test
+    fun extendPairSequence() {
+        val p = Punctuated.new<IntToken, Comma>()
+        p.pushValue(IntToken(1))
+
+        p.extend(
+            sequenceOf(
+                Punctuated.Pair.Punctuated(IntToken(2), Comma.default()),
+                Punctuated.Pair.End(IntToken(3)),
+            ),
+            Comma::default,
+        )
+
+        assertEquals(listOf(1, 2, 3), p.toList().map { it.v })
+        assertNotNull(p.punct(0))
+        assertNotNull(p.punct(1))
+        assertNull(p.punct(2))
+    }
+
+    @Test
     fun fromIterAndDefault() {
         val empty = Punctuated.default<IntToken, Comma>()
         assertTrue(empty.isEmpty())
@@ -160,6 +179,27 @@ class PunctuatedTest {
         assertEquals(2, p.iterMut().next().v)
         assertEquals(3, p.intoIter().len())
         assertEquals(4, p.intoIter().nextBack()?.v)
+    }
+
+    @Test
+    fun ownedIteratorsCloneAtCurrentPosition() {
+        val p = punctuatedIntComma(1, 2, 3)
+
+        val pairs = p.intoPairs()
+        assertEquals(1, pairs.next().intoValue().v)
+        val pairsClone = pairs.clone()
+        assertEquals(2, pairs.next().intoValue().v)
+        assertEquals(2, pairsClone.next().intoValue().v)
+        assertEquals(3, pairs.nextBack()?.intoValue()?.v)
+        assertEquals(3, pairsClone.nextBack()?.intoValue()?.v)
+
+        val values = p.intoIter()
+        assertEquals(1, values.next().v)
+        val valuesClone = values.clone()
+        assertEquals(2, values.next().v)
+        assertEquals(2, valuesClone.next().v)
+        assertEquals(3, values.nextBack()?.v)
+        assertEquals(3, valuesClone.nextBack()?.v)
     }
 
     @Test
@@ -280,6 +320,26 @@ class PunctuatedTest {
 
         source.firstMut()?.v = 20
         assertEquals(listOf(2, 3), target.toList().map { it.v })
+    }
+
+    @Test
+    fun cloneCopiesSequenceContents() {
+        val original = Punctuated.new<BoxToken, SepToken>()
+        original.pushValue(BoxToken(1))
+        original.pushPunct(SepToken("a"))
+        original.pushValue(BoxToken(2))
+
+        val cloned =
+            original.clone(
+                copyValue = { BoxToken(it.v) },
+                copyPunctuation = { it.copy() },
+            )
+
+        original.firstMut()?.v = 10
+
+        assertEquals(listOf(10, 2), original.toList().map { it.v })
+        assertEquals(listOf(1, 2), cloned.toList().map { it.v })
+        assertEquals(original.punct(0), cloned.punct(0))
     }
 
     @Test
