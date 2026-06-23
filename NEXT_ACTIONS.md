@@ -5,21 +5,21 @@ Based on AST analysis, here are the concrete next steps.
 ## Summary
 
 - **Files Present:** 53/55 (96.4%)
-- **Function parity:** 752/1083 matched (target 2816) — 69.4%
+- **Function parity:** 755/1083 matched (target 2823) — 69.7%
 - **Class/type parity:** 95/121 matched (target 812) — 78.5%
-- **Combined symbol parity:** 847/1204 matched (target 3628) — 70.3%
-- **Average inline-code cosine:** 0.50 (function body across 53 matched files)
+- **Combined symbol parity:** 850/1204 matched (target 3635) — 70.6%
+- **Average inline-code cosine:** 0.51 (function body across 53 matched files)
 - **Average documentation cosine:** 0.32 (doc text across 53 matched files)
-- **Cheat-zeroed Files:** 5
+- **Cheat-zeroed Files:** 4
 - **Critical Issues:** 29 files with <0.60 function similarity
 
 ## Priority 1: Fix Incomplete High-Dependency Files
 
 ### 1. token
-- **Similarity:** 0.00 (needs 85% improvement)
+- **Similarity:** 0.60 (needs 25% improvement)
 - **Dependencies:** 17
-- **Priority Score:** 17042210.0
-- **Functions:** 13/17 matched (target 681)
+- **Priority Score:** 17042204.0
+- **Functions:** 13/17 matched (target 685)
 - **Missing functions:** `Group`, `fmt`, `eq`, `hash`
 - **Types:** 5/5 matched (target 305)
 - **Missing types:** _none_
@@ -60,11 +60,11 @@ Every matched file is listed below with function and type symbol parity.
 
 ### 1. token
 
-- **Target:** `token.Token [ZERO]`
-- **Similarity:** 0.00
+- **Target:** `token.Token`
+- **Similarity:** 0.60
 - **Dependents:** 17
-- **Priority Score:** 17042210.0
-- **Functions:** 13/17 matched (target 681)
+- **Priority Score:** 17042204.0
+- **Functions:** 13/17 matched (target 685)
 - **Missing functions:** `Group`, `fmt`, `eq`, `hash`
 - **Types:** 5/5 matched (target 305)
 - **Missing types:** _none_
@@ -253,9 +253,9 @@ Every matched file is listed below with function and type symbol parity.
 - **Target:** `gen.Visit`
 - **Similarity:** 0.19
 - **Dependents:** 1
-- **Priority Score:** 1548908.1
-- **Functions:** 135/188 matched (target 144)
-- **Missing functions:** `visit_arm`, `visit_bin_op`, `visit_expr_array`, `visit_expr_assign`, `visit_expr_async`, `visit_expr_await`, `visit_expr_binary`, `visit_expr_block`, `visit_expr_break`, `visit_expr_call`, `visit_expr_cast`, `visit_expr_closure`, `visit_expr_const`, `visit_expr_continue`, `visit_expr_field`, `visit_expr_for_loop`, `visit_expr_group`, `visit_expr_if`, `visit_expr_index`, `visit_expr_infer`, `visit_expr_let`, `visit_expr_lit`, `visit_expr_loop`, `visit_expr_macro`, `visit_expr_match`, `visit_expr_method_call`, `visit_expr_paren`, `visit_expr_path`, `visit_expr_range`, `visit_expr_raw_addr`, `visit_expr_reference`, `visit_expr_repeat`, `visit_expr_return`, `visit_expr_struct`, `visit_expr_try`, `visit_expr_try_block`, `visit_expr_tuple`, `visit_expr_unary`, `visit_expr_unsafe`, `visit_expr_while`, `visit_expr_yield`, `visit_field_value`, `visit_foreign_item`, `visit_foreign_item_fn`, `visit_foreign_item_macro`, `visit_foreign_item_static`, `visit_foreign_item_type`, `visit_impl_restriction`, `visit_item_extern_crate`, `visit_item_foreign_mod`, `visit_label`, `visit_range_limits`, `visit_un_op`
+- **Priority Score:** 1518908.1
+- **Functions:** 138/188 matched (target 147)
+- **Missing functions:** `visit_arm`, `visit_bin_op`, `visit_expr_array`, `visit_expr_assign`, `visit_expr_async`, `visit_expr_await`, `visit_expr_binary`, `visit_expr_block`, `visit_expr_break`, `visit_expr_call`, `visit_expr_cast`, `visit_expr_closure`, `visit_expr_const`, `visit_expr_continue`, `visit_expr_field`, `visit_expr_for_loop`, `visit_expr_group`, `visit_expr_if`, `visit_expr_index`, `visit_expr_infer`, `visit_expr_let`, `visit_expr_lit`, `visit_expr_loop`, `visit_expr_macro`, `visit_expr_match`, `visit_expr_method_call`, `visit_expr_paren`, `visit_expr_path`, `visit_expr_range`, `visit_expr_raw_addr`, `visit_expr_reference`, `visit_expr_repeat`, `visit_expr_return`, `visit_expr_struct`, `visit_expr_try`, `visit_expr_try_block`, `visit_expr_tuple`, `visit_expr_unary`, `visit_expr_unsafe`, `visit_expr_while`, `visit_expr_yield`, `visit_field_value`, `visit_foreign_item`, `visit_foreign_item_fn`, `visit_foreign_item_macro`, `visit_foreign_item_static`, `visit_foreign_item_type`, `visit_impl_restriction`, `visit_item_extern_crate`, `visit_item_foreign_mod`
 - **Types:** 1/1 matched
 - **Missing types:** _none_
 - **Lint issues:** 15

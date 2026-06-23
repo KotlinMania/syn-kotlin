@@ -2767,11 +2767,11 @@ internal fun printPunct(s: String, spans: List<io.github.kotlinmania.procmacro2.
     tokens.extendPuncts(puncts)
 }
 
-public fun groupFmt(group: io.github.kotlinmania.syn.token.Group): String = group.toString()
-
-public fun groupEq(a: io.github.kotlinmania.syn.token.Group, b: io.github.kotlinmania.syn.token.Group): Boolean = a == b
-
-public fun groupHash(group: io.github.kotlinmania.syn.token.Group): Int = group.hashCode()
-
-public fun groupNew(span: io.github.kotlinmania.procmacro2.Span): io.github.kotlinmania.syn.token.Group =
+public fun Group(span: io.github.kotlinmania.procmacro2.Span): io.github.kotlinmania.syn.token.Group =
     io.github.kotlinmania.syn.token.Group.from(span)
+
+public fun fmt(group: io.github.kotlinmania.syn.token.Group): String = group.toString()
+
+public fun eq(a: io.github.kotlinmania.syn.token.Group, b: io.github.kotlinmania.syn.token.Group): Boolean = a == b
+
+public fun hash(group: io.github.kotlinmania.syn.token.Group): Int = group.hashCode()
