@@ -1523,3 +1523,76 @@ public fun exprBuiltin(input: ParseStream): SynResult<Expr> {
     val tokens = verbatimBetween(begin, input)
     return SynResult.success(Expr.Verbatim(tokens))
 }
+
+public fun restOfPathOrMacroOrStruct(
+    qself: QSelf?,
+    path: Path,
+    input: ParseStream,
+    allowStruct: Boolean,
+): SynResult<Expr> {
+    if (qself == null && input.peek(NotPeek) && !input.peek(NePeek) && path.isModStyle()) {
+        val bangResult = input.parse(NotParse)
+        if (bangResult.isFailure) return SynResult.failure((bangResult as SynResult.Failure).error)
+        val delimResult = parseDelimiter(input)
+        if (delimResult.isFailure) return SynResult.failure((delimResult as SynResult.Failure).error)
+        val (delimiter, tokens) = delimResult.getOrThrow()
+        return SynResult.success(
+            Expr.Macro(
+                emptyList(),
+                Macro(path, bangResult.getOrThrow(), delimiter, tokens),
+            ),
+        )
+    }
+    if (allowStruct && input.peek(BracePeek)) {
+        val structResult = exprStructHelper(input, qself, path)
+        if (structResult.isFailure) return structResult
+        return SynResult.success(structResult.getOrThrow())
+    }
+    return SynResult.success(Expr.Path(emptyList(), qself, path))
+}
+
+public fun exprStructHelper(
+    input: ParseStream,
+    qself: QSelf?,
+    path: Path,
+): SynResult<Expr.Struct> {
+    val braces = braced(input)
+    if (braces.isFailure) return SynResult.failure((braces as SynResult.Failure).error)
+    val bracesVal = braces.getOrThrow()
+    val content = bracesVal.content
+    val fields = FieldValueList()
+    while (!content.isEmpty()) {
+        if (content.peek(DotDotPeek)) {
+            val dot2Result = content.parse(DotDotParse)
+            if (dot2Result.isFailure) return SynResult.failure((dot2Result as SynResult.Failure).error)
+            val rest: Expr? = if (content.isEmpty()) null else {
+                val restResult = content.call { parseExprFull(it) }
+                if (restResult.isFailure) return SynResult.failure((restResult as SynResult.Failure).error)
+                restResult.getOrThrow()
+            }
+            content.finishChildBuffer()
+            return SynResult.success(
+                Expr.Struct(
+                    emptyList(),
+                    qself,
+                    path,
+                    bracesVal.token,
+                    fields,
+                    dot2Result.getOrThrow(),
+                    rest,
+                ),
+            )
+        }
+        val fieldResult = content.call { parseFieldValueImpl(it) }
+        if (fieldResult.isFailure) return SynResult.failure((fieldResult as SynResult.Failure).error)
+        fields.pushValue(fieldResult.getOrThrow())
+        if (content.isEmpty()) break
+        val punctResult = content.parse(CommaParse)
+        if (punctResult.isFailure) break
+        fields.pushPunct(punctResult.getOrThrow())
+    }
+    content.finishChildBuffer()
+    return SynResult.success(
+        Expr.Struct(emptyList(), qself, path, bracesVal.token, fields, null, null),
+    )
+}

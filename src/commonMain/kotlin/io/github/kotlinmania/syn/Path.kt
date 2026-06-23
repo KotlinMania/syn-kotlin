@@ -63,6 +63,14 @@ public class Path(
         return first.join(last) ?: first
     }
 
+    public fun isModStyle(): Boolean {
+        if (leadingColon != null) return false
+        for (segment in segments.toList()) {
+            if (segment.arguments !is PathArguments.None) return false
+        }
+        return true
+    }
+
     public fun toTokens(tokens: TokenStream) {
         leadingColon?.toTokens(tokens)
         segments.toTokens(tokens)
