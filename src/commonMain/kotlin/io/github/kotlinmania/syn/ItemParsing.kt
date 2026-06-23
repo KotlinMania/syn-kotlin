@@ -331,8 +331,8 @@ private fun parseForeignItemType(
     vis: Visibility,
     input: ParseStream,
 ): SynResult<ForeignItem> {
-    val typeToken = input.parse(SynTypeParse).getOrElse { return SynResult.failure(it) }
-    val ident = input.parse(IdentParse).getOrElse { return SynResult.failure(it) }
+    val typeToken = SynTypeParse.parse(input).getOrElse { return SynResult.failure(it) }
+    val ident = IdentParse.parse(input).getOrElse { return SynResult.failure(it) }
     val generics = parseGenerics(input).getOrElse { return SynResult.failure(it) }
     val (colonToken, _) = FlexibleItemType.parseOptionalBounds(input).getOrElse { return SynResult.failure(it) }
     generics.whereClause = parseWhereClause(input).getOrNull()
@@ -524,7 +524,7 @@ private fun parseRestOfTraitAlias(
             ).getOrElse { return SynResult.failure(it) }
         bounds.pushValue(bound)
         if (input.peek(WherePeek) || input.peek(SemiPeek)) break
-        bounds.pushPunct(input.parse(PlusParse).getOrElse { return SynResult.failure(it) })
+        bounds.pushPunct(PlusParse.parse(input).getOrElse { return SynResult.failure(it) })
     }
 
     generics.whereClause = parseWhereClause(input).getOrNull()
@@ -846,7 +846,7 @@ private fun parseFnArgs(content: ParseStream): SynResult<Pair<FnArgList, Variadi
                 if (content.isEmpty()) {
                     null
                 } else {
-                    content.parse(CommaParse).getOrElse { return SynResult.failure(it) }
+                    CommaParse.parse(content).getOrElse { return SynResult.failure(it) }
                 }
             variadic = Variadic(attrs, null, dots, comma)
             break
@@ -863,7 +863,7 @@ private fun parseFnArgs(content: ParseStream): SynResult<Pair<FnArgList, Variadi
                         if (content.isEmpty()) {
                             null
                         } else {
-                            content.parse(CommaParse).getOrElse { return SynResult.failure(it) }
+                            CommaParse.parse(content).getOrElse { return SynResult.failure(it) }
                         }
                     variadic = argOrVariadic.variadic.copy(comma = comma)
                     break
@@ -877,7 +877,7 @@ private fun parseFnArgs(content: ParseStream): SynResult<Pair<FnArgList, Variadi
         }
         inputs.pushValue(arg)
         if (content.isEmpty()) break
-        val commaResult = content.parse(CommaParse)
+        val commaResult = CommaParse.parse(content)
         if (commaResult.isFailure) return asFailure(commaResult)
         inputs.pushPunct(commaResult.getOrThrow())
     }
@@ -894,7 +894,7 @@ private fun parseReturnType(input: ParseStream, allowPlus: Boolean): SynResult<R
     if (!input.peek(RArrowPeek)) {
         return SynResult.success(ReturnType.Default)
     }
-    val arrowResult = input.parse(RArrowParse)
+    val arrowResult = RArrowParse.parse(input)
     if (arrowResult.isFailure) return asFailure(arrowResult)
     val tyResult =
         if (allowPlus) {
@@ -982,11 +982,11 @@ private fun parseFnArgOrVariadic(
 
     val patResult = input.call { parsePatFull(it) }
     if (patResult.isFailure) return asFailure(patResult)
-    val colonResult = input.parse(ColonParse)
+    val colonResult = ColonParse.parse(input)
     if (colonResult.isFailure) return asFailure(colonResult)
 
     if (allowVariadic) {
-        val dots = input.parse(DotDotDotParse).getOrNull()
+        val dots = DotDotDotParse.parse(input).getOrNull()
         if (dots != null) {
             return SynResult.success(
                 FnArgOrVariadic.VariadicValue(
@@ -1010,18 +1010,18 @@ private fun parseReceiver(input: ParseStream): SynResult<FnArg.Receiver> {
     val reference =
         if (referenceResult.isSuccess) {
             val andToken = referenceResult.getOrThrow()
-            val lifetime = input.parse(LifetimeParse).getOrNull()
+            val lifetime = LifetimeParse.parse(input).getOrNull()
             AndLifetime(andToken, lifetime)
         } else {
             null
         }
-    val mutability = input.parse(MutParse).getOrNull()
-    val selfTokenResult = input.parse(SelfValueParse)
+    val mutability = MutParse.parse(input).getOrNull()
+    val selfTokenResult = SelfValueParse.parse(input)
     if (selfTokenResult.isFailure) return asFailure(selfTokenResult)
     val selfToken = selfTokenResult.getOrThrow()
     val colonToken =
         if (reference == null) {
-            input.parse(ColonParse).getOrNull()
+            ColonParse.parse(input).getOrNull()
         } else {
             null
         }
@@ -1139,7 +1139,7 @@ internal fun parseTypeParamBounds(
             ).getOrElse { return SynResult.failure(it) }
         bounds.pushValue(bound)
         if (!allowPlus || !input.peek(PlusPeek)) break
-        bounds.pushPunct(input.parse(PlusParse).getOrThrow())
+        bounds.pushPunct(PlusParse.parse(input).getOrThrow())
     }
     return SynResult.success(bounds)
 }
@@ -1184,7 +1184,7 @@ internal fun parseNamedFieldList(input: ParseStream): SynResult<FieldList> {
         val field = input.call { parseNamedField(it) }.getOrElse { return SynResult.failure(it) }
         fields.pushValue(field)
         if (input.isEmpty()) break
-        val comma = input.parse(CommaParse).getOrElse { return SynResult.failure(it) }
+        val comma = CommaParse.parse(input).getOrElse { return SynResult.failure(it) }
         fields.pushPunct(comma)
     }
     return SynResult.success(fields)
@@ -1196,7 +1196,7 @@ internal fun parseUnnamedFieldList(input: ParseStream): SynResult<FieldList> {
         val field = input.call { parseUnnamedField(it) }.getOrElse { return SynResult.failure(it) }
         fields.pushValue(field)
         if (input.isEmpty()) break
-        val comma = input.parse(CommaParse).getOrElse { return SynResult.failure(it) }
+        val comma = CommaParse.parse(input).getOrElse { return SynResult.failure(it) }
         fields.pushPunct(comma)
     }
     return SynResult.success(fields)
@@ -1208,7 +1208,7 @@ internal fun parseVariantList(input: ParseStream): SynResult<VariantList> {
         val variant = input.call { parseVariant(it) }.getOrElse { return SynResult.failure(it) }
         variants.pushValue(variant)
         if (input.isEmpty()) break
-        val comma = input.parse(CommaParse).getOrElse { return SynResult.failure(it) }
+        val comma = CommaParse.parse(input).getOrElse { return SynResult.failure(it) }
         variants.pushPunct(comma)
     }
     return SynResult.success(variants)
@@ -1219,7 +1219,7 @@ internal fun parseNamedField(input: ParseStream): SynResult<Field> {
 }
 
 internal fun parseVariant(input: ParseStream): SynResult<Variant> {
-    return input.parse(VariantParse)
+    return VariantParse.parse(input)
 }
 
 internal fun parseUnnamedField(input: ParseStream): SynResult<Field> {
@@ -1244,17 +1244,17 @@ private fun parseUseTree(
     ) {
         val ident = identParseAny(input).getOrElse { return SynResult.failure(it) }
         if (input.peek(PathSepPeek)) {
-            val colon2Token = input.parse(PathSepParse).getOrElse { return SynResult.failure(it) }
+            val colon2Token = PathSepParse.parse(input).getOrElse { return SynResult.failure(it) }
             val tree = parseUseTree(input).getOrElse { return SynResult.failure(it) }
             return SynResult.success(UseTree.Path(ident, colon2Token, tree))
         }
         if (input.peek(AsPeek)) {
-            val asToken = input.parse(AsParse).getOrElse { return SynResult.failure(it) }
+            val asToken = AsParse.parse(input).getOrElse { return SynResult.failure(it) }
             val rename =
                 if (input.peek(IdentPeek)) {
-                    input.parse(IdentParse).getOrElse { return SynResult.failure(it) }
+                    IdentParse.parse(input).getOrElse { return SynResult.failure(it) }
                 } else if (input.peek(UnderscorePeek)) {
-                    from(input.parse(UnderscoreParse).getOrElse { return SynResult.failure(it) })
+                    from(UnderscoreParse.parse(input).getOrElse { return SynResult.failure(it) })
                 } else {
                     return SynResult.failure(input.error("expected identifier or underscore"))
                 }
@@ -1264,7 +1264,7 @@ private fun parseUseTree(
     }
 
     if (input.peek(StarPeek)) {
-        val starToken = input.parse(StarParse).getOrElse { return SynResult.failure(it) }
+        val starToken = StarParse.parse(input).getOrElse { return SynResult.failure(it) }
         return SynResult.success(UseTree.Glob(starToken))
     }
 
@@ -1275,7 +1275,7 @@ private fun parseUseTree(
         while (!bracesVal.content.isEmpty()) {
             val thisTreeStartsWithCrateRoot =
                 if (allowCrateRootInPath && bracesVal.content.peek(PathSepPeek)) {
-                    bracesVal.content.parse(PathSepParse).getOrElse { return SynResult.failure(it) }
+                    PathSepParse.parse(bracesVal.content).getOrElse { return SynResult.failure(it) }
                     true
                 } else {
                     false
@@ -1292,7 +1292,7 @@ private fun parseUseTree(
                 hasAnyCrateRootInPath = true
             }
             if (bracesVal.content.isEmpty()) break
-            val comma = bracesVal.content.parse(CommaParse).getOrElse { return SynResult.failure(it) }
+            val comma = CommaParse.parse(bracesVal.content).getOrElse { return SynResult.failure(it) }
             if (!hasAnyCrateRootInPath) {
                 items.pushPunct(comma)
             }
@@ -1317,24 +1317,24 @@ internal fun parseTraitItem(input: ParseStream): SynResult<TraitItem> {
             if (defaultResult.isFailure) return asFailure(defaultResult)
             return SynResult.success(TraitItem.Fn(emptyList(), sigResult.getOrThrow(), defaultResult.getOrThrow(), null))
         }
-        val semiResult = input.parse(SemiParse)
+        val semiResult = SemiParse.parse(input)
         if (semiResult.isFailure) return asFailure(semiResult)
         return SynResult.success(TraitItem.Fn(emptyList(), sigResult.getOrThrow(), null, semiResult.getOrThrow()))
     }
     if (input.peek(ConstPeek)) {
-        val constToken = input.parse(ConstParse).getOrThrow()
-        val ident = input.parse(IdentParse).getOrThrow()
-        val colon = input.parse(ColonParse).getOrThrow()
+        val constToken = ConstParse.parse(input).getOrThrow()
+        val ident = IdentParse.parse(input).getOrThrow()
+        val colon = ColonParse.parse(input).getOrThrow()
         val ty = parseTypeFull(input).getOrThrow()
         var default: EqExpr? = null
         if (input.peek(EqPeek)) {
-            val eq = input.parse(EqParse).getOrThrow()
+            val eq = EqParse.parse(input).getOrThrow()
             val exprResult = parseExprFull(input)
             if (exprResult.isSuccess) {
                 default = EqExpr(eq, exprResult.getOrThrow())
             }
         }
-        val semi = input.parse(SemiParse).getOrThrow()
+        val semi = SemiParse.parse(input).getOrThrow()
         return SynResult.success(TraitItem.Const(emptyList(), constToken, ident, Generics(), colon, ty, default, semi))
     }
     if (peekFlexibleItemType(input, TypeDefaultness.Disallowed)) {
@@ -1342,7 +1342,7 @@ internal fun parseTraitItem(input: ParseStream): SynResult<TraitItem> {
         return parseTraitItemType(begin, input)
     }
     if (input.peek(SemiPeek)) {
-        input.parse(SemiParse).getOrThrow()
+        SemiParse.parse(input).getOrThrow()
         return SynResult.success(
             TraitItem.Verbatim(
                 io.github.kotlinmania.procmacro2.TokenStream
@@ -1361,13 +1361,13 @@ internal fun parseImplItem(input: ParseStream): SynResult<ImplItem> {
         return SynResult.success(itemFn)
     }
     if (input.peek(ConstPeek)) {
-        val constToken = input.parse(ConstParse).getOrThrow()
-        val ident = input.parse(IdentParse).getOrThrow()
-        val colon = input.parse(ColonParse).getOrThrow()
+        val constToken = ConstParse.parse(input).getOrThrow()
+        val ident = IdentParse.parse(input).getOrThrow()
+        val colon = ColonParse.parse(input).getOrThrow()
         val ty = parseTypeFull(input).getOrThrow()
-        val eq = input.parse(EqParse).getOrThrow()
+        val eq = EqParse.parse(input).getOrThrow()
         val expr = parseExprFull(input).getOrThrow()
-        val semi = input.parse(SemiParse).getOrThrow()
+        val semi = SemiParse.parse(input).getOrThrow()
         return SynResult.success(ImplItem.Const(emptyList(), Visibility.Inherited, null, constToken, ident, Generics(), colon, ty, eq, expr, semi))
     }
     if (peekFlexibleItemType(input, TypeDefaultness.Optional)) {
@@ -1375,7 +1375,7 @@ internal fun parseImplItem(input: ParseStream): SynResult<ImplItem> {
         return parseImplItemType(begin, input)
     }
     if (input.peek(SemiPeek)) {
-        input.parse(SemiParse).getOrThrow()
+        SemiParse.parse(input).getOrThrow()
         return SynResult.success(
             ImplItem.Verbatim(
                 io.github.kotlinmania.procmacro2.TokenStream
@@ -1439,8 +1439,8 @@ private fun parseImplItemType(begin: ParseStream, input: ParseStream): SynResult
 private fun peekImplItemFn(input: ParseStream): Boolean {
     val ahead = input.fork()
     if (parseOuterAttributes(ahead).isFailure) return false
-    ahead.parse(VisibilityParse).getOrElse { return false }
-    ahead.parse(DefaultParse)
+    VisibilityParse.parse(ahead).getOrElse { return false }
+    DefaultParse.parse(ahead)
     return peekSignature(ahead)
 }
 
@@ -1449,11 +1449,11 @@ private fun parseImplItemFn(
     allowOmittedBody: Boolean,
 ): SynResult<ImplItem.Fn?> {
     val attrs = parseOuterAttributes(input).getOrElse { return SynResult.failure(it) }.toMutableList()
-    val vis = input.parse(VisibilityParse).getOrElse { return SynResult.failure(it) }
-    val defaultness = input.parse(DefaultParse).getOrNull()
+    val vis = VisibilityParse.parse(input).getOrElse { return SynResult.failure(it) }
+    val defaultness = DefaultParse.parse(input).getOrNull()
     val sig = parseSignature(input).getOrElse { return SynResult.failure(it) }
 
-    if (allowOmittedBody && input.parse(SemiParse).isSuccess) {
+    if (allowOmittedBody && SemiParse.parse(input).isSuccess) {
         return SynResult.success(null)
     }
 
