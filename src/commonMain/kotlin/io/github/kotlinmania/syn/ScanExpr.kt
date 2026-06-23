@@ -1138,7 +1138,7 @@ internal object PatParseImpl : Parse<Pat> {
     override fun parse(input: ParseStream): SynResult<Pat> = parsePatSingle(input)
 }
 
-private fun parsePatSingle(input: ParseStream): SynResult<Pat> {
+internal fun parsePatSingle(input: ParseStream): SynResult<Pat> {
     if (input.peek(UnderscorePeek)) {
         val underscore = input.parse(UnderscoreParse).getOrThrow()
         return SynResult.success(Pat.Wild(emptyList(), underscore))

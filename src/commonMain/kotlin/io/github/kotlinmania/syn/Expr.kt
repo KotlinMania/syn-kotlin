@@ -1618,3 +1618,92 @@ public fun exprLet(input: ParseStream, allowStruct: Boolean): SynResult<Expr.Let
         ),
     )
 }
+
+public fun exprUnary(input: ParseStream, attrs: List<Attribute>, allowStruct: Boolean): SynResult<Expr.Unary> {
+    val opResult = input.parse(UnOpParse)
+    if (opResult.isFailure) return SynResult.failure((opResult as SynResult.Failure).error)
+    val innerResult = unaryExprImpl(input, allowStruct)
+    if (innerResult.isFailure) return SynResult.failure((innerResult as SynResult.Failure).error)
+    return SynResult.success(Expr.Unary(attrs, opResult.getOrThrow(), innerResult.getOrThrow()))
+}
+
+public fun exprBecome(input: ParseStream): SynResult<Expr> {
+    val begin = input.fork()
+    val becomeResult = input.parse(BecomeParse)
+    if (becomeResult.isFailure) return SynResult.failure((becomeResult as SynResult.Failure).error)
+    val exprResult = parseExprFull(input)
+    if (exprResult.isFailure) return SynResult.failure((exprResult as SynResult.Failure).error)
+    val tokens = verbatimBetween(begin, input)
+    return SynResult.success(Expr.Verbatim(tokens))
+}
+
+public fun exprClosure(input: ParseStream, allowStruct: Boolean): SynResult<Expr.Closure> {
+    val lifetimes: BoundLifetimes? = null
+    val constnessResult = input.parse(ConstParse)
+    val constness = if (constnessResult.isSuccess) constnessResult.getOrThrow() else null
+    val movabilityResult = input.parse(StaticParse)
+    val movability = if (movabilityResult.isSuccess) movabilityResult.getOrThrow() else null
+    val asyncnessResult = input.parse(AsyncParse)
+    val asyncness = if (asyncnessResult.isSuccess) asyncnessResult.getOrThrow() else null
+    val captureResult = input.parse(MoveParse)
+    val capture = if (captureResult.isSuccess) captureResult.getOrThrow() else null
+    val or1Result = input.parse(OrParse)
+    if (or1Result.isFailure) return SynResult.failure((or1Result as SynResult.Failure).error)
+    val inputs = PatList()
+    while (true) {
+        if (input.peek(OrPeek)) break
+        val valueResult = closureArg(input)
+        if (valueResult.isFailure) return SynResult.failure((valueResult as SynResult.Failure).error)
+        inputs.pushValue(valueResult.getOrThrow())
+        if (input.peek(OrPeek)) break
+        val punctResult = input.parse(CommaParse)
+        if (punctResult.isFailure) return SynResult.failure((punctResult as SynResult.Failure).error)
+        inputs.pushPunct(punctResult.getOrThrow())
+    }
+    val or2Result = input.parse(OrParse)
+    if (or2Result.isFailure) return SynResult.failure((or2Result as SynResult.Failure).error)
+    val output: ReturnType
+    val body: Expr
+    if (input.peek(RArrowPeek)) {
+        val arrowResult = input.parse(RArrowParse)
+        if (arrowResult.isFailure) return SynResult.failure((arrowResult as SynResult.Failure).error)
+        val tyResult = parseTypeFull(input)
+        if (tyResult.isFailure) return SynResult.failure((tyResult as SynResult.Failure).error)
+        val blockResult = parseExprBlock(input)
+        if (blockResult.isFailure) return SynResult.failure((blockResult as SynResult.Failure).error)
+        output = ReturnType.TypeReturn(arrowResult.getOrThrow(), tyResult.getOrThrow())
+        body = blockResult.getOrThrow()
+    } else {
+        val bodyResult = ambiguousExprImpl(input, allowStruct)
+        if (bodyResult.isFailure) return SynResult.failure((bodyResult as SynResult.Failure).error)
+        output = ReturnType.Default
+        body = bodyResult.getOrThrow()
+    }
+    return SynResult.success(
+        Expr.Closure(
+            emptyList(),
+            constness,
+            asyncness,
+            capture,
+            or1Result.getOrThrow(),
+            inputs,
+            or2Result.getOrThrow(),
+            output,
+            body,
+        ),
+    )
+}
+
+public fun closureArg(input: ParseStream): SynResult<Pat> {
+    val patResult = parsePatSingle(input)
+    if (patResult.isFailure) return patResult
+    val pat = patResult.getOrThrow()
+    if (input.peek(ColonPeek)) {
+        val colonResult = input.parse(ColonParse)
+        if (colonResult.isFailure) return SynResult.failure((colonResult as SynResult.Failure).error)
+        val tyResult = parseTypeFull(input)
+        if (tyResult.isFailure) return SynResult.failure((tyResult as SynResult.Failure).error)
+        return SynResult.success(Pat.TypeAscription(emptyList(), pat, colonResult.getOrThrow(), tyResult.getOrThrow()))
+    }
+    return SynResult.success(pat)
+}
