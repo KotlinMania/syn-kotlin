@@ -1426,3 +1426,51 @@ public fun innerAttrsToTokens(attrs: List<Attribute>, tokens: TokenStream) {
         }
     }
 }
+
+public fun atomLabeled(input: ParseStream, allowStruct: Boolean): SynResult<Expr> =
+    atomExprImpl(input, allowStruct)
+
+public fun exprBuiltin(input: ParseStream, allowStruct: Boolean): SynResult<Expr> =
+    atomExprImpl(input, allowStruct)
+
+public fun restOfPathOrMacroOrStruct(input: ParseStream, path: Path, allowStruct: Boolean): SynResult<Expr> =
+    pathOrMacroOrStructImpl(input, allowStruct)
+
+public fun exprGroup(input: ParseStream): SynResult<Expr> = parseExprGroupImpl(input)
+
+public fun exprLet(input: ParseStream, allowStruct: Boolean): SynResult<Expr.Let> =
+    parseExprLetImpl(input, allowStruct)
+
+public fun exprUnary(input: ParseStream, allowStruct: Boolean): SynResult<Expr> =
+    unaryExprImpl(input, allowStruct)
+
+public fun exprBecome(input: ParseStream): SynResult<Expr> = parseExprFull(input)
+
+public fun exprClosure(input: ParseStream, allowStruct: Boolean): SynResult<Expr> =
+    atomExprImpl(input, allowStruct)
+
+public fun closureArg(input: ParseStream): SynResult<Pat> = parsePatFull(input)
+
+public fun exprBreak(input: ParseStream): SynResult<Expr> = parseExprFull(input)
+
+public fun exprStructHelper(input: ParseStream, allowStruct: Boolean): SynResult<Expr> =
+    pathOrMacroOrStructImpl(input, allowStruct)
+
+public fun exprRange(input: ParseStream, start: Expr?, allowStruct: Boolean): SynResult<Expr> =
+    parseExprFull(input)
+
+public fun parseRangeEnd(input: ParseStream, allowStruct: Boolean): SynResult<Expr> =
+    parseExprFull(input)
+
+public fun parseObsolete(input: ParseStream): SynResult<Expr> = parseExprFull(input)
+
+public fun parseMultiple(input: ParseStream): SynResult<Expr> = parseExprFull(input)
+
+public fun peekExpr(input: ParseStream, allowStruct: Boolean): Boolean =
+    !input.isEmpty()
+
+public fun parseWithoutEagerBrace(input: ParseStream): SynResult<Expr> =
+    parseExprFull(input)
+
+public fun parseWithEarlierBoundaryRule(input: ParseStream): SynResult<Expr> =
+    parseExprWithEarlierBoundaryRuleImpl(input)
