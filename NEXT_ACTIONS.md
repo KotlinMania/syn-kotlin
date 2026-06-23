@@ -5,9 +5,9 @@ Based on AST analysis, here are the concrete next steps.
 ## Summary
 
 - **Files Present:** 53/55 (96.4%)
-- **Function parity:** 1080/1083 matched (target 3189) — 99.7%
-- **Class/type parity:** 97/121 matched (target 820) — 80.2%
-- **Combined symbol parity:** 1177/1204 matched (target 4009) — 97.8%
+- **Function parity:** 1081/1083 matched (target 3190) — 99.8%
+- **Class/type parity:** 99/121 matched (target 820) — 81.8%
+- **Combined symbol parity:** 1180/1204 matched (target 4010) — 98.0%
 - **Average inline-code cosine:** 0.55 (function body across 53 matched files)
 - **Average documentation cosine:** 0.32 (doc text across 53 matched files)
 - **Cheat-zeroed Files:** 3
@@ -16,14 +16,13 @@ Based on AST analysis, here are the concrete next steps.
 ## Priority 1: Fix Incomplete High-Dependency Files
 
 ### 1. token
-- **Similarity:** 0.64 (needs 21% improvement)
+- **Similarity:** 0.67 (needs 18% improvement)
 - **Dependencies:** 17
-- **Priority Score:** 17012204.0
-- **Functions:** 16/17 matched (target 684)
-- **Missing functions:** `Group`
+- **Priority Score:** 17002204.0
+- **Functions:** 17/17 matched (target 685)
+- **Missing functions:** _none_
 - **Types:** 5/5 matched (target 305)
 - **Missing types:** _none_
-- **Symbol Deficit:** 1 (functions: 1, types: 0)
 - **Action:** Review and complete missing sections
 
 ### 2. punctuated
@@ -60,11 +59,11 @@ Every matched file is listed below with function and type symbol parity.
 ### 1. token
 
 - **Target:** `token.Token`
-- **Similarity:** 0.64
+- **Similarity:** 0.67
 - **Dependents:** 17
-- **Priority Score:** 17012204.0
-- **Functions:** 16/17 matched (target 684)
-- **Missing functions:** `Group`
+- **Priority Score:** 17002204.0
+- **Functions:** 17/17 matched (target 685)
+- **Missing functions:** _none_
 - **Types:** 5/5 matched (target 305)
 - **Missing types:** _none_
 
@@ -236,19 +235,7 @@ Every matched file is listed below with function and type symbol parity.
 - **Types:** 1/1 matched (target 22)
 - **Missing types:** _none_
 
-### 17. scan_expr
-
-- **Target:** `syn.ScanExpr`
-- **Similarity:** 0.58
-- **Dependents:** 1
-- **Priority Score:** 1020304.2
-- **Functions:** 1/1 matched (target 87)
-- **Missing functions:** _none_
-- **Types:** 0/2 matched (target 5)
-- **Missing types:** `Input`, `Action`
-- **Lint issues:** 1
-
-### 18. gen.fold
+### 17. gen.fold
 
 - **Target:** `gen.Fold`
 - **Similarity:** 0.27
@@ -259,7 +246,7 @@ Every matched file is listed below with function and type symbol parity.
 - **Types:** 1/1 matched
 - **Missing types:** _none_
 
-### 19. gen.visit_mut
+### 18. gen.visit_mut
 
 - **Target:** `gen.VisitMut`
 - **Similarity:** 0.24
@@ -270,7 +257,7 @@ Every matched file is listed below with function and type symbol parity.
 - **Types:** 1/1 matched
 - **Missing types:** _none_
 
-### 20. gen.visit
+### 19. gen.visit
 
 - **Target:** `gen.Visit`
 - **Similarity:** 0.26
@@ -282,7 +269,7 @@ Every matched file is listed below with function and type symbol parity.
 - **Missing types:** _none_
 - **Lint issues:** 15
 
-### 21. attr
+### 20. attr
 
 - **Target:** `syn.Attr`
 - **Similarity:** 0.71
@@ -294,7 +281,7 @@ Every matched file is listed below with function and type symbol parity.
 - **Missing types:** `Ret`
 - **Lint issues:** 1
 
-### 22. group
+### 21. group
 
 - **Target:** `syn.Group`
 - **Similarity:** 0.89
@@ -305,7 +292,7 @@ Every matched file is listed below with function and type symbol parity.
 - **Types:** 4/4 matched
 - **Missing types:** _none_
 
-### 23. ty
+### 22. ty
 
 - **Target:** `syn.Type`
 - **Similarity:** 0.53
@@ -317,7 +304,7 @@ Every matched file is listed below with function and type symbol parity.
 - **Missing types:** _none_
 - **Lint issues:** 1
 
-### 24. bigint
+### 23. bigint
 
 - **Target:** `syn.BigInt`
 - **Similarity:** 0.67
@@ -328,7 +315,7 @@ Every matched file is listed below with function and type symbol parity.
 - **Types:** 1/1 matched
 - **Missing types:** _none_
 
-### 25. derive
+### 24. derive
 
 - **Target:** `syn.Derive`
 - **Similarity:** 0.72
@@ -338,6 +325,18 @@ Every matched file is listed below with function and type symbol parity.
 - **Missing functions:** _none_
 - **Types:** 0/0 matched (target 13)
 - **Missing types:** _none_
+
+### 25. scan_expr
+
+- **Target:** `syn.ScanExpr`
+- **Similarity:** 0.58
+- **Dependents:** 1
+- **Priority Score:** 1000304.2
+- **Functions:** 1/1 matched (target 87)
+- **Missing functions:** _none_
+- **Types:** 2/2 matched (target 5)
+- **Missing types:** _none_
+- **Lint issues:** 1
 
 ### 26. spanned
 

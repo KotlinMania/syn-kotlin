@@ -13,8 +13,6 @@ public data class Attribute(
     public val bracketToken: io.github.kotlinmania.syn.token.Bracket,
     public val meta: Meta,
 ) : ToTokens {
-    public typealias Ret = Iterator<Attribute>
-
     public companion object {
         public fun parseOuter(input: ParseStream): SynResult<List<Attribute>> =
             parseOuterAttributes(input)
@@ -68,10 +66,6 @@ public data class Attribute(
 
     public fun deepCopy(): Attribute =
         copy(meta = meta.copy())
-
-    public fun isOuter(): Boolean = style is AttrStyle.Outer
-
-    public fun isInner(): Boolean = style is AttrStyle.Inner
 
     public fun fmt(): String = toString()
 }

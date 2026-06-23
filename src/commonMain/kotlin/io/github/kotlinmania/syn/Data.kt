@@ -30,9 +30,6 @@ public data class Variant(
 public sealed class Fields :
     Iterable<Field>,
     ToTokens {
-    public typealias Item = Field
-    public typealias IntoIter = Iterator<Field>
-
     public data class Named(
         val fields: FieldsNamed,
     ) : Fields() {
@@ -66,9 +63,6 @@ public sealed class Fields :
         }
 
     public fun iterMut(): Iterator<Field> =
-        iter()
-
-    public fun intoIter(): Iterator<Field> =
         iter()
 
     public fun len(): Int =

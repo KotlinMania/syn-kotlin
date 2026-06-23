@@ -44,8 +44,6 @@ public fun identParseAny(input: ParseStream): SynResult<Ident> =
 public val IdentPeekAny: Peek = PeekFn
 
 internal object PeekFn : Peek {
-    public typealias Token = IdentAny
-
     override fun peek(cursor: Cursor): Boolean = cursor.ident() != null
 
     override fun display(): String = "identifier"

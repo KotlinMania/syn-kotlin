@@ -114,8 +114,6 @@ private class CommaSeparated(
  * This interface is sealed and cannot be implemented for types outside of Syn.
  */
 public sealed interface Peek : Lookahead.Sealed {
-    public typealias Token = Any
-
     /** Returns true if [cursor] points at a token matching this peek target. */
     public fun peek(cursor: Cursor): Boolean
 

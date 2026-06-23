@@ -99,9 +99,5 @@ public enum class Precedence {
             if (attrs.any { it.style is AttrStyle.Outer }) Prefix else Unambiguous
     }
 
-    public fun cloneValue(): Precedence = this
-
     public fun eq(other: Precedence): Boolean = this == other
-
-    public fun partialCmp(other: Precedence): Int = this.compareTo(other)
 }
