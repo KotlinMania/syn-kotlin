@@ -31,7 +31,7 @@ public data class Generics(
         public fun parse(input: ParseStream): SynResult<Generics> {
             if (!input.peek(GenericsLtPeek)) return SynResult.success(default())
 
-            val ltToken = input.parse(GenericsLtParse).getOrElse { return SynResult.failure(it) }
+            val ltToken = GenericsLtParse.parse(input).getOrElse { return SynResult.failure(it) }
             val params = GenericParamList()
             while (!input.isEmpty() && !input.peek(GenericsGtPeek)) {
                 val attrs = parseOuterAttributes(input).getOrElse { return SynResult.failure(it) }
@@ -53,7 +53,7 @@ public data class Generics(
                         input.peek(UnderscorePeek) ->
                             GenericParam.TypeParam(
                                 attrs,
-                                identFromUnderscore(input.parse(UnderscoreParse).getOrElse { return SynResult.failure(it) }),
+                                identFromUnderscore(UnderscoreParse.parse(input).getOrElse { return SynResult.failure(it) }),
                                 null,
                                 TypeParamBoundList(),
                                 null,
@@ -63,9 +63,9 @@ public data class Generics(
                     }
                 params.pushValue(param)
                 if (input.peek(GenericsGtPeek)) break
-                params.pushPunct(input.parse(CommaParse).getOrElse { return SynResult.failure(it) })
+                params.pushPunct(CommaParse.parse(input).getOrElse { return SynResult.failure(it) })
             }
-            val gtToken = input.parse(GenericsGtParse).getOrElse { return SynResult.failure(it) }
+            val gtToken = GenericsGtParse.parse(input).getOrElse { return SynResult.failure(it) }
             return SynResult.success(Generics(ltToken, params, gtToken))
         }
     }
@@ -444,14 +444,14 @@ public sealed class GenericParam : ToTokens {
             }
 
             internal fun parseWithAttrs(attrs: List<Attribute>, input: ParseStream): SynResult<LifetimeParam> {
-                val lifetime = input.parse(LifetimeParse).getOrElse { return SynResult.failure(it) }
-                val colonToken = input.parse(ColonParse).getOrNull()
+                val lifetime = LifetimeParse.parse(input).getOrElse { return SynResult.failure(it) }
+                val colonToken = ColonParse.parse(input).getOrNull()
                 val bounds = LifetimeList()
                 if (colonToken != null) {
                     while (!input.isEmpty() && !input.peek(CommaPeek) && !input.peek(GenericsGtPeek)) {
-                        bounds.pushValue(input.parse(LifetimeParse).getOrElse { return SynResult.failure(it) })
+                        bounds.pushValue(LifetimeParse.parse(input).getOrElse { return SynResult.failure(it) })
                         if (!input.peek(PlusPeek)) break
-                        bounds.pushPunct(input.parse(PlusParse).getOrElse { return SynResult.failure(it) })
+                        bounds.pushPunct(PlusParse.parse(input).getOrElse { return SynResult.failure(it) })
                     }
                 }
                 return SynResult.success(LifetimeParam(attrs, lifetime, colonToken, bounds))
@@ -489,8 +489,8 @@ public sealed class GenericParam : ToTokens {
             }
 
             internal fun parseWithAttrs(attrs: List<Attribute>, input: ParseStream): SynResult<TypeParam> {
-                val ident = input.parse(IdentParse).getOrElse { return SynResult.failure(it) }
-                val colonToken = input.parse(ColonParse).getOrNull()
+                val ident = IdentParse.parse(input).getOrElse { return SynResult.failure(it) }
+                val colonToken = ColonParse.parse(input).getOrNull()
                 val bounds = TypeParamBoundList()
                 if (colonToken != null) {
                     while (!input.isEmpty() &&
@@ -506,10 +506,10 @@ public sealed class GenericParam : ToTokens {
                             ).getOrElse { return SynResult.failure(it) },
                         )
                         if (!input.peek(PlusPeek)) break
-                        bounds.pushPunct(input.parse(PlusParse).getOrElse { return SynResult.failure(it) })
+                        bounds.pushPunct(PlusParse.parse(input).getOrElse { return SynResult.failure(it) })
                     }
                 }
-                val eqToken = input.parse(EqParse).getOrNull()
+                val eqToken = EqParse.parse(input).getOrNull()
                 val default =
                     if (eqToken != null) {
                         parseTypeFull(input).getOrElse { return SynResult.failure(it) }
@@ -553,11 +553,11 @@ public sealed class GenericParam : ToTokens {
             }
 
             internal fun parseWithAttrs(attrs: List<Attribute>, input: ParseStream): SynResult<ConstParam> {
-                val constToken = input.parse(ConstParse).getOrElse { return SynResult.failure(it) }
-                val ident = input.parse(IdentParse).getOrElse { return SynResult.failure(it) }
-                val colonToken = input.parse(ColonParse).getOrElse { return SynResult.failure(it) }
+                val constToken = ConstParse.parse(input).getOrElse { return SynResult.failure(it) }
+                val ident = IdentParse.parse(input).getOrElse { return SynResult.failure(it) }
+                val colonToken = ColonParse.parse(input).getOrElse { return SynResult.failure(it) }
                 val ty = parseTypeFull(input).getOrElse { return SynResult.failure(it) }
-                val eqToken = input.parse(EqParse).getOrNull()
+                val eqToken = EqParse.parse(input).getOrNull()
                 val default =
                     if (eqToken != null) {
                         parseExprFull(input).getOrElse { return SynResult.failure(it) }
@@ -591,7 +591,7 @@ public data class WhereClause(
 ) : ToTokens {
     public companion object {
         public fun parse(input: ParseStream): SynResult<WhereClause> {
-            val whereToken = input.parse(WhereParse).getOrElse { return SynResult.failure(it) }
+            val whereToken = WhereParse.parse(input).getOrElse { return SynResult.failure(it) }
             if (chooseGenericsOverQpath(input)) {
                 return SynResult.failure(
                     input.error("generic parameters on `where` clauses are reserved for future use"),
@@ -607,7 +607,7 @@ public data class WhereClause(
             ) {
                 predicates.pushValue(WherePredicate.parse(input).getOrElse { return SynResult.failure(it) })
                 if (!input.peek(CommaPeek)) break
-                predicates.pushPunct(input.parse(CommaParse).getOrElse { return SynResult.failure(it) })
+                predicates.pushPunct(CommaParse.parse(input).getOrElse { return SynResult.failure(it) })
             }
             return SynResult.success(WhereClause(whereToken, predicates))
         }
@@ -650,8 +650,8 @@ public sealed class WherePredicate : ToTokens {
     public companion object {
         public fun parse(input: ParseStream): SynResult<WherePredicate> {
             if (input.peek(LifetimePeek) && input.peek2(ColonPeek)) {
-                val lifetime = input.parse(LifetimeParse).getOrElse { return SynResult.failure(it) }
-                val colonToken = input.parse(ColonParse).getOrElse { return SynResult.failure(it) }
+                val lifetime = LifetimeParse.parse(input).getOrElse { return SynResult.failure(it) }
+                val colonToken = ColonParse.parse(input).getOrElse { return SynResult.failure(it) }
                 val bounds = LifetimeList()
                 while (!input.isEmpty() &&
                     !input.peek(BracePeek) &&
@@ -660,16 +660,16 @@ public sealed class WherePredicate : ToTokens {
                     !input.peek(ColonPeek) &&
                     !input.peek(EqPeek)
                 ) {
-                    bounds.pushValue(input.parse(LifetimeParse).getOrElse { return SynResult.failure(it) })
+                    bounds.pushValue(LifetimeParse.parse(input).getOrElse { return SynResult.failure(it) })
                     if (!input.peek(PlusPeek)) break
-                    bounds.pushPunct(input.parse(PlusParse).getOrElse { return SynResult.failure(it) })
+                    bounds.pushPunct(PlusParse.parse(input).getOrElse { return SynResult.failure(it) })
                 }
                 return SynResult.success(LifetimePredicate(lifetime, colonToken, bounds))
             }
 
             val lifetimes = BoundLifetimes.parseOptional(input).getOrElse { return SynResult.failure(it) }
             val boundedTy = parseTypeFull(input).getOrElse { return SynResult.failure(it) }
-            val colonToken = input.parse(ColonParse).getOrElse { return SynResult.failure(it) }
+            val colonToken = ColonParse.parse(input).getOrElse { return SynResult.failure(it) }
             val bounds = TypeParamBoundList()
             while (!input.isEmpty() &&
                 !input.peek(BracePeek) &&
@@ -686,7 +686,7 @@ public sealed class WherePredicate : ToTokens {
                     ).getOrElse { return SynResult.failure(it) },
                 )
                 if (!input.peek(PlusPeek)) break
-                bounds.pushPunct(input.parse(PlusParse).getOrElse { return SynResult.failure(it) })
+                bounds.pushPunct(PlusParse.parse(input).getOrElse { return SynResult.failure(it) })
             }
             return SynResult.success(TypePredicate(lifetimes, boundedTy, colonToken, bounds))
         }
@@ -744,7 +744,7 @@ public sealed class TypeParamBound : ToTokens {
             allowConst: Boolean,
         ): SynResult<TypeParamBound> {
             if (input.peek(LifetimePeek)) {
-                return SynResult.success(LifetimeBound(input.parse(LifetimeParse).getOrElse { return SynResult.failure(it) }))
+                return SynResult.success(LifetimeBound(LifetimeParse.parse(input).getOrElse { return SynResult.failure(it) }))
             }
 
             if (input.peek(UsePeek)) {
@@ -789,7 +789,7 @@ public sealed class TypeParamBound : ToTokens {
                     },
                 )
                 if (!(allowPlus && input.peek(PlusPeek))) break
-                bounds.pushPunct(input.parse(PlusParse).getOrElse { return SynResult.failure(it) })
+                bounds.pushPunct(PlusParse.parse(input).getOrElse { return SynResult.failure(it) })
                 if (!(input.peek(IdentPeekAny) ||
                         input.peek(PathSepPeek) ||
                         input.peek(QuestionPeek) ||
@@ -823,7 +823,7 @@ public sealed class TypeParamBound : ToTokens {
 
                 if (input.peek(BracketPeek)) {
                     val conditionallyConst = bracketed(input).getOrElse { return SynResult.failure(it) }
-                    conditionallyConst.content.parse(ConstParse).getOrElse { return SynResult.failure(it) }
+                    ConstParse.parse(conditionallyConst.content).getOrElse { return SynResult.failure(it) }
                     if (!conditionallyConst.content.isEmpty()) {
                         return SynResult.failure(conditionallyConst.content.error("unexpected token"))
                     }
@@ -833,7 +833,7 @@ public sealed class TypeParamBound : ToTokens {
                     }
                     isConditionallyConst = true
                 } else if (input.peek(ConstPeek)) {
-                    input.parse(ConstParse).getOrElse { return SynResult.failure(it) }
+                    ConstParse.parse(input).getOrElse { return SynResult.failure(it) }
                     if (!allowConst) {
                         return SynResult.failure(input.error("`const` is not allowed here"))
                     }
@@ -845,14 +845,14 @@ public sealed class TypeParamBound : ToTokens {
                     lifetimes = BoundLifetimes.parseOptional(input).getOrElse { return SynResult.failure(it) }
                 }
 
-                val path = input.parse(PathParse).getOrElse { return SynResult.failure(it) }
+                val path = PathParse.parse(input).getOrElse { return SynResult.failure(it) }
                 val last = path.segments.last()
                 if (last != null &&
                     last.arguments.isEmpty() &&
                     (input.peek(ParenPeek) || (input.peek(PathSepPeek) && input.peek3(ParenPeek)))
                 ) {
                     if (input.peek(PathSepPeek)) {
-                        input.parse(PathSepParse).getOrElse { return SynResult.failure(it) }
+                        PathSepParse.parse(input).getOrElse { return SynResult.failure(it) }
                     }
                     last.arguments = parseParenthesizedPathArguments(input).getOrElse { return SynResult.failure(it) }
                 }
@@ -909,8 +909,8 @@ public sealed class TypeParamBound : ToTokens {
     ) : TypeParamBound() {
         public companion object {
             public fun parse(input: ParseStream): SynResult<PreciseCapture> {
-                val useToken = input.parse(UseParse).getOrElse { return SynResult.failure(it) }
-                val ltToken = input.parse(GenericsLtParse).getOrElse { return SynResult.failure(it) }
+                val useToken = UseParse.parse(input).getOrElse { return SynResult.failure(it) }
+                val ltToken = GenericsLtParse.parse(input).getOrElse { return SynResult.failure(it) }
                 val params = CapturedParamList()
                 loop@ while (true) {
                     val lookahead = input.lookahead1()
@@ -929,7 +929,7 @@ public sealed class TypeParamBound : ToTokens {
                     val separator = input.lookahead1()
                     params.pushPunct(
                         if (separator.peek(CommaPeek)) {
-                            input.parse(CommaParse).getOrElse { return SynResult.failure(it) }
+                            CommaParse.parse(input).getOrElse { return SynResult.failure(it) }
                         } else if (separator.peek(GenericsGtPeek)) {
                             break@loop
                         } else {
@@ -937,7 +937,7 @@ public sealed class TypeParamBound : ToTokens {
                         },
                     )
                 }
-                val gtToken = input.parse(GenericsGtParse).getOrElse { return SynResult.failure(it) }
+                val gtToken = GenericsGtParse.parse(input).getOrElse { return SynResult.failure(it) }
                 return SynResult.success(PreciseCapture(useToken, ltToken, params, gtToken))
             }
         }
@@ -969,7 +969,7 @@ public sealed class TraitBoundModifier : ToTokens {
     public companion object {
         public fun parse(input: ParseStream): SynResult<TraitBoundModifier> =
             if (input.peek(QuestionPeek)) {
-                input.parse(QuestionParse).map { Maybe(it) }
+                QuestionParse.parse(input).map { Maybe(it) }
             } else {
                 SynResult.success(None)
             }
@@ -1008,15 +1008,15 @@ public data class BoundLifetimes(
             )
 
         public fun parse(input: ParseStream): SynResult<BoundLifetimes> {
-            val forToken = input.parse(ForParse).getOrElse { return SynResult.failure(it) }
-            val ltToken = input.parse(GenericsLtParse).getOrElse { return SynResult.failure(it) }
+            val forToken = ForParse.parse(input).getOrElse { return SynResult.failure(it) }
+            val ltToken = GenericsLtParse.parse(input).getOrElse { return SynResult.failure(it) }
             val lifetimes = GenericParamList()
             while (!input.peek(GenericsGtPeek)) {
                 lifetimes.pushValue(GenericParam.parse(input).getOrElse { return SynResult.failure(it) })
                 if (input.peek(GenericsGtPeek)) break
-                lifetimes.pushPunct(input.parse(CommaParse).getOrElse { return SynResult.failure(it) })
+                lifetimes.pushPunct(CommaParse.parse(input).getOrElse { return SynResult.failure(it) })
             }
-            val gtToken = input.parse(GenericsGtParse).getOrElse { return SynResult.failure(it) }
+            val gtToken = GenericsGtParse.parse(input).getOrElse { return SynResult.failure(it) }
             return SynResult.success(BoundLifetimes(forToken, ltToken, lifetimes, gtToken))
         }
 
@@ -1046,11 +1046,11 @@ public sealed class CapturedParam : ToTokens {
             val lookahead = input.lookahead1()
             return when {
                 lookahead.peek(LifetimePeek) ->
-                    input.parse(LifetimeParse).map { Lifetime(it) }
+                    LifetimeParse.parse(input).map { Lifetime(it) }
                 lookahead.peek(IdentPeek) || input.peek(SelfTypePeek) -> {
                     val ident =
                         if (input.peek(SelfTypePeek)) {
-                            identFromSelfType(input.parse(SelfTypeParse).getOrElse { return SynResult.failure(it) })
+                            identFromSelfType(SelfTypeParse.parse(input).getOrElse { return SynResult.failure(it) })
                         } else {
                             identParseAny(input).getOrElse { return SynResult.failure(it) }
                         }
