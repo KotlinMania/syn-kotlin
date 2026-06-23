@@ -48,7 +48,6 @@ public sealed class Fields :
 
     public data object Unit : Fields() {
         override fun toTokens(tokens: TokenStream) {
-            // unit fields emit nothing
         }
     }
 
@@ -63,6 +62,9 @@ public sealed class Fields :
         }
 
     public fun iterMut(): Iterator<Field> =
+        iter()
+
+    public fun intoIter(): Iterator<Field> =
         iter()
 
     public fun len(): Int =
