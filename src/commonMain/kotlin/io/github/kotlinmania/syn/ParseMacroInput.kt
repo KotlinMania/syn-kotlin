@@ -4,73 +4,17 @@ package io.github.kotlinmania.syn
 
 import io.github.kotlinmania.procmacro2.TokenStream
 
-/**
- * Parse the input [TokenStream] of a macro, returning either the parsed
- * syntax tree node or a fallback [TokenStream] containing a `compileError`
- * invocation. Refer to the [Parse] interface for more details about parsing
- * in Syn.
- *
- * <br>
- *
- * # Intended usage
- *
- * The `parseMacroInput` helper
- * that calls [parse2] under the hood and returns a sealed [ParseMacroSynResult]
- * that the caller folds into a [TokenStream] result.
- *
- * ```kotlin
- * fun myMacro(tokens: TokenStream): TokenStream =
- * when (val input = parseMacroInput(tokens, MyMacroInput)) {
- * is ParseMacroSynResult.Success -> {
- * // … work with input.value …
- * TokenStream.new()
- * }
- * is ParseMacroSynResult.CompileError -> input.tokens
- * }
- * ```
- *
- * <br>
- *
- * # Usage with Parser
- *
- * This helper can also be used with the [Parser] interface for types that have
- * multiple ways that they can be parsed:
- *
- * ```kotlin
- * fun myMacro(tokens: TokenStream): TokenStream =
- * when (val input = parseMacroInputWith(tokens, MyMacroInput.parseAlternate)) {
- * is ParseMacroSynResult.Success -> /* … work with input.value … */
- * is ParseMacroSynResult.CompileError -> input.tokens
- * }
- * ```
- *
- * <br>
- *
- * # Expansion
- *
- * `parseMacroInput(variable, T)` is equivalent to:
- *
- * ```kotlin
- * when (val result = parse2(T, variable)) {
- * is SynResult.Success -> ParseMacroSynResult.Success(result.value)
- * is SynResult.Failure -> ParseMacroSynResult.CompileError(
- * (result.exception as SynError).toCompileError(),
- * )
- * }
- * ```
- */
-public sealed class ParseMacroSynResult<out T> {
-    public data class Success<T>(
-        public val value: T,
-    ) : ParseMacroSynResult<T>()
+public sealed class ParseMacroSynResult {
+    public data class Success(
+        public val value: Any?,
+    ) : ParseMacroSynResult()
 
-    public data class CompileError<T>(
+    public data class CompileError(
         public val tokens: TokenStream,
-    ) : ParseMacroSynResult<T>()
+    ) : ParseMacroSynResult()
 }
 
-/** Parse the macro input via the supplied [Parse] strategy. */
-public fun <T> parseMacroInput(tokens: TokenStream, parser: Parse<T>): ParseMacroSynResult<T> {
+public fun parseMacroInput(tokens: TokenStream, parser: Parse<Any?>): ParseMacroSynResult {
     val result = parse2(parser, tokens)
     if (result.isSuccess) {
         return ParseMacroSynResult.Success(result.getOrThrow())
@@ -81,11 +25,10 @@ public fun <T> parseMacroInput(tokens: TokenStream, parser: Parse<T>): ParseMacr
     return ParseMacroSynResult.CompileError(syntaxError.toCompileError())
 }
 
-/** Parse the macro input via the supplied closure-style parser. */
-public fun <T> parseMacroInputWith(
+public fun parseMacroInputWith(
     tokens: TokenStream,
-    parser: (ParseStream) -> SynResult<T>,
-): ParseMacroSynResult<T> {
+    parser: (ParseStream) -> SynResult<Any?>,
+): ParseMacroSynResult {
     val result = parserFromFunction(parser).parse2(tokens)
     if (result.isSuccess) {
         return ParseMacroSynResult.Success(result.getOrThrow())
