@@ -131,20 +131,20 @@ public data class DataUnion(
 }
 
 public fun parseDeriveInput(input: ParseStream): SynResult<DeriveInput> =
-    input.parse(DeriveInputParse)
+    DeriveInputParse.parse(input)
 
-public object DeriveInputParse : Parse<DeriveInput> {
-    override fun parse(input: ParseStream): SynResult<DeriveInput> =
+public object DeriveInputParse {
+    fun parse(input: ParseStream): SynResult<DeriveInput> =
         DeriveInputParseImpl.parse(input)
 }
 
-internal object DeriveInputParseImpl : Parse<DeriveInput> {
-    override fun parse(input: ParseStream): SynResult<DeriveInput> {
+internal object DeriveInputParseImpl {
+    fun parse(input: ParseStream): SynResult<DeriveInput> {
         val attrs = parseOuterAttributes(input).getOrElse { return SynResult.failure(it) }
-        val vis = input.parse(VisibilityParse).getOrNull() ?: Visibility.Inherited
+        val vis = VisibilityParse.parse(input).getOrNull() ?: Visibility.Inherited
         if (input.peek(StructPeek)) {
-            val structToken = input.parse(StructParse).getOrElse { return SynResult.failure(it) }
-            val ident = input.parse(IdentParse).getOrElse { return SynResult.failure(it) }
+            val structToken = StructParse.parse(input).getOrElse { return SynResult.failure(it) }
+            val ident = IdentParse.parse(input).getOrElse { return SynResult.failure(it) }
             val generics = parseGenerics(input).getOrElse { return SynResult.failure(it) }
             val data = dataStruct(input).getOrElse { return SynResult.failure(it) }
             generics.whereClause = data.whereClause
@@ -159,8 +159,8 @@ internal object DeriveInputParseImpl : Parse<DeriveInput> {
             )
         }
         if (input.peek(EnumPeek)) {
-            val enumToken = input.parse(EnumParse).getOrElse { return SynResult.failure(it) }
-            val ident = input.parse(IdentParse).getOrElse { return SynResult.failure(it) }
+            val enumToken = EnumParse.parse(input).getOrElse { return SynResult.failure(it) }
+            val ident = IdentParse.parse(input).getOrElse { return SynResult.failure(it) }
             val generics = parseGenerics(input).getOrElse { return SynResult.failure(it) }
             val data = dataEnum(input).getOrElse { return SynResult.failure(it) }
             generics.whereClause = data.whereClause
@@ -175,8 +175,8 @@ internal object DeriveInputParseImpl : Parse<DeriveInput> {
             )
         }
         if (input.peek(UnionPeek)) {
-            val unionToken = input.parse(UnionParse).getOrElse { return SynResult.failure(it) }
-            val ident = input.parse(IdentParse).getOrElse { return SynResult.failure(it) }
+            val unionToken = UnionParse.parse(input).getOrElse { return SynResult.failure(it) }
+            val ident = IdentParse.parse(input).getOrElse { return SynResult.failure(it) }
             val generics = parseGenerics(input).getOrElse { return SynResult.failure(it) }
             val data = dataUnion(input).getOrElse { return SynResult.failure(it) }
             generics.whereClause = data.whereClause
@@ -215,19 +215,19 @@ internal fun dataStruct(input: ParseStream): SynResult<DataStructParts> {
     var whereClause = parseOptionalWhereClause(input).getOrElse { return SynResult.failure(it) }
 
     if (whereClause == null && input.peek(ParenPeek)) {
-        val fields = input.parse(FieldsUnnamedParse).getOrElse { return SynResult.failure(it) }
+        val fields = FieldsUnnamedParse.parse(input).getOrElse { return SynResult.failure(it) }
         whereClause = parseOptionalWhereClause(input).getOrElse { return SynResult.failure(it) }
-        val semi = input.parse(SemiParse).getOrElse { return SynResult.failure(it) }
+        val semi = SemiParse.parse(input).getOrElse { return SynResult.failure(it) }
         return SynResult.success(DataStructParts(whereClause, Fields.Unnamed(fields), semi))
     }
 
     if (input.peek(BracePeek)) {
-        val fields = input.parse(FieldsNamedParse).getOrElse { return SynResult.failure(it) }
+        val fields = FieldsNamedParse.parse(input).getOrElse { return SynResult.failure(it) }
         return SynResult.success(DataStructParts(whereClause, Fields.Named(fields), null))
     }
 
     if (input.peek(SemiPeek)) {
-        val semi = input.parse(SemiParse).getOrElse { return SynResult.failure(it) }
+        val semi = SemiParse.parse(input).getOrElse { return SynResult.failure(it) }
         return SynResult.success(DataStructParts(whereClause, Fields.Unit, semi))
     }
 
@@ -244,7 +244,7 @@ internal fun dataEnum(input: ParseStream): SynResult<DataEnumParts> {
 
 internal fun dataUnion(input: ParseStream): SynResult<DataUnionParts> {
     val whereClause = parseOptionalWhereClause(input).getOrElse { return SynResult.failure(it) }
-    val fields = input.parse(FieldsNamedParse).getOrElse { return SynResult.failure(it) }
+    val fields = FieldsNamedParse.parse(input).getOrElse { return SynResult.failure(it) }
     return SynResult.success(DataUnionParts(whereClause, fields))
 }
 
