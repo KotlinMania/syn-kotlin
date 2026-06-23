@@ -5,6 +5,8 @@ package io.github.kotlinmania.syn
 public class NoDrop<T>(
     public val value: T,
 ) {
+    public typealias NeedsDrop = Unit
+
     public companion object {
         public fun <T> new(value: T): NoDrop<T> = NoDrop(value)
     }
