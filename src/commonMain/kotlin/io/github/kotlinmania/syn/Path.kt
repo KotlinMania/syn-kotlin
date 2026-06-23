@@ -37,7 +37,7 @@ public class Path(
         public fun parseModStyle(input: ParseStream): SynResult<Path> {
             val leadingColon =
                 if (input.peek(PathSepPeek)) {
-                    input.parse(PathSepParse).getOrElse { return SynResult.failure(it) }
+                    PathSepParse.parse(input).getOrElse { return SynResult.failure(it) }
                 } else {
                     null
                 }
@@ -52,11 +52,11 @@ public class Path(
                 val ident = identParseAny(input).getOrElse { return SynResult.failure(it) }
                 segments.pushValue(PathSegment.from(ident))
                 if (!input.peek(PathSepPeek)) break
-                val punct = input.parse(PathSepParse).getOrElse { return SynResult.failure(it) }
+                val punct = PathSepParse.parse(input).getOrElse { return SynResult.failure(it) }
                 segments.pushPunct(punct)
             }
             if (segments.isEmpty()) {
-                return SynResult.failure(input.parse(IdentParse).exceptionOrNull()!!)
+                return SynResult.failure(IdentParse.parse(input).exceptionOrNull()!!)
             }
             if (segments.trailingPunct()) {
                 return SynResult.failure(input.error("expected path segment after `::`"))
@@ -67,7 +67,7 @@ public class Path(
         internal fun parseHelper(input: ParseStream, exprStyle: Boolean): SynResult<Path> {
             val leadingColon =
                 if (input.peek(PathSepPeek)) {
-                    input.parse(PathSepParse).getOrElse { return SynResult.failure(it) }
+                    PathSepParse.parse(input).getOrElse { return SynResult.failure(it) }
                 } else {
                     null
                 }
@@ -84,7 +84,7 @@ public class Path(
             exprStyle: Boolean,
         ): SynResult<Unit> {
             while (input.peek(PathSepPeek) && !input.peek3(ParenPeek)) {
-                val punct = input.parse(PathSepParse).getOrElse { return SynResult.failure(it) }
+                val punct = PathSepParse.parse(input).getOrElse { return SynResult.failure(it) }
                 path.segments.pushPunct(punct)
                 val value = PathSegment.parseHelper(input, exprStyle).getOrElse { return SynResult.failure(it) }
                 path.segments.pushValue(value)
@@ -178,7 +178,7 @@ public data class PathSegment(
                 if (input.peek(SelfTypePeek)) {
                     identParseAny(input).getOrElse { return SynResult.failure(it) }
                 } else {
-                    input.parse(IdentParse).getOrElse { return SynResult.failure(it) }
+                    IdentParse.parse(input).getOrElse { return SynResult.failure(it) }
                 }
             val arguments =
                 if (
@@ -226,14 +226,14 @@ public sealed class PathArguments : ToTokens {
         public companion object {
             /** Parse `::<...>` with mandatory leading `::`. */
             public fun parseTurbofish(input: ParseStream): SynResult<AngleBracketed> {
-                val colon2Token = input.parse(PathSepParse).getOrElse { return SynResult.failure(it) }
+                val colon2Token = PathSepParse.parse(input).getOrElse { return SynResult.failure(it) }
                 return doParse(colon2Token, input)
             }
 
             internal fun parse(input: ParseStream): SynResult<AngleBracketed> {
                 val colon2Token =
                     if (input.peek(PathSepPeek)) {
-                        input.parse(PathSepParse).getOrElse { return SynResult.failure(it) }
+                        PathSepParse.parse(input).getOrElse { return SynResult.failure(it) }
                     } else {
                         null
                     }
@@ -247,13 +247,13 @@ public sealed class PathArguments : ToTokens {
                 val ltToken = parseGenericLt(input).getOrElse { return SynResult.failure(it) }
                 val args = GenericArgumentList()
                 while (!input.peek(GenericsGtPeek)) {
-                    val value = input.parse(GenericArgumentParse).getOrElse { return SynResult.failure(it) }
+                    val value = GenericArgumentParse.parse(input).getOrElse { return SynResult.failure(it) }
                     args.pushValue(value)
                     if (input.peek(GenericsGtPeek)) break
-                    val punct = input.parse(CommaParse).getOrElse { return SynResult.failure(it) }
+                    val punct = CommaParse.parse(input).getOrElse { return SynResult.failure(it) }
                     args.pushPunct(punct)
                 }
-                val gtToken = input.parse(GenericsGtParse).getOrElse { return SynResult.failure(it) }
+                val gtToken = GenericsGtParse.parse(input).getOrElse { return SynResult.failure(it) }
                 return SynResult.success(AngleBracketed(colon2Token, ltToken, args, gtToken))
             }
         }
@@ -543,15 +543,15 @@ private fun conditionallyPrintTurbofish(
     }
 }
 
-public object PathParse : Parse<Path> {
-    override fun parse(input: ParseStream): SynResult<Path> =
+public object PathParse {
+    fun parse(input: ParseStream): SynResult<Path> =
         Path.parseHelper(input, exprStyle = false)
 }
 
 internal fun parseModStylePath(input: ParseStream): SynResult<Path> =
     Path.parseModStyle(input)
 
-public object PathSegmentParse : Parse<PathSegment> {
+public object PathSegmentParse {
     override fun parse(input: ParseStream): SynResult<PathSegment> =
         PathSegment.parseHelper(input, exprStyle = false)
 }
@@ -559,10 +559,10 @@ public object PathSegmentParse : Parse<PathSegment> {
 internal fun parseAngleBracketedPathArguments(input: ParseStream): SynResult<PathArguments.AngleBracketed> =
     PathArguments.AngleBracketed.parse(input)
 
-public object GenericArgumentParse : Parse<GenericArgument> {
-    override fun parse(input: ParseStream): SynResult<GenericArgument> {
+public object GenericArgumentParse {
+    fun parse(input: ParseStream): SynResult<GenericArgument> {
         if (input.peek(LifetimePeek) && !input.peek2(PlusPeek)) {
-            return SynResult.success(GenericArgument.LifetimeArg(input.parse(LifetimeParse).getOrElse { return SynResult.failure(it) }))
+            return SynResult.success(GenericArgument.LifetimeArg(LifetimeParse.parse(input).getOrElse { return SynResult.failure(it) }))
         }
 
         if (input.peek(LitPeek) || input.peek(BracePeek)) {
@@ -578,7 +578,7 @@ public object GenericArgumentParse : Parse<GenericArgument> {
             val segment = argument.path.segments.first()
             val arguments = segment?.arguments
             if (segment != null && (arguments is PathArguments.None || arguments is PathArguments.AngleBracketed)) {
-                val eqToken = input.parse(EqParse).getOrNull()
+                val eqToken = EqParse.parse(input).getOrNull()
                 if (eqToken != null) {
                     argument.path.segments.pop()
                     val generics = arguments as? PathArguments.AngleBracketed
@@ -607,7 +607,7 @@ public object GenericArgumentParse : Parse<GenericArgument> {
                     }
                 }
 
-                val colonToken = input.parse(ColonParse).getOrNull()
+                val colonToken = ColonParse.parse(input).getOrNull()
                 if (colonToken != null) {
                     argument.path.segments.pop()
                     val generics = arguments as? PathArguments.AngleBracketed
@@ -624,11 +624,11 @@ public object GenericArgumentParse : Parse<GenericArgument> {
 internal fun constArgument(input: ParseStream): SynResult<Expr> {
     val lookahead = input.lookahead1()
     if (input.peek(LitPeek)) {
-        val lit = input.parse(LitParse).getOrElse { return SynResult.failure(it) }
+        val lit = LitParse.parse(input).getOrElse { return SynResult.failure(it) }
         return SynResult.success(Expr.Lit(emptyList(), lit))
     }
     if (input.peek(IdentPeek)) {
-        val ident = input.parse(IdentParse).getOrElse { return SynResult.failure(it) }
+        val ident = IdentParse.parse(input).getOrElse { return SynResult.failure(it) }
         return SynResult.success(Expr.Path(emptyList(), null, Path.from(ident)))
     }
     if (input.peek(BracePeek)) {
@@ -662,7 +662,7 @@ internal fun parseParenthesizedPathArguments(input: ParseStream): SynResult<Path
         val ty = parseTypeFull(parens.content).getOrElse { return SynResult.failure(it) }
         inputs.pushValue(ty)
         if (parens.content.isEmpty()) break
-        val comma = parens.content.parse(CommaParse).getOrElse { return SynResult.failure(it) }
+        val comma = CommaParse.parse(parens.content).getOrElse { return SynResult.failure(it) }
         inputs.pushPunct(comma)
     }
     parens.content.finishChildBuffer()
@@ -672,24 +672,24 @@ internal fun parseParenthesizedPathArguments(input: ParseStream): SynResult<Path
 
 internal fun qpath(input: ParseStream, exprStyle: Boolean): SynResult<Pair<QSelf?, Path>> {
     if (input.peek(LtPeek)) {
-        val ltToken = input.parse(LtParse).getOrElse { return SynResult.failure(it) }
+        val ltToken = LtParse.parse(input).getOrElse { return SynResult.failure(it) }
         val thisTy = parseTypeFull(input).getOrElse { return SynResult.failure(it) }
         val pathAndAs =
             if (input.peek(AsPeek)) {
-                val asToken = input.parse(AsParse).getOrElse { return SynResult.failure(it) }
-                val path = input.parse(PathParse).getOrElse { return SynResult.failure(it) }
+                val asToken = AsParse.parse(input).getOrElse { return SynResult.failure(it) }
+                val path = PathParse.parse(input).getOrElse { return SynResult.failure(it) }
                 asToken to path
             } else {
                 null
             }
-        val gtToken = input.parse(GenericsGtParse).getOrElse { return SynResult.failure(it) }
-        val colon2Token = input.parse(PathSepParse).getOrElse { return SynResult.failure(it) }
+        val gtToken = GenericsGtParse.parse(input).getOrElse { return SynResult.failure(it) }
+        val colon2Token = PathSepParse.parse(input).getOrElse { return SynResult.failure(it) }
         val rest = PathSegmentList()
         while (true) {
             val segment = PathSegment.parseHelper(input, exprStyle).getOrElse { return SynResult.failure(it) }
             rest.pushValue(segment)
             if (!input.peek(PathSepPeek)) break
-            val punct = input.parse(PathSepParse).getOrElse { return SynResult.failure(it) }
+            val punct = PathSepParse.parse(input).getOrElse { return SynResult.failure(it) }
             rest.pushPunct(punct)
         }
         val (position, asToken, path) =
@@ -729,8 +729,8 @@ public object PathSepPeek : Peek {
     override fun display(): String = "`::`"
 }
 
-public object PathSepParse : Parse<PathSep> {
-    override fun parse(input: ParseStream): SynResult<PathSep> =
+public object PathSepParse {
+    fun parse(input: ParseStream): SynResult<PathSep> =
         input.step { cursor ->
             val (punct, rest) = cursor.punct() ?: return@step SynResult.failure(cursor.error("expected `::`"))
             if (punct.asChar() != ':' || punct.spacing() != Spacing.Joint) {
@@ -755,8 +755,8 @@ public object CommaPeek : Peek {
 }
 
 /** Parser for a comma token. */
-public object CommaParse : Parse<Comma> {
-    override fun parse(input: ParseStream): SynResult<Comma> =
+public object CommaParse {
+    fun parse(input: ParseStream): SynResult<Comma> =
         input.step { cursor ->
             val (punct, rest) = cursor.punct() ?: return@step SynResult.failure(cursor.error("expected `,`"))
             if (punct.asChar() != ',') {
