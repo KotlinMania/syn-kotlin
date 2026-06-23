@@ -281,6 +281,8 @@ public class StepCursor internal constructor(
     private val scope: Span,
     private val cursor: Cursor,
 ) {
+    public typealias Target = Cursor
+
     /**
      * Triggers an error at the current position of the parse stream.
      *

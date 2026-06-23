@@ -131,6 +131,10 @@ public class SynError private constructor(
     private val messages: MutableList<ErrorMessage>,
 ) : IllegalArgumentException(messages.first().message),
     Iterable<SynError> {
+    public typealias Item = SynError
+    public typealias IntoIter = Iterator<SynError>
+    public typealias _Test = Unit
+
     public companion object {
         /**
          * Usually the `ParseStream.error` method will be used instead, which
