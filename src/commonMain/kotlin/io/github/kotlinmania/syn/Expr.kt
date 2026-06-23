@@ -1507,3 +1507,19 @@ internal fun parseExprForLabeled(input: ParseStream): SynResult<Expr> =
 
 internal fun parseExprLoopLabeled(input: ParseStream): SynResult<Expr> =
     parseExprLoop(input)
+
+public fun exprBuiltin(input: ParseStream): SynResult<Expr> {
+    val begin = input.fork()
+    val kwResult = keyword(input, "builtin")
+    if (kwResult.isFailure) return SynResult.failure((kwResult as SynResult.Failure).error)
+    val poundResult = input.parse(PoundParse)
+    if (poundResult.isFailure) return SynResult.failure((poundResult as SynResult.Failure).error)
+    val identResult = input.parse(IdentParse)
+    if (identResult.isFailure) return SynResult.failure((identResult as SynResult.Failure).error)
+    val parens = parenthesized(input)
+    if (parens.isFailure) return SynResult.failure((parens as SynResult.Failure).error)
+    val parensVal = parens.getOrThrow()
+    parensVal.content.finishChildBuffer()
+    val tokens = verbatimBetween(begin, input)
+    return SynResult.success(Expr.Verbatim(tokens))
+}
