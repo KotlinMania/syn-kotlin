@@ -269,6 +269,18 @@ class DeriveInputTest {
         assertPathType(fields.single().ty, "crate", "X")
     }
 
+    @Test
+    fun fieldsMembersUseFieldTypeSpanForUnnamedFields() {
+        val data = assertIs<Data.Struct>(parse("struct S(u8, (u8));").data).value
+        val fields = assertIs<Fields.Unnamed>(data.fields)
+        val fieldList = fields.fields.unnamed.toList()
+        val members = fields.members().asSequence().toList()
+
+        assertEquals(2, members.size)
+        assertEquals(fieldList[0].ty.span(), assertIs<Member.Unnamed>(members[0]).index.span)
+        assertEquals(fieldList[1].ty.span(), assertIs<Member.Unnamed>(members[1]).index.span)
+    }
+
     private fun parse(source: String): DeriveInput =
         parseStr(DeriveInputParse, source).getOrThrow()
 

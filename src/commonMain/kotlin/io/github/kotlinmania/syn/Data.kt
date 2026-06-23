@@ -30,6 +30,9 @@ public data class Variant(
 public sealed class Fields :
     Iterable<Field>,
     ToTokens {
+    public typealias Item = Field
+    public typealias IntoIter = Iterator<Field>
+
     public data class Named(
         val fields: FieldsNamed,
     ) : Fields() {
@@ -209,14 +212,7 @@ public data class Field(
 }
 
 private fun Field.tySpan(): io.github.kotlinmania.procmacro2.Span =
-    when (val t = ty) {
-        is SynType.Path ->
-            t.path.getIdent()?.span() ?: io.github.kotlinmania.procmacro2.Span
-                .callSite()
-        else ->
-            io.github.kotlinmania.procmacro2.Span
-                .callSite()
-    }
+    ty.span()
 
 public object VariantParse : Parse<Variant> {
     override fun parse(input: ParseStream): SynResult<Variant> {

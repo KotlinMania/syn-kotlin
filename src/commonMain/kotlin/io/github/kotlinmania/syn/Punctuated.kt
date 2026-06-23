@@ -17,6 +17,9 @@ internal typealias RawPair<T, P> = kotlin.Pair<T, P>
 public sealed class SynPunctuated :
     ToTokens,
     Iterable<ToTokens> {
+    public typealias Item = ToTokens
+    public typealias Output = Iterator<ToTokens>
+
     internal val inner: MutableList<RawPair<ToTokens, ToTokens>> = mutableListOf()
     internal var last: ToTokens? = null
 
