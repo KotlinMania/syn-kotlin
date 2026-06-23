@@ -1427,50 +1427,20 @@ public fun innerAttrsToTokens(attrs: List<Attribute>, tokens: TokenStream) {
     }
 }
 
-public fun atomLabeled(input: ParseStream, allowStruct: Boolean): SynResult<Expr> =
-    atomExprImpl(input, allowStruct)
-
-public fun exprBuiltin(input: ParseStream, allowStruct: Boolean): SynResult<Expr> =
-    atomExprImpl(input, allowStruct)
-
-public fun restOfPathOrMacroOrStruct(input: ParseStream, path: Path, allowStruct: Boolean): SynResult<Expr> =
-    pathOrMacroOrStructImpl(input, allowStruct)
-
-public fun exprGroup(input: ParseStream): SynResult<Expr> = parseExprGroupImpl(input)
-
-public fun exprLet(input: ParseStream, allowStruct: Boolean): SynResult<Expr.Let> =
-    parseExprLetImpl(input, allowStruct)
-
-public fun exprUnary(input: ParseStream, allowStruct: Boolean): SynResult<Expr> =
-    unaryExprImpl(input, allowStruct)
-
-public fun exprBecome(input: ParseStream): SynResult<Expr> = parseExprFull(input)
-
-public fun exprClosure(input: ParseStream, allowStruct: Boolean): SynResult<Expr> =
-    atomExprImpl(input, allowStruct)
-
-public fun closureArg(input: ParseStream): SynResult<Pat> = parsePatFull(input)
-
-public fun exprBreak(input: ParseStream): SynResult<Expr> = parseExprFull(input)
-
-public fun exprStructHelper(input: ParseStream, allowStruct: Boolean): SynResult<Expr> =
-    pathOrMacroOrStructImpl(input, allowStruct)
-
-public fun exprRange(input: ParseStream, start: Expr?, allowStruct: Boolean): SynResult<Expr> =
-    parseExprFull(input)
-
-public fun parseRangeEnd(input: ParseStream, allowStruct: Boolean): SynResult<Expr> =
-    parseExprFull(input)
-
-public fun parseObsolete(input: ParseStream): SynResult<Expr> = parseExprFull(input)
-
-public fun parseMultiple(input: ParseStream): SynResult<Expr> = parseExprFull(input)
-
-public fun peekExpr(input: ParseStream, allowStruct: Boolean): Boolean =
-    !input.isEmpty()
-
-public fun parseWithoutEagerBrace(input: ParseStream): SynResult<Expr> =
-    parseExprFull(input)
-
-public fun parseWithEarlierBoundaryRule(input: ParseStream): SynResult<Expr> =
-    parseExprWithEarlierBoundaryRuleImpl(input)
+public fun peekExpr(input: ParseStream): Boolean {
+    return input.peek(IdentPeekAny) && !input.peek(AsPeek)
+        || input.peek(ParenPeek)
+        || input.peek(BracketPeek)
+        || input.peek(BracePeek)
+        || input.peek(LitPeek)
+        || input.peek(NotPeek) && !input.peek(NePeek)
+        || input.peek(MinusPeek) && !input.peek(MinusEqPeek) && !input.peek(RArrowPeek)
+        || input.peek(StarPeek) && !input.peek(StarEqPeek)
+        || input.peek(OrPeek) && !input.peek(OrEqPeek)
+        || input.peek(AndPeek) && !input.peek(AndEqPeek)
+        || input.peek(DotDotPeek)
+        || input.peek(LtPeek) && !input.peek(LePeek) && !input.peek(ShlEqPeek)
+        || input.peek(PathSepPeek)
+        || input.peek(LifetimePeek)
+        || input.peek(PoundPeek)
+}
