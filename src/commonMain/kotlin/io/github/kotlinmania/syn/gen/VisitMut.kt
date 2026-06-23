@@ -53,6 +53,7 @@ import io.github.kotlinmania.syn.PointerMutability
 import io.github.kotlinmania.syn.QSelf
 import io.github.kotlinmania.syn.ReturnType
 import io.github.kotlinmania.syn.Signature
+import io.github.kotlinmania.syn.StaticMutability
 import io.github.kotlinmania.syn.Stmt
 import io.github.kotlinmania.syn.SynType
 import io.github.kotlinmania.syn.TraitBoundModifier

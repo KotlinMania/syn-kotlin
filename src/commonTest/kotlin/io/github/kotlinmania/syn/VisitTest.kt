@@ -1,5 +1,6 @@
 package io.github.kotlinmania.syn
 
+import io.github.kotlinmania.procmacro2.Span
 import io.github.kotlinmania.syn.gen.Visit
 import kotlin.test.Test
 import kotlin.test.assertTrue
@@ -74,6 +75,7 @@ class VisitTest {
                     """.trimIndent(),
                 ),
                 parseItem("trait Alias<T> = Iterator<Item = T> + Send;"),
+                parseItem("static mut COUNT: usize = 0;"),
                 parseItem(
                     """
                     mod nested {
@@ -97,6 +99,7 @@ class VisitTest {
         visitor.assertEvent("implItem:type:Output")
         visitor.assertEvent("implItem:fn:call")
         visitor.assertEvent("item:traitalias:Alias")
+        visitor.assertEvent("item:static:COUNT")
         visitor.assertEvent("item:mod:nested")
         visitor.assertEvent("item:macro")
         visitor.assertEvent("item:use")
@@ -147,8 +150,25 @@ class VisitTest {
         visitor.assertEvent("type:macro")
     }
 
+    @Test
+    fun nonExprVisitHooksDispatchThroughGeneratedHelpers() {
+        val visitor = RecordingVisit()
+        val span = Span.callSite()
+
+        visitor.visitPat(parsePat("1..=2"))
+        visitor.visitLabel(Label(Lifetime.new("'lbl", span), io.github.kotlinmania.syn.token.Colon.from(span)))
+        visitor.visitUnOp(UnOp.NotOp(io.github.kotlinmania.syn.token.Not.from(span)))
+
+        visitor.assertEvent("range:closed")
+        visitor.assertEvent("label:'lbl")
+        visitor.assertEvent("unop:not")
+    }
+
     private fun parseItem(source: String): Item =
         parseStr(ItemParse, source).getOrThrow()
+
+    private fun parsePat(source: String): Pat =
+        parserFromFunction(Pat.Companion::parseMulti).parseStr(source).getOrThrow()
 
     private class RecordingVisit : Visit() {
         val events = mutableListOf<String>()
@@ -229,6 +249,7 @@ class VisitTest {
                     is Item.Impl -> "item:impl"
                     is Item.Macro -> "item:macro"
                     is Item.Mod -> "item:mod:${i.ident}"
+                    is Item.Static -> "item:static:${i.ident}"
                     is Item.Struct -> "item:struct:${i.ident}"
                     is Item.Trait -> "item:trait:${i.ident}"
                     is Item.TraitAlias -> "item:traitalias:${i.ident}"
@@ -250,6 +271,20 @@ class VisitTest {
         override fun visitPath(p: Path) {
             events += "path:$p"
             super.visitPath(p)
+        }
+
+        override fun visitLabel(label: Label) {
+            events += "label:${label.name}"
+            super.visitLabel(label)
+        }
+
+        override fun visitRangeLimits(limits: RangeLimits) {
+            events +=
+                when (limits) {
+                    is RangeLimits.HalfOpen -> "range:halfOpen"
+                    is RangeLimits.Closed -> "range:closed"
+                }
+            super.visitRangeLimits(limits)
         }
 
         override fun visitSignature(s: Signature) {
@@ -313,6 +348,16 @@ class VisitTest {
         override fun visitTypeTuple(t: SynType.Tuple) {
             events += "type:tuple"
             super.visitTypeTuple(t)
+        }
+
+        override fun visitUnOp(op: UnOp) {
+            events +=
+                when (op) {
+                    is UnOp.Deref -> "unop:deref"
+                    is UnOp.NotOp -> "unop:not"
+                    is UnOp.Neg -> "unop:neg"
+                }
+            super.visitUnOp(op)
         }
 
         override fun visitPointerMutability(mutability: io.github.kotlinmania.syn.token.Mut?) {

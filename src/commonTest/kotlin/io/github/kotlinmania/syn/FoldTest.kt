@@ -81,6 +81,7 @@ class FoldTest {
                     """.trimIndent(),
                 ),
                 parseItem("trait Alias<T> = Iterator<Item = T> + Send;"),
+                parseItem("static mut COUNT: usize = 0;"),
                 parseItem(
                     """
                     mod nested {
@@ -104,6 +105,7 @@ class FoldTest {
         folder.assertEvent("implItem:type:Output")
         folder.assertEvent("implItem:fn:call")
         folder.assertEvent("item:traitalias:Alias")
+        folder.assertEvent("item:static:COUNT")
         folder.assertEvent("item:mod:nested")
         folder.assertEvent("item:macro")
         folder.assertEvent("item:use")
@@ -361,6 +363,7 @@ class FoldTest {
                     is Item.Impl -> "item:impl"
                     is Item.Macro -> "item:macro"
                     is Item.Mod -> "item:mod:${i.ident}"
+                    is Item.Static -> "item:static:${i.ident}"
                     is Item.Struct -> "item:struct:${i.ident}"
                     is Item.Trait -> "item:trait:${i.ident}"
                     is Item.TraitAlias -> "item:traitalias:${i.ident}"

@@ -138,6 +138,27 @@ class ItemTest {
     }
 
     @Test
+    fun testStaticItem() {
+        val item = assertIs<Item.Static>(parseItem("pub static mut COUNT: usize = 0;"))
+
+        assertIs<Visibility.Public>(item.vis)
+        assertIs<StaticMutability.Mut>(item.mutability)
+        assertEquals("COUNT", item.ident.toString())
+        assertTypePath(item.ty, "usize")
+        assertIs<Expr.Lit>(item.expr)
+
+        val tokens = TokenStream.new()
+        item.toTokens(tokens)
+        assertEquals("pub static mut COUNT : usize = 0 ;", tokens.toString())
+
+        val immutable = assertIs<Item.Static>(parseItem("static NAME: usize = 1;"))
+        assertIs<StaticMutability.None>(immutable.mutability)
+
+        assertIs<Item.Verbatim>(parseItem("static COUNT = 0;"))
+        assertIs<Item.Verbatim>(parseItem("static COUNT: usize;"))
+    }
+
+    @Test
     fun testTypeEmptyBounds() {
         val item = assertIs<Item.Trait>(parseItem("trait Foo { type Bar: ; }"))
         val assocType = assertIs<TraitItem.AssocType>(item.items.single())

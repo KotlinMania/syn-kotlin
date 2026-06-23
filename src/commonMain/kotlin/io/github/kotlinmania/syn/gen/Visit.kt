@@ -35,6 +35,7 @@ import io.github.kotlinmania.syn.Ident
 import io.github.kotlinmania.syn.ImplItem
 import io.github.kotlinmania.syn.Index
 import io.github.kotlinmania.syn.Item
+import io.github.kotlinmania.syn.Label
 import io.github.kotlinmania.syn.Lifetime
 import io.github.kotlinmania.syn.Lit
 import io.github.kotlinmania.syn.LitBool
@@ -59,13 +60,16 @@ import io.github.kotlinmania.syn.PathArguments
 import io.github.kotlinmania.syn.PathSegment
 import io.github.kotlinmania.syn.PathTrait
 import io.github.kotlinmania.syn.QSelf
+import io.github.kotlinmania.syn.RangeLimits
 import io.github.kotlinmania.syn.ReturnType
 import io.github.kotlinmania.syn.Signature
+import io.github.kotlinmania.syn.StaticMutability
 import io.github.kotlinmania.syn.Stmt
 import io.github.kotlinmania.syn.SynType
 import io.github.kotlinmania.syn.TraitBoundModifier
 import io.github.kotlinmania.syn.TraitItem
 import io.github.kotlinmania.syn.TypeParamBound
+import io.github.kotlinmania.syn.UnOp
 import io.github.kotlinmania.syn.UseTree
 import io.github.kotlinmania.syn.Variadic
 import io.github.kotlinmania.syn.Variant
@@ -627,6 +631,7 @@ public open class Visit {
     public open fun visitPatRange(p: Pat.Range) {
         p.attrs.forEach { visitAttribute(it) }
         p.start?.let { visitExpr(it) }
+        visitRangeLimits(p.limits)
         p.end?.let { visitExpr(it) }
     }
 
@@ -713,8 +718,19 @@ public open class Visit {
         p.bounds.toList().forEach { visitTypeParamBound(it) }
     }
 
+    public open fun visitLabel(label: Label) {
+        visitLifetime(label.name)
+    }
+
     public open fun visitQSelf(q: QSelf) {
         visitType(q.ty)
+    }
+
+    public open fun visitRangeLimits(limits: RangeLimits) {
+        when (limits) {
+            is RangeLimits.HalfOpen -> {}
+            is RangeLimits.Closed -> {}
+        }
     }
 
     public open fun visitReceiver(r: FnArg.Receiver) {
@@ -861,6 +877,14 @@ public open class Visit {
 
     public open fun visitTypeTuple(t: SynType.Tuple) {
         t.elems.toList().forEach { visitType(it) }
+    }
+
+    public open fun visitUnOp(op: UnOp) {
+        when (op) {
+            is UnOp.Deref -> {}
+            is UnOp.NotOp -> {}
+            is UnOp.Neg -> {}
+        }
     }
 
     public open fun visitPointerMutability(mutability: io.github.kotlinmania.syn.token.Mut?) { /* leaf */ }

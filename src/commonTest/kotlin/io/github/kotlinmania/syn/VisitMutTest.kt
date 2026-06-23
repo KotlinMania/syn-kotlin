@@ -74,6 +74,7 @@ class VisitMutTest {
                     """.trimIndent(),
                 ),
                 parseItem("trait Alias<T> = Iterator<Item = T> + Send;"),
+                parseItem("static mut COUNT: usize = 0;"),
                 parseItem(
                     """
                     mod nested {
@@ -97,6 +98,7 @@ class VisitMutTest {
         visitor.assertEvent("implItem:type:Output")
         visitor.assertEvent("implItem:fn:call")
         visitor.assertEvent("item:traitalias:Alias")
+        visitor.assertEvent("item:static:COUNT")
         visitor.assertEvent("item:mod:nested")
         visitor.assertEvent("item:macro")
         visitor.assertEvent("item:use")
@@ -318,6 +320,7 @@ class VisitMutTest {
                     is Item.Impl -> "item:impl"
                     is Item.Macro -> "item:macro"
                     is Item.Mod -> "item:mod:${i.ident}"
+                    is Item.Static -> "item:static:${i.ident}"
                     is Item.Struct -> "item:struct:${i.ident}"
                     is Item.Trait -> "item:trait:${i.ident}"
                     is Item.TraitAlias -> "item:traitalias:${i.ident}"

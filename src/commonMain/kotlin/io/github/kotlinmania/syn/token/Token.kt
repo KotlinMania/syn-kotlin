@@ -834,11 +834,11 @@ class Try private constructor(
 }
 
 /**
- * The `type` keyword token.
+ * The type-alias keyword token.
  *
- * Named `SynTypeToken` to avoid colliding with Swift's built-in `Type`
- * metatype expression (`foo.Type`), which the Swift compiler rejects
- * as `error: type member must not be named Type`. The `Type` class
+ * Named SynTypeToken to avoid colliding with Swift's built-in Type
+ * metatype expression, which the Swift compiler rejects
+ * as a type member named Type. The SynTypeToken class
  * preserves the original Kotlin API name.
  */
 class SynTypeToken private constructor(

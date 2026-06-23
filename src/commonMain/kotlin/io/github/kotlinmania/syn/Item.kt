@@ -252,7 +252,7 @@ public sealed class Item : ToTokens {
         }
     }
 
-    /** A static item: `static BIKE: Shed = Shed(42)`. */
+    /** A static item. */
     public data class Static(
         public val attrs: List<Attribute>,
         public val vis: Visibility,
