@@ -106,8 +106,8 @@ public data class LocalInit(
     public fun deepCopy(): LocalInit = LocalInit(eqToken, expr.deepCopy(), diverge?.let { it.copy(expr = it.expr.deepCopy()) })
 }
 
-public object StmtParse : Parse<Stmt> {
-    override fun parse(input: ParseStream): SynResult<Stmt> =
+public object StmtParse {
+    fun parse(input: ParseStream): SynResult<Stmt> =
         parseStmt(input)
 }
 
@@ -125,40 +125,40 @@ private fun parseStmt(input: ParseStream, allowNoSemi: AllowNoSemi): SynResult<S
 }
 
 internal fun stmtLocal(input: ParseStream): SynResult<Stmt.Local> {
-    val letToken = input.parse(LetParse).getOrThrow()
+    val letToken = LetParse.parse(input).getOrThrow()
     var pat = input.call { parsePatFull(it) }.getOrElse { return SynResult.failure(it) }
     if (input.peek(ColonPeek)) {
-        val colonToken = input.parse(ColonParse).getOrElse { return SynResult.failure(it) }
+        val colonToken = ColonParse.parse(input).getOrElse { return SynResult.failure(it) }
         val ty = parseTypeFull(input).getOrElse { return SynResult.failure(it) }
         pat = Pat.TypeAscription(emptyList(), pat, colonToken, ty)
     }
     var init: LocalInit? = null
     if (input.peek(EqPeek)) {
-        val eq = input.parse(EqParse).getOrThrow()
+        val eq = EqParse.parse(input).getOrThrow()
         val expr = parseExprFull(input).getOrThrow()
         init = LocalInit(eq, expr, null)
     }
-    val semi = input.parse(SemiParse).getOrThrow()
+    val semi = SemiParse.parse(input).getOrThrow()
     return SynResult.success(Stmt.Local(emptyList(), letToken, pat, init, semi))
 }
 
 internal fun stmtExpr(input: ParseStream): SynResult<Stmt.ExprStmt> {
     val expr = parseExprFull(input)
     if (expr.isFailure) return expr.let { SynResult.failure((it as SynResult.Failure).error) }
-    val semi = if (input.peek(SemiPeek)) input.parse(SemiParse).getOrThrow() else null
+    val semi = if (input.peek(SemiPeek)) SemiParse.parse(input).getOrThrow() else null
     return SynResult.success(Stmt.ExprStmt(expr.getOrThrow(), semi))
 }
 
 internal fun stmtMac(input: ParseStream): SynResult<Stmt.MacroStmt> {
-    val pathResult = input.parse(PathParse)
+    val pathResult = PathParse.parse(input)
     if (pathResult.isFailure) return pathResult.let { SynResult.failure((it as SynResult.Failure).error) }
-    val bangResult = input.parse(NotParse)
+    val bangResult = NotParse.parse(input)
     if (bangResult.isFailure) return bangResult.let { SynResult.failure((it as SynResult.Failure).error) }
     val delimResult = parseDelimiter(input)
     if (delimResult.isFailure) return delimResult.let { SynResult.failure((it as SynResult.Failure).error) }
     val (delim, tokens) = delimResult.getOrThrow()
     val mac = Macro(pathResult.getOrThrow(), bangResult.getOrThrow(), delim, tokens)
-    val semi = if (input.peek(SemiPeek)) input.parse(SemiParse).getOrThrow() else null
+    val semi = if (input.peek(SemiPeek)) SemiParse.parse(input).getOrThrow() else null
     return SynResult.success(Stmt.MacroStmt(emptyList(), mac, semi))
 }
 
@@ -166,7 +166,7 @@ public fun parseWithin(input: ParseStream): SynResult<List<Stmt>> {
     val stmts = mutableListOf<Stmt>()
     while (!input.isEmpty()) {
         while (input.peek(SemiPeek)) {
-            stmts.add(Stmt.ExprStmt(Expr.Verbatim(TokenStream.new()), input.parse(SemiParse).getOrThrow()))
+            stmts.add(Stmt.ExprStmt(Expr.Verbatim(TokenStream.new()), SemiParse.parse(input).getOrThrow()))
         }
         if (input.isEmpty()) break
         val stmt = parseStmt(input, AllowNoSemi(true)).getOrElse { return SynResult.failure(it) }
