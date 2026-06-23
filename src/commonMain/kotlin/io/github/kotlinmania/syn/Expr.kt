@@ -1382,3 +1382,47 @@ public fun Expr.isNamed(name: String): Boolean {
 public fun Expr.span(): io.github.kotlinmania.procmacro2.Span {
     return spanOf(this)
 }
+
+public fun printExpr(expr: Expr, tokens: TokenStream) {
+    expr.toTokens(tokens)
+}
+
+public fun printSubexpression(expr: Expr, tokens: TokenStream) {
+    expr.toTokens(tokens)
+}
+
+public fun printExprAssign(e: Expr.Assign, tokens: TokenStream) { e.toTokens(tokens) }
+public fun printExprAwait(e: Expr.Await, tokens: TokenStream) { e.toTokens(tokens) }
+public fun printExprBinary(e: Expr.Binary, tokens: TokenStream) { e.toTokens(tokens) }
+public fun printExprBlock(e: Expr.BlockExpr, tokens: TokenStream) { e.toTokens(tokens) }
+public fun printExprBreak(e: Expr.Break, tokens: TokenStream) { e.toTokens(tokens) }
+public fun printExprCall(e: Expr.Call, tokens: TokenStream) { e.toTokens(tokens) }
+public fun printExprCast(e: Expr.Cast, tokens: TokenStream) { e.toTokens(tokens) }
+public fun printExprClosure(e: Expr.Closure, tokens: TokenStream) { e.toTokens(tokens) }
+public fun printExprField(e: Expr.Field, tokens: TokenStream) { e.toTokens(tokens) }
+public fun printExprIndex(e: Expr.Index, tokens: TokenStream) { e.toTokens(tokens) }
+public fun printExprLet(e: Expr.Let, tokens: TokenStream) { e.toTokens(tokens) }
+public fun printExprMethodCall(e: Expr.MethodCall, tokens: TokenStream) { e.toTokens(tokens) }
+public fun printExprRange(e: Expr.Range, tokens: TokenStream) { e.toTokens(tokens) }
+public fun printExprRawAddr(e: Expr.Reference, tokens: TokenStream) { e.toTokens(tokens) }
+public fun printExprReference(e: Expr.Reference, tokens: TokenStream) { e.toTokens(tokens) }
+public fun printExprReturn(e: Expr.Return, tokens: TokenStream) { e.toTokens(tokens) }
+public fun printExprTry(e: Expr.Try, tokens: TokenStream) { e.toTokens(tokens) }
+public fun printExprUnary(e: Expr.Unary, tokens: TokenStream) { e.toTokens(tokens) }
+public fun printExprYield(e: Expr.Yield, tokens: TokenStream) { e.toTokens(tokens) }
+
+public fun outerAttrsToTokens(attrs: List<Attribute>, tokens: TokenStream) {
+    for (attr in attrs) {
+        if (attr.style is AttrStyle.Outer) {
+            attr.toTokens(tokens)
+        }
+    }
+}
+
+public fun innerAttrsToTokens(attrs: List<Attribute>, tokens: TokenStream) {
+    for (attr in attrs) {
+        if (attr.style is AttrStyle.Inner) {
+            attr.toTokens(tokens)
+        }
+    }
+}
