@@ -17,9 +17,6 @@ internal typealias RawPair<T, P> = kotlin.Pair<T, P>
 public sealed class SynPunctuated :
     ToTokens,
     Iterable<ToTokens> {
-    public typealias Item = ToTokens
-    public typealias Output = Iterator<ToTokens>
-
     internal val inner: MutableList<RawPair<ToTokens, ToTokens>> = mutableListOf()
     internal var last: ToTokens? = null
 
@@ -134,7 +131,7 @@ public class VariantList : SynPunctuated {
 
     public fun last(): Variant? = super.last as? Variant ?: super.inner.lastOrNull()?.first as? Variant
 
-    public operator fun get(index: Int): Variant = super.inner[index].first as Variant
+    public operator fun get(index: Int): Variant = super.index(index) as Variant
 
     public fun toList(): List<Variant> = map { it as Variant }
 
@@ -165,7 +162,7 @@ public class FieldList : SynPunctuated {
 
     public fun last(): Field? = super.last as? Field ?: super.inner.lastOrNull()?.first as? Field
 
-    public operator fun get(index: Int): Field = super.inner[index].first as Field
+    public operator fun get(index: Int): Field = super.index(index) as Field
 
     public fun toList(): List<Field> = map { it as Field }
 
@@ -196,7 +193,7 @@ public class FnArgList : SynPunctuated {
 
     public fun last(): FnArg? = super.last as? FnArg ?: super.inner.lastOrNull()?.first as? FnArg
 
-    public operator fun get(index: Int): FnArg = super.inner[index].first as FnArg
+    public operator fun get(index: Int): FnArg = super.index(index) as FnArg
 
     public fun toList(): List<FnArg> = map { it as FnArg }
 
@@ -227,7 +224,7 @@ public class ExprList : SynPunctuated {
 
     public fun last(): Expr? = super.last as? Expr ?: super.inner.lastOrNull()?.first as? Expr
 
-    public operator fun get(index: Int): Expr = super.inner[index].first as Expr
+    public operator fun get(index: Int): Expr = super.index(index) as Expr
 
     public fun toList(): List<Expr> = map { it as Expr }
 
@@ -258,7 +255,7 @@ public class PatList : SynPunctuated {
 
     public fun last(): Pat? = super.last as? Pat ?: super.inner.lastOrNull()?.first as? Pat
 
-    public operator fun get(index: Int): Pat = super.inner[index].first as Pat
+    public operator fun get(index: Int): Pat = super.index(index) as Pat
 
     public fun toList(): List<Pat> = map { it as Pat }
 
@@ -289,7 +286,7 @@ public class FieldPatList : SynPunctuated {
 
     public fun last(): FieldPat? = super.last as? FieldPat ?: super.inner.lastOrNull()?.first as? FieldPat
 
-    public operator fun get(index: Int): FieldPat = super.inner[index].first as FieldPat
+    public operator fun get(index: Int): FieldPat = super.index(index) as FieldPat
 
     public fun toList(): List<FieldPat> = map { it as FieldPat }
 
@@ -320,7 +317,7 @@ public class FieldValueList : SynPunctuated {
 
     public fun last(): FieldValue? = super.last as? FieldValue ?: super.inner.lastOrNull()?.first as? FieldValue
 
-    public operator fun get(index: Int): FieldValue = super.inner[index].first as FieldValue
+    public operator fun get(index: Int): FieldValue = super.index(index) as FieldValue
 
     public fun toList(): List<FieldValue> = map { it as FieldValue }
 
@@ -351,7 +348,7 @@ public class GenericParamList : SynPunctuated {
 
     public fun last(): GenericParam? = super.last as? GenericParam ?: super.inner.lastOrNull()?.first as? GenericParam
 
-    public operator fun get(index: Int): GenericParam = super.inner[index].first as GenericParam
+    public operator fun get(index: Int): GenericParam = super.index(index) as GenericParam
 
     public fun toList(): List<GenericParam> = map { it as GenericParam }
 
@@ -382,7 +379,7 @@ public class GenericArgumentList : SynPunctuated {
 
     public fun last(): GenericArgument? = super.last as? GenericArgument ?: super.inner.lastOrNull()?.first as? GenericArgument
 
-    public operator fun get(index: Int): GenericArgument = super.inner[index].first as GenericArgument
+    public operator fun get(index: Int): GenericArgument = super.index(index) as GenericArgument
 
     public fun toList(): List<GenericArgument> = map { it as GenericArgument }
 
@@ -413,7 +410,7 @@ public class LifetimeList : SynPunctuated {
 
     public fun last(): Lifetime? = super.last as? Lifetime ?: super.inner.lastOrNull()?.first as? Lifetime
 
-    public operator fun get(index: Int): Lifetime = super.inner[index].first as Lifetime
+    public operator fun get(index: Int): Lifetime = super.index(index) as Lifetime
 
     public fun toList(): List<Lifetime> = map { it as Lifetime }
 
@@ -444,7 +441,7 @@ public class TypeParamBoundList : SynPunctuated {
 
     public fun last(): TypeParamBound? = super.last as? TypeParamBound ?: super.inner.lastOrNull()?.first as? TypeParamBound
 
-    public operator fun get(index: Int): TypeParamBound = super.inner[index].first as TypeParamBound
+    public operator fun get(index: Int): TypeParamBound = super.index(index) as TypeParamBound
 
     public fun toList(): List<TypeParamBound> = map { it as TypeParamBound }
 
@@ -475,7 +472,7 @@ public class CapturedParamList : SynPunctuated {
 
     public fun last(): CapturedParam? = super.last as? CapturedParam ?: super.inner.lastOrNull()?.first as? CapturedParam
 
-    public operator fun get(index: Int): CapturedParam = super.inner[index].first as CapturedParam
+    public operator fun get(index: Int): CapturedParam = super.index(index) as CapturedParam
 
     public fun toList(): List<CapturedParam> = map { it as CapturedParam }
 
@@ -506,7 +503,7 @@ public class WherePredicateList : SynPunctuated {
 
     public fun last(): WherePredicate? = super.last as? WherePredicate ?: super.inner.lastOrNull()?.first as? WherePredicate
 
-    public operator fun get(index: Int): WherePredicate = super.inner[index].first as WherePredicate
+    public operator fun get(index: Int): WherePredicate = super.index(index) as WherePredicate
 
     public fun toList(): List<WherePredicate> = map { it as WherePredicate }
 
@@ -537,16 +534,7 @@ public class PathSegmentList : SynPunctuated {
 
     public fun last(): PathSegment? = super.last as? PathSegment ?: super.inner.lastOrNull()?.first as? PathSegment
 
-    public operator fun get(index: Int): PathSegment {
-        if (index < 0 || index >= len()) {
-            throw IndexOutOfBoundsException("index: $index, size: ${len()}")
-        }
-        return if (index < super.inner.size) {
-            super.inner[index].first as PathSegment
-        } else {
-            super.last as PathSegment
-        }
-    }
+    public operator fun get(index: Int): PathSegment = super.index(index) as PathSegment
 
     public fun toList(): List<PathSegment> = map { it as PathSegment }
 
@@ -577,7 +565,7 @@ public class UseTreeList : SynPunctuated {
 
     public fun last(): UseTree? = super.last as? UseTree ?: super.inner.lastOrNull()?.first as? UseTree
 
-    public operator fun get(index: Int): UseTree = super.inner[index].first as UseTree
+    public operator fun get(index: Int): UseTree = super.index(index) as UseTree
 
     public fun toList(): List<UseTree> = map { it as UseTree }
 
@@ -608,7 +596,7 @@ public class BareFnArgList : SynPunctuated {
 
     public fun last(): BareFnArg? = super.last as? BareFnArg ?: super.inner.lastOrNull()?.first as? BareFnArg
 
-    public operator fun get(index: Int): BareFnArg = super.inner[index].first as BareFnArg
+    public operator fun get(index: Int): BareFnArg = super.index(index) as BareFnArg
 
     public fun toList(): List<BareFnArg> = map { it as BareFnArg }
 
@@ -639,7 +627,7 @@ public class SynTypeList : SynPunctuated {
 
     public fun last(): SynType? = super.last as? SynType ?: super.inner.lastOrNull()?.first as? SynType
 
-    public operator fun get(index: Int): SynType = super.inner[index].first as SynType
+    public operator fun get(index: Int): SynType = super.index(index) as SynType
 
     public fun toList(): List<SynType> = map { it as SynType }
 

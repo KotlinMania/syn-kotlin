@@ -1177,7 +1177,6 @@ public sealed class Member : ToTokens {
         }
     }
 
-    public fun isNamed(): Boolean = this is Named
 }
 
 /** A tuple field index such as `0` in `obj.0`. */

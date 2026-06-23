@@ -2,6 +2,7 @@
 package io.github.kotlinmania.syn
 
 import io.github.kotlinmania.procmacro2.Literal
+import io.github.kotlinmania.procmacro2.Span
 import io.github.kotlinmania.procmacro2.TokenStream
 import io.github.kotlinmania.procmacro2.TokenTree
 import io.github.kotlinmania.quote.ToTokens
@@ -247,6 +248,20 @@ class PunctuatedTest {
         assertFailsWith<IndexOutOfBoundsException> {
             p[0]
         }
+    }
+
+    @Test
+    fun concreteListIndexReturnsTrailingLastElement() {
+        val lifetimes = LifetimeList()
+        val first = Lifetime.new("'a", Span.callSite())
+        val second = Lifetime.new("'b", Span.callSite())
+
+        lifetimes.pushValue(first)
+        lifetimes.pushPunct(Comma.default())
+        lifetimes.pushValue(second)
+
+        assertEquals(first, lifetimes[0])
+        assertEquals(second, lifetimes[1])
     }
 
     @Test

@@ -67,8 +67,6 @@ public data class Lifetime(
 
     public fun eq(other: Lifetime): Boolean = equals(other)
 
-    public fun partialCmp(other: Lifetime): Int = compareTo(other)
-
     public fun cmp(other: Lifetime): Int = compareTo(other)
 
     public fun hash(): Int = hashCode()
