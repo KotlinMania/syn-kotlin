@@ -31,7 +31,7 @@ class GroupTest {
             parserFromFunction { input ->
                 val group = parseGroup(input).getOrElse { return@parserFromFunction SynResult.failure(it) }
                 assertFalse(group.content.isEmpty())
-                val content = group.content.parse(TokenStreamParse).getOrElse { return@parserFromFunction SynResult.failure(it) }
+                val content = group.content.parse(TokenStreamParse::parse).getOrElse { return@parserFromFunction SynResult.failure(it) }
                 assertEquals("inner", content.toString())
                 assertTrue(group.content.isEmpty())
                 SynResult.success(group)

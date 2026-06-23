@@ -72,17 +72,17 @@ public fun MacroDelimiter.surround(tokens: TokenStream, content: TokenStream) {
  * Parse the tokens within the macro invocation's delimiters into a syntax
  * tree node.
  */
-public fun Macro.parseBody(parser: Parse): SynResult<*> =
-    parseBodyWith(parser::parse)
+public fun <T> Macro.parseBody(parser: (ParseStream) -> SynResult<T>): SynResult<T> =
+    parseBodyWith(parser)
 
-public fun Macro.parseBodyWith(parser: (ParseStream) -> SynResult<*>): SynResult<*> {
+public fun <T> Macro.parseBodyWith(parser: (ParseStream) -> SynResult<T>): SynResult<T> {
     val scope =
         when (delimiter) {
             is MacroDelimiter.Paren -> delimiter.token.span.close()
             is MacroDelimiter.Brace -> delimiter.token.span.close()
             is MacroDelimiter.Bracket -> delimiter.token.span.close()
         }
-    return parseScoped(parserFromFunction(parser), scope, tokens)
+    return parseScoped(parser, scope, tokens)
 }
 
 /** Parses a delimiter from the input stream. */

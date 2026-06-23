@@ -53,7 +53,7 @@ class ItemTest {
         val withoutParens = assertIs<Item.Verbatim>(parseItem("macro make {}"))
         assertEquals("macro make { }", withoutParens.tokens.toString())
 
-        assertTrue(parseStr(ItemParse, "macro make();").isFailure)
+        assertTrue(parseStr(ItemParse::parse, "macro make();").isFailure)
     }
 
     @Test
@@ -64,7 +64,7 @@ class ItemTest {
         assertTrue(neverImpl.generics.params.isEmpty())
         assertTrue(neverImpl.items.isEmpty())
 
-        val failure = parseStr(ItemParse, "impl !Trait {}")
+        val failure = parseStr(ItemParse::parse, "impl !Trait {}")
         assertTrue(failure.isFailure)
         assertEquals("inherent impls cannot be negative", failure.exceptionOrNull()?.toString())
 
@@ -443,13 +443,13 @@ class ItemTest {
     }
 
     private fun parseItem(source: String): Item =
-        parseStr(ItemParse, source).getOrThrow()
+        parseStr(ItemParse::parse, source).getOrThrow()
 
     private fun parseItem(tokens: TokenStream): Item =
-        parse2(ItemParse, tokens).getOrThrow()
+        parse2(ItemParse::parse, tokens).getOrThrow()
 
     private fun parseDeriveInput(source: String): DeriveInput =
-        parseStr(DeriveInputParse, source).getOrThrow()
+        parseStr(DeriveInputParse::parse, source).getOrThrow()
 
     private fun assertPath(path: Path, vararg segments: String) {
         assertEquals(segments.toList(), path.segments.toList().map { it.ident.toString() })

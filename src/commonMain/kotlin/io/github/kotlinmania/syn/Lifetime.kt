@@ -74,8 +74,8 @@ public data class Lifetime(
     public fun hash(): Int = hashCode()
 }
 
-public object LifetimeParse : Parse<Lifetime> {
-    override fun parse(input: ParseStream): SynResult<Lifetime> =
+public object LifetimeParse {
+    public fun parse(input: ParseStream): SynResult<Lifetime> =
         input.step { cursor: StepCursor ->
             val pair: Pair<Lifetime, Cursor>? = cursor.lifetime()
             if (pair == null) {

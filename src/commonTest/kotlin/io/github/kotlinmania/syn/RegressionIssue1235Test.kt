@@ -37,5 +37,5 @@ class RegressionIssue1235Test {
         )
 
     private fun parseFileTokens(tokens: TokenStream): File =
-        parse2(FileParse, tokens).getOrThrow()
+        parse2(FileParse::parse, tokens).getOrThrow()
 }

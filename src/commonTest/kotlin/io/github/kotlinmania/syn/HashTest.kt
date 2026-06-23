@@ -8,9 +8,9 @@ import kotlin.test.assertNotEquals
 class HashTest {
     @Test
     fun deriveInputHashMatchesGeneratedFieldOrder() {
-        val left = parseStr(DeriveInputParse, "struct S<T> where T: Copy { field: T }").getOrThrow()
-        val right = parseStr(DeriveInputParse, "struct S<T> where T: Copy { field: T }").getOrThrow()
-        val different = parseStr(DeriveInputParse, "struct S<T> where T: Clone { field: T }").getOrThrow()
+        val left = parseStr(DeriveInputParse::parse, "struct S<T> where T: Copy { field: T }").getOrThrow()
+        val right = parseStr(DeriveInputParse::parse, "struct S<T> where T: Copy { field: T }").getOrThrow()
+        val different = parseStr(DeriveInputParse::parse, "struct S<T> where T: Clone { field: T }").getOrThrow()
 
         assertEquals(left.hash(), right.hash())
         assertNotEquals(left.hash(), different.hash())
@@ -27,9 +27,9 @@ class HashTest {
 
     @Test
     fun dataHashIncludesVariantTag() {
-        val structData = parseStr(DeriveInputParse, "struct S;").getOrThrow().data
-        val sameStructData = parseStr(DeriveInputParse, "struct S;").getOrThrow().data
-        val enumData = parseStr(DeriveInputParse, "enum S {}").getOrThrow().data
+        val structData = parseStr(DeriveInputParse::parse, "struct S;").getOrThrow().data
+        val sameStructData = parseStr(DeriveInputParse::parse, "struct S;").getOrThrow().data
+        val enumData = parseStr(DeriveInputParse::parse, "enum S {}").getOrThrow().data
 
         assertEquals(structData.hash(), sameStructData.hash())
         assertNotEquals(structData.hash(), enumData.hash())

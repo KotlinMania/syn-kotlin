@@ -8,18 +8,18 @@ import kotlin.test.assertTrue
 class MetaTest {
     @Test
     fun testParseMetaItemWord() {
-        val meta = parseStr(MetaParse, "hello").getOrThrow()
+        val meta = parseStr(MetaParse::parse, "hello").getOrThrow()
         assertTrue(meta is Meta.PathMeta)
         assertEquals("hello", meta.path.toString())
     }
 
     @Test
     fun testParseMetaNameValue() {
-        val inner = parseStr(MetaNameValueParse, "foo = 5").getOrThrow()
+        val inner = parseStr(MetaNameValueParse::parse, "foo = 5").getOrThrow()
         assertEquals("foo", inner.path.toString())
         assertTrue(inner.value is Expr.Lit)
 
-        val meta = parseStr(MetaParse, "foo = 5").getOrThrow()
+        val meta = parseStr(MetaParse::parse, "foo = 5").getOrThrow()
         assertTrue(meta is Meta.NameValue)
         assertEquals("foo", meta.path.toString())
         assertTrue(meta.value is Expr.Lit)
@@ -30,12 +30,12 @@ class MetaTest {
 
     @Test
     fun testParseMetaItemListLit() {
-        val inner = parseStr(MetaListParse, "foo(5)").getOrThrow()
+        val inner = parseStr(MetaListParse::parse, "foo(5)").getOrThrow()
         assertEquals("foo", inner.path.toString())
         assertTrue(inner.delimiter is MacroDelimiter.Paren)
         assertEquals("5", inner.tokens.toString())
 
-        val meta = parseStr(MetaParse, "foo(5)").getOrThrow()
+        val meta = parseStr(MetaParse::parse, "foo(5)").getOrThrow()
         assertTrue(meta is Meta.List)
         assertEquals("foo", meta.path.toString())
         assertTrue(meta.delimiter is MacroDelimiter.Paren)
@@ -45,12 +45,12 @@ class MetaTest {
 
     @Test
     fun testParseMetaItemMultiple() {
-        val inner = parseStr(MetaListParse, "foo(word, name = 5, list(name2 = 6), word2)").getOrThrow()
+        val inner = parseStr(MetaListParse::parse, "foo(word, name = 5, list(name2 = 6), word2)").getOrThrow()
         assertEquals("foo", inner.path.toString())
         assertTrue(inner.delimiter is MacroDelimiter.Paren)
         assertEquals("word , name = 5 , list (name2 = 6) , word2", inner.tokens.toString())
 
-        val meta = parseStr(MetaParse, "foo(word, name = 5, list(name2 = 6), word2)").getOrThrow()
+        val meta = parseStr(MetaParse::parse, "foo(word, name = 5, list(name2 = 6), word2)").getOrThrow()
         assertTrue(meta is Meta.List)
         assertEquals("foo", meta.path.toString())
         assertTrue(meta.delimiter is MacroDelimiter.Paren)
@@ -62,7 +62,7 @@ class MetaTest {
 
     @Test
     fun testParsePath() {
-        val meta = parseStr(MetaParse, "::serde::Serialize").getOrThrow()
+        val meta = parseStr(MetaParse::parse, "::serde::Serialize").getOrThrow()
         assertTrue(meta is Meta.PathMeta)
         assertTrue(meta.path.leadingColon != null)
         assertEquals(2, meta.path.segments.len())
@@ -84,7 +84,7 @@ class MetaTest {
 
     @Test
     fun testParseKeywordPath() {
-        val meta = parseStr(MetaParse, "unsafe").getOrThrow()
+        val meta = parseStr(MetaParse::parse, "unsafe").getOrThrow()
         assertTrue(meta is Meta.PathMeta)
         assertEquals("unsafe", meta.path.toString())
     }
@@ -98,7 +98,7 @@ class MetaTest {
                 when {
                     meta.path.isIdent("kind") -> {
                         val value = meta.value().getOrElse { return@parser SynResult.failure(it) }
-                        val lit = value.parse(LitStrParse).getOrElse { return@parser SynResult.failure(it) }
+                        val lit = value.parse(LitStrParse::parse).getOrElse { return@parser SynResult.failure(it) }
                         kind = lit.value()
                         SynResult.success(Unit)
                     }
@@ -121,8 +121,8 @@ class MetaTest {
         val parser =
             parserFromFunction { input ->
                 while (!input.isEmpty()) {
-                    input.parse(MetaParse).getOrElse { return@parserFromFunction SynResult.failure(it) }
-                    input.parse(FatArrowParse).getOrElse { return@parserFromFunction SynResult.failure(it) }
+                    input.parse(MetaParse::parse).getOrElse { return@parserFromFunction SynResult.failure(it) }
+                    input.parse(FatArrowParse::parse).getOrElse { return@parserFromFunction SynResult.failure(it) }
                     val braces = braced(input).getOrElse { return@parserFromFunction SynResult.failure(it) }
                     braces.content.finishChildBuffer()
                 }

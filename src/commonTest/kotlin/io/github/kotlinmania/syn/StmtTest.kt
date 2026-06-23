@@ -93,7 +93,7 @@ class StmtTest {
                     ),
                 ),
             )
-        val stmt = parse2(StmtParse, tokens).getOrThrow()
+        val stmt = parse2(StmtParse::parse, tokens).getOrThrow()
         val itemStmt = assertIs<Stmt.ItemStmt>(stmt)
         val fn = assertIs<Item.Fn>(itemStmt.item)
         assertIs<Visibility.Inherited>(fn.vis)
@@ -227,11 +227,11 @@ class StmtTest {
 
     @Test
     fun testStatementSemicolonRules() {
-        assertTrue(parseStr(StmtParse, "x").isFailure)
-        assertTrue(parseStr(StmtParse, "return 1").isFailure)
+        assertTrue(parseStr(StmtParse::parse, "x").isFailure)
+        assertTrue(parseStr(StmtParse::parse, "return 1").isFailure)
         assertTrue(parserFromFunction(::parseWithin).parseStr("x y").isFailure)
 
-        val loopStmt = assertIs<Stmt.ExprStmt>(parseStr(StmtParse, "loop {}").getOrThrow())
+        val loopStmt = assertIs<Stmt.ExprStmt>(parseStr(StmtParse::parse, "loop {}").getOrThrow())
         assertIs<Expr.Loop>(loopStmt.expr)
         assertNull(loopStmt.semiToken)
     }

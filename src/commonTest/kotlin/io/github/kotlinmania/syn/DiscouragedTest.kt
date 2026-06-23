@@ -46,7 +46,7 @@ class DiscouragedTest {
             parserFromFunction { input ->
                 val anyDelimiter = assertIs<AnyDelimiter>(input)
                 val delimiter = anyDelimiter.parseAnyDelimiter().getOrElse { return@parserFromFunction SynResult.failure(it) }
-                val ident = delimiter.content.parse(IdentParse).getOrElse { return@parserFromFunction SynResult.failure(it) }
+                val ident = delimiter.content.parse(IdentParse::parse).getOrElse { return@parserFromFunction SynResult.failure(it) }
                 delimiter.content.finishChildBuffer()
                 SynResult.success(delimiter to ident)
             }.parse2(tokens).getOrThrow()

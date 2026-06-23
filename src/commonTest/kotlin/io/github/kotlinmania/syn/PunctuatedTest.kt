@@ -54,13 +54,28 @@ private data class SepToken(
     }
 }
 
-private fun punctuatedIntComma(vararg values: Int): Punctuated<IntToken, Comma> {
-    val seq = Punctuated.new<IntToken, Comma>()
+private fun punctuatedIntComma(vararg values: Int): Punctuated {
+    val seq = Punctuated.new()
     for (value in values) {
         seq.push(IntToken(value), Comma::default)
     }
     return seq
 }
+
+private fun ToTokens.intToken(): IntToken = this as IntToken
+
+private fun ToTokens.boxToken(): BoxToken = this as BoxToken
+
+private fun ToTokens.litInt(): LitInt = this as LitInt
+
+private fun Punctuated.intValues(): List<Int> =
+    toList().map { it.intToken().v }
+
+private fun Punctuated.boxValues(): List<Int> =
+    toList().map { it.boxToken().v }
+
+private fun Punctuated.litIntValues(): List<Long> =
+    toList().map { it.litInt().base10Parse() }
 
 private fun <T> Iterator<T>.remainingList(): List<T> =
     buildList {
@@ -78,27 +93,27 @@ class PunctuatedTest {
         val pairs = p.pairs()
         assertEquals(3, pairs.len())
         assertEquals(3 to 3, pairs.sizeHint())
-        assertEquals(4, pairs.clone().nextBack()?.intoValue()?.v)
+        assertEquals(4, pairs.clone().nextBack()?.intoValue()?.intToken()?.v)
 
         val pairsList = p.intoPairs().remainingList()
         assertEquals(3, pairsList.size)
         val lastPair = pairsList.last()
-        assertEquals(4, lastPair.value().v)
-        assertEquals(4, lastPair.valueMut().v)
-        assertEquals(4, lastPair.intoValue().v)
+        assertEquals(4, lastPair.value().intToken().v)
+        assertEquals(4, lastPair.valueMut().intToken().v)
+        assertEquals(4, lastPair.intoValue().intToken().v)
         assertNull(lastPair.punct())
-        assertTrue(lastPair is Punctuated.Pair.End<*, *>)
+        assertTrue(lastPair is Punctuated.Pair.End)
         val firstPair = pairsList.first()
-        assertEquals(2, firstPair.intoTuple().first.v)
+        assertEquals(2, firstPair.intoTuple().first.intToken().v)
         assertNotNull(firstPair.punct())
         assertNotNull(firstPair.punctMut())
-        assertEquals(2, firstPair.cloned().value().v)
-        assertTrue(firstPair is Punctuated.Pair.Punctuated<*, *>)
+        assertEquals(2, firstPair.cloned().value().intToken().v)
+        assertTrue(firstPair is Punctuated.Pair.Punctuated)
     }
 
     @Test
     fun extendPairs() {
-        val p = Punctuated.new<IntToken, Comma>()
+        val p = Punctuated.new()
         p.pushValue(IntToken(1))
 
         p.extendPairs(
@@ -109,7 +124,7 @@ class PunctuatedTest {
             Comma::default,
         )
 
-        assertEquals(listOf(1, 2, 3), p.toList().map { it.v })
+        assertEquals(listOf(1, 2, 3), p.intValues())
         assertNotNull(p.punct(0))
         assertNotNull(p.punct(1))
         assertNull(p.punct(2))
@@ -117,7 +132,7 @@ class PunctuatedTest {
 
     @Test
     fun extendPairSequence() {
-        val p = Punctuated.new<IntToken, Comma>()
+        val p = Punctuated.new()
         p.pushValue(IntToken(1))
 
         p.extend(
@@ -128,7 +143,7 @@ class PunctuatedTest {
             Comma::default,
         )
 
-        assertEquals(listOf(1, 2, 3), p.toList().map { it.v })
+        assertEquals(listOf(1, 2, 3), p.intValues())
         assertNotNull(p.punct(0))
         assertNotNull(p.punct(1))
         assertNull(p.punct(2))
@@ -136,11 +151,11 @@ class PunctuatedTest {
 
     @Test
     fun fromIterAndDefault() {
-        val empty = Punctuated.default<IntToken, Comma>()
+        val empty = Punctuated.default()
         assertTrue(empty.isEmpty())
 
         val values = Punctuated.fromIter(listOf(IntToken(1), IntToken(2)), Comma::default)
-        assertEquals(listOf(1, 2), values.toList().map { it.v })
+        assertEquals(listOf(1, 2), values.intValues())
         assertFalse(values.trailingPunct())
 
         val pairs =
@@ -150,14 +165,14 @@ class PunctuatedTest {
                     Punctuated.Pair.End(IntToken(4)),
                 ),
             )
-        assertEquals(listOf(3, 4), pairs.toList().map { it.v })
+        assertEquals(listOf(3, 4), pairs.intValues())
         assertFalse(pairs.trailingPunct())
     }
 
     @Test
     fun fromPairsPanicsAfterEndPair() {
         assertFailsWith<IllegalStateException> {
-            Punctuated.fromPairs<IntToken, Comma>(
+            Punctuated.fromPairs(
                 listOf(
                     Punctuated.Pair.End(IntToken(1)),
                     Punctuated.Pair.Punctuated(IntToken(2), Comma.default()),
@@ -172,14 +187,14 @@ class PunctuatedTest {
 
         val values = p.toList()
         assertEquals(3, values.size)
-        assertEquals(4, values.last().v)
+        assertEquals(4, values.last().intToken().v)
         assertEquals(3, p.iter().remainingCount())
         assertEquals(3, p.iterMut().remainingCount())
         assertEquals(3, p.pairsMut().remainingCount())
-        assertEquals(4, p.iter().nextBack()?.v)
-        assertEquals(2, p.iterMut().next().v)
+        assertEquals(4, p.iter().nextBack()?.intToken()?.v)
+        assertEquals(2, p.iterMut().next().intToken().v)
         assertEquals(3, p.intoIter().len())
-        assertEquals(4, p.intoIter().nextBack()?.v)
+        assertEquals(4, p.intoIter().nextBack()?.intToken()?.v)
     }
 
     @Test
@@ -187,31 +202,31 @@ class PunctuatedTest {
         val p = punctuatedIntComma(1, 2, 3)
 
         val pairs = p.intoPairs()
-        assertEquals(1, pairs.next().intoValue().v)
+        assertEquals(1, pairs.next().intoValue().intToken().v)
         val pairsClone = pairs.clone()
-        assertEquals(2, pairs.next().intoValue().v)
-        assertEquals(2, pairsClone.next().intoValue().v)
-        assertEquals(3, pairs.nextBack()?.intoValue()?.v)
-        assertEquals(3, pairsClone.nextBack()?.intoValue()?.v)
+        assertEquals(2, pairs.next().intoValue().intToken().v)
+        assertEquals(2, pairsClone.next().intoValue().intToken().v)
+        assertEquals(3, pairs.nextBack()?.intoValue()?.intToken()?.v)
+        assertEquals(3, pairsClone.nextBack()?.intoValue()?.intToken()?.v)
 
         val values = p.intoIter()
-        assertEquals(1, values.next().v)
+        assertEquals(1, values.next().intToken().v)
         val valuesClone = values.clone()
-        assertEquals(2, values.next().v)
-        assertEquals(2, valuesClone.next().v)
-        assertEquals(3, values.nextBack()?.v)
-        assertEquals(3, valuesClone.nextBack()?.v)
+        assertEquals(2, values.next().intToken().v)
+        assertEquals(2, valuesClone.next().intToken().v)
+        assertEquals(3, values.nextBack()?.intToken()?.v)
+        assertEquals(3, valuesClone.nextBack()?.intToken()?.v)
     }
 
     @Test
     fun emptyPunctuatedIterators() {
-        assertFalse(emptyPunctuatedIter<IntToken>().hasNext())
-        assertFalse(emptyPunctuatedIterMut<IntToken>().hasNext())
+        assertFalse(emptyPunctuatedIter().hasNext())
+        assertFalse(emptyPunctuatedIterMut().hasNext())
     }
 
     @Test
     fun toSynPunctuated() {
-        val p = Punctuated.new<IntToken, Comma>()
+        val p = Punctuated.new()
         p.pushValue(IntToken(1))
         p.pushPunct(Comma.default())
         p.pushValue(IntToken(2))
@@ -229,14 +244,14 @@ class PunctuatedTest {
     fun mayDangle() {
         val p = punctuatedIntComma(2, 3, 4)
         for (element in p.toList()) {
-            if (element.v == 2) {
+            if (element.intToken().v == 2) {
                 break
             }
         }
 
         val q = punctuatedIntComma(2, 3, 4)
         for (element in q.toList()) {
-            if (element.v == 2) {
+            if (element.intToken().v == 2) {
                 break
             }
         }
@@ -244,7 +259,7 @@ class PunctuatedTest {
 
     @Test
     fun indexOutOfBounds() {
-        val p = Punctuated.new<IntToken, Comma>()
+        val p = Punctuated.new()
         assertFailsWith<IndexOutOfBoundsException> {
             p[0]
         }
@@ -271,7 +286,7 @@ class PunctuatedTest {
         p.insert(1, IntToken(2), Comma::default)
         p.insert(3, IntToken(4), Comma::default)
 
-        assertEquals(listOf(1, 2, 3, 4), p.toList().map { it.v })
+        assertEquals(listOf(1, 2, 3, 4), p.intValues())
         assertNotNull(p.punct(1))
         assertNotNull(p.punctMut(1))
         assertNull(p.punct(3))
@@ -289,30 +304,30 @@ class PunctuatedTest {
 
     @Test
     fun mutableAccessorsReturnStoredElements() {
-        val p = Punctuated.new<BoxToken, Comma>()
+        val p = Punctuated.new()
         p.push(BoxToken(1), Comma::default)
         p.push(BoxToken(2), Comma::default)
 
-        p.firstMut()?.v = 10
-        p.lastMut()?.v = 20
-        p.getMut(0)?.v = 11
+        p.firstMut()?.boxToken()?.v = 10
+        p.lastMut()?.boxToken()?.v = 20
+        p.getMut(0)?.boxToken()?.v = 11
 
-        assertEquals(listOf(11, 20), p.toList().map { it.v })
+        assertEquals(listOf(11, 20), p.boxValues())
     }
 
     @Test
     fun equalityIncludesPunctuation() {
-        val left = Punctuated.new<IntToken, SepToken>()
+        val left = Punctuated.new()
         left.pushValue(IntToken(1))
         left.pushPunct(SepToken("a"))
         left.pushValue(IntToken(2))
 
-        val same = Punctuated.new<IntToken, SepToken>()
+        val same = Punctuated.new()
         same.pushValue(IntToken(1))
         same.pushPunct(SepToken("a"))
         same.pushValue(IntToken(2))
 
-        val differentPunctuation = Punctuated.new<IntToken, SepToken>()
+        val differentPunctuation = Punctuated.new()
         differentPunctuation.pushValue(IntToken(1))
         differentPunctuation.pushPunct(SepToken("b"))
         differentPunctuation.pushValue(IntToken(2))
@@ -324,36 +339,36 @@ class PunctuatedTest {
 
     @Test
     fun cloneFromReplacesContents() {
-        val target = Punctuated.new<BoxToken, Comma>()
+        val target = Punctuated.new()
         target.push(BoxToken(1), Comma::default)
 
-        val source = Punctuated.new<BoxToken, Comma>()
+        val source = Punctuated.new()
         source.push(BoxToken(2), Comma::default)
         source.push(BoxToken(3), Comma::default)
 
-        target.cloneFrom(source, copyValue = { BoxToken(it.v) })
+        target.cloneFrom(source, copyValue = { BoxToken(it.boxToken().v) })
 
-        source.firstMut()?.v = 20
-        assertEquals(listOf(2, 3), target.toList().map { it.v })
+        source.firstMut()?.boxToken()?.v = 20
+        assertEquals(listOf(2, 3), target.boxValues())
     }
 
     @Test
     fun cloneCopiesSequenceContents() {
-        val original = Punctuated.new<BoxToken, SepToken>()
+        val original = Punctuated.new()
         original.pushValue(BoxToken(1))
         original.pushPunct(SepToken("a"))
         original.pushValue(BoxToken(2))
 
         val cloned =
             original.clone(
-                copyValue = { BoxToken(it.v) },
-                copyPunctuation = { it.copy() },
+                copyValue = { BoxToken(it.boxToken().v) },
+                copyPunctuation = { (it as SepToken).copy() },
             )
 
-        original.firstMut()?.v = 10
+        original.firstMut()?.boxToken()?.v = 10
 
-        assertEquals(listOf(10, 2), original.toList().map { it.v })
-        assertEquals(listOf(1, 2), cloned.toList().map { it.v })
+        assertEquals(listOf(10, 2), original.boxValues())
+        assertEquals(listOf(1, 2), cloned.boxValues())
         assertEquals(original.punct(0), cloned.punct(0))
     }
 
@@ -361,12 +376,12 @@ class PunctuatedTest {
     fun parseTerminatedAcceptsTrailingPunctuation() {
         val parser =
             parserFromFunction { input ->
-                Punctuated.parseTerminated<LitInt, Comma>(input, LitIntParse, CommaParse)
+                Punctuated.parseTerminated(input, LitIntParse::parse, CommaParse::parse)
             }
 
         val parsed = parser.parse2(TokenStream.fromString("1, 2,").getOrThrow()).getOrThrow()
 
-        assertEquals(listOf(1L, 2L), parsed.toList().map { it.base10Parse() })
+        assertEquals(listOf(1L, 2L), parsed.litIntValues())
         assertTrue(parsed.trailingPunct())
     }
 
@@ -375,11 +390,11 @@ class PunctuatedTest {
         val parser =
             parserFromFunction { input ->
                 val parsed =
-                    Punctuated.parseSeparatedNonempty<LitInt, Comma>(
+                    Punctuated.parseSeparatedNonempty(
                         input,
-                        LitIntParse,
+                        LitIntParse::parse,
                         CommaPeek,
-                        CommaParse,
+                        CommaParse::parse,
                     ).getOrElse { return@parserFromFunction SynResult.failure(it) }
 
                 val remaining = LitIntParse.parse(input).getOrElse { return@parserFromFunction SynResult.failure(it) }
@@ -389,7 +404,7 @@ class PunctuatedTest {
 
         val parsed = parser.parse2(TokenStream.fromString("1, 2 3").getOrThrow()).getOrThrow()
 
-        assertEquals(listOf(1L, 2L), parsed.toList().map { it.base10Parse() })
+        assertEquals(listOf(1L, 2L), parsed.litIntValues())
         assertFalse(parsed.trailingPunct())
     }
 
@@ -397,11 +412,11 @@ class PunctuatedTest {
     fun parseSeparatedNonemptyRequiresOneElement() {
         val parser =
             parserFromFunction { input ->
-                Punctuated.parseSeparatedNonempty<LitInt, Comma>(
+                Punctuated.parseSeparatedNonempty(
                     input,
-                    LitIntParse,
+                    LitIntParse::parse,
                     CommaPeek,
-                    CommaParse,
+                    CommaParse::parse,
                 )
             }
 

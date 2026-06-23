@@ -34,13 +34,10 @@ public data class Attribute(
     public fun path(): Path =
         meta.path()
 
-    public fun parseArgs(parser: Parse): SynResult<*> =
-        parseArgsWith(parserFromFunction(parser::parse))
+    public fun <T> parseArgs(parser: (ParseStream) -> SynResult<T>): SynResult<T> =
+        parseArgsWith(parser)
 
-    public fun parseArgsWith(parser: (ParseStream) -> SynResult<*>): SynResult<*> =
-        parseArgsWith(parserFromFunction(parser))
-
-    public fun parseArgsWith(parser: Parser): SynResult<*> =
+    public fun <T> parseArgsWith(parser: (ParseStream) -> SynResult<T>): SynResult<T> =
         when (val metaValue = meta) {
             is Meta.PathMeta -> {
                 val first = metaValue.path.segments.first()?.ident?.span() ?: Span.callSite()
@@ -64,7 +61,7 @@ public data class Attribute(
         }
 
     public fun parseNestedMeta(logic: (ParseNestedMeta) -> SynResult<Unit>): SynResult<Unit> =
-        parseArgsWith(parser(logic))
+        parseArgsWith(parser(logic)::parse)
 
     public fun deepCopy(): Attribute =
         copy(meta = meta.copy())
@@ -183,17 +180,14 @@ public sealed class Meta : ToTokens {
         val delimiter: MacroDelimiter,
         val tokens: TokenStream,
     ) : Meta() {
-        public fun parseArgs(parser: Parse): SynResult<*> =
-            parseArgsWith(parserFromFunction(parser::parse))
+        public fun <T> parseArgs(parser: (ParseStream) -> SynResult<T>): SynResult<T> =
+            parseArgsWith(parser)
 
-        public fun parseArgsWith(parser: (ParseStream) -> SynResult<*>): SynResult<*> =
-            parseArgsWith(parserFromFunction(parser))
-
-        public fun parseArgsWith(parser: Parser): SynResult<*> =
+        public fun <T> parseArgsWith(parser: (ParseStream) -> SynResult<T>): SynResult<T> =
             parseScoped(parser, delimiter.closeSpan(), tokens)
 
         public fun parseNestedMeta(logic: (ParseNestedMeta) -> SynResult<Unit>): SynResult<Unit> =
-            parseArgsWith(parser(logic))
+            parseArgsWith(parser(logic)::parse)
 
         override fun toTokens(tokens: TokenStream) {
             path.toTokens(tokens)

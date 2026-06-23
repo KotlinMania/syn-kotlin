@@ -28,7 +28,7 @@ class UnparenthesizeTest {
         val before = parseFile(content).getOrThrow()
         val flatBefore = FlattenParens.discardAttrs().visitFileMut(before.deepCopy())
         val printed = flatBefore.intoTokenStream()
-        val after = parse2(FileParse, printed).getOrThrow()
+        val after = parse2(FileParse::parse, printed).getOrThrow()
         val flatAfter = FlattenParens.discardAttrs().visitFileMut(after.deepCopy())
         val expected = AsIfPrinted().visitFileMut(flatBefore)
 

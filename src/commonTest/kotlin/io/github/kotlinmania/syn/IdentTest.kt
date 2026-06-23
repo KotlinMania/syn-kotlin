@@ -11,7 +11,7 @@ import kotlin.test.assertTrue
 
 private fun parse(s: String): SynResult<Ident> =
     TokenStream.fromString(s).fold(
-        onSuccess = { parse2(IdentParse, it) },
+        onSuccess = { parse2(IdentParse::parse, it) },
         onFailure = { SynResult.failure(SynError.new(Span.callSite(), it.message ?: it.toString())) },
     )
 

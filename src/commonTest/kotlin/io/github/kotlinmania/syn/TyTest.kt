@@ -19,8 +19,7 @@ import kotlin.test.assertTrue
 /**
  * Tests for parsing of types.
  *
- * The type parser (`SynTypeParseExpr`, equivalent to upstream
- * `Parse<SynType>`) currently handles the infer (`_`), reference
+ * The type parser (`SynTypeParseExpr`) currently handles the infer (`_`), reference
  * (`&` / `&'lt` / `&mut`), pointer (`*const` / `*mut`), parenthesized,
  * tuple, path forms, invisible type groups, `impl Trait`, trait-object
  * forms, bare-fn types, `PreciseCapture` `use<...>` bounds, and the
@@ -49,27 +48,27 @@ class TyTest {
         assertNull(typed.inputs.first()!!.name)
         assertEquals("mut self : ()", assertIs<SynType.Verbatim>(typed.inputs.first()!!.ty).tokens.toString())
 
-        assertTrue(parseStr(SynTypeParseExpr, "fn(mut self: ...)").isFailure)
-        assertTrue(parseStr(SynTypeParseExpr, "fn(mut self: mut self)").isFailure)
-        assertTrue(parseStr(SynTypeParseExpr, "fn(mut self::T)").isFailure)
+        assertTrue(parseStr(SynTypeParseExpr::parse, "fn(mut self: ...)").isFailure)
+        assertTrue(parseStr(SynTypeParseExpr::parse, "fn(mut self: mut self)").isFailure)
+        assertTrue(parseStr(SynTypeParseExpr::parse, "fn(mut self::T)").isFailure)
     }
 
     @Test
     fun testBareFnArgParse() {
-        val named = parseStr(BareFnArg, "#[cfg(test)] arg: T").getOrThrow()
+        val named = parseStr(BareFnArg::parse, "#[cfg(test)] arg: T").getOrThrow()
         assertEquals(1, named.attrs.size)
         assertEquals("arg", named.name?.ident.toString())
         assertPath(assertIs<SynType.Path>(named.ty).path, "T")
 
-        val unnamed = parseStr(BareFnArg, "T").getOrThrow()
+        val unnamed = parseStr(BareFnArg::parse, "T").getOrThrow()
         assertNull(unnamed.name)
         assertPath(assertIs<SynType.Path>(unnamed.ty).path, "T")
 
-        val underscore = parseStr(BareFnArg, "_: usize").getOrThrow()
+        val underscore = parseStr(BareFnArg::parse, "_: usize").getOrThrow()
         assertEquals("_", underscore.name?.ident.toString())
         assertPath(assertIs<SynType.Path>(underscore.ty).path, "usize")
 
-        assertTrue(parseStr(BareFnArg, "mut self").isFailure)
+        assertTrue(parseStr(BareFnArg::parse, "mut self").isFailure)
     }
 
     @Test
@@ -187,10 +186,10 @@ class TyTest {
         assertLifetimeBound(lifetimeFirstBounds[0], "'a")
         assertTraitBound(lifetimeFirstBounds[1], "Trait")
 
-        assertTrue(parseStr(SynTypeParseExpr, "for<'a> dyn Trait<'a>").isFailure)
-        assertTrue(parseStr(SynTypeParseExpr, "dyn for<'a> 'a + Trait").isFailure)
-        assertTrue(parseStr(SynTypeParseExpr, "dyn 'a").isFailure)
-        assertTrue(parseStr(SynTypeParseExpr, "'a + 'b").isFailure)
+        assertTrue(parseStr(SynTypeParseExpr::parse, "for<'a> dyn Trait<'a>").isFailure)
+        assertTrue(parseStr(SynTypeParseExpr::parse, "dyn for<'a> 'a + Trait").isFailure)
+        assertTrue(parseStr(SynTypeParseExpr::parse, "dyn 'a").isFailure)
+        assertTrue(parseStr(SynTypeParseExpr::parse, "'a + 'b").isFailure)
     }
 
     @Test
@@ -244,8 +243,8 @@ class TyTest {
         assertNotNull(mutPtr.mutability)
         assertPath(assertIs<SynType.Path>(mutPtr.elem).path, "T")
 
-        assertTrue(parseStr(SynTypeParseExpr, "*T").isFailure)
-        assertTrue(parseStr(SynTypeParseExpr, "*const mut T").isFailure)
+        assertTrue(parseStr(SynTypeParseExpr::parse, "*T").isFailure)
+        assertTrue(parseStr(SynTypeParseExpr::parse, "*const mut T").isFailure)
     }
 
     @Test
@@ -276,33 +275,24 @@ class TyTest {
 
     @Test
     fun testImplTraitRequiresTrait() {
-        assertTrue(parseStr(SynTypeParseExpr, "impl 'static").isFailure)
-        assertTrue(parseStr(SynTypeParseExpr, "impl use<'_>").isFailure)
+        assertTrue(parseStr(SynTypeParseExpr::parse, "impl 'static").isFailure)
+        assertTrue(parseStr(SynTypeParseExpr::parse, "impl use<'_>").isFailure)
     }
 
     @Test
     fun testWithoutPlusParsers() {
         val typeWithoutPlus =
-            object : Parse<SynType> {
-                override fun parse(input: ParseStream): SynResult<SynType> =
-                    SynType.withoutPlus(input)
-            }
+            SynType.Companion::withoutPlus
         assertIs<SynType.Path>(parseStr(typeWithoutPlus, "Trait").getOrThrow())
         assertTrue(parseStr(typeWithoutPlus, "Trait + Send").isFailure)
 
         val returnTypeWithoutPlus =
-            object : Parse<ReturnType> {
-                override fun parse(input: ParseStream): SynResult<ReturnType> =
-                    ReturnType.withoutPlus(input)
-            }
+            ReturnType.Companion::withoutPlus
         assertIs<ReturnType.TypeReturn>(parseStr(returnTypeWithoutPlus, "-> Trait").getOrThrow())
         assertTrue(parseStr(returnTypeWithoutPlus, "-> Trait + Send").isFailure)
 
         val implTraitWithoutPlus =
-            object : Parse<SynType.ImplTrait> {
-                override fun parse(input: ParseStream): SynResult<SynType.ImplTrait> =
-                    SynType.ImplTrait.withoutPlus(input)
-            }
+            SynType.ImplTrait.Companion::withoutPlus
         assertIs<SynType.ImplTrait>(parseStr(implTraitWithoutPlus, "impl Trait").getOrThrow())
         assertTrue(parseStr(implTraitWithoutPlus, "impl Trait + Send").isFailure)
     }
@@ -310,21 +300,21 @@ class TyTest {
     @Test
     fun testTupleComma() {
         // Empty tuple `()` parses as `SynType.Tuple` with zero elements.
-        val empty = parseStr(SynTypeParseExpr, "()").getOrThrow()
+        val empty = parseStr(SynTypeParseExpr::parse, "()").getOrThrow()
         assertIs<SynType.Tuple>(empty)
         assertEquals(0, empty.elems.size)
 
         // A single element with a trailing comma must parse as
         // `SynType.Tuple` (not `SynType.Paren`); the element is a
         // `SynType.Infer`.
-        val oneTrailing = parseStr(SynTypeParseExpr, "(_,)").getOrThrow()
+        val oneTrailing = parseStr(SynTypeParseExpr::parse, "(_,)").getOrThrow()
         assertIs<SynType.Tuple>(oneTrailing)
         assertEquals(1, oneTrailing.elems.size)
         assertTrue(oneTrailing.elems.trailingPunct())
         assertIs<SynType.Infer>(oneTrailing.elems.first())
 
         // Two elements without a trailing comma parse as `SynType.Tuple`.
-        val two = parseStr(SynTypeParseExpr, "(_, _)").getOrThrow()
+        val two = parseStr(SynTypeParseExpr::parse, "(_, _)").getOrThrow()
         assertIs<SynType.Tuple>(two)
         assertEquals(2, two.elems.size)
         val twoList = two.elems.toList()
@@ -333,7 +323,7 @@ class TyTest {
 
         // Two elements with a trailing comma parse as `SynType.Tuple`
         // and retain the trailing punctuation.
-        val twoTrailing = parseStr(SynTypeParseExpr, "(_, _,)").getOrThrow()
+        val twoTrailing = parseStr(SynTypeParseExpr::parse, "(_, _,)").getOrThrow()
         assertIs<SynType.Tuple>(twoTrailing)
         assertEquals(2, twoTrailing.elems.size)
         assertTrue(twoTrailing.elems.trailingPunct())
@@ -361,10 +351,10 @@ class TyTest {
     }
 
     private fun parseType(source: String): SynType =
-        parseStr(SynTypeParseExpr, source).getOrThrow()
+        parseStr(SynTypeParseExpr::parse, source).getOrThrow()
 
     private fun parseType(tokens: TokenStream): SynType =
-        parse2(SynTypeParseExpr, tokens).getOrThrow()
+        parse2(SynTypeParseExpr::parse, tokens).getOrThrow()
 
     private fun assertPathTypeArg(args: PathArguments.AngleBracketed, index: Int, vararg segments: String) {
         val arg = assertIs<GenericArgument.TypeArg>(args.args.toList()[index])

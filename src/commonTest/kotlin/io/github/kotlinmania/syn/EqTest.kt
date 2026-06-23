@@ -8,9 +8,9 @@ import kotlin.test.assertTrue
 class EqTest {
     @Test
     fun deriveInputEqMatchesGeneratedFieldSet() {
-        val left = parseStr(DeriveInputParse, "struct S<T> where T: Copy { field: T }").getOrThrow()
-        val right = parseStr(DeriveInputParse, "struct S<T> where T: Copy { field: T }").getOrThrow()
-        val different = parseStr(DeriveInputParse, "struct S<T> where T: Clone { field: T }").getOrThrow()
+        val left = parseStr(DeriveInputParse::parse, "struct S<T> where T: Copy { field: T }").getOrThrow()
+        val right = parseStr(DeriveInputParse::parse, "struct S<T> where T: Copy { field: T }").getOrThrow()
+        val different = parseStr(DeriveInputParse::parse, "struct S<T> where T: Clone { field: T }").getOrThrow()
 
         assertTrue(left.eq(right))
         assertFalse(left.eq(different))
@@ -28,9 +28,9 @@ class EqTest {
 
     @Test
     fun dataEqDispatchesByVariant() {
-        val left = parseStr(DeriveInputParse, "struct S;").getOrThrow().data
-        val right = parseStr(DeriveInputParse, "struct S;").getOrThrow().data
-        val different = parseStr(DeriveInputParse, "enum S {}").getOrThrow().data
+        val left = parseStr(DeriveInputParse::parse, "struct S;").getOrThrow().data
+        val right = parseStr(DeriveInputParse::parse, "struct S;").getOrThrow().data
+        val different = parseStr(DeriveInputParse::parse, "enum S {}").getOrThrow().data
 
         assertTrue(left.eq(right))
         assertFalse(left.eq(different))

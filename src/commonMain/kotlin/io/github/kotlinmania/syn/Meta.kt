@@ -46,7 +46,7 @@ public fun parseMetaPath(input: ParseStream): SynResult<Path> {
  * Creates a parser usable with [parseMacroInput] from a
  * handler function that processes each nested attribute property.
  */
-public fun parser(logic: (ParseNestedMeta) -> SynResult<Unit>): Parser =
+public fun parser(logic: (ParseNestedMeta) -> SynResult<Unit>): (ParseStream) -> SynResult<Unit> =
     parserFromFunction { input ->
         if (input.isEmpty()) {
             SynResult.success(Unit)
@@ -55,7 +55,7 @@ public fun parser(logic: (ParseNestedMeta) -> SynResult<Unit>): Parser =
         }
     }
 
-public fun metaParser(logic: (ParseNestedMeta) -> SynResult<Unit>): Parser =
+public fun metaParser(logic: (ParseNestedMeta) -> SynResult<Unit>): (ParseStream) -> SynResult<Unit> =
     parser(logic)
 
 public class ParseNestedMeta(
@@ -63,7 +63,7 @@ public class ParseNestedMeta(
     public val input: ParseStream,
 ) {
     public fun value(): SynResult<ParseStream> {
-        input.parse(EqParse).getOrElse { return SynResult.failure(it) }
+        EqParse.parse(input).getOrElse { return SynResult.failure(it) }
         return SynResult.success(input)
     }
 

@@ -14,7 +14,10 @@ public sealed class ParseMacroSynResult {
     ) : ParseMacroSynResult()
 }
 
-public fun parseMacroInput(tokens: TokenStream, parser: Parse<Any?>): ParseMacroSynResult {
+public fun <T> parseMacroInput(
+    tokens: TokenStream,
+    parser: (ParseStream) -> SynResult<T>,
+): ParseMacroSynResult {
     val result = parse2(parser, tokens)
     if (result.isSuccess) {
         return ParseMacroSynResult.Success(result.getOrThrow())
@@ -29,7 +32,7 @@ public fun parseMacroInputWith(
     tokens: TokenStream,
     parser: (ParseStream) -> SynResult<Any?>,
 ): ParseMacroSynResult {
-    val result = parserFromFunction(parser).parse2(tokens)
+    val result = parse2(parser, tokens)
     if (result.isSuccess) {
         return ParseMacroSynResult.Success(result.getOrThrow())
     }

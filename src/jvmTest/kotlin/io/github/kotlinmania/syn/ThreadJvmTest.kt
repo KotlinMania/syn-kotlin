@@ -16,7 +16,7 @@ class ThreadJvmTest {
 
         val worker =
             thread {
-                observed = bound.get()
+                observed = bound.get() as String?
                 rendered = bound.toString()
                 ran = true
             }

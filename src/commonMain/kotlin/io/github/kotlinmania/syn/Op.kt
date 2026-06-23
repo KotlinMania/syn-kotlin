@@ -209,7 +209,6 @@ public object BinOpParse {
             else -> SynResult.failure(input.error("expected binary operator"))
         }
 }
-}
 
 public object UnOpParse {
     fun parse(input: ParseStream): SynResult<UnOp> =

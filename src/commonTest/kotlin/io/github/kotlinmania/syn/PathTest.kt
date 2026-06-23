@@ -42,7 +42,7 @@ class PathTest {
 
     @Test
     fun parseParenthesizedPathArgumentsWithDisambiguator() {
-        val ty = assertIs<SynType.TraitObject>(parseStr(SynTypeParseExpr, "dyn FnOnce::() -> !").getOrThrow())
+        val ty = assertIs<SynType.TraitObject>(parseStr(SynTypeParseExpr::parse, "dyn FnOnce::() -> !").getOrThrow())
         val bound = assertIs<TypeParamBound.Trait>(ty.bounds.toList().single())
         val segment = bound.path.segments.toList().single()
 
@@ -55,7 +55,7 @@ class PathTest {
 
     @Test
     fun printIncompleteQpath() {
-        val withAs = assertIs<SynType.Path>(parseStr(SynTypeParseExpr, "<Self as A>::Q").getOrThrow())
+        val withAs = assertIs<SynType.Path>(parseStr(SynTypeParseExpr::parse, "<Self as A>::Q").getOrThrow())
         assertEquals("< Self as A > :: Q", tokensOf(withAs))
         assertNotNull(withAs.path.segments.pop())
         assertEquals("< Self as A > ::", tokensOf(withAs))
@@ -63,7 +63,7 @@ class PathTest {
         assertEquals("< Self >", tokensOf(withAs))
         assertNull(withAs.path.segments.pop())
 
-        val withoutAs = assertIs<SynType.Path>(parseStr(SynTypeParseExpr, "<Self>::A::B").getOrThrow())
+        val withoutAs = assertIs<SynType.Path>(parseStr(SynTypeParseExpr::parse, "<Self>::A::B").getOrThrow())
         assertEquals("< Self > :: A :: B", tokensOf(withoutAs))
         assertNotNull(withoutAs.path.segments.pop())
         assertEquals("< Self > :: A ::", tokensOf(withoutAs))
@@ -71,7 +71,7 @@ class PathTest {
         assertEquals("< Self > ::", tokensOf(withoutAs))
         assertNull(withoutAs.path.segments.pop())
 
-        val normal = assertIs<SynType.Path>(parseStr(SynTypeParseExpr, "Self::A::B").getOrThrow())
+        val normal = assertIs<SynType.Path>(parseStr(SynTypeParseExpr::parse, "Self::A::B").getOrThrow())
         assertEquals("Self :: A :: B", tokensOf(normal))
         assertNotNull(normal.path.segments.pop())
         assertEquals("Self :: A ::", tokensOf(normal))
@@ -85,7 +85,7 @@ class PathTest {
     @Test
     fun qselfSpanUsesDelimiters() {
         val ty = assertIs<SynType.Path>(
-            parseStr(SynTypeParseExpr, "<Vec<T> as a::b::Trait>::AssociatedItem").getOrThrow(),
+            parseStr(SynTypeParseExpr::parse, "<Vec<T> as a::b::Trait>::AssociatedItem").getOrThrow(),
         )
         val qself = assertNotNull(ty.qself)
 
@@ -94,7 +94,7 @@ class PathTest {
 
     @Test
     fun parseSimplePath() {
-        val path = parseStr(PathParse, "std::vec::Vec").getOrThrow()
+        val path = parseStr(PathParse::parse, "std::vec::Vec").getOrThrow()
         val segments = path.segments.toList()
         assertEquals(3, segments.size)
         assertEquals("std", segments[0].ident.toString())
@@ -104,7 +104,7 @@ class PathTest {
 
     @Test
     fun parseLeadingColonPath() {
-        val path = parseStr(PathParse, "::core::mem").getOrThrow()
+        val path = parseStr(PathParse::parse, "::core::mem").getOrThrow()
         assertNotNull(path.leadingColon)
         val segments = path.segments.toList()
         assertEquals(2, segments.size)
@@ -114,7 +114,7 @@ class PathTest {
 
     @Test
     fun parseSingleSegmentPath() {
-        val path = parseStr(PathParse, "String").getOrThrow()
+        val path = parseStr(PathParse::parse, "String").getOrThrow()
         assertNull(path.leadingColon)
         val segments = path.segments.toList()
         assertEquals(1, segments.size)
@@ -123,44 +123,44 @@ class PathTest {
 
     @Test
     fun pathIsIdent() {
-        val path = parseStr(PathParse, "Foo").getOrThrow()
+        val path = parseStr(PathParse::parse, "Foo").getOrThrow()
         assertTrue(path.isIdent("Foo"))
         assertTrue(!path.isIdent("Bar"))
     }
 
     @Test
     fun pathIsIdentReturnsFalseForMultiSegment() {
-        val path = parseStr(PathParse, "Foo::Bar").getOrThrow()
+        val path = parseStr(PathParse::parse, "Foo::Bar").getOrThrow()
         assertTrue(!path.isIdent("Foo"))
     }
 
     @Test
     fun pathGetIdentSingleSegment() {
-        val path = parseStr(PathParse, "Foo").getOrThrow()
+        val path = parseStr(PathParse::parse, "Foo").getOrThrow()
         assertEquals("Foo", path.getIdent()?.toString())
     }
 
     @Test
     fun pathGetIdentMultiSegmentReturnsNull() {
-        val multi = parseStr(PathParse, "Foo::Bar").getOrThrow()
+        val multi = parseStr(PathParse::parse, "Foo::Bar").getOrThrow()
         assertNull(multi.getIdent())
     }
 
     @Test
     fun pathGetIdentLeadingColonReturnsNull() {
-        val leading = parseStr(PathParse, "::Foo").getOrThrow()
+        val leading = parseStr(PathParse::parse, "::Foo").getOrThrow()
         assertNull(leading.getIdent())
     }
 
     @Test
     fun pathToStringRoundtrips() {
-        val path = parseStr(PathParse, "a::b::c").getOrThrow()
+        val path = parseStr(PathParse::parse, "a::b::c").getOrThrow()
         assertEquals("a::b::c", path.toString())
     }
 
     @Test
     fun pathToStringLeadingColon() {
-        val path = parseStr(PathParse, "::a::b").getOrThrow()
+        val path = parseStr(PathParse::parse, "::a::b").getOrThrow()
         assertEquals("::a::b", path.toString())
     }
 
@@ -181,19 +181,19 @@ class PathTest {
 
     @Test
     fun pathDeepCopyIsEqual() {
-        val path = parseStr(PathParse, "a::b::c").getOrThrow()
+        val path = parseStr(PathParse::parse, "a::b::c").getOrThrow()
         val copy = path.deepCopy()
         assertEquals(path, copy)
     }
 
     @Test
     fun pathParseFailureOnEmpty() {
-        assertTrue(parseStr(PathParse, "").isFailure)
+        assertTrue(parseStr(PathParse::parse, "").isFailure)
     }
 
     @Test
     fun pathParseFailureOnPunct() {
-        assertTrue(parseStr(PathParse, "::").isFailure)
+        assertTrue(parseStr(PathParse::parse, "::").isFailure)
     }
 }
 

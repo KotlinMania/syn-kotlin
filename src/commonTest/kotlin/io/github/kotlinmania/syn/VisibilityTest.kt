@@ -141,7 +141,7 @@ class VisibilityTest {
                 ),
             )
 
-        val input = parse2(DeriveInputParse, tokens).getOrThrow()
+        val input = parse2(DeriveInputParse::parse, tokens).getOrThrow()
         assertIs<Visibility.Inherited>(input.vis)
         assertEquals("S", input.ident.toString())
         val fields = assertIs<Fields.Named>(assertIs<Data.Struct>(input.data).fields).fields.named.toList()
@@ -174,7 +174,7 @@ class VisibilityTest {
                 ),
             )
 
-        val input = parse2(DeriveInputParse, tokens).getOrThrow()
+        val input = parse2(DeriveInputParse::parse, tokens).getOrThrow()
         assertIs<Visibility.Inherited>(input.vis)
         assertEquals("S", input.ident.toString())
         val data = assertIs<Data.Struct>(input.data).value

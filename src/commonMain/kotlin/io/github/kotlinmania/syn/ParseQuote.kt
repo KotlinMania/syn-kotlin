@@ -5,7 +5,7 @@ package io.github.kotlinmania.syn
 import io.github.kotlinmania.procmacro2.TokenStream
 
 public fun parseQuote(tokenStream: TokenStream, parser: ParseQuote): Any? {
-    val result = parserFromFunction(parser::parse).parse2(tokenStream)
+    val result = parse2(parser::parse, tokenStream)
     return result.getOrElse { err -> error(err.message ?: err.toString()) }
 }
 
@@ -13,9 +13,9 @@ public interface ParseQuote {
     public fun parse(input: ParseStream): SynResult<Any?>
 }
 
-public fun parseQuoteFromParse(parse: Parse): ParseQuote =
+public fun <T> parseQuoteFromParse(parse: (ParseStream) -> SynResult<T>): ParseQuote =
     object : ParseQuote {
-        override fun parse(input: ParseStream): SynResult<Any?> = parse.parse(input)
+        override fun parse(input: ParseStream): SynResult<Any?> = parse(input)
     }
 
 public object AttributeParseQuote : ParseQuote {

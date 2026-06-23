@@ -552,7 +552,7 @@ internal fun parseModStylePath(input: ParseStream): SynResult<Path> =
     Path.parseModStyle(input)
 
 public object PathSegmentParse {
-    override fun parse(input: ParseStream): SynResult<PathSegment> =
+    fun parse(input: ParseStream): SynResult<PathSegment> =
         PathSegment.parseHelper(input, exprStyle = false)
 }
 

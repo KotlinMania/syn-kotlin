@@ -72,9 +72,9 @@ class ExprTest {
         }
     }
 
-    private fun parse(s: String): Expr = parseStr(ExprParse, s).getOrThrow()
+    private fun parse(s: String): Expr = parseStr(ExprParse::parse, s).getOrThrow()
 
-    private fun parseTokens(ts: TokenStream): Expr = parse2(ExprParse, ts).getOrThrow()
+    private fun parseTokens(ts: TokenStream): Expr = parse2(ExprParse::parse, ts).getOrThrow()
 
     private fun roundTrip(expr: Expr): Expr {
         val tokens = TokenStream.new()
@@ -388,8 +388,8 @@ class ExprTest {
     // body position).
     @Test
     fun testPostfixOperatorAfterCast() {
-        assertTrue(parseStr(ExprParse, "|| &x as T[0]").isFailure)
-        assertTrue(parseStr(ExprParse, "|| () as ()()").isFailure)
+        assertTrue(parseStr(ExprParse::parse, "|| &x as T[0]").isFailure)
+        assertTrue(parseStr(ExprParse::parse, "|| () as ()()").isFailure)
     }
 
     // Upstream parses `..`, `..hi`, `lo..`, `lo..hi` as valid, `..=`
@@ -422,7 +422,7 @@ class ExprTest {
         assertPathExpr(openBothStart, "lo")
         assertPathExpr(openBothEnd, "hi")
 
-        assertTrue(parseStr(ExprParse, "..=").isFailure)
+        assertTrue(parseStr(ExprParse::parse, "..=").isFailure)
 
         val closedEnd = assertIs<Expr.Range>(parse("..=hi"))
         assertIs<RangeLimits.Closed>(closedEnd.limits)
@@ -431,7 +431,7 @@ class ExprTest {
         assertTrue(closedEndExpr != null)
         assertPathExpr(closedEndExpr, "hi")
 
-        assertTrue(parseStr(ExprParse, "lo..=").isFailure)
+        assertTrue(parseStr(ExprParse::parse, "lo..=").isFailure)
 
         val closedBoth = assertIs<Expr.Range>(parse("lo..=hi"))
         assertIs<RangeLimits.Closed>(closedBoth.limits)
@@ -442,10 +442,10 @@ class ExprTest {
         assertPathExpr(closedBothStart, "lo")
         assertPathExpr(closedBothEnd, "hi")
 
-        assertTrue(parseStr(ExprParse, "...").isFailure)
-        assertTrue(parseStr(ExprParse, "...hi").isFailure)
-        assertTrue(parseStr(ExprParse, "lo...").isFailure)
-        assertTrue(parseStr(ExprParse, "lo...hi").isFailure)
+        assertTrue(parseStr(ExprParse::parse, "...").isFailure)
+        assertTrue(parseStr(ExprParse::parse, "...hi").isFailure)
+        assertTrue(parseStr(ExprParse::parse, "lo...").isFailure)
+        assertTrue(parseStr(ExprParse::parse, "lo...hi").isFailure)
     }
 
     // Upstream parses `.. ..`, `.. .. ()`, `() .. ..` as nested
@@ -491,8 +491,8 @@ class ExprTest {
         assertIs<BinOp.Add>(r4.op)
         assertIs<Expr.Tuple>(r4.right)
 
-        assertTrue(parseStr(ExprParse, ".. x ..").isFailure)
-        assertTrue(parseStr(ExprParse, "x .. x ..").isFailure)
+        assertTrue(parseStr(ExprParse::parse, ".. x ..").isFailure)
+        assertTrue(parseStr(ExprParse::parse, "x .. x ..").isFailure)
     }
 
     // Upstream asserts `#[allow()] ..` and `#[allow()] .. hi` fail,
@@ -500,8 +500,8 @@ class ExprTest {
     // carries the attribute.
     @Test
     fun testRangeAttrs() {
-        assertTrue(parseStr(ExprParse, "#[allow()] ..").isFailure)
-        assertTrue(parseStr(ExprParse, "#[allow()] .. hi").isFailure)
+        assertTrue(parseStr(ExprParse::parse, "#[allow()] ..").isFailure)
+        assertTrue(parseStr(ExprParse::parse, "#[allow()] .. hi").isFailure)
 
         val range = assertIs<Expr.Range>(parse("#[allow()] lo .. hi"))
         val start = range.start
@@ -522,8 +522,8 @@ class ExprTest {
     // wrapping the return-of-range.
     @Test
     fun testRangesBailout() {
-        assertTrue(parseStr(ExprParse, ".. ?").isFailure)
-        assertTrue(parseStr(ExprParse, ".. .field").isFailure)
+        assertTrue(parseStr(ExprParse::parse, ".. ?").isFailure)
+        assertTrue(parseStr(ExprParse::parse, ".. .field").isFailure)
 
         val returnTry = assertIs<Expr.Try>(parse("return .. ?"))
         val returnExpr = assertIs<Expr.Return>(returnTry.expr)
@@ -583,14 +583,14 @@ class ExprTest {
     @Test
     fun testAmbiguousLabel() {
         val returnStmt = assertIs<Stmt.ExprStmt>(
-            parseStr(StmtParse, "return 'label: loop { break 'label 42; };").getOrThrow(),
+            parseStr(StmtParse::parse, "return 'label: loop { break 'label 42; };").getOrThrow(),
         )
         val returnExpr = assertIs<Expr.Return>(returnStmt.expr)
         val returnLoop = assertIs<Expr.Loop>(returnExpr.expr)
         assertEquals("label", returnLoop.label?.name?.ident?.toString())
 
         val parenthesizedBreak = assertIs<Stmt.ExprStmt>(
-            parseStr(StmtParse, "break ('label: loop { break 'label 42; });").getOrThrow(),
+            parseStr(StmtParse::parse, "break ('label: loop { break 'label 42; });").getOrThrow(),
         )
         val breakExpr = assertIs<Expr.Break>(parenthesizedBreak.expr)
         val paren = assertIs<Expr.Paren>(breakExpr.expr)
@@ -598,7 +598,7 @@ class ExprTest {
         assertEquals("label", parenLoop.label?.name?.ident?.toString())
 
         val binaryBreak = assertIs<Stmt.ExprStmt>(
-            parseStr(StmtParse, "break 1 + 'label: loop { break 'label 42; };").getOrThrow(),
+            parseStr(StmtParse::parse, "break 1 + 'label: loop { break 'label 42; };").getOrThrow(),
         )
         val binaryBreakExpr = assertIs<Expr.Break>(binaryBreak.expr)
         val binary = assertIs<Expr.Binary>(binaryBreakExpr.expr)
@@ -607,14 +607,14 @@ class ExprTest {
         assertEquals("label", rhsLoop.label?.name?.ident?.toString())
 
         val nestedBreak = assertIs<Stmt.ExprStmt>(
-            parseStr(StmtParse, "break 'outer 'inner: loop { break 'inner 42; };").getOrThrow(),
+            parseStr(StmtParse::parse, "break 'outer 'inner: loop { break 'inner 42; };").getOrThrow(),
         )
         val nestedBreakExpr = assertIs<Expr.Break>(nestedBreak.expr)
         assertEquals("outer", nestedBreakExpr.label?.ident?.toString())
         val innerLoop = assertIs<Expr.Loop>(nestedBreakExpr.expr)
         assertEquals("inner", innerLoop.label?.name?.ident?.toString())
 
-        assertTrue(parseStr(StmtParse, "break 'label: loop { break 'label 42; };").isFailure)
+        assertTrue(parseStr(StmtParse::parse, "break 'label: loop { break 'label 42; };").isFailure)
     }
 
     // Upstream builds a `Delimiter::None` group containing `a::b` and
@@ -747,7 +747,7 @@ class ExprTest {
         assertIs<Expr.Tuple>(rightInner.right)
 
         // Chained comparison is rejected.
-        val chained = parseStr(ExprParse, "() == () == ()")
+        val chained = parseStr(ExprParse::parse, "() == () == ()")
         assertTrue(chained.isFailure)
         val err = (chained as SynResult.Failure).error
         assertEquals("comparison operators cannot be chained", err.toString())
@@ -768,8 +768,8 @@ class ExprTest {
         assertIs<BinOp.AddAssign>(compound.op)
         assertTupleToTupleRange(compound.right)
 
-        assertTrue(parseStr(ExprParse, "() .. () = ()").isFailure)
-        assertTrue(parseStr(ExprParse, "() .. () += ()").isFailure)
+        assertTrue(parseStr(ExprParse::parse, "() .. () = ()").isFailure)
+        assertTrue(parseStr(ExprParse::parse, "() .. () += ()").isFailure)
     }
 
     // Upstream asserts `a = a < a <` and `a = a .. a ..` and
@@ -779,12 +779,12 @@ class ExprTest {
     // "unexpected token".
     @Test
     fun testChainedComparison() {
-        val cmpErr = parseStr(ExprParse, "a < a < a")
+        val cmpErr = parseStr(ExprParse::parse, "a < a < a")
         assertTrue(cmpErr.isFailure)
         assertEquals("comparison operators cannot be chained", (cmpErr as SynResult.Failure).error.toString())
 
-        assertTrue(parseStr(ExprParse, "a .. a .. a").isFailure)
-        assertTrue(parseStr(ExprParse, "a .. a += a").isFailure)
+        assertTrue(parseStr(ExprParse::parse, "a .. a .. a").isFailure)
+        assertTrue(parseStr(ExprParse::parse, "a .. a += a").isFailure)
     }
 
     @Test
@@ -840,7 +840,7 @@ class ExprTest {
         )
 
         for (case in cases) {
-            val original = parseStr(ExprParse, case).getOrElse { error("failed to parse `$case`: $it") }
+            val original = parseStr(ExprParse::parse, case).getOrElse { error("failed to parse `$case`: $it") }
             val flat = FlattenParens.combineAttrs().visitExpr(original.deepCopy())
             val reconstructed =
                 runCatching { roundTrip(flat) }

@@ -57,5 +57,5 @@ public fun parseFile(content: String): SynResult<File> {
         }
     }
 
-    return parseStr(FileParse, source).map { it.copy(shebang = shebang) }
+    return parseStr(FileParse::parse, source).map { it.copy(shebang = shebang) }
 }

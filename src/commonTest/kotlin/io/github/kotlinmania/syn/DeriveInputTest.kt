@@ -112,7 +112,7 @@ class DeriveInputTest {
 
     @Test
     fun testAttrWithNonModStylePath() {
-        assertTrue(parseStr(DeriveInputParse, "#[inert <T>] struct S;").isFailure)
+        assertTrue(parseStr(DeriveInputParse::parse, "#[inert <T>] struct S;").isFailure)
     }
 
     @Test
@@ -226,9 +226,9 @@ class DeriveInputTest {
 
     @Test
     fun testMalformedWhereClauseIsRejected() {
-        assertTrue(parseStr(DeriveInputParse, "struct S where <T> { value: T }").isFailure)
-        assertTrue(parseStr(DeriveInputParse, "enum E where <T> { Value }").isFailure)
-        assertTrue(parseStr(DeriveInputParse, "union U where <T> { value: T }").isFailure)
+        assertTrue(parseStr(DeriveInputParse::parse, "struct S where <T> { value: T }").isFailure)
+        assertTrue(parseStr(DeriveInputParse::parse, "enum E where <T> { Value }").isFailure)
+        assertTrue(parseStr(DeriveInputParse::parse, "union U where <T> { value: T }").isFailure)
     }
 
     @Test
@@ -282,7 +282,7 @@ class DeriveInputTest {
     }
 
     private fun parse(source: String): DeriveInput =
-        parseStr(DeriveInputParse, source).getOrThrow()
+        parseStr(DeriveInputParse::parse, source).getOrThrow()
 
     private fun namedFields(fields: Fields): List<Field> =
         assertIs<Fields.Named>(fields).fields.named.toList()

@@ -69,8 +69,8 @@ internal fun acceptAsIdent(ident: Ident): Boolean {
     }
 }
 
-public object IdentParse : Parse<Ident> {
-    override fun parse(input: ParseStream): SynResult<Ident> =
+public object IdentParse {
+    fun parse(input: ParseStream): SynResult<Ident> =
         input.step { cursor ->
             val (ident, rest) =
                 cursor.ident()

@@ -48,7 +48,7 @@ class RoundTripTest {
         assertFalse(emittedString.contains("rustx"))
         assertFalse(emittedString.contains("#!/"))
 
-        val reparsed = parse2(FileParse, emitted).getOrThrow()
+        val reparsed = parse2(FileParse::parse, emitted).getOrThrow()
         assertNull(reparsed.shebang)
         assertEquals(1, reparsed.attrs.size)
         assertIs<AttrStyle.Inner>(reparsed.attrs.single().style)

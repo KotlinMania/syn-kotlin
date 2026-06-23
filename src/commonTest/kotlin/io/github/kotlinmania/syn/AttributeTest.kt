@@ -86,7 +86,7 @@ class AttributeTest {
                 when {
                     meta.path.isIdent("kind") -> {
                         val value = meta.value().getOrElse { return@parseNestedMeta SynResult.failure(it) }
-                        val lit = value.parse(LitStrParse).getOrElse { return@parseNestedMeta SynResult.failure(it) }
+                        val lit = value.parse(LitStrParse::parse).getOrElse { return@parseNestedMeta SynResult.failure(it) }
                         kind = lit.value()
                         SynResult.success(Unit)
                     }
@@ -112,23 +112,23 @@ class AttributeTest {
     @Test
     fun testParseArgs() {
         val attr = parseOuterAttribute("#[precondition(value < 5)]")
-        val expr = attr.parseArgs(ExprParse).getOrThrow()
+        val expr = attr.parseArgs(ExprParse::parse).getOrThrow()
         assertIs<Expr.Binary>(expr)
     }
 
     @Test
     fun testRequireMetaKinds() {
-        val path = parseStr(MetaParse, "test").getOrThrow()
+        val path = parseStr(MetaParse::parse, "test").getOrThrow()
         assertTrue(path.requirePathOnly().isSuccess)
         assertTrue(path.requireList().isFailure)
         assertTrue(path.requireNameValue().isFailure)
 
-        val list = parseStr(MetaParse, "derive(Clone)").getOrThrow()
+        val list = parseStr(MetaParse::parse, "derive(Clone)").getOrThrow()
         assertTrue(list.requirePathOnly().isFailure)
         assertTrue(list.requireList().isSuccess)
         assertTrue(list.requireNameValue().isFailure)
 
-        val nameValue = parseStr(MetaParse, "path = \"sys.rs\"").getOrThrow()
+        val nameValue = parseStr(MetaParse::parse, "path = \"sys.rs\"").getOrThrow()
         assertTrue(nameValue.requirePathOnly().isFailure)
         assertTrue(nameValue.requireList().isFailure)
         assertTrue(nameValue.requireNameValue().isSuccess)
@@ -136,8 +136,8 @@ class AttributeTest {
 
     @Test
     fun testOutermostMetaPathKeywordRule() {
-        assertTrue(parseStr(MetaParse, "unsafe").isSuccess)
-        assertTrue(parseStr(MetaParse, "async").isFailure)
+        assertTrue(parseStr(MetaParse::parse, "unsafe").isSuccess)
+        assertTrue(parseStr(MetaParse::parse, "async").isFailure)
     }
 
     @Test

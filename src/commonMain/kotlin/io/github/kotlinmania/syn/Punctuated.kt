@@ -9,10 +9,8 @@ internal typealias RawPair<T, P> = kotlin.Pair<T, P>
 /**
  * Base class for strongly-typed punctuated sequences.
  *
- * Replaces the generic `Punctuated<T, P>` which Swift Export could not
- * bridge. Each subclass is a concrete named type for a specific element
- * type, preserving strong typing without exposing type parameters to the
- * Swift Export bridge.
+ * Each subclass is a concrete named type for a specific element and
+ * punctuation shape, preserving strong typing across the Swift Export bridge.
  */
 public sealed class SynPunctuated :
     ToTokens,
@@ -965,15 +963,15 @@ internal class Punctuated private constructor(
 
         public fun parseTerminated(
             input: ParseStream,
-            parser: Parse<ToTokens>,
-            punctParse: Parse<ToTokens>,
+            parser: (ParseStream) -> SynResult<ToTokens>,
+            punctParse: (ParseStream) -> SynResult<ToTokens>,
         ): SynResult<Punctuated> =
-            parseTerminatedWith(input, parser::parse, punctParse)
+            parseTerminatedWith(input, parser, punctParse)
 
         public fun parseTerminatedWith(
             input: ParseStream,
             parser: (ParseStream) -> SynResult<ToTokens>,
-            punctParse: Parse<ToTokens>,
+            punctParse: (ParseStream) -> SynResult<ToTokens>,
         ): SynResult<Punctuated> {
             val punctuated = Punctuated()
             while (true) {
@@ -981,7 +979,7 @@ internal class Punctuated private constructor(
                 val value = parser(input).getOrElse { return SynResult.failure(it) }
                 punctuated.pushValue(value)
                 if (input.isEmpty()) break
-                val punct = punctParse.parse(input).getOrElse { return SynResult.failure(it) }
+                val punct = punctParse(input).getOrElse { return SynResult.failure(it) }
                 punctuated.pushPunct(punct)
             }
             return SynResult.success(punctuated)
@@ -989,24 +987,24 @@ internal class Punctuated private constructor(
 
         public fun parseSeparatedNonempty(
             input: ParseStream,
-            parser: Parse<ToTokens>,
+            parser: (ParseStream) -> SynResult<ToTokens>,
             punctPeek: Peek,
-            punctParse: Parse<ToTokens>,
+            punctParse: (ParseStream) -> SynResult<ToTokens>,
         ): SynResult<Punctuated> =
-            parseSeparatedNonemptyWith(input, parser::parse, punctPeek, punctParse)
+            parseSeparatedNonemptyWith(input, parser, punctPeek, punctParse)
 
         public fun parseSeparatedNonemptyWith(
             input: ParseStream,
             parser: (ParseStream) -> SynResult<ToTokens>,
             punctPeek: Peek,
-            punctParse: Parse<ToTokens>,
+            punctParse: (ParseStream) -> SynResult<ToTokens>,
         ): SynResult<Punctuated> {
             val punctuated = Punctuated()
             while (true) {
                 val value = parser(input).getOrElse { return SynResult.failure(it) }
                 punctuated.pushValue(value)
                 if (!input.peek(punctPeek)) break
-                val punct = punctParse.parse(input).getOrElse { return SynResult.failure(it) }
+                val punct = punctParse(input).getOrElse { return SynResult.failure(it) }
                 punctuated.pushPunct(punct)
             }
             return SynResult.success(punctuated)

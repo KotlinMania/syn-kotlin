@@ -11,7 +11,7 @@ class FoldTest {
     fun deriveInputFoldRecursesThroughDataAndGenerics() {
         val input =
             parseStr(
-                DeriveInputParse,
+                DeriveInputParse::parse,
                 """
                 #[derive(Clone)]
                 pub(in crate::m) enum Demo<'a, T: for<'b> Into + Clone + 'a, const N: usize>
@@ -141,12 +141,12 @@ class FoldTest {
     fun genericArgumentFoldDispatchesThroughNamedHelpers() {
         val associatedArguments =
             parseStr(
-                SynTypeParseExpr,
+                SynTypeParseExpr::parse,
                 "Iterator<Item = T, N = 1, Bound: Display>",
             ).getOrThrow()
         val parenthesizedArguments =
             parseStr(
-                TypeParamBoundParse,
+                TypeParamBoundParse::parse,
                 "FnOnce(T) -> U",
             ).getOrThrow()
         val folder = RecordingFold()
@@ -165,11 +165,11 @@ class FoldTest {
     fun exprAndPatternFoldDispatchesThroughGeneratedHelpers() {
         val expressions =
             listOf(
-                parseStr(ExprParse, "a + b").getOrThrow(),
-                parseStr(ExprParse, "!flag").getOrThrow(),
-                parseStr(ExprParse, "a..=b").getOrThrow(),
-                parseStr(ExprParse, "&raw mut place").getOrThrow(),
-                parseStr(ExprParse, "'outer: loop {}").getOrThrow(),
+                parseStr(ExprParse::parse, "a + b").getOrThrow(),
+                parseStr(ExprParse::parse, "!flag").getOrThrow(),
+                parseStr(ExprParse::parse, "a..=b").getOrThrow(),
+                parseStr(ExprParse::parse, "&raw mut place").getOrThrow(),
+                parseStr(ExprParse::parse, "'outer: loop {}").getOrThrow(),
             )
         val patterns =
             listOf(
@@ -215,8 +215,8 @@ class FoldTest {
     fun qselfAndCstrFoldDispatchThroughGeneratedHelpers() {
         val folder = RecordingFold()
 
-        folder.foldLit(parseStr(LitParse, "c\"hello\"").getOrThrow())
-        folder.foldType(parseStr(SynTypeParseExpr, "<Self as Trait>::Assoc").getOrThrow())
+        folder.foldLit(parseStr(LitParse::parse, "c\"hello\"").getOrThrow())
+        folder.foldType(parseStr(SynTypeParseExpr::parse, "<Self as Trait>::Assoc").getOrThrow())
 
         folder.assertEvent("lit:cstr")
         folder.assertEvent("qself")
@@ -226,7 +226,7 @@ class FoldTest {
     fun foldReturnsRewrittenTree() {
         val input =
             parseStr(
-                DeriveInputParse,
+                DeriveInputParse::parse,
                 "pub struct Demo<T> { field: T }",
             ).getOrThrow()
 
@@ -238,7 +238,7 @@ class FoldTest {
     }
 
     private fun parseItem(source: String): Item =
-        parseStr(ItemParse, source).getOrThrow()
+        parseStr(ItemParse::parse, source).getOrThrow()
 
     private fun parsePat(source: String): Pat =
         parserFromFunction(Pat.Companion::parseMulti).parseStr(source).getOrThrow()

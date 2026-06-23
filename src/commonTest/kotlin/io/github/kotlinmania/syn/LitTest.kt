@@ -14,7 +14,7 @@ import kotlin.test.assertTrue
 
 class LitTest {
     private fun lit(s: String): Lit =
-        parseStr(LitParse, s.trim()).getOrThrow()
+        parseStr(LitParse::parse, s.trim()).getOrThrow()
 
     private fun litLiteral(s: String): Lit {
         val tokens =
@@ -362,7 +362,7 @@ class LitTest {
         val parser =
             parserFromFunction<Lit> { input ->
                 assertTrue(input.peek(LitPeek))
-                input.parse(LitParse)
+                input.parse(LitParse::parse)
             }
         assertIs<Lit.Int>(parser.parseStr("-1").getOrThrow())
     }
@@ -370,11 +370,11 @@ class LitTest {
     @Test
     fun testError() {
         // Parsing "..." as a LitStr fails because it is not a valid string literal.
-        val first = parseStr(LitStrParse, "...")
+        val first = parseStr(LitStrParse::parse, "...")
         assertTrue(first.isFailure)
 
         // Parsing "5" as a LitStr fails because the lexer produces an integer.
-        val second = parseStr(LitStrParse, "5")
+        val second = parseStr(LitStrParse::parse, "5")
         assertTrue(second.isFailure)
     }
 
@@ -385,7 +385,7 @@ class LitTest {
         val modStyle = lit.parseWith { input -> Path.parseModStyle(input) }.getOrThrow()
         assertEquals(listOf("a", "b", "c"), modStyle.segments.toList().map { it.ident.toString() })
 
-        val defaultPath = lit.parse(PathParse).getOrThrow()
+        val defaultPath = lit.parse(PathParse::parse).getOrThrow()
         assertEquals(listOf("a", "b", "c"), defaultPath.segments.toList().map { it.ident.toString() })
     }
 

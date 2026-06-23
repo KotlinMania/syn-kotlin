@@ -188,13 +188,10 @@ public class LitStr private constructor(
     public fun value(): String =
         cooked
 
-    public fun <T> parse(parser: Parse<T>): SynResult<T> =
-        parseWith(parserFromFunction(parser::parse))
+    public fun <T> parse(parser: (ParseStream) -> SynResult<T>): SynResult<T> =
+        parseWith(parser)
 
-    public fun <T> parseWith(parser: (ParseStream) -> SynResult<T>): SynResult<T> =
-        parseWith(parserFromFunction(parser))
-
-    public fun <T> parseWith(parser: Parser<T>): SynResult<T> {
+    public fun <T> parseWith(parser: (ParseStream) -> SynResult<T>): SynResult<T> {
         val span = span()
         val tokenStream =
             TokenStream.fromString(value()).fold(
@@ -1168,9 +1165,9 @@ private fun parseNegativeLit(neg: Punct, cursor: Cursor): Pair<Lit, Cursor>? {
     return null
 }
 
-private fun <T> peekImpl(cursor: Cursor, parser: Parse<T>): Boolean {
+private fun <T> peekImpl(cursor: Cursor, parser: (ParseStream) -> SynResult<T>): Boolean {
     val buffer = newParseBuffer(Span.callSite(), cursor, UnexpectedRef(Unexpected.None))
-    return parser.parse(buffer).isSuccess
+    return parser(buffer).isSuccess
 }
 
 private fun MutableList<Byte>.addUtf8(codePoint: Int) {
@@ -1194,8 +1191,8 @@ private fun codePointToString(codePoint: Int): String {
     return charArrayOf(high, low).concatToString()
 }
 
-public object LitParse : Parse<Lit> {
-    override fun parse(input: ParseStream): SynResult<Lit> =
+public object LitParse {
+    public fun parse(input: ParseStream): SynResult<Lit> =
         input.step { cursor ->
             cursor.literal()?.let { (lit, rest) ->
                 return@step SynResult.success(litFromLiteral(lit) to rest)
@@ -1219,8 +1216,8 @@ public object LitParse : Parse<Lit> {
         }
 }
 
-public object LitStrParse : Parse<LitStr> {
-    override fun parse(input: ParseStream): SynResult<LitStr> {
+public object LitStrParse {
+    public fun parse(input: ParseStream): SynResult<LitStr> {
         val result = LitParse.parse(input)
         if (result is SynResult.Success && result.value is Lit.Str) {
             return SynResult.success(result.value.value)
@@ -1229,8 +1226,8 @@ public object LitStrParse : Parse<LitStr> {
     }
 }
 
-public object LitIntParse : Parse<LitInt> {
-    override fun parse(input: ParseStream): SynResult<LitInt> {
+public object LitIntParse {
+    public fun parse(input: ParseStream): SynResult<LitInt> {
         val result = LitParse.parse(input)
         if (result is SynResult.Success && result.value is Lit.Int) {
             return SynResult.success(result.value.value)
@@ -1239,8 +1236,8 @@ public object LitIntParse : Parse<LitInt> {
     }
 }
 
-public object LitFloatParse : Parse<LitFloat> {
-    override fun parse(input: ParseStream): SynResult<LitFloat> {
+public object LitFloatParse {
+    public fun parse(input: ParseStream): SynResult<LitFloat> {
         val result = LitParse.parse(input)
         if (result is SynResult.Success && result.value is Lit.Float) {
             return SynResult.success(result.value.value)
@@ -1249,8 +1246,8 @@ public object LitFloatParse : Parse<LitFloat> {
     }
 }
 
-public object LitBoolParse : Parse<LitBool> {
-    override fun parse(input: ParseStream): SynResult<LitBool> =
+public object LitBoolParse {
+    public fun parse(input: ParseStream): SynResult<LitBool> =
         input.step { cursor ->
             val pair = cursor.ident()
             if (pair != null) {
@@ -1266,7 +1263,7 @@ public object LitBoolParse : Parse<LitBool> {
 
 public object LitPeek : Peek {
     override fun peek(cursor: Cursor): Boolean =
-        peekImpl(cursor, LitParse)
+        peekImpl(cursor, LitParse::parse)
 
     override fun display(): String = "literal"
 }

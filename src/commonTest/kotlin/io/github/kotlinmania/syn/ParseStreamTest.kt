@@ -117,7 +117,7 @@ class ParseStreamTest {
 
         fun assert(input: ParseStream): SynResult<Unit> {
             assertFalse(input.peek(LifetimePeek))
-            val optionalPunct = PunctParse.optional(NotPeek).parse(input).getOrThrow()
+            val optionalPunct = (PunctParse::parse).optional(NotPeek).parse(input).getOrThrow()
             assertTrue(optionalPunct == null)
 
             TokenTreeParse.parse(input).getOrThrow()

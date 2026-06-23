@@ -9,7 +9,7 @@ class VisitMutTest {
     fun deriveInputVisitMutRecursesThroughDataAndGenerics() {
         val input =
             parseStr(
-                DeriveInputParse,
+                DeriveInputParse::parse,
                 """
                 #[derive(Clone)]
                 pub(in crate::m) enum Demo<'a, T: for<'b> Into + Clone + 'a, const N: usize>
@@ -148,8 +148,8 @@ class VisitMutTest {
                 "_",
                 "!",
                 "mac!()",
-            ).map { parseStr(SynTypeParseExpr, it).getOrThrow() }
-        val rawAddress = parseStr(ExprParse, "&raw const place").getOrThrow()
+            ).map { parseStr(SynTypeParseExpr::parse, it).getOrThrow() }
+        val rawAddress = parseStr(ExprParse::parse, "&raw const place").getOrThrow()
         val visitor = RecordingVisitMut()
 
         visitor.visitFile(file)
@@ -172,7 +172,7 @@ class VisitMutTest {
     fun generatedVisitMutHooksAreReachedForGenericArgumentsAttrStyleAndBinOp() {
         val outer =
             parseStr(
-                DeriveInputParse,
+                DeriveInputParse::parse,
                 """
                 #[repr(C)]
                 struct S<T>(T);
@@ -185,8 +185,8 @@ class VisitMutTest {
                 type Alias = ();
                 """.trimIndent(),
             ).getOrThrow()
-        val genericType = parseStr(SynTypeParseExpr, "Iterator<Item = T, LEN = 1, Output: Clone>").getOrThrow()
-        val expr = parseStr(ExprParse, "left + right").getOrThrow()
+        val genericType = parseStr(SynTypeParseExpr::parse, "Iterator<Item = T, LEN = 1, Output: Clone>").getOrThrow()
+        val expr = parseStr(ExprParse::parse, "left + right").getOrThrow()
         val visitor = RecordingVisitMut()
 
         visitor.visitDeriveInput(outer)
@@ -210,15 +210,15 @@ class VisitMutTest {
     fun qselfAndCstrVisitMutDispatchThroughGeneratedHelpers() {
         val visitor = RecordingVisitMut()
 
-        visitor.visitLit(parseStr(LitParse, "c\"hello\"").getOrThrow())
-        visitor.visitType(parseStr(SynTypeParseExpr, "<Self as Trait>::Assoc").getOrThrow())
+        visitor.visitLit(parseStr(LitParse::parse, "c\"hello\"").getOrThrow())
+        visitor.visitType(parseStr(SynTypeParseExpr::parse, "<Self as Trait>::Assoc").getOrThrow())
 
         visitor.assertEvent("lit:cstr")
         visitor.assertEvent("qself")
     }
 
     private fun parseItem(source: String): Item =
-        parseStr(ItemParse, source).getOrThrow()
+        parseStr(ItemParse::parse, source).getOrThrow()
 
     private class RecordingVisitMut : VisitMut() {
         val events = mutableListOf<String>()
