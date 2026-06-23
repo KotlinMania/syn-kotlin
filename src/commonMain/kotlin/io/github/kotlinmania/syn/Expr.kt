@@ -1444,3 +1444,17 @@ public fun peekExpr(input: ParseStream): Boolean {
         || input.peek(LifetimePeek)
         || input.peek(PoundPeek)
 }
+
+public fun memberFromIdent(ident: io.github.kotlinmania.procmacro2.Ident): Member =
+    Member.Named(ident)
+
+public fun memberFromIndex(index: Index): Member =
+    Member.Unnamed(index)
+
+public fun memberFromUSize(index: Int): Member =
+    Member.Unnamed(indexFromUSize(index))
+
+public fun indexFromUSize(index: Int): Index {
+    require(index < 0xFFFFFFFF) { "index overflow" }
+    return Index(index.toUInt(), io.github.kotlinmania.procmacro2.Span.callSite())
+}
