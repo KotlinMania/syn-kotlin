@@ -175,45 +175,44 @@ public sealed class UnOp : ToTokens {
     }
 }
 
-/** Parses a binary operator. */
-public object BinOpParse : Parse<BinOp> {
-    override fun parse(input: ParseStream): SynResult<BinOp> =
+public object BinOpParse {
+    fun parse(input: ParseStream): SynResult<BinOp> =
         when {
-            input.peek(PlusEqPeek) -> input.parse(PlusEqParse).map(BinOp::AddAssign)
-            input.peek(MinusEqPeek) -> input.parse(MinusEqParse).map(BinOp::SubAssign)
-            input.peek(StarEqPeek) -> input.parse(StarEqParse).map(BinOp::MulAssign)
-            input.peek(SlashEqPeek) -> input.parse(SlashEqParse).map(BinOp::DivAssign)
-            input.peek(PercentEqPeek) -> input.parse(PercentEqParse).map(BinOp::RemAssign)
-            input.peek(CaretEqPeek) -> input.parse(CaretEqParse).map(BinOp::BitXorAssign)
-            input.peek(AndEqPeek) -> input.parse(AndEqParse).map(BinOp::BitAndAssign)
-            input.peek(OrEqPeek) -> input.parse(OrEqParse).map(BinOp::BitOrAssign)
-            input.peek(ShlEqPeek) -> input.parse(ShlEqParse).map(BinOp::ShlAssign)
-            input.peek(ShrEqPeek) -> input.parse(ShrEqParse).map(BinOp::ShrAssign)
-            input.peek(AndAndPeek) -> input.parse(AndAndParse).map(BinOp::And)
-            input.peek(OrOrPeek) -> input.parse(OrOrParse).map(BinOp::Or)
-            input.peek(ShlPeek) -> input.parse(ShlParse).map(BinOp::Shl)
-            input.peek(ShrPeek) -> input.parse(ShrParse).map(BinOp::Shr)
-            input.peek(EqEqPeek) -> input.parse(EqEqParse).map(BinOp::Eq)
-            input.peek(LePeek) -> input.parse(LeParse).map(BinOp::Le)
-            input.peek(NePeek) -> input.parse(NeParse).map(BinOp::Ne)
-            input.peek(GePeek) -> input.parse(GeParse).map(BinOp::Ge)
-            input.peek(PlusPeek) -> input.parse(PlusParse).map(BinOp::Add)
-            input.peek(MinusPeek) -> input.parse(MinusParse).map(BinOp::Sub)
-            input.peek(StarPeek) -> input.parse(StarParse).map(BinOp::Mul)
-            input.peek(SlashPeek) -> input.parse(SlashParse).map(BinOp::Div)
-            input.peek(PercentPeek) -> input.parse(PercentParse).map(BinOp::Rem)
-            input.peek(CaretPeek) -> input.parse(CaretParse).map(BinOp::BitXor)
-            input.peek(AndPeek) -> input.parse(AndParse).map(BinOp::BitAnd)
-            input.peek(OrPeek) -> input.parse(OrParse).map(BinOp::BitOr)
-            input.peek(LtPeek) -> input.parse(LtParse).map(BinOp::Lt)
-            input.peek(GtPeek) -> input.parse(GtParse).map(BinOp::Gt)
+            input.peek(PlusEqPeek) -> PlusEqParse.parse(input).map(BinOp::AddAssign)
+            input.peek(MinusEqPeek) -> MinusEqParse.parse(input).map(BinOp::SubAssign)
+            input.peek(StarEqPeek) -> StarEqParse.parse(input).map(BinOp::MulAssign)
+            input.peek(SlashEqPeek) -> SlashEqParse.parse(input).map(BinOp::DivAssign)
+            input.peek(PercentEqPeek) -> PercentEqParse.parse(input).map(BinOp::RemAssign)
+            input.peek(CaretEqPeek) -> CaretEqParse.parse(input).map(BinOp::BitXorAssign)
+            input.peek(AndEqPeek) -> AndEqParse.parse(input).map(BinOp::BitAndAssign)
+            input.peek(OrEqPeek) -> OrEqParse.parse(input).map(BinOp::BitOrAssign)
+            input.peek(ShlEqPeek) -> ShlEqParse.parse(input).map(BinOp::ShlAssign)
+            input.peek(ShrEqPeek) -> ShrEqParse.parse(input).map(BinOp::ShrAssign)
+            input.peek(AndAndPeek) -> AndAndParse.parse(input).map(BinOp::And)
+            input.peek(OrOrPeek) -> OrOrParse.parse(input).map(BinOp::Or)
+            input.peek(ShlPeek) -> ShlParse.parse(input).map(BinOp::Shl)
+            input.peek(ShrPeek) -> ShrParse.parse(input).map(BinOp::Shr)
+            input.peek(EqEqPeek) -> EqEqParse.parse(input).map(BinOp::Eq)
+            input.peek(LePeek) -> LeParse.parse(input).map(BinOp::Le)
+            input.peek(NePeek) -> NeParse.parse(input).map(BinOp::Ne)
+            input.peek(GePeek) -> GeParse.parse(input).map(BinOp::Ge)
+            input.peek(PlusPeek) -> PlusParse.parse(input).map(BinOp::Add)
+            input.peek(MinusPeek) -> MinusParse.parse(input).map(BinOp::Sub)
+            input.peek(StarPeek) -> StarParse.parse(input).map(BinOp::Mul)
+            input.peek(SlashPeek) -> SlashParse.parse(input).map(BinOp::Div)
+            input.peek(PercentPeek) -> PercentParse.parse(input).map(BinOp::Rem)
+            input.peek(CaretPeek) -> CaretParse.parse(input).map(BinOp::BitXor)
+            input.peek(AndPeek) -> AndParse.parse(input).map(BinOp::BitAnd)
+            input.peek(OrPeek) -> OrParse.parse(input).map(BinOp::BitOr)
+            input.peek(LtPeek) -> LtParse.parse(input).map(BinOp::Lt)
+            input.peek(GtPeek) -> GtParse.parse(input).map(BinOp::Gt)
             else -> SynResult.failure(input.error("expected binary operator"))
         }
 }
+}
 
-/** Parses a unary operator by examining the next punctuation token. */
-public object UnOpParse : Parse<UnOp> {
-    override fun parse(input: ParseStream): SynResult<UnOp> =
+public object UnOpParse {
+    fun parse(input: ParseStream): SynResult<UnOp> =
         input.step { cursor ->
             val (punct, rest) =
                 cursor.punct()
