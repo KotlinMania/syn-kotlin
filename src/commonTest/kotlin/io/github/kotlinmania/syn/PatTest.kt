@@ -97,20 +97,20 @@ class PatTest {
     @Test
     fun testTupleComma() {
         // Empty tuple `()` parses as `Pat.Tuple` with zero elements.
-        val empty = parseStr(PatParseImpl, "()").getOrThrow()
+        val empty = parseStr(Pat, "()").getOrThrow()
         assertIs<Pat.Tuple>(empty)
         assertEquals(0, empty.elems.size)
 
         // A single element with a trailing comma must parse as
         // `Pat.Tuple` (not `Pat.PatParen`); the element is a `Pat.Wild`.
-        val oneTrailing = parseStr(PatParseImpl, "(_,)").getOrThrow()
+        val oneTrailing = parseStr(Pat, "(_,)").getOrThrow()
         assertIs<Pat.Tuple>(oneTrailing)
         assertEquals(1, oneTrailing.elems.size)
         assertTrue(oneTrailing.elems.trailingPunct())
         assertIs<Pat.Wild>(oneTrailing.elems.first())
 
         // Two elements without a trailing comma parse as `Pat.Tuple`.
-        val two = parseStr(PatParseImpl, "(_, _)").getOrThrow()
+        val two = parseStr(Pat, "(_, _)").getOrThrow()
         assertIs<Pat.Tuple>(two)
         assertEquals(2, two.elems.size)
         val twoList = two.elems.toList()
@@ -119,20 +119,50 @@ class PatTest {
 
         // Two elements with a trailing comma parse as `Pat.Tuple` and
         // retain the trailing punctuation.
-        val twoTrailing = parseStr(PatParseImpl, "(_, _,)").getOrThrow()
+        val twoTrailing = parseStr(Pat, "(_, _,)").getOrThrow()
         assertIs<Pat.Tuple>(twoTrailing)
         assertEquals(2, twoTrailing.elems.size)
         assertTrue(twoTrailing.elems.trailingPunct())
+
+        val tuple = Pat.Tuple(io.github.kotlinmania.syn.token.Paren.default(), PatList())
+        assertIs<Pat.Tuple>(roundTrip(tuple))
+
+        val wild = assertIs<Pat.Wild>(parsePat("_"))
+        tuple.elems.pushValue(wild)
+        val onePrinted = assertIs<Pat.Tuple>(roundTrip(tuple))
+        assertEquals(1, onePrinted.elems.size)
+        assertTrue(onePrinted.elems.trailingPunct())
+
+        tuple.elems.pushPunct(io.github.kotlinmania.syn.token.Comma.default())
+        val oneTrailingPrinted = assertIs<Pat.Tuple>(roundTrip(tuple))
+        assertEquals(1, oneTrailingPrinted.elems.size)
+        assertTrue(oneTrailingPrinted.elems.trailingPunct())
+
+        tuple.elems.pushValue(wild.deepCopy())
+        val twoPrinted = assertIs<Pat.Tuple>(roundTrip(tuple))
+        assertEquals(2, twoPrinted.elems.size)
+        assertFalse(twoPrinted.elems.trailingPunct())
+
+        tuple.elems.pushPunct(io.github.kotlinmania.syn.token.Comma.default())
+        val twoTrailingPrinted = assertIs<Pat.Tuple>(roundTrip(tuple))
+        assertEquals(2, twoTrailingPrinted.elems.size)
+        assertTrue(twoTrailingPrinted.elems.trailingPunct())
     }
 
     private fun parsePat(source: String): Pat =
-        parseStr(PatParseImpl, source).getOrThrow()
+        parseStr(Pat, source).getOrThrow()
 
     private fun parsePat(tokens: TokenStream): Pat =
-        parse2(PatParseImpl, tokens).getOrThrow()
+        parse2(Pat, tokens).getOrThrow()
+
+    private fun roundTrip(pat: Pat): Pat {
+        val tokens = TokenStream.new()
+        pat.toTokens(tokens)
+        return parsePat(tokens)
+    }
 
     private fun assertFailsPat(source: String) {
-        assertTrue(parseStr(PatParseImpl, source).isFailure, source)
+        assertTrue(parseStr(Pat, source).isFailure, source)
     }
 
     private fun assertLocalType(source: String): Pat.TypeAscription {

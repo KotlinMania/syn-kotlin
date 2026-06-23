@@ -46,6 +46,17 @@ class ItemTest {
     }
 
     @Test
+    fun testMacro2ItemFallsBackToVerbatim() {
+        val withParens = assertIs<Item.Verbatim>(parseItem("pub macro make() {}"))
+        assertEquals("pub macro make () { }", withParens.tokens.toString())
+
+        val withoutParens = assertIs<Item.Verbatim>(parseItem("macro make {}"))
+        assertEquals("macro make { }", withoutParens.tokens.toString())
+
+        assertTrue(parseStr(ItemParse, "macro make();").isFailure)
+    }
+
+    @Test
     fun testNegativeImpl() {
         val neverImpl = assertIs<Item.Impl>(parseItem("impl ! {}"))
         assertNull(neverImpl.traitPath)
@@ -114,6 +125,40 @@ class ItemTest {
     }
 
     @Test
+    fun testTraitAliasItem() {
+        val item = assertIs<Item.TraitAlias>(parseItem("pub trait SharableIterator<T> = Iterator + Sync where T: Clone;"))
+
+        assertIs<Visibility.Public>(item.vis)
+        assertEquals("SharableIterator", item.ident.toString())
+        val param = assertIs<GenericParam.TypeParam>(item.generics.params.toList().single())
+        assertEquals("T", param.ident.toString())
+        assertTraitBound(item.bounds.toList()[0], "Iterator")
+        assertTraitBound(item.bounds.toList()[1], "Sync")
+        assertNotNull(item.generics.whereClause)
+    }
+
+    @Test
+    fun testStaticItem() {
+        val item = assertIs<Item.Static>(parseItem("pub static mut COUNT: usize = 0;"))
+
+        assertIs<Visibility.Public>(item.vis)
+        assertIs<StaticMutability.Mut>(item.mutability)
+        assertEquals("COUNT", item.ident.toString())
+        assertTypePath(item.ty, "usize")
+        assertIs<Expr.Lit>(item.expr)
+
+        val tokens = TokenStream.new()
+        item.toTokens(tokens)
+        assertEquals("pub static mut COUNT : usize = 0 ;", tokens.toString())
+
+        val immutable = assertIs<Item.Static>(parseItem("static NAME: usize = 1;"))
+        assertIs<StaticMutability.None>(immutable.mutability)
+
+        assertIs<Item.Verbatim>(parseItem("static COUNT = 0;"))
+        assertIs<Item.Verbatim>(parseItem("static COUNT: usize;"))
+    }
+
+    @Test
     fun testTypeEmptyBounds() {
         val item = assertIs<Item.Trait>(parseItem("trait Foo { type Bar: ; }"))
         val assocType = assertIs<TraitItem.AssocType>(item.items.single())
@@ -122,6 +167,173 @@ class ItemTest {
         assertNotNull(assocType.colonToken)
         assertTrue(assocType.bounds.isEmpty())
         assertNull(assocType.default)
+    }
+
+    @Test
+    fun testTraitAssociatedTypeWhereAfterDefault() {
+        val item = assertIs<Item.Trait>(parseItem("trait Foo { type Bar<T> = T where T: Copy; }"))
+        val assocType = assertIs<TraitItem.AssocType>(item.items.single())
+
+        assertEquals("Bar", assocType.ident.toString())
+        val traitParam = assertIs<GenericParam.TypeParam>(assocType.generics.params.toList().single())
+        assertEquals("T", traitParam.ident.toString())
+        assertTypePath(assertNotNull(assocType.default).type, "T")
+        assertNotNull(assocType.generics.whereClause)
+        assertNull(assocType.colonToken)
+        assertTrue(assocType.bounds.isEmpty())
+    }
+
+    @Test
+    fun testImplAssociatedTypeWhereAfterDefault() {
+        val item = assertIs<Item.Impl>(parseItem("impl Trait for Ty { default type Bar<T> = T where T: Copy; }"))
+        val assocType = assertIs<ImplItem.AssocType>(item.items.single())
+
+        assertEquals("Bar", assocType.ident.toString())
+        assertIs<Visibility.Inherited>(assocType.vis)
+        assertNotNull(assocType.defaultness)
+        val implParam = assertIs<GenericParam.TypeParam>(assocType.generics.params.toList().single())
+        assertEquals("T", implParam.ident.toString())
+        assertTypePath(assocType.ty, "T")
+        assertNotNull(assocType.generics.whereClause)
+    }
+
+    @Test
+    fun testTypeAliasItem() {
+        val item = assertIs<Item.ItemType>(parseItem("pub type Alias<T> where T: Copy = T;"))
+
+        assertIs<Visibility.Public>(item.vis)
+        assertEquals("Alias", item.ident.toString())
+        val param = assertIs<GenericParam.TypeParam>(item.generics.params.toList().single())
+        assertEquals("T", param.ident.toString())
+        assertNotNull(item.generics.whereClause)
+        assertTypePath(item.ty, "T")
+    }
+
+    @Test
+    fun testTypeAliasWithBoundsFallsBackToVerbatim() {
+        val item = assertIs<Item.Verbatim>(parseItem("type Alias: Bound;"))
+
+        assertEquals("type Alias : Bound ;", item.tokens.toString())
+    }
+
+    @Test
+    fun testReplaceAttrs() {
+        val item = assertIs<Item.Fn>(parseItem("#[old] fn f() {}"))
+        val newAttrs = assertIs<Item.Fn>(parseItem("#[new] fn g() {}")).attrs
+
+        val replacement = item.replaceAttrs(newAttrs)
+        val updated = assertIs<Item.Fn>(replacement.item)
+
+        assertPath(replacement.oldAttrs.single().path(), "old")
+        assertPath(updated.attrs.single().path(), "new")
+        assertPath(item.attrs.single().path(), "old")
+    }
+
+    @Test
+    fun testDeriveInputItemConversions() {
+        val structInput = parseDeriveInput("pub struct S;")
+        val structItem = assertIs<Item.Struct>(from(structInput))
+        assertEquals("S", structItem.ident.toString())
+        assertIs<Visibility.Public>(structItem.vis)
+        assertIs<Data.Struct>(from(structItem).data)
+
+        val enumInput = parseDeriveInput("enum E { A }")
+        val enumItem = assertIs<Item.Enum>(from(enumInput))
+        assertEquals("E", enumItem.ident.toString())
+        assertEquals(1, enumItem.variants.size)
+        assertIs<Data.Enum>(from(enumItem).data)
+
+        val unionInput = parseDeriveInput("union U { x: i32 }")
+        val unionItem = assertIs<Item.Union>(from(unionInput))
+        assertEquals("U", unionItem.ident.toString())
+        assertEquals(1, unionItem.fields.named.size)
+        assertIs<Data.Union>(from(unionItem).data)
+    }
+
+    @Test
+    fun testUseItemKeepsLeadingColonNestedTreeAndSemicolon() {
+        val item = assertIs<Item.Use>(parseItem("pub use ::alloc::collections::{HashMap as Map, HashSet, *};"))
+
+        assertIs<Visibility.Public>(item.vis)
+        assertNotNull(item.leadingColon)
+        val alloc = assertIs<UseTree.Path>(item.tree)
+        assertEquals("alloc", alloc.ident.toString())
+        assertNotNull(alloc.colon2Token)
+        val collections = assertIs<UseTree.Path>(assertNotNull(alloc.tree))
+        assertEquals("collections", collections.ident.toString())
+        assertNotNull(collections.colon2Token)
+        val group = assertIs<UseTree.Group>(assertNotNull(collections.tree))
+        val imports = group.items.toList()
+        val map = assertIs<UseTree.Name>(imports[0])
+        assertEquals("HashMap", map.ident.toString())
+        assertEquals("Map", assertNotNull(map.rename).ident.toString())
+        val set = assertIs<UseTree.Name>(imports[1])
+        assertEquals("HashSet", set.ident.toString())
+        assertNull(set.rename)
+        assertIs<UseTree.Glob>(imports[2])
+
+        val tokens = TokenStream.new()
+        item.toTokens(tokens)
+        assertTrue(tokens.toString().endsWith(";"))
+    }
+
+    @Test
+    fun testUseItemGroupCrateRootFallsBackToVerbatim() {
+        val item = assertIs<Item.Verbatim>(parseItem("use {::foo};"))
+
+        assertEquals("use { :: foo } ;", item.tokens.toString())
+    }
+
+    @Test
+    fun testFunctionSignatureBareVariadic() {
+        val item = assertIs<Item.Fn>(parseItem("""unsafe extern "C" fn call(#[cold] arg: u8, ...) {}"""))
+
+        assertNotNull(item.sig.unsafety)
+        assertEquals("C", assertNotNull(item.sig.abi?.name).value())
+        val arg = assertIs<FnArg.Typed>(item.sig.inputs.single())
+        assertEquals(1, arg.patType.attrs.size)
+        assertNull(item.sig.variadic?.pat)
+        assertNotNull(item.sig.variadic?.dots)
+    }
+
+    @Test
+    fun testFunctionSignatureNamedVariadic() {
+        val item = assertIs<Item.Fn>(parseItem("fn call(#[cold] args: ...,) {}"))
+
+        assertTrue(item.sig.inputs.isEmpty())
+        val variadic = assertNotNull(item.sig.variadic)
+        assertEquals(1, variadic.attrs.size)
+        val pat = assertIs<Pat.Ident>(assertNotNull(variadic.pat).pat)
+        assertEquals("args", pat.ident.toString())
+        assertNotNull(variadic.comma)
+    }
+
+    @Test
+    fun testFunctionInnerAttributes() {
+        val item = assertIs<Item.Fn>(parseItem("#[outer] fn f() { #![inner] }"))
+
+        assertEquals(2, item.attrs.size)
+        assertIs<AttrStyle.Outer>(item.attrs[0].style)
+        assertPath(item.attrs[0].path(), "outer")
+        assertIs<AttrStyle.Inner>(item.attrs[1].style)
+        assertPath(item.attrs[1].path(), "inner")
+        assertTrue(assertNotNull(item.block).stmts.isEmpty())
+    }
+
+    @Test
+    fun testImplFunctionAttributesVisibilityAndDefaultness() {
+        val item = assertIs<Item.Impl>(parseItem("impl Trait for Ty { #[outer] pub default fn f() { #![inner] } }"))
+        val fn = assertIs<ImplItem.Fn>(item.items.single())
+
+        assertEquals(2, fn.attrs.size)
+        assertIs<AttrStyle.Outer>(fn.attrs[0].style)
+        assertPath(fn.attrs[0].path(), "outer")
+        assertIs<AttrStyle.Inner>(fn.attrs[1].style)
+        assertPath(fn.attrs[1].path(), "inner")
+        assertIs<Visibility.Public>(fn.vis)
+        assertNotNull(fn.defaultness)
+        assertEquals("f", fn.sig.ident.toString())
+        assertTrue(fn.block.stmts.isEmpty())
     }
 
     @Test
@@ -157,6 +369,9 @@ class ItemTest {
 
     private fun parseItem(tokens: TokenStream): Item =
         parse2(ItemParse, tokens).getOrThrow()
+
+    private fun parseDeriveInput(source: String): DeriveInput =
+        parseStr(DeriveInputParse, source).getOrThrow()
 
     private fun assertPath(path: Path, vararg segments: String) {
         assertEquals(segments.toList(), path.segments.toList().map { it.ident.toString() })

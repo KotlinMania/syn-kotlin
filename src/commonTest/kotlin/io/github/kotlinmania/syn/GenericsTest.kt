@@ -2,6 +2,7 @@
 package io.github.kotlinmania.syn
 
 import io.github.kotlinmania.procmacro2.Span
+import io.github.kotlinmania.procmacro2.TokenStream
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
@@ -48,6 +49,7 @@ class GenericsTest {
         assertEquals("Debug", assertIs<TypeParamBound.Trait>(predicate.bounds.toList().single()).path.toString())
 
         val split = generics.splitForImpl()
+        assertEquals(whereClause, split.whereClause)
         val implParams = split.implGenerics.params.toList()
         assertEquals(3, implParams.size)
         assertNotNull(assertIs<GenericParam.LifetimeParam>(implParams[1]).colonToken)
@@ -64,8 +66,11 @@ class GenericsTest {
         assertNull(typeOnlyT.colonToken)
         assertTrue(typeOnlyT.bounds.isEmpty())
 
-        val turbofishArg = assertIs<GenericArgument.TypeArg>(split.turbofish.params.toList().single())
-        assertPathType(turbofishArg.type, "T")
+        val turbofishArgs = split.typeGenerics.asTurbofish().params.toList()
+        assertEquals(3, turbofishArgs.size)
+        assertEquals("'a", assertIs<GenericArgument.LifetimeArg>(turbofishArgs[0]).lifetime.toString())
+        assertEquals("'b", assertIs<GenericArgument.LifetimeArg>(turbofishArgs[1]).lifetime.toString())
+        assertPathType(assertIs<GenericArgument.TypeArg>(turbofishArgs[2]).type, "T")
     }
 
     @Test
@@ -153,6 +158,37 @@ class GenericsTest {
     }
 
     @Test
+    fun whereClauseRejectsReservedGenericParameters() {
+        val result = parseStr(WhereClauseParse, "where <T>")
+
+        assertTrue(result.isFailure)
+        assertEquals(
+            "generic parameters on `where` clauses are reserved for future use",
+            (result as SynResult.Failure).error.toString(),
+        )
+    }
+
+    @Test
+    fun whereTypePredicatePreservesBoundLifetimes() {
+        val whereClause = parseStr(WhereClauseParse, "where for<'a> Foo: Trait").getOrThrow()
+
+        val predicate = assertIs<WherePredicate.TypePredicate>(whereClause.predicates.toList().single())
+        val lifetimes = assertNotNull(predicate.lifetimes)
+        val lifetime = assertIs<GenericParam.LifetimeParam>(lifetimes.lifetimes.toList().single())
+        assertEquals("'a", lifetime.lifetime.toString())
+        assertPathType(predicate.boundedTy, "Foo")
+        val bound = assertIs<TypeParamBound.Trait>(predicate.bounds.toList().single())
+        assertEquals("Trait", bound.path.segments.toList().single().ident.toString())
+    }
+
+    @Test
+    fun whereLifetimePredicateRequiresColon() {
+        val result = parseStr(WhereClauseParse, "where 'a")
+
+        assertTrue(result.isFailure)
+    }
+
+    @Test
     fun noOpaqueDrop() {
         val generics = Generics.default()
 
@@ -173,6 +209,33 @@ class GenericsTest {
         assertEquals("T", param.ident.toString())
         assertNotNull(param.colonToken)
         assertTrue(param.bounds.isEmpty())
+    }
+
+    @Test
+    fun genericParamToTokensPrintsDefaultsAndConstTypes() {
+        val typeParam = assertIs<GenericParam.TypeParam>(parseStr(GenericParamParse, "T: Clone = Vec").getOrThrow())
+        val typeTokens = TokenStream.new()
+        typeParam.toTokens(typeTokens)
+        assertEquals("T : Clone = Vec", typeTokens.toString())
+
+        val constParam = assertIs<GenericParam.ConstParam>(parseStr(GenericParamParse, "const N: usize = 3").getOrThrow())
+        val constTokens = TokenStream.new()
+        constParam.toTokens(constTokens)
+        assertEquals("const N : usize = 3", constTokens.toString())
+    }
+
+    @Test
+    fun genericsToTokensPrintsLifetimesFirst() {
+        val input = parseStr(DeriveInputParse, "struct S<T, 'a, const N: usize>;").getOrThrow()
+
+        val tokens = TokenStream.new()
+        input.generics.toTokens(tokens)
+        assertEquals("< 'a , T , const N : usize >", tokens.toString())
+
+        val turbofishArgs = input.generics.splitForImpl().typeGenerics.asTurbofish().params.toList()
+        assertEquals("'a", assertIs<GenericArgument.LifetimeArg>(turbofishArgs[0]).lifetime.toString())
+        assertPathType(assertIs<GenericArgument.TypeArg>(turbofishArgs[1]).type, "T")
+        assertEquals("N", assertIs<Expr.Path>(assertIs<GenericArgument.ConstArg>(turbofishArgs[2]).expr).path.toString())
     }
 
     private fun assertPathType(

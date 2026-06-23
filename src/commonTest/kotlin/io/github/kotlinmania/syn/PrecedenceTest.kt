@@ -42,25 +42,9 @@ import io.github.kotlinmania.syn.token.Underscore
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-/**
- * Operator-precedence parity tests.
- *
- * The upstream test walks the rust-lang/rust source tree, collects every
- * expression, fully parenthesizes it both via the rustc AST mut-visitor
- * and via the syn fold visitor, re-parses both forms with the nightly
- * librustc parser, and compares the resulting ASTs with a span-ignoring
- * equality helper to confirm that syn and rustc agree on expression
- * precedence. It additionally exercises invisible-delimiter round-trips
- * and a scan-ahead expression recognizer. None of the rustc parser, the
- * rustc AST, the span-ignoring equality helper, the syn fold visitor, or
- * the rust-lang/rust checkout are available in this Kotlin port, so the
- * upstream harness cannot be faithfully ported. Instead, the tests below
- * exercise the [Precedence] classification that the Kotlin printer uses
- * to decide parenthesization, mirroring the upstream intent that binary
- * operators, assignments, casts, and prefix expressions are classified
- * into the right precedence tier.
- */
 class PrecedenceTest {
+    // Upstream test_rustc_precedence depends on nightly compiler internals and a full compiler source checkout.
+
     private fun intLit(): Expr.Lit =
         Expr.Lit(attrs = emptyList(), lit = Lit.Int(LitInt.new("1", "", Span.callSite())))
 
@@ -136,11 +120,6 @@ class PrecedenceTest {
 
     @Test
     fun testPrefixExprPrecedence() {
-        // Not ported: the upstream test parenthesizes every subexpression
-        // and re-parses to compare the rustc vs syn precedence handling;
-        // the Kotlin port has no rustc AST or syn fold visitor to drive
-        // that harness, so this test only checks the [Precedence.of]
-        // mapping used by the printer for unary-prefix expressions.
         val unary =
             Expr.Unary(
                 attrs = emptyList(),
@@ -195,12 +174,6 @@ class PrecedenceTest {
 
     @Test
     fun testLetExprPrecedence() {
-        // Not ported: the upstream test exercises `let` chains inside
-        // `&&` binary expressions via `contains_let_chain`; the Kotlin
-        // port has no syn fold visitor parenthesization harness, so
-        // this test only checks the [Precedence.of] classification for
-        // `Expr.Let`, which the upstream `needs_paren` helper treats as
-        // not needing parens.
         val letExpr =
             Expr.Let(
                 attrs = emptyList(),
@@ -265,9 +238,6 @@ class PrecedenceTest {
                 bracketToken = Bracket.default(),
                 meta = cfgPathMeta(),
             )
-        // `AttrStyle.Inner` has no outer-attribute entry, so the
-        // `prefixAttrs` helper returns `Unambiguous` (no prefix
-        // position).
         assertEquals(Precedence.Unambiguous, Precedence.prefixAttrs(listOf(innerAttr)))
     }
 

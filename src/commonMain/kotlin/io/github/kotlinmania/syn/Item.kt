@@ -11,13 +11,73 @@ import io.github.kotlinmania.syn.token.Default
 import io.github.kotlinmania.syn.token.Eq
 import io.github.kotlinmania.syn.token.For
 import io.github.kotlinmania.syn.token.Paren
+import io.github.kotlinmania.syn.token.PathSep
 import io.github.kotlinmania.syn.token.Semi
+import io.github.kotlinmania.syn.token.SynTypeToken
 import io.github.kotlinmania.syn.token.Unsafe
 
 /**
  * Things that can appear directly inside of a module or scope.
  */
 public sealed class Item : ToTokens {
+    public companion object {
+        public fun from(input: DeriveInput): Item =
+            when (val data = input.data) {
+                is Data.Struct ->
+                    Struct(
+                        input.attrs,
+                        input.vis,
+                        data.value.structToken,
+                        input.ident,
+                        input.generics,
+                        data.value.fields,
+                        data.value.semiToken,
+                    )
+                is Data.Enum ->
+                    Enum(
+                        input.attrs,
+                        input.vis,
+                        data.value.enumToken,
+                        input.ident,
+                        input.generics,
+                        data.value.braceToken,
+                        data.value.variants,
+                    )
+                is Data.Union ->
+                    Union(
+                        input.attrs,
+                        input.vis,
+                        data.value.unionToken,
+                        input.ident,
+                        input.generics,
+                        data.value.fields,
+                    )
+            }
+    }
+
+    internal data class AttrReplacement(
+        val item: Item,
+        val oldAttrs: List<Attribute>,
+    )
+
+    internal fun replaceAttrs(new: List<Attribute>): AttrReplacement =
+        when (this) {
+            is Const -> AttrReplacement(copy(attrs = new), attrs)
+            is Enum -> AttrReplacement(copy(attrs = new), attrs)
+            is Fn -> AttrReplacement(copy(attrs = new), attrs)
+            is Impl -> AttrReplacement(copy(attrs = new), attrs)
+            is ItemType -> AttrReplacement(copy(attrs = new), attrs)
+            is Macro -> AttrReplacement(copy(attrs = new), attrs)
+            is Mod -> AttrReplacement(copy(attrs = new), attrs)
+            is Static -> AttrReplacement(copy(attrs = new), attrs)
+            is Struct -> AttrReplacement(copy(attrs = new), attrs)
+            is Trait -> AttrReplacement(copy(attrs = new), attrs)
+            is TraitAlias -> AttrReplacement(copy(attrs = new), attrs)
+            is Union -> AttrReplacement(copy(attrs = new), attrs)
+            is Use -> AttrReplacement(copy(attrs = new), attrs)
+            is Verbatim -> AttrReplacement(this, emptyList())
+        }
+
     /** A constant item: `const MAX: UShort = 65535`. */
     public data class Const(
         public val attrs: List<Attribute>,
@@ -136,6 +196,26 @@ public sealed class Item : ToTokens {
         }
     }
 
+    /** A union definition. */
+    public data class Union(
+        public val attrs: List<Attribute>,
+        public val vis: Visibility,
+        public val unionToken: io.github.kotlinmania.syn.token.Union,
+        public val ident: Ident,
+        public val generics: Generics,
+        public val fields: FieldsNamed,
+    ) : Item() {
+        override fun toTokens(tokens: TokenStream) {
+            for (attr in attrs) attr.toTokens(tokens)
+            vis.toTokens(tokens)
+            unionToken.toTokens(tokens)
+            ident.toTokens(tokens)
+            generics.toTokens(tokens)
+            generics.whereClause?.toTokens(tokens)
+            fields.toTokens(tokens)
+        }
+    }
+
     /** A module or module declaration. */
     public data class Mod(
         public val attrs: List<Attribute>,
@@ -158,13 +238,44 @@ public sealed class Item : ToTokens {
         public val attrs: List<Attribute>,
         public val vis: Visibility,
         public val useToken: io.github.kotlinmania.syn.token.Use,
+        public val leadingColon: PathSep?,
         public val tree: UseTree,
+        public val semiToken: Semi,
     ) : Item() {
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
             vis.toTokens(tokens)
             useToken.toTokens(tokens)
+            leadingColon?.toTokens(tokens)
             tree.toTokens(tokens)
+            semiToken.toTokens(tokens)
+        }
+    }
+
+    /** A static item. */
+    public data class Static(
+        public val attrs: List<Attribute>,
+        public val vis: Visibility,
+        public val staticToken: io.github.kotlinmania.syn.token.Static,
+        public val mutability: StaticMutability,
+        public val ident: Ident,
+        public val colonToken: Colon,
+        public val ty: SynType,
+        public val eqToken: Eq,
+        public val expr: Expr,
+        public val semiToken: Semi,
+    ) : Item() {
+        override fun toTokens(tokens: TokenStream) {
+            for (attr in attrs) attr.toTokens(tokens)
+            vis.toTokens(tokens)
+            staticToken.toTokens(tokens)
+            mutability.toTokens(tokens)
+            ident.toTokens(tokens)
+            colonToken.toTokens(tokens)
+            ty.toTokens(tokens)
+            eqToken.toTokens(tokens)
+            expr.toTokens(tokens)
+            semiToken.toTokens(tokens)
         }
     }
 
@@ -198,6 +309,54 @@ public sealed class Item : ToTokens {
             braceToken.surround(tokens) { inner ->
                 for (item in items) item.toTokens(inner)
             }
+        }
+    }
+
+    /** A trait alias. */
+    public data class TraitAlias(
+        public val attrs: List<Attribute>,
+        public val vis: Visibility,
+        public val traitToken: io.github.kotlinmania.syn.token.Trait,
+        public val ident: Ident,
+        public val generics: Generics,
+        public val eqToken: Eq,
+        public val bounds: TypeParamBoundList,
+        public val semiToken: Semi,
+    ) : Item() {
+        override fun toTokens(tokens: TokenStream) {
+            for (attr in attrs) attr.toTokens(tokens)
+            vis.toTokens(tokens)
+            traitToken.toTokens(tokens)
+            ident.toTokens(tokens)
+            generics.toTokens(tokens)
+            eqToken.toTokens(tokens)
+            bounds.toTokens(tokens)
+            generics.whereClause?.toTokens(tokens)
+            semiToken.toTokens(tokens)
+        }
+    }
+
+    /** A type alias. */
+    public data class ItemType(
+        public val attrs: List<Attribute>,
+        public val vis: Visibility,
+        public val typeToken: SynTypeToken,
+        public val ident: Ident,
+        public val generics: Generics,
+        public val eqToken: Eq,
+        public val ty: SynType,
+        public val semiToken: Semi,
+    ) : Item() {
+        override fun toTokens(tokens: TokenStream) {
+            for (attr in attrs) attr.toTokens(tokens)
+            vis.toTokens(tokens)
+            typeToken.toTokens(tokens)
+            ident.toTokens(tokens)
+            generics.toTokens(tokens)
+            generics.whereClause?.toTokens(tokens)
+            eqToken.toTokens(tokens)
+            ty.toTokens(tokens)
+            semiToken.toTokens(tokens)
         }
     }
 
@@ -258,6 +417,36 @@ public sealed class Item : ToTokens {
         }
     }
 }
+
+public fun from(input: DeriveInput): Item =
+    Item.from(input)
+
+public fun from(input: Item.Struct): DeriveInput =
+    DeriveInput(
+        input.attrs,
+        input.vis,
+        input.ident,
+        input.generics,
+        Data.Struct(DataStruct(input.structToken, input.fields, input.semiToken)),
+    )
+
+public fun from(input: Item.Enum): DeriveInput =
+    DeriveInput(
+        input.attrs,
+        input.vis,
+        input.ident,
+        input.generics,
+        Data.Enum(DataEnum(input.enumToken, input.braceToken, input.variants)),
+    )
+
+public fun from(input: Item.Union): DeriveInput =
+    DeriveInput(
+        input.attrs,
+        input.vis,
+        input.ident,
+        input.generics,
+        Data.Union(DataUnion(input.unionToken, input.fields)),
+    )
 
 /** An argument in a function signature. */
 public sealed class FnArg : ToTokens {
@@ -440,6 +629,22 @@ public data class Variadic(
         pat?.toTokens(tokens)
         dots.toTokens(tokens)
         comma?.toTokens(tokens)
+    }
+}
+
+/** Mutability of a static item. */
+public sealed class StaticMutability : ToTokens {
+    public data class Mut(
+        public val mutToken: io.github.kotlinmania.syn.token.Mut,
+    ) : StaticMutability() {
+        override fun toTokens(tokens: TokenStream) {
+            mutToken.toTokens(tokens)
+        }
+    }
+
+    public data object None : StaticMutability() {
+        override fun toTokens(tokens: TokenStream) {
+        }
     }
 }
 

@@ -1,6 +1,7 @@
 // port-lint: tests tests/test_derive_input.rs
 package io.github.kotlinmania.syn
 
+import io.github.kotlinmania.procmacro2.TokenStream
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
@@ -191,6 +192,48 @@ class DeriveInputTest {
         assertNull(fields[1].ident)
         assertIs<Visibility.Public>(fields[1].vis)
         assertPathType(fields[1].ty, "String")
+    }
+
+    @Test
+    fun testTupleStructWhereClauseAfterFields() {
+        val input = parse("struct S<T>(T) where T: Copy;")
+
+        val whereClause = assertNotNull(input.generics.whereClause)
+        val predicate = assertIs<WherePredicate.TypePredicate>(whereClause.predicates.toList().single())
+        assertPathType(predicate.boundedTy, "T")
+        assertEquals("Copy", assertIs<TypeParamBound.Trait>(predicate.bounds.toList().single()).path.toString())
+        val data = assertIs<Data.Struct>(input.data).value
+        assertNotNull(data.semiToken)
+        assertPathType(unnamedFields(data.fields).single().ty, "T")
+    }
+
+    @Test
+    fun testDeriveInputToTokens() {
+        val input = parse("pub struct S<T>(T) where T: Copy;")
+        val tokens = TokenStream.new()
+
+        input.toTokens(tokens)
+
+        assertEquals("pub struct S < T > (T) where T : Copy ;", tokens.toString())
+    }
+
+    @Test
+    fun deriveInputToTokensDefaultsMissingSemicolonForTupleAndUnitStructs() {
+        val tupleInput = parse("struct S<T>(T) where T: Copy;")
+        val tupleData = assertIs<Data.Struct>(tupleInput.data).value
+        val tupleTokens = TokenStream.new()
+
+        tupleInput.copy(data = Data.Struct(tupleData.copy(semiToken = null))).toTokens(tupleTokens)
+
+        assertEquals("struct S < T > (T) where T : Copy ;", tupleTokens.toString())
+
+        val unitInput = parse("struct Unit;")
+        val unitData = assertIs<Data.Struct>(unitInput.data).value
+        val unitTokens = TokenStream.new()
+
+        unitInput.copy(data = Data.Struct(unitData.copy(semiToken = null))).toTokens(unitTokens)
+
+        assertEquals("struct Unit ;", unitTokens.toString())
     }
 
     @Test

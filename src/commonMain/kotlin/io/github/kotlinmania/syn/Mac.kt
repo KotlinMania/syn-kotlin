@@ -21,6 +21,15 @@ public data class Macro(
     public val delimiter: MacroDelimiter,
     public val tokens: TokenStream,
 ) : ToTokens {
+    public companion object : Parse<Macro> {
+        override fun parse(input: ParseStream): SynResult<Macro> {
+            val path = Path.parseModStyle(input).getOrElse { return SynResult.failure(it) }
+            val bangToken = input.parse(NotParse).getOrElse { return SynResult.failure(it) }
+            val (delimiter, content) = parseDelimiter(input).getOrElse { return SynResult.failure(it) }
+            return SynResult.success(Macro(path, bangToken, delimiter, content))
+        }
+    }
+
     override fun toTokens(tokens: TokenStream) {
         path.toTokens(tokens)
         bangToken.toTokens(tokens)

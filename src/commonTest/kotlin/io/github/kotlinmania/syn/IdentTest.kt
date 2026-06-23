@@ -6,6 +6,7 @@ import io.github.kotlinmania.procmacro2.Span
 import io.github.kotlinmania.procmacro2.TokenStream
 import io.github.kotlinmania.procmacro2.TokenTree
 import kotlin.test.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
 // Identifier strings that the parser rejects even though the token
@@ -174,5 +175,12 @@ class IdentTest {
         assertFailsWith<IllegalArgumentException> {
             new("a#")
         }
+    }
+
+    @Test
+    fun identUnraw() {
+        val raw = Ident.newRaw("move", Span.callSite())
+        assertEquals("move", raw.unraw().toString())
+        assertEquals("move", IdentExt.unraw(raw).toString())
     }
 }

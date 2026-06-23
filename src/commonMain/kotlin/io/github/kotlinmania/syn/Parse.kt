@@ -98,7 +98,8 @@ public class ParseBuffer internal constructor(
     internal val scope: Span,
     internal var currentCursor: Cursor,
     internal var unexpected: UnexpectedRef?,
-) {
+) : Speculative,
+    AnyDelimiter {
     override fun toString(): String = currentCursor.tokenStream().toString()
 
     /**
@@ -236,19 +237,22 @@ public class ParseBuffer internal constructor(
         }
     }
 
-    /**
-     * Propagates any leftover unexpected-token info from this child buffer to
-     * its parent's unexpected chain. The [finalizer] implementation on
-     * [ParseBuffer] runs this body automatically at end-of-scope. Callers that construct a child [ParseBuffer]
-     * (typically through the group helpers `parens`, `braces`, `brackets`)
-     * must invoke this when the child buffer's scope ends.
-     */
-    public fun finishChildBuffer() {
+    internal fun drop() {
         val info = spanOfUnexpectedIgnoringNones(currentCursor) ?: return
         val (inner, oldSpan) = innerUnexpected(this)
         if (oldSpan == null) {
             inner.value = Unexpected.Some(info.first, info.second)
         }
+    }
+
+    /**
+     * Propagates any leftover unexpected-token info from this child buffer to
+     * its parent's unexpected chain. Kotlin does not run deterministic
+     * end-of-scope finalizers for this class, so callers that construct a child
+     * [ParseBuffer] must invoke this when the child buffer's scope ends.
+     */
+    public fun finishChildBuffer() {
+        drop()
     }
 
     /**
@@ -258,12 +262,12 @@ public class ParseBuffer internal constructor(
      * Throws [IllegalArgumentException] if [other] was not derived from this
      * parse stream.
      */
-    public fun advanceTo(other: ParseBuffer) {
-        require(sameScope(currentCursor, other.currentCursor)) {
-            "fork was not derived from the advancing parse stream"
-        }
-        currentCursor = other.currentCursor
+    public override fun advanceTo(fork: ParseBuffer) {
+        advanceToSpeculative(fork)
     }
+
+    public override fun parseAnyDelimiter(): SynResult<AnyDelimiterResult> =
+        parseAnyDelimiterImpl()
 }
 
 /**
@@ -305,12 +309,14 @@ public class StepCursor internal constructor(
 
     public fun span(): Span = cursor.span()
 
+    public fun deref(): Cursor = cursor
+
     /**
      * Surfaces the wrapped [Cursor]. Mirrors the delegation pattern where
      * callers could pass a [StepCursor] anywhere
      * a [Cursor] is expected. Callers explicitly extract via this property.
      */
-    public val raw: Cursor get() = cursor
+    public val raw: Cursor get() = deref()
 }
 
 internal fun advanceStepCursor(proof: StepCursor, to: Cursor): Cursor {
@@ -341,6 +347,10 @@ public class UnexpectedRef internal constructor(
  * across child/parent parse buffers.
  */
 public sealed class Unexpected {
+    public companion object {
+        public fun default(): Unexpected = None
+    }
+
     public object None : Unexpected()
 
     public data class Some(
@@ -361,7 +371,7 @@ public sealed class Unexpected {
 }
 
 /** We call this on UnexpectedRef where temporarily swapping in a None is cheap. */
-private fun unexpectedCellClone(cell: UnexpectedRef): Unexpected {
+private fun cellClone(cell: UnexpectedRef): Unexpected {
     val prev = cell.value
     cell.value = Unexpected.None
     val ret = prev.clone()
@@ -372,7 +382,7 @@ private fun unexpectedCellClone(cell: UnexpectedRef): Unexpected {
 internal fun innerUnexpected(buffer: ParseBuffer): Pair<UnexpectedRef, Pair<Span, Delimiter>?> {
     var unexpected = getUnexpected(buffer)
     while (true) {
-        when (val cloned = unexpectedCellClone(unexpected)) {
+        when (val cloned = cellClone(unexpected)) {
             is Unexpected.None -> return unexpected to null
             is Unexpected.Some -> return unexpected to (cloned.span to cloned.delimiter)
             is Unexpected.Chain -> unexpected = cloned.next
@@ -573,10 +583,16 @@ private fun errUnexpectedToken(span: Span, delimiter: Delimiter): SynError {
  * This is useful for attribute macros that want to ensure they are not
  * provided any attribute args.
  */
-public object Nothing : Parse<Nothing> {
+public object Nothing : Parse<Nothing>, ToTokens {
     override fun parse(input: ParseStream): SynResult<Nothing> = SynResult.success(Nothing)
 
+    override fun toTokens(tokens: TokenStream) {}
+
     override fun toString(): String = "Nothing"
+
+    override fun equals(other: Any?): Boolean = other === Nothing
+
+    override fun hashCode(): Int = 0
 }
 
 /**

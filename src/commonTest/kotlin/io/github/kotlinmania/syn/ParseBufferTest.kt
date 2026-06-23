@@ -98,9 +98,22 @@ class ParseBufferTest {
         parser.parse2(tokens).getOrThrow()
     }
 
-    // test_unwind_safe: skipped — depends on `panic::catch_unwind`, which has
-    // no Kotlin equivalent (`SynResult` propagates parse errors as values,
-    // not panics); the `RefUnwindSafe` bound under test is Rust-specific.
+    @Test
+    fun parseBufferDropPropagatesUnexpectedChildTokens() {
+        val parser =
+            parserFromFunction { input ->
+                val parens = parenthesized(input).getOrThrow()
+                parens.content.drop()
+                SynResult.success(Unit)
+            }
+
+        val result = parser.parseStr("(+)")
+
+        assertTrue(result.isFailure)
+        assertEquals("unexpected token, expected `)`", result.exceptionOrNull()?.toString())
+    }
+
+    // Upstream test_unwind_safe depends on panic catching and unwind-safety marker traits, which Kotlin does not expose.
 
     @Test
     fun parseStreamIsEmptyAtEof() {
@@ -153,6 +166,31 @@ class ParseBufferTest {
     }
 
     @Test
+    fun cursorCloneAndPartialCmpFollowBufferPosition() {
+        val buffer =
+            TokenBuffer.new2(
+                TokenStream.fromTokenTrees(
+                    listOf(
+                        TokenTree.Ident(Ident.new("a", Span.callSite())),
+                        TokenTree.Ident(Ident.new("b", Span.callSite())),
+                    ),
+                ),
+            )
+        val first = buffer.begin()
+        val second = first.ident()!!.second
+        val other =
+            TokenBuffer.new2(
+                TokenStream.fromTokenTree(TokenTree.Ident(Ident.new("c", Span.callSite()))),
+            ).begin()
+
+        assertEquals(first, first.clone())
+        assertEquals(0, first.partialCmp(first.clone()))
+        assertTrue(first.partialCmp(second)!! < 0)
+        assertTrue(second.partialCmp(first)!! > 0)
+        assertNull(first.partialCmp(other))
+    }
+
+    @Test
     fun parseStreamForkDoesNotAdvanceParent() {
         val parser =
             parserFromFunction { input ->
@@ -193,6 +231,23 @@ class ParseBufferTest {
                 assertTrue(input.isEmpty())
                 SynResult.success(Unit)
             }
+        parser.parseStr("foo").getOrThrow()
+    }
+
+    @Test
+    fun stepCursorDerefExposesCursor() {
+        val parser =
+            parserFromFunction { input ->
+                input.step { cursor ->
+                    assertEquals(cursor.raw, cursor.deref())
+                    val (ident, rest) =
+                        cursor.deref().ident()
+                            ?: return@step SynResult.failure<Pair<Unit, Cursor>>(cursor.error("expected identifier"))
+                    assertEquals("foo", ident.toString())
+                    SynResult.success(Unit to rest)
+                }
+            }
+
         parser.parseStr("foo").getOrThrow()
     }
 

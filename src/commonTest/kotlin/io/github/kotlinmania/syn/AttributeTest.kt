@@ -72,14 +72,91 @@ class AttributeTest {
     fun testNegativeLit() {
         assertListMeta("#[form(min = -1, max = 200)]", "form", "min = - 1 , max = 200")
     }
+
+    @Test
+    fun testParseNestedMeta() {
+        val attrs = parserFromFunction(::parseOuterAttributes).parseStr("#[tea(kind = \"EarlGrey\", hot, with(sugar, milk),)]").getOrThrow()
+        val attr = attrs.single()
+        var kind: String? = null
+        var hot = false
+        val with = mutableListOf<String>()
+
+        val result =
+            attr.parseNestedMeta { meta ->
+                when {
+                    meta.path.isIdent("kind") -> {
+                        val value = meta.value().getOrElse { return@parseNestedMeta SynResult.failure(it) }
+                        val lit = value.parse(LitStrParse).getOrElse { return@parseNestedMeta SynResult.failure(it) }
+                        kind = lit.value()
+                        SynResult.success(Unit)
+                    }
+                    meta.path.isIdent("hot") -> {
+                        hot = true
+                        SynResult.success(Unit)
+                    }
+                    meta.path.isIdent("with") ->
+                        meta.parseNestedMeta { nested ->
+                            with.add(nested.path.toString())
+                            SynResult.success(Unit)
+                        }
+                    else -> SynResult.failure(meta.error("unsupported tea property"))
+                }
+            }
+
+        assertTrue(result.isSuccess)
+        assertEquals("EarlGrey", kind)
+        assertTrue(hot)
+        assertEquals(listOf("sugar", "milk"), with)
+    }
+
+    @Test
+    fun testParseArgs() {
+        val attr = parseOuterAttribute("#[precondition(value < 5)]")
+        val expr = attr.parseArgs(ExprParse).getOrThrow()
+        assertIs<Expr.Binary>(expr)
+    }
+
+    @Test
+    fun testRequireMetaKinds() {
+        val path = parseStr(MetaParse, "test").getOrThrow()
+        assertTrue(path.requirePathOnly().isSuccess)
+        assertTrue(path.requireList().isFailure)
+        assertTrue(path.requireNameValue().isFailure)
+
+        val list = parseStr(MetaParse, "derive(Clone)").getOrThrow()
+        assertTrue(list.requirePathOnly().isFailure)
+        assertTrue(list.requireList().isSuccess)
+        assertTrue(list.requireNameValue().isFailure)
+
+        val nameValue = parseStr(MetaParse, "path = \"sys.rs\"").getOrThrow()
+        assertTrue(nameValue.requirePathOnly().isFailure)
+        assertTrue(nameValue.requireList().isFailure)
+        assertTrue(nameValue.requireNameValue().isSuccess)
+    }
+
+    @Test
+    fun testOutermostMetaPathKeywordRule() {
+        assertTrue(parseStr(MetaParse, "unsafe").isSuccess)
+        assertTrue(parseStr(MetaParse, "async").isFailure)
+    }
+
+    @Test
+    fun testParseOuterRejectsInnerAttribute() {
+        val result = parserFromFunction(Attribute::parseOuter).parseStr("#![feature(test)]")
+        assertTrue(result.isFailure)
+    }
 }
 
 private fun parseOuterMeta(input: String): Meta {
+    return parseOuterAttribute(input).meta
+}
+
+private fun parseOuterAttribute(input: String): Attribute {
     val attrs = parserFromFunction(::parseOuterAttributes).parseStr(input).getOrThrow()
     assertEquals(1, attrs.size)
     val attr = attrs.single()
     assertIs<AttrStyle.Outer>(attr.style)
-    return attr.meta
+    return attr
 }
 
 private fun assertListMeta(
@@ -108,5 +185,5 @@ private fun assertBoolLiteral(
 ) {
     val lit = assertIs<Expr.Lit>(expr)
     val boolLit = assertIs<Lit.Bool>(lit.lit)
-    assertEquals(value, boolLit.value.value)
+    assertEquals(value, boolLit.value.value())
 }

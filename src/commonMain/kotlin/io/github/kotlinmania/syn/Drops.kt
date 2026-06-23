@@ -1,15 +1,7 @@
 // port-lint: source drops.rs
 package io.github.kotlinmania.syn
 
-/**
- * A wrapper that prevents the Kotlin runtime from calling finalizers on
- * wrapped values whose drop semantics are trivial.
- *
- * In Rust, `NoDrop<T>` wraps `ManuallyDrop<T>` and prevents the `Drop`
- * trait from running. In Kotlin, all objects are GC-managed, so this
- * wrapper is transparent: it simply holds the value and delegates
- * access to it.
- */
+/** A transparent wrapper for values whose cleanup is known to be trivial. */
 public class NoDrop<T>(
     public val value: T,
 ) {
@@ -23,8 +15,6 @@ public class NoDrop<T>(
 
     public fun derefMut(): T = value
 
-    public fun testNeedsDrop(): Boolean = false
-
     public fun drop() {}
 
     override fun toString(): String = "NoDrop($value)"
@@ -37,12 +27,5 @@ public class NoDrop<T>(
     public fun deepCopy(): NoDrop<T> = NoDrop(value)
 }
 
-/**
- * Marker for types whose drop implementation is trivial (does nothing).
- *
- * In Rust this is a trait bound that prevents `NoDrop` from being
- * instantiated for types that need their `Drop` impl to run. In Kotlin,
- * all types are trivially droppable since the GC handles cleanup, so
- * this interface carries no runtime significance beyond documentation.
- */
+/** Marker for types whose cleanup is known to be trivial. */
 public interface TrivialDrop

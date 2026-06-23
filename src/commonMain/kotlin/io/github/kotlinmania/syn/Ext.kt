@@ -8,50 +8,30 @@ import io.github.kotlinmania.procmacro2.Span
 import io.github.kotlinmania.procmacro2.TokenStream
 import io.github.kotlinmania.procmacro2.TokenTree
 
-/**
- * Extension functions to provide parsing methods on foreign types.
- *
- * Defines IdentExt, TokenStreamExt, and PunctExt interfaces
- * each with a single implementation block. Top-level
- * extension functions achieve the same call-site shape without the interface
- * indirection.
- */
+/** Extension helpers for parser behavior on procmacro2 token types. */
+public object IdentExt {
+    /** Parses any identifier, including language keywords. */
+    public fun parseAny(input: ParseStream): SynResult<Ident> =
+        identParseAny(input)
 
-/**
- * Additional methods for [Ident] not provided by procmacro2.
- *
- * These methods sit on the `IdentExt` interface sealed inside the
- * syn library. Kotlin exposes them as extension functions on
- * [io.github.kotlinmania.procmacro2.Ident]; sealing semantics are
- * inapplicable.
- */
+    /** Peek target for any identifier, including language keywords. */
+    public val peekAny: Peek
+        get() = IdentPeekAny
 
-/**
- * Parses any identifier including keywords.
- *
- * This is useful when parsing macro input which allows keywords as
- * identifiers.
- *
- * # Example
- *
- * ```kotlin
- * import io.github.kotlinmania.syn.identParseAny
- *
- * // Parses input that looks like `name = NAME` where `NAME` can be any
- * // identifier.
- * //
- * // Examples:
- * //
- * // name = anything
- * // name = implementation
- * fun parseDsl(input: ParseStream): SynResult<Ident> = runCatching {
- * input.parse(KwName).getOrThrow()
- * input.parse(EqToken).getOrThrow()
- * val name = input.call(::identParseAny).getOrThrow()
- * name
- * }
- * ```
- */
+    /** Removes a raw-identifier marker from [ident], if present. */
+    public fun unraw(ident: Ident): Ident =
+        ident.unraw()
+}
+
+/** Parses any identifier, including language keywords. */
+public fun Ident.Companion.parseAny(input: ParseStream): SynResult<Ident> =
+    identParseAny(input)
+
+/** Peek target for any identifier, including language keywords. */
+public val Ident.Companion.peekAny: Peek
+    get() = IdentPeekAny
+
+/** Parses any identifier, including language keywords. */
 public fun identParseAny(input: ParseStream): SynResult<Ident> =
     input.step { cursor ->
         val pair =
@@ -60,71 +40,53 @@ public fun identParseAny(input: ParseStream): SynResult<Ident> =
         SynResult.success(pair)
     }
 
-/**
- * Peek any identifier including keywords. Usage: `input.peek(IdentPeekAny)`.
- *
- * This is different from `input.peek(Ident)` which only returns true in the
- * case of an ident which is not a keyword.
- */
-public object IdentPeekAny : Peek {
+/** Peek target for any identifier, including language keywords. */
+public val IdentPeekAny: Peek = PeekFn
+
+internal object PeekFn : Peek {
     override fun peek(cursor: Cursor): Boolean = cursor.ident() != null
 
     override fun display(): String = "identifier"
+
+    fun clone(): PeekFn = this
 }
 
-/**
- * Strips the raw marker `r#`, if any, from the beginning of an ident.
- *
- * - unraw(`x`) = `x`
- * - unraw(`move`) = `move`
- * - unraw(`r#move`) = `move`
- *
- * # Example
- *
- * In the case of interop with other languages like Python that have a
- * different set of keywords, we might come across macro input that
- * involves raw identifiers to refer to ordinary variables in the other
- * language with a name that happens to be a keyword.
- *
- * The function below appends an identifier from the caller's input onto a
- * fixed prefix. Without using `unraw()`, this would tend to produce invalid
- * identifiers like `__pyo3_get_r#move`.
- *
- * ```kotlin
- * fun identForGetter(variable: Ident): Ident {
- * val getter = "__pyo3_get_${variable.unraw()}"
- * return Ident.new(getter, Span.callSite())
- * }
- * ```
- */
+internal class IdentAny private constructor()
+
+internal object ExtPrivate {
+    interface Sealed
+}
+
+/** Removes a raw-identifier marker from this identifier, if present. */
 public fun Ident.unraw(): Ident {
     val string = this.toString()
     return if (string.startsWith("r#")) {
         Ident.new(string.removePrefix("r#"), this.span())
     } else {
-        Ident.new(string, this.span())
+        this
     }
 }
 
-/**
- * Appends a single [TokenTree] onto a [TokenStream].
- *
- * Declared on the `TokenStreamExt` interface; here it
- * is an extension function with the same call-site shape. Mirrors the
- * `append` extension provided in quote-kotlin.
- */
-internal fun TokenStream.appendTokenTree(token: TokenTree) {
-    this.extendTokenTrees(listOf(token))
+internal object TokenStreamExt {
+    fun append(tokens: TokenStream, token: TokenTree) {
+        tokens.extendTokenTrees(listOf(token))
+    }
 }
 
-/**
- * Constructs a [Punct] with the given character, spacing, and span.
- *
- * Declared on the `PunctExt` interface; here it is a
- * companion-equivalent helper on [Punct].
- */
+/** Appends a single [TokenTree] onto a [TokenStream]. */
+internal fun TokenStream.appendTokenTree(token: TokenTree) {
+    TokenStreamExt.append(this, token)
+}
+
+internal object PunctExt {
+    fun newSpanned(ch: Char, spacing: Spacing, span: Span): Punct {
+        val punct = Punct(ch, spacing)
+        punct.setSpan(span)
+        return punct
+    }
+}
+
+/** Constructs a [Punct] with the given character, spacing, and span. */
 internal fun punctNewSpanned(ch: Char, spacing: Spacing, span: Span): Punct {
-    val punct = Punct(ch, spacing)
-    punct.setSpan(span)
-    return punct
+    return PunctExt.newSpanned(ch, spacing, span)
 }

@@ -131,14 +131,32 @@ class ParseStreamTest {
         runParser("static var") { input ->
             assertFalse(input.peek(IdentPeek))
             assertTrue(input.peek(IdentPeekAny))
+            assertTrue(input.peek(Ident.peekAny))
             assertTrue(input.peek(StaticPeek))
 
             StaticParse.parse(input).getOrThrow()
 
             assertTrue(input.peek(IdentPeek))
             assertTrue(input.peek(IdentPeekAny))
+            assertTrue(input.peek(Ident.peekAny))
 
             IdentParse.parse(input).getOrThrow()
+            SynResult.success(Unit)
+        }
+    }
+
+    @Test
+    fun testParseAnyIdent() {
+        runParser("name = impl") { input ->
+            val key = IdentParse.parse(input).getOrThrow()
+            assertEquals("name", key.toString())
+            EqParse.parse(input).getOrThrow()
+
+            assertFalse(input.peek(IdentPeek))
+            assertTrue(input.peek(Ident.peekAny))
+
+            val value = Ident.parseAny(input).getOrThrow()
+            assertEquals("impl", value.toString())
             SynResult.success(Unit)
         }
     }
@@ -231,5 +249,38 @@ class ParseStreamTest {
             TokenStreamParse.parse(input).getOrThrow()
             SynResult.success(Unit)
         }
+    }
+
+    @Test
+    fun lookaheadEndUsesScopeCloseDelimiter() {
+        val parser =
+            parserFromFunction<Unit> { input ->
+                val content = parenthesized(input).getOrThrow().content
+                val lookahead = content.lookahead1()
+                assertFalse(lookahead.peek(End))
+                SynResult.failure(lookahead.error())
+            }
+
+        val result = parser.parse2(TokenStream.fromString("(name)").getOrThrow())
+
+        assertTrue(result.isFailure)
+        assertEquals("expected `)`", result.exceptionOrNull()?.toString())
+    }
+
+    @Test
+    fun lookaheadFormatsManyExpectedTokens() {
+        val parser =
+            parserFromFunction<Unit> { input ->
+                val lookahead = input.lookahead1()
+                assertFalse(lookahead.peek(IdentPeek))
+                assertFalse(lookahead.peek(LifetimePeek))
+                assertFalse(lookahead.peek(ConstPeek))
+                SynResult.failure(lookahead.error())
+            }
+
+        val result = parser.parse2(TokenStream.fromString("!").getOrThrow())
+
+        assertTrue(result.isFailure)
+        assertEquals("expected one of: identifier, lifetime, `const`", result.exceptionOrNull()?.toString())
     }
 }

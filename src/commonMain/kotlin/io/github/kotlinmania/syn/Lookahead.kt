@@ -37,7 +37,10 @@ public class Lookahead1 internal constructor(
      * - `input.peek(BracePeek)`
      * - `input.peek(LifetimePeek)`
      */
-    public fun peek(token: Peek): Boolean {
+    public fun peek(token: Peek): Boolean =
+        peekImpl(this, token)
+
+    internal fun peekImpl(token: Peek): Boolean {
         if (token.peek(cursor)) {
             return true
         }
@@ -76,7 +79,7 @@ public class Lookahead1 internal constructor(
             }
             1 -> errorNewAt(scope, cursor, "expected ${pruned[0]}")
             2 -> errorNewAt(scope, cursor, "expected ${pruned[0]} or ${pruned[1]}")
-            else -> errorNewAt(scope, cursor, "expected one of: ${pruned.joinToString(", ")}")
+            else -> errorNewAt(scope, cursor, "expected one of: ${CommaSeparated(pruned)}")
         }
     }
 
@@ -84,7 +87,21 @@ public class Lookahead1 internal constructor(
         comparisons.joinToString(", ", "Lookahead1[", "]")
 }
 
-internal fun lookahead1New(scope: Span, cursor: Cursor): Lookahead1 = Lookahead1(scope, cursor)
+internal fun new(scope: Span, cursor: Cursor): Lookahead1 =
+    Lookahead1(scope, cursor)
+
+internal fun lookahead1New(scope: Span, cursor: Cursor): Lookahead1 =
+    new(scope, cursor)
+
+internal fun peekImpl(lookahead: Lookahead1, token: Peek): Boolean =
+    lookahead.peekImpl(token)
+
+private class CommaSeparated(
+    private val values: List<String>,
+) {
+    override fun toString(): String =
+        values.joinToString(", ")
+}
 
 /**
  * Types that can be parsed by looking at just one token.
@@ -116,7 +133,9 @@ public sealed interface Peek : Lookahead.Sealed {
 public object End : Peek {
     override fun peek(cursor: Cursor): Boolean = cursor.eof()
 
-    override fun display(): String = "end of input"
+    override fun display(): String = "`)`"
+
+    public fun clone(): End = this
 }
 
 /** Peek for an opening brace `{`. */
