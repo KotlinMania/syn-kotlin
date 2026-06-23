@@ -382,7 +382,7 @@ internal fun parseMemberImpl(input: ParseStream): SynResult<Member> {
     return SynResult.failure(input.error("expected field name or index"))
 }
 
-internal data class MultiIndexResult(
+public data class MultiIndexResult(
     val expr: Expr,
     val complete: Boolean,
 )
@@ -771,26 +771,6 @@ private fun parseRangeLimits(input: ParseStream): SynResult<RangeLimits> =
         else -> SynResult.failure(input.error("expected range limits"))
     }
 
-private fun parseRangeEnd(input: ParseStream, limits: RangeLimits, allowStruct: Boolean): SynResult<Expr?> {
-    if (input.isEmpty() ||
-        input.peek(SemiPeek) ||
-        input.peek(CommaPeek) ||
-        (input.peek(DotPeek) && !input.peek(DotDotPeek)) ||
-        input.peek(QuestionPeek) ||
-        input.peek(FatArrowPeek) ||
-        (!allowStruct && input.peek(BracePeek)) ||
-        input.peek(EqPeek) ||
-        input.peek(AsPeek) ||
-        input.fork().parse(BinOpParse).isSuccess
-    ) {
-        if (limits is RangeLimits.HalfOpen) {
-            return SynResult.success(null)
-        }
-    }
-    val endResult = parseBinopRhsImpl(input, allowStruct, Precedence.Range)
-    if (endResult.isFailure) return endResult
-    return SynResult.success(endResult.getOrThrow())
-}
 
 private fun parseExprIf(input: ParseStream): SynResult<Expr> {
     val ifToken = input.parse(IfParse).getOrThrow()

@@ -5,13 +5,13 @@ Based on AST analysis, here are the concrete next steps.
 ## Summary
 
 - **Files Present:** 53/55 (96.4%)
-- **Function parity:** 280/1083 matched (target 1869) — 25.9%
-- **Class/type parity:** 41/121 matched (target 718) — 33.9%
-- **Combined symbol parity:** 321/1204 matched (target 2587) — 26.7%
-- **Average inline-code cosine:** 0.39 (function body across 53 matched files)
-- **Average documentation cosine:** 0.32 (doc text across 53 matched files)
+- **Function parity:** 316/1083 matched (target 1927) — 29.2%
+- **Class/type parity:** 42/121 matched (target 722) — 34.7%
+- **Combined symbol parity:** 358/1204 matched (target 2649) — 29.7%
+- **Average inline-code cosine:** 0.41 (function body across 53 matched files)
+- **Average documentation cosine:** 0.31 (doc text across 53 matched files)
 - **Cheat-zeroed Files:** 9
-- **Critical Issues:** 37 files with <0.60 function similarity
+- **Critical Issues:** 35 files with <0.60 function similarity
 
 ## Priority 1: Fix Incomplete High-Dependency Files
 
@@ -38,14 +38,14 @@ Based on AST analysis, here are the concrete next steps.
 - **Action:** Deep review - likely missing major functionality
 
 ### 3. expr
-- **Similarity:** 0.37 (needs 48% improvement)
+- **Similarity:** 0.42 (needs 43% improvement)
 - **Dependencies:** 10
-- **Priority Score:** 10256606.0
-- **Functions:** 41/65 matched (target 174)
-- **Missing functions:** `parse_without_eager_brace`, `parse_with_earlier_boundary_rule`, `peek`, `from`, `eq`, `hash`, `fmt`, `clone`, `atom_labeled`, `expr_builtin`, `rest_of_path_or_macro_or_struct`, `expr_group`, `expr_let`, `expr_unary`, `expr_become`, `expr_closure`, `closure_arg`, `expr_break`, `expr_struct_helper`, `expr_range`, `parse_range_end`, `parse_obsolete`, `parse_multiple`, `multi_index`
-- **Types:** 0/1 matched (target 54)
+- **Priority Score:** 10126606.0
+- **Functions:** 54/65 matched (target 198)
+- **Missing functions:** `parse_without_eager_brace`, `parse_with_earlier_boundary_rule`, `peek`, `from`, `eq`, `hash`, `fmt`, `clone`, `expr_group`, `parse_obsolete`, `parse_multiple`
+- **Types:** 0/1 matched (target 55)
 - **Missing types:** `AllowStruct`
-- **Symbol Deficit:** 25 (functions: 24, types: 1)
+- **Symbol Deficit:** 12 (functions: 11, types: 1)
 - **Action:** Deep review - likely missing major functionality
 
 ## Priority 2: Port Missing High-Value Files
@@ -94,22 +94,22 @@ Every matched file is listed below with function and type symbol parity.
 ### 4. expr
 
 - **Target:** `syn.Expr`
-- **Similarity:** 0.37
+- **Similarity:** 0.42
 - **Dependents:** 10
-- **Priority Score:** 10256606.0
-- **Functions:** 41/65 matched (target 174)
-- **Missing functions:** `parse_without_eager_brace`, `parse_with_earlier_boundary_rule`, `peek`, `from`, `eq`, `hash`, `fmt`, `clone`, `atom_labeled`, `expr_builtin`, `rest_of_path_or_macro_or_struct`, `expr_group`, `expr_let`, `expr_unary`, `expr_become`, `expr_closure`, `closure_arg`, `expr_break`, `expr_struct_helper`, `expr_range`, `parse_range_end`, `parse_obsolete`, `parse_multiple`, `multi_index`
-- **Types:** 0/1 matched (target 54)
+- **Priority Score:** 10126606.0
+- **Functions:** 54/65 matched (target 198)
+- **Missing functions:** `parse_without_eager_brace`, `parse_with_earlier_boundary_rule`, `peek`, `from`, `eq`, `hash`, `fmt`, `clone`, `expr_group`, `parse_obsolete`, `parse_multiple`
+- **Types:** 0/1 matched (target 55)
 - **Missing types:** `AllowStruct`
 
 ### 5. path
 
 - **Target:** `syn.Path`
-- **Similarity:** 0.33
+- **Similarity:** 0.34
 - **Dependents:** 9
-- **Priority Score:** 9182807.0
-- **Functions:** 9/26 matched (target 44)
-- **Missing functions:** `default`, `const_argument`, `parse_turbofish`, `do_parse`, `parse_helper`, `parse_mod_style`, `parse_rest`, `is_mod_style`, `qpath`, `clone`, `print_path`, `print_path_segment`, `print_path_arguments`, `print_angle_bracketed_generic_arguments`, `print_parenthesized_generic_arguments`, `print_qpath`, `conditionally_print_turbofish`
+- **Priority Score:** 9172807.0
+- **Functions:** 10/26 matched (target 45)
+- **Missing functions:** `default`, `const_argument`, `parse_turbofish`, `do_parse`, `parse_helper`, `parse_mod_style`, `parse_rest`, `qpath`, `clone`, `print_path`, `print_path_segment`, `print_path_arguments`, `print_angle_bracketed_generic_arguments`, `print_parenthesized_generic_arguments`, `print_qpath`, `conditionally_print_turbofish`
 - **Types:** 1/2 matched (target 25)
 - **Missing types:** `QSelfDelimiters`
 - **Lint issues:** 1
@@ -183,12 +183,12 @@ Every matched file is listed below with function and type symbol parity.
 ### 12. classify
 
 - **Target:** `syn.Classify`
-- **Similarity:** 0.16
+- **Similarity:** 0.70
 - **Dependents:** 3
-- **Priority Score:** 3070908.2
-- **Functions:** 2/9 matched (target 2)
-- **Missing functions:** `trailing_unparameterized_path`, `last_type_in_path`, `last_type_in_bounds`, `expr_leading_label`, `expr_trailing_brace`, `type_trailing_brace`, `tokens_trailing_brace`
-- **Types:** 0/0 matched (target 1)
+- **Priority Score:** 3000903.0
+- **Functions:** 9/9 matched (target 12)
+- **Missing functions:** _none_
+- **Types:** 0/0 matched (target 4)
 - **Missing types:** _none_
 
 ### 13. gen.fold
@@ -394,18 +394,7 @@ Every matched file is listed below with function and type symbol parity.
 - **Types:** 1/1 matched (target 2)
 - **Missing types:** _none_
 
-### 31. fixup
-
-- **Target:** `syn.Fixup`
-- **Similarity:** 0.00
-- **Dependents:** 0
-- **Priority Score:** 161710.0
-- **Functions:** 0/15 matched (target 1)
-- **Missing functions:** `new_stmt`, `new_match_arm`, `new_condition`, `leftmost_subexpression_with_operator`, `leftmost_subexpression_with_dot`, `leftmost_subexpression_precedence`, `rightmost_subexpression`, `rightmost_subexpression_fixup`, `rightmost_subexpression_precedence`, `parenthesize`, `precedence`, `clone`, `eq`, `scan_left`, `scan_right`
-- **Types:** 1/2 matched
-- **Missing types:** `Scan`
-
-### 32. data
+### 31. data
 
 - **Target:** `syn.Data`
 - **Similarity:** 0.25
@@ -417,7 +406,7 @@ Every matched file is listed below with function and type symbol parity.
 - **Missing types:** `Item`, `IntoIter`, `Members`
 - **Lint issues:** 1
 
-### 33. ext
+### 32. ext
 
 - **Target:** `syn.Ext`
 - **Similarity:** 0.39
@@ -428,7 +417,7 @@ Every matched file is listed below with function and type symbol parity.
 - **Types:** 0/7 matched (target 1)
 - **Missing types:** `IdentExt`, `Token`, `TokenStreamExt`, `PunctExt`, `Sealed`, `PeekFn`, `IdentAny`
 
-### 34. parse
+### 33. parse
 
 - **Target:** `syn.Parse`
 - **Similarity:** 0.46
@@ -440,7 +429,7 @@ Every matched file is listed below with function and type symbol parity.
 - **Missing types:** `Target`, `Output`
 - **Lint issues:** 1
 
-### 35. export
+### 34. export
 
 - **Target:** `syn.Export`
 - **Similarity:** 1.00
@@ -451,7 +440,7 @@ Every matched file is listed below with function and type symbol parity.
 - **Types:** 0/8 matched (target 1)
 - **Missing types:** `Formatter`, `FmtResult`, `bool`, `str`, `Span`, `TokenStream2`, `TokenStream`, `private`
 
-### 36. buffer
+### 35. buffer
 
 - **Target:** `syn.Buffer`
 - **Similarity:** 0.63
@@ -462,7 +451,7 @@ Every matched file is listed below with function and type symbol parity.
 - **Types:** 3/4 matched (target 9)
 - **Missing types:** `UnsafeSyncEntry`
 
-### 37. meta
+### 36. meta
 
 - **Target:** `syn.Meta`
 - **Similarity:** 0.10
@@ -473,7 +462,7 @@ Every matched file is listed below with function and type symbol parity.
 - **Types:** 0/1 matched (target 0)
 - **Missing types:** `ParseNestedMeta`
 
-### 38. drops
+### 37. drops
 
 - **Target:** `syn.Drops`
 - **Similarity:** 0.47
@@ -485,7 +474,7 @@ Every matched file is listed below with function and type symbol parity.
 - **Missing types:** `Target`, `NeedsDrop`
 - **Tests:** 0/1 matched
 
-### 39. thread
+### 38. thread
 
 - **Target:** `syn.Thread`
 - **Similarity:** 0.30
@@ -496,7 +485,7 @@ Every matched file is listed below with function and type symbol parity.
 - **Types:** 1/1 matched (target 2)
 - **Missing types:** _none_
 
-### 40. tt
+### 39. tt
 
 - **Target:** `syn.Tt`
 - **Similarity:** 0.18
@@ -507,7 +496,7 @@ Every matched file is listed below with function and type symbol parity.
 - **Types:** 0/2 matched (target 0)
 - **Missing types:** `TokenTreeHelper`, `TokenStreamHelper`
 
-### 41. stmt
+### 40. stmt
 
 - **Target:** `syn.Stmt`
 - **Similarity:** 0.64
@@ -518,7 +507,7 @@ Every matched file is listed below with function and type symbol parity.
 - **Types:** 0/1 matched (target 8)
 - **Missing types:** `AllowNoSemi`
 
-### 42. mac
+### 41. mac
 
 - **Target:** `syn.Mac`
 - **Similarity:** 0.65
@@ -529,7 +518,7 @@ Every matched file is listed below with function and type symbol parity.
 - **Types:** 0/0 matched (target 1)
 - **Missing types:** _none_
 
-### 43. gen.eq
+### 42. gen.eq
 
 - **Target:** `gen.Eq [ZERO]`
 - **Similarity:** 0.00
@@ -540,7 +529,7 @@ Every matched file is listed below with function and type symbol parity.
 - **Types:** 0/0 matched
 - **Missing types:** _none_
 
-### 44. gen.hash
+### 43. gen.hash
 
 - **Target:** `gen.Hash [ZERO]`
 - **Similarity:** 0.00
@@ -550,6 +539,18 @@ Every matched file is listed below with function and type symbol parity.
 - **Missing functions:** `hash`
 - **Types:** 0/0 matched
 - **Missing types:** _none_
+
+### 44. fixup
+
+- **Target:** `syn.Fixup`
+- **Similarity:** 0.65
+- **Dependents:** 0
+- **Priority Score:** 1703.5
+- **Functions:** 15/15 matched (target 24)
+- **Missing functions:** _none_
+- **Types:** 2/2 matched
+- **Missing types:** _none_
+- **Lint issues:** 1
 
 ### 45. restriction
 

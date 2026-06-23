@@ -1707,3 +1707,162 @@ public fun closureArg(input: ParseStream): SynResult<Pat> {
     }
     return SynResult.success(pat)
 }
+
+public fun exprBreak(input: ParseStream, allowStruct: Boolean): SynResult<Expr.Break> {
+    val breakResult = input.parse(BreakParse)
+    if (breakResult.isFailure) return SynResult.failure((breakResult as SynResult.Failure).error)
+    val ahead = input.fork()
+    val labelResult = ahead.parse(LifetimeParse)
+    val label = if (labelResult.isSuccess) labelResult.getOrThrow() else null
+    if (label != null && ahead.peek(ColonPeek)) {
+        val exprResult = parseExprFull(input)
+        if (exprResult.isFailure) return SynResult.failure((exprResult as SynResult.Failure).error)
+        return SynResult.failure(SynError.new2(label.apostrophe, input.span(), "parentheses required"))
+    }
+    input.advanceTo(ahead)
+    val expr: Expr? = if (peekExpr(input) && (allowStruct || !input.peek(BracePeek))) {
+        val exprResult = parseExprFull(input)
+        if (exprResult.isFailure) return SynResult.failure((exprResult as SynResult.Failure).error)
+        exprResult.getOrThrow()
+    } else {
+        null
+    }
+    return SynResult.success(
+        Expr.Break(emptyList(), breakResult.getOrThrow(), label, expr),
+    )
+}
+
+public fun exprRange(input: ParseStream, allowStruct: Boolean): SynResult<Expr.Range> {
+    val limitsResult = input.parse(RangeLimitsParse)
+    if (limitsResult.isFailure) return SynResult.failure((limitsResult as SynResult.Failure).error)
+    val limits = limitsResult.getOrThrow()
+    val endResult = parseRangeEnd(input, limits, allowStruct)
+    if (endResult.isFailure) return SynResult.failure((endResult as SynResult.Failure).error)
+    return SynResult.success(
+        Expr.Range(emptyList(), null, limits, endResult.getOrThrow()),
+    )
+}
+
+public object RangeLimitsParse : Parse<RangeLimits> {
+    override fun parse(input: ParseStream): SynResult<RangeLimits> {
+        if (input.peek(DotDotEqPeek)) {
+            val result = input.parse(DotDotEqParse)
+            if (result.isFailure) return SynResult.failure((result as SynResult.Failure).error)
+            return SynResult.success(RangeLimits.Closed(result.getOrThrow()))
+        }
+        if (input.peek(DotDotPeek) && !input.peek(DotDotDotPeek)) {
+            val result = input.parse(DotDotParse)
+            if (result.isFailure) return SynResult.failure((result as SynResult.Failure).error)
+            return SynResult.success(RangeLimits.HalfOpen(result.getOrThrow()))
+        }
+        return SynResult.failure(input.error("expected .. or ..="))
+    }
+}
+
+public object ArmParse : Parse<Arm> {
+    override fun parse(input: ParseStream): SynResult<Arm> {
+        val attrs = emptyList<Attribute>()
+        val patResult = parsePatMultiWithLeadingVert(input)
+        if (patResult.isFailure) return SynResult.failure((patResult as SynResult.Failure).error)
+        val guard: IfExpr? = if (input.peek(IfPeek)) {
+            val ifToken = input.parse(IfParse).getOrThrow()
+            val guardExpr = parseExprFull(input)
+            if (guardExpr.isFailure) return SynResult.failure((guardExpr as SynResult.Failure).error)
+            IfExpr(ifToken, guardExpr.getOrThrow())
+        } else {
+            null
+        }
+        val fatArrowResult = input.parse(FatArrowParse)
+        if (fatArrowResult.isFailure) return SynResult.failure((fatArrowResult as SynResult.Failure).error)
+        val bodyResult = parseExprWithEarlierBoundaryRuleImpl(input)
+        if (bodyResult.isFailure) return SynResult.failure((bodyResult as SynResult.Failure).error)
+        val commaResult = input.parse(CommaParse)
+        val comma = if (commaResult.isSuccess) commaResult.getOrThrow() else null
+        return SynResult.success(
+            Arm(
+                attrs,
+                patResult.getOrThrow(),
+                guard,
+                fatArrowResult.getOrThrow(),
+                bodyResult.getOrThrow(),
+                comma,
+            ),
+        )
+    }
+}
+
+public fun parseRangeEnd(input: ParseStream, limits: RangeLimits, allowStruct: Boolean): SynResult<Expr?> {
+    val isHalfOpen = limits is RangeLimits.HalfOpen
+    val stop = isHalfOpen && (
+        input.isEmpty() ||
+            input.peek(CommaPeek) ||
+            input.peek(SemiPeek) ||
+            (input.peek(DotPeek) && !input.peek(DotDotPeek)) ||
+            input.peek(QuestionPeek) ||
+            input.peek(FatArrowPeek) ||
+            (!allowStruct && input.peek(BracePeek)) ||
+            input.peek(EqPeek) ||
+            input.peek(PlusPeek) ||
+            input.peek(AsPeek)
+    )
+    if (stop) {
+        return SynResult.success(null)
+    }
+    val endResult = parseBinopRhsImpl(input, allowStruct, Precedence.Range)
+    if (endResult.isFailure) return SynResult.failure((endResult as SynResult.Failure).error)
+    return SynResult.success(endResult.getOrThrow())
+}
+
+public fun parseObsoleteRangeLimits(input: ParseStream): SynResult<RangeLimits> {
+    val dotDot = input.peek(DotDotPeek)
+    val dotDotEq = dotDot && input.peek(DotDotEqPeek)
+    val dotDotDot = dotDot && input.peek(DotDotDotPeek)
+    if (dotDotEq) {
+        val result = input.parse(DotDotEqParse)
+        if (result.isFailure) return SynResult.failure((result as SynResult.Failure).error)
+        return SynResult.success(RangeLimits.Closed(result.getOrThrow()))
+    }
+    if (dotDot) {
+        val result = input.parse(DotDotParse)
+        if (result.isFailure) return SynResult.failure((result as SynResult.Failure).error)
+        return SynResult.success(RangeLimits.HalfOpen(result.getOrThrow()))
+    }
+    return SynResult.failure(input.error("expected .. or ..="))
+}
+
+public fun parseMultipleArms(input: ParseStream): SynResult<List<Arm>> {
+    val arms = mutableListOf<Arm>()
+    while (!input.isEmpty()) {
+        val armResult = input.parse(ArmParse)
+        if (armResult.isFailure) return SynResult.failure((armResult as SynResult.Failure).error)
+        arms.add(armResult.getOrThrow())
+    }
+    return SynResult.success(arms)
+}
+
+public fun multiIndex(e: Expr, dotToken: io.github.kotlinmania.syn.token.Dot, float: LitFloat): SynResult<MultiIndexResult> {
+    val floatToken = float.token()
+    val floatSpan = floatToken.span()
+    var floatRepr = floatToken.toString()
+    val trailingDot = floatRepr.endsWith('.')
+    if (trailingDot) {
+        floatRepr = floatRepr.dropLast(1)
+    }
+    var offset = 0
+    var currentExpr = e
+    var currentDot = dotToken
+    for (part in floatRepr.split('.')) {
+        val index: Index = Index(part.toUInt(), floatSpan)
+        val partEnd = offset + part.length
+        val base = currentExpr
+        currentExpr = Expr.Field(
+            emptyList(),
+            base,
+            currentDot,
+            Member.Unnamed(index),
+        )
+        currentDot = io.github.kotlinmania.syn.token.Dot.from(floatSpan)
+        offset = partEnd + 1
+    }
+    return SynResult.success(MultiIndexResult(currentExpr, !trailingDot))
+}
