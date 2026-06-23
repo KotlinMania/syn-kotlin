@@ -214,7 +214,7 @@ public class SynError private constructor(
 
     /** The source location of the error. */
     public fun span(): Span {
-        val range = messages[0].span.get() ?: return Span.callSite()
+        val range = messages[0].span.get() as? SpanRange ?: return Span.callSite()
         return range.start.join(range.end) ?: range.start
     }
 
@@ -313,7 +313,7 @@ public class Iter internal constructor(
 }
 
 private data class ErrorMessage(
-    val span: ThreadBound<SpanRange>,
+    val span: ThreadBound,
     val message: String,
 ) {
     fun debugString(): String =
@@ -323,7 +323,7 @@ private data class ErrorMessage(
         debugString()
 
     fun toCompileError(tokens: TokenStream) {
-        val range = span.get()
+        val range = span.get() as? SpanRange
         val start = range?.start ?: Span.callSite()
         val end = range?.end ?: Span.callSite()
 

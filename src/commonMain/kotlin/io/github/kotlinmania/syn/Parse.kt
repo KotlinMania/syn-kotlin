@@ -146,14 +146,11 @@ public class ParseBuffer internal constructor(
      * Parsing continues until the end of this parse stream. The entire content
      * of this parse stream must consist of [T] and P.
      */
-    internal fun <T : ToTokens, P : ToTokens> parseTerminated(
-        parser: (ParseStream) -> SynResult<T>,
+    internal fun parseTerminated(
+        parser: (ParseStream) -> SynResult<ToTokens>,
         separator: Peek,
-        punctuationParser: Parse<P>,
-    ): SynResult<Punctuated<T, P>> {
-        // The `separator` parameter mirrors the type-level role of
-        // `P: Peek`: it carries no runtime data but constrains which P this
-        // overload accepts. The value is accepted and intentionally discarded.
+        punctuationParser: Parse<ToTokens>,
+    ): SynResult<Punctuated> {
         separator.peek(currentCursor)
         return Punctuated.parseTerminatedWith(this, parser, punctuationParser)
     }
