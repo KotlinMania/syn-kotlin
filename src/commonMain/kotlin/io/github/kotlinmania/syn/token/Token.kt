@@ -160,6 +160,9 @@ class Group(
         "Group"
 }
 
+public fun group(span: Span): Group =
+    Group.from(span)
+
 sealed class DelimiterToken(
     val span: DelimSpan,
     private val delimiter: Delimiter,

@@ -18,5 +18,10 @@
   "reexport_modules": [
     "mod.rs",
     "lib.rs"
+  ],
+  "macro_files": [
+    "custom_keyword.rs",
+    "parse_macro_input.rs",
+    "custom_punctuation.rs"
   ]
 }

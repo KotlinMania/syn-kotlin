@@ -101,8 +101,6 @@ public enum class Precedence {
 
     public fun cloneValue(): Precedence = this
 
-    public fun clone(): Precedence = this
-
     public fun eq(other: Precedence): Boolean = this == other
 
     public fun partialCmp(other: Precedence): Int = this.compareTo(other)

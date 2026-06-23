@@ -1837,3 +1837,29 @@ private fun parsePathRest(input: ParseStream, path: Path): SynResult<Unit> {
     }
     return SynResult.success(Unit)
 }
+
+internal enum class Input {
+    Keyword,
+    Punct,
+    ConsumeAny,
+    ConsumeBinOp,
+    ConsumeBrace,
+    ConsumeDelimiter,
+    ConsumeIdent,
+    ConsumeLifetime,
+    ConsumeLiteral,
+    ConsumeNestedBrace,
+    ExpectPath,
+    ExpectTurbofish,
+    ExpectType,
+    CanBeginExpr,
+    Otherwise,
+    Empty,
+}
+
+internal enum class Action {
+    SetState,
+    IncDepth,
+    DecDepth,
+    Finish,
+}
