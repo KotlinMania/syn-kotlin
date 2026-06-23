@@ -18,8 +18,8 @@ import io.github.kotlinmania.syn.token.RArrow
  * preserves the original Kotlin API name.
  */
 public sealed class SynType : ToTokens {
-    public companion object : Parse<SynType> {
-        override fun parse(input: ParseStream): SynResult<SynType> = parseTypeFull(input)
+    public companion object {
+        fun parse(input: ParseStream): SynResult<SynType> = parseTypeFull(input)
 
         public fun withoutPlus(input: ParseStream): SynResult<SynType> = parseTypeWithoutPlus(input)
     }
@@ -93,11 +93,11 @@ public sealed class SynType : ToTokens {
         val implToken: io.github.kotlinmania.syn.token.Impl,
         val bounds: TypeParamBoundList,
     ) : SynType() {
-        public companion object : Parse<ImplTrait> {
-            override fun parse(input: ParseStream): SynResult<ImplTrait> =
+        public companion object {
+            fun parse(input: ParseStream): SynResult<ImplTrait> =
                 parseTypeImplTrait(input, allowPlus = true)
 
-            public fun withoutPlus(input: ParseStream): SynResult<ImplTrait> =
+            fun withoutPlus(input: ParseStream): SynResult<ImplTrait> =
                 parseTypeImplTrait(input, allowPlus = false)
         }
 
@@ -208,11 +208,11 @@ public sealed class SynType : ToTokens {
         val dynToken: io.github.kotlinmania.syn.token.Dyn?,
         val bounds: TypeParamBoundList,
     ) : SynType() {
-        public companion object : Parse<TraitObject> {
-            override fun parse(input: ParseStream): SynResult<TraitObject> =
+        public companion object {
+            fun parse(input: ParseStream): SynResult<TraitObject> =
                 parseTypeTraitObject(input, allowPlus = true)
 
-            public fun withoutPlus(input: ParseStream): SynResult<TraitObject> =
+            fun withoutPlus(input: ParseStream): SynResult<TraitObject> =
                 parseTypeTraitObject(input, allowPlus = false)
 
             internal fun parseBounds(
@@ -294,8 +294,8 @@ public data class BareFnArg(
     public val name: IdentColon?,
     public val ty: SynType,
 ) : ToTokens {
-    public companion object : Parse<BareFnArg> {
-        override fun parse(input: ParseStream): SynResult<BareFnArg> {
+    public companion object {
+        fun parse(input: ParseStream): SynResult<BareFnArg> {
             val allowSelf = false
             return parseBareFnArg(input, allowSelf)
         }
@@ -331,10 +331,10 @@ public data class BareVariadic(
 }
 
 public sealed class ReturnType : ToTokens {
-    public companion object : Parse<ReturnType> {
-        override fun parse(input: ParseStream): SynResult<ReturnType> = parseReturnType(input)
+    public companion object {
+        fun parse(input: ParseStream): SynResult<ReturnType> = parseReturnType(input)
 
-        public fun withoutPlus(input: ParseStream): SynResult<ReturnType> =
+        fun withoutPlus(input: ParseStream): SynResult<ReturnType> =
             parseReturnTypeWithoutPlus(input)
     }
 
@@ -377,7 +377,7 @@ internal fun parseBareFnArg(
     val begin = input.fork()
     val hasMutSelf = allowSelf && input.peek(MutPeek) && input.peek2(SelfValuePeek)
     if (hasMutSelf) {
-        input.parse(MutParse).getOrElse { return SynResult.failure(it) }
+        MutParse.parse(input).getOrElse { return SynResult.failure(it) }
     }
 
     var hasSelf = false
@@ -390,7 +390,7 @@ internal fun parseBareFnArg(
             !input.peek2(PathSepPeek)
         ) {
             val ident = parseBareFnName(input).getOrElse { return SynResult.failure(it) }
-            val colon = input.parse(ColonParse).getOrElse { return SynResult.failure(it) }
+            val colon = ColonParse.parse(input).getOrElse { return SynResult.failure(it) }
             IdentColon(ident, colon)
         } else {
             hasSelf = false
@@ -399,11 +399,11 @@ internal fun parseBareFnArg(
 
     val parsedTy =
         if (allowSelf && !hasSelf && input.peek(MutPeek) && input.peek2(SelfValuePeek)) {
-            input.parse(MutParse).getOrElse { return SynResult.failure(it) }
-            input.parse(SelfValueParse).getOrElse { return SynResult.failure(it) }
+            MutParse.parse(input).getOrElse { return SynResult.failure(it) }
+            SelfValueParse.parse(input).getOrElse { return SynResult.failure(it) }
             null
         } else if (hasMutSelf && name == null) {
-            input.parse(SelfValueParse).getOrElse { return SynResult.failure(it) }
+            SelfValueParse.parse(input).getOrElse { return SynResult.failure(it) }
             null
         } else {
             parseTypeFull(input).getOrElse { return SynResult.failure(it) }
@@ -426,19 +426,19 @@ internal fun parseBareVariadic(
     val name =
         if (input.peek(IdentPeek) || input.peek(UnderscorePeek)) {
             val ident = parseBareFnName(input).getOrElse { return SynResult.failure(it) }
-            val colon = input.parse(ColonParse).getOrElse { return SynResult.failure(it) }
+            val colon = ColonParse.parse(input).getOrElse { return SynResult.failure(it) }
             IdentColon(ident, colon)
         } else {
             null
         }
-    val dots = input.parse(DotDotDotParse).getOrElse { return SynResult.failure(it) }
-    val comma = input.parse(CommaParse).getOrNull()
+    val dots = DotDotDotParse.parse(input).getOrElse { return SynResult.failure(it) }
+    val comma = CommaParse.parse(input).getOrNull()
     return SynResult.success(BareVariadic(attrs, name, dots, comma))
 }
 
 private fun parseBareFnName(input: ParseStream): SynResult<Ident> {
     if (input.peek(UnderscorePeek)) {
-        val underscore = input.parse(UnderscoreParse).getOrElse { return SynResult.failure(it) }
+        val underscore = UnderscoreParse.parse(input).getOrElse { return SynResult.failure(it) }
         return SynResult.success(from(underscore))
     }
     return identParseAny(input)
