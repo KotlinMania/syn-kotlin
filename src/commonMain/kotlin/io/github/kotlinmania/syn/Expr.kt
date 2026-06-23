@@ -1596,3 +1596,25 @@ public fun exprStructHelper(
         Expr.Struct(emptyList(), qself, path, bracesVal.token, fields, null, null),
     )
 }
+
+public fun exprLet(input: ParseStream, allowStruct: Boolean): SynResult<Expr.Let> {
+    val letResult = input.parse(LetParse)
+    if (letResult.isFailure) return SynResult.failure((letResult as SynResult.Failure).error)
+    val patResult = parsePatMultiWithLeadingVert(input)
+    if (patResult.isFailure) return SynResult.failure((patResult as SynResult.Failure).error)
+    val eqResult = input.parse(EqParse)
+    if (eqResult.isFailure) return SynResult.failure((eqResult as SynResult.Failure).error)
+    val lhsResult = unaryExprImpl(input, allowStruct)
+    if (lhsResult.isFailure) return SynResult.failure((lhsResult as SynResult.Failure).error)
+    val exprResult = parseExprBinaryImpl(input, lhsResult.getOrThrow(), allowStruct, Precedence.Compare)
+    if (exprResult.isFailure) return SynResult.failure((exprResult as SynResult.Failure).error)
+    return SynResult.success(
+        Expr.Let(
+            emptyList(),
+            letResult.getOrThrow(),
+            patResult.getOrThrow(),
+            eqResult.getOrThrow(),
+            exprResult.getOrThrow(),
+        ),
+    )
+}
