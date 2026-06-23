@@ -835,7 +835,7 @@ private fun parseExprIf(input: ParseStream): SynResult<Expr> {
     return SynResult.success(Expr.If(emptyList(), ifToken, cond.getOrThrow(), thenBranch, elseBranch))
 }
 
-private fun parseExprWhile(input: ParseStream, label: Label? = null): SynResult<Expr> {
+internal fun parseExprWhile(input: ParseStream, label: Label? = null): SynResult<Expr> {
     val whileToken = input.parse(WhileParse).getOrThrow()
     val cond = ambiguousExprImpl(input, allowStruct = false)
     if (cond.isFailure) return cond
@@ -854,7 +854,7 @@ private fun parseExprWhile(input: ParseStream, label: Label? = null): SynResult<
     return SynResult.success(Expr.While(emptyList(), label, whileToken, cond.getOrThrow(), Block(brace, stmts)))
 }
 
-private fun parseExprLoop(input: ParseStream, label: Label? = null): SynResult<Expr> {
+internal fun parseExprLoop(input: ParseStream, label: Label? = null): SynResult<Expr> {
     val loopToken = input.parse(LoopParse).getOrThrow()
     val braceResult = braced(input)
     if (braceResult.isFailure) return braceResult.asFailure()
@@ -984,7 +984,7 @@ private fun parseExprConst(input: ParseStream): SynResult<Expr> {
     return SynResult.success(Expr.Const(emptyList(), constToken, Block(brace, stmts)))
 }
 
-private fun parseExprBlock(input: ParseStream): SynResult<Expr> {
+internal fun parseExprBlock(input: ParseStream): SynResult<Expr> {
     val braceResult = braced(input)
     if (braceResult.isFailure) return braceResult.asFailure()
     val bracesVal = braceResult.getOrThrow()

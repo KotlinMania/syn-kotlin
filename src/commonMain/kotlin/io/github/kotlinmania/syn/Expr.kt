@@ -1458,3 +1458,52 @@ public fun indexFromUSize(index: Int): Index {
     require(index < 0xFFFFFFFF) { "index overflow" }
     return Index(index.toUInt(), io.github.kotlinmania.procmacro2.Span.callSite())
 }
+
+public fun atomLabeled(input: ParseStream): SynResult<Expr> {
+    val labelResult = input.parse(LifetimeParse)
+    if (labelResult.isFailure) return SynResult.failure((labelResult as SynResult.Failure).error)
+    val theLabel = labelResult.getOrThrow()
+    val colonResult = input.parse(ColonParse)
+    if (colonResult.isFailure) return SynResult.failure((colonResult as SynResult.Failure).error)
+    val theLabelColon = colonResult.getOrThrow()
+    val label = Label(theLabel, theLabelColon)
+    val expr: Expr = when {
+        input.peek(WhilePeek) -> {
+            val whileResult = parseExprWhileLabeled(input)
+            if (whileResult.isFailure) return whileResult
+            whileResult.getOrThrow()
+        }
+        input.peek(ForPeek) -> {
+            val forResult = parseExprForLabeled(input)
+            if (forResult.isFailure) return forResult
+            forResult.getOrThrow()
+        }
+        input.peek(LoopPeek) -> {
+            val loopResult = parseExprLoopLabeled(input)
+            if (loopResult.isFailure) return loopResult
+            loopResult.getOrThrow()
+        }
+        input.peek(BracePeek) -> {
+            val blockResult = parseExprBlock(input)
+            if (blockResult.isFailure) return blockResult
+            blockResult.getOrThrow()
+        }
+        else -> return SynResult.failure(input.error("expected loop or block expression"))
+    }
+    return when (expr) {
+        is Expr.While -> SynResult.success(expr.copy(label = label))
+        is Expr.ForLoop -> SynResult.success(expr.copy(label = label))
+        is Expr.Loop -> SynResult.success(expr.copy(label = label))
+        is Expr.BlockExpr -> SynResult.success(expr.copy(label = label))
+        else -> SynResult.success(expr)
+    }
+}
+
+internal fun parseExprWhileLabeled(input: ParseStream): SynResult<Expr> =
+    parseExprWhile(input)
+
+internal fun parseExprForLabeled(input: ParseStream): SynResult<Expr> =
+    parseExprFull(input)
+
+internal fun parseExprLoopLabeled(input: ParseStream): SynResult<Expr> =
+    parseExprLoop(input)
