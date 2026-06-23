@@ -1,4 +1,4 @@
-// port-lint: source tests/test_punctuated.rs
+// port-lint: tests tests/test_punctuated.rs
 package io.github.kotlinmania.syn
 
 import io.github.kotlinmania.procmacro2.Literal

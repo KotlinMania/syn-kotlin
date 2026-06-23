@@ -159,6 +159,84 @@ class ItemTest {
     }
 
     @Test
+    fun testExternCrateItem() {
+        val item = assertIs<Item.ExternCrate>(parseItem("pub extern crate alloc as memory;"))
+
+        assertIs<Visibility.Public>(item.vis)
+        assertEquals("alloc", item.ident.toString())
+        assertEquals("memory", assertNotNull(item.rename).ident.toString())
+
+        val underscore = assertIs<Item.ExternCrate>(parseItem("extern crate self as _;"))
+        assertEquals("self", underscore.ident.toString())
+        assertEquals("_", assertNotNull(underscore.rename).ident.toString())
+    }
+
+    @Test
+    fun testForeignModItem() {
+        val item =
+            assertIs<Item.ForeignMod>(
+                parseItem(
+                    """
+                    unsafe extern "C" {
+                        #![allow(improper_ctypes)]
+                        pub fn puts(s: *const c_char);
+                        static errno: i32;
+                        type Opaque;
+                        callback!();
+                    }
+                    """.trimIndent(),
+                ),
+            )
+
+        assertNotNull(item.unsafety)
+        assertEquals("C", assertNotNull(item.abi.name).value())
+        assertEquals(1, item.attrs.size)
+        assertIs<AttrStyle.Inner>(item.attrs.single().style)
+        assertEquals(4, item.items.size)
+
+        val fn = assertIs<ForeignItem.Fn>(item.items[0])
+        assertIs<Visibility.Public>(fn.vis)
+        assertEquals("puts", fn.sig.ident.toString())
+        val arg = assertIs<FnArg.Typed>(fn.sig.inputs.single())
+        val ptr = assertIs<SynType.Ptr>(arg.patType.ty)
+        assertNotNull(ptr.constToken)
+        assertNull(ptr.mutability)
+
+        val static = assertIs<ForeignItem.Static>(item.items[1])
+        assertIs<StaticMutability.None>(static.mutability)
+        assertEquals("errno", static.ident.toString())
+        assertTypePath(static.ty, "i32")
+
+        val type = assertIs<ForeignItem.ItemType>(item.items[2])
+        assertEquals("Opaque", type.ident.toString())
+        assertTrue(type.generics.params.isEmpty())
+
+        val macro = assertIs<ForeignItem.Macro>(item.items[3])
+        assertPath(macro.mac.path, "callback")
+        assertNotNull(macro.semiToken)
+    }
+
+    @Test
+    fun testForeignItemsWithUnsupportedRustShapesFallBackToVerbatim() {
+        val item =
+            assertIs<Item.ForeignMod>(
+                parseItem(
+                    """
+                    extern "C" {
+                        fn has_body() {}
+                        unsafe static MUTABLE: i32;
+                        static VALUE: i32 = 1;
+                        type Bounded: Sized;
+                    }
+                    """.trimIndent(),
+                ),
+            )
+
+        assertEquals(4, item.items.size)
+        item.items.forEach { assertIs<ForeignItem.Verbatim>(it) }
+    }
+
+    @Test
     fun testTypeEmptyBounds() {
         val item = assertIs<Item.Trait>(parseItem("trait Foo { type Bar: ; }"))
         val assocType = assertIs<TraitItem.AssocType>(item.items.single())

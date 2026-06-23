@@ -55,6 +55,24 @@ class TyTest {
     }
 
     @Test
+    fun testBareFnArgParse() {
+        val named = parseStr(BareFnArg, "#[cfg(test)] arg: T").getOrThrow()
+        assertEquals(1, named.attrs.size)
+        assertEquals("arg", named.name?.ident.toString())
+        assertPath(assertIs<SynType.Path>(named.ty).path, "T")
+
+        val unnamed = parseStr(BareFnArg, "T").getOrThrow()
+        assertNull(unnamed.name)
+        assertPath(assertIs<SynType.Path>(unnamed.ty).path, "T")
+
+        val underscore = parseStr(BareFnArg, "_: usize").getOrThrow()
+        assertEquals("_", underscore.name?.ident.toString())
+        assertPath(assertIs<SynType.Path>(underscore.ty).path, "usize")
+
+        assertTrue(parseStr(BareFnArg, "mut self").isFailure)
+    }
+
+    @Test
     fun testMacroVariableType() {
         val tokens =
             TokenStream.fromTokenTrees(

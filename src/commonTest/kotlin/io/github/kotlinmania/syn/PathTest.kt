@@ -9,8 +9,10 @@ import io.github.kotlinmania.procmacro2.Spacing
 import io.github.kotlinmania.procmacro2.Span
 import io.github.kotlinmania.procmacro2.TokenStream
 import io.github.kotlinmania.procmacro2.TokenTree
+import io.github.kotlinmania.quote.ToTokens
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertIs
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
@@ -36,6 +38,48 @@ class PathTest {
         assertEquals(2, segments.size)
         assertEquals("first", segments[0].ident.toString())
         assertEquals("rest", segments[1].ident.toString())
+    }
+
+    @Test
+    fun parseParenthesizedPathArgumentsWithDisambiguator() {
+        val ty = assertIs<SynType.TraitObject>(parseStr(SynTypeParseExpr, "dyn FnOnce::() -> !").getOrThrow())
+        val bound = assertIs<TypeParamBound.Trait>(ty.bounds.toList().single())
+        val segment = bound.path.segments.toList().single()
+
+        assertEquals("FnOnce", segment.ident.toString())
+        val args = assertIs<PathArguments.Parenthesized>(segment.arguments)
+        assertTrue(args.inputs.isEmpty())
+        val output = assertIs<ReturnType.TypeReturn>(args.output)
+        assertIs<SynType.Never>(output.ty)
+    }
+
+    @Test
+    fun printIncompleteQpath() {
+        val withAs = assertIs<SynType.Path>(parseStr(SynTypeParseExpr, "<Self as A>::Q").getOrThrow())
+        assertEquals("< Self as A > :: Q", tokensOf(withAs))
+        assertNotNull(withAs.path.segments.pop())
+        assertEquals("< Self as A > ::", tokensOf(withAs))
+        assertNotNull(withAs.path.segments.pop())
+        assertEquals("< Self >", tokensOf(withAs))
+        assertNull(withAs.path.segments.pop())
+
+        val withoutAs = assertIs<SynType.Path>(parseStr(SynTypeParseExpr, "<Self>::A::B").getOrThrow())
+        assertEquals("< Self > :: A :: B", tokensOf(withoutAs))
+        assertNotNull(withoutAs.path.segments.pop())
+        assertEquals("< Self > :: A ::", tokensOf(withoutAs))
+        assertNotNull(withoutAs.path.segments.pop())
+        assertEquals("< Self > ::", tokensOf(withoutAs))
+        assertNull(withoutAs.path.segments.pop())
+
+        val normal = assertIs<SynType.Path>(parseStr(SynTypeParseExpr, "Self::A::B").getOrThrow())
+        assertEquals("Self :: A :: B", tokensOf(normal))
+        assertNotNull(normal.path.segments.pop())
+        assertEquals("Self :: A ::", tokensOf(normal))
+        assertNotNull(normal.path.segments.pop())
+        assertEquals("Self ::", tokensOf(normal))
+        assertNotNull(normal.path.segments.pop())
+        assertEquals("", tokensOf(normal))
+        assertNull(normal.path.segments.pop())
     }
 
     @Test
@@ -69,9 +113,9 @@ class PathTest {
 
     @Test
     fun pathIsIdent() {
-        // PathSegmentList.operator get(Int) reads super.inner[index] and does
-        // not fall back to the trailing single segment held in `last`, so
-        // getIdent() throws IndexOutOfBoundsException for a one-segment path.
+        val path = parseStr(PathParse, "Foo").getOrThrow()
+        assertTrue(path.isIdent("Foo"))
+        assertTrue(!path.isIdent("Bar"))
     }
 
     @Test
@@ -82,9 +126,8 @@ class PathTest {
 
     @Test
     fun pathGetIdentSingleSegment() {
-        // PathSegmentList.operator get(Int) reads super.inner[index] and does
-        // not fall back to the trailing single segment held in `last`, so
-        // getIdent() throws IndexOutOfBoundsException for a one-segment path.
+        val path = parseStr(PathParse, "Foo").getOrThrow()
+        assertEquals("Foo", path.getIdent()?.toString())
     }
 
     @Test
@@ -146,4 +189,10 @@ class PathTest {
 
 private fun assertNotNull(value: Any?) {
     kotlin.test.assertNotNull(value)
+}
+
+private fun tokensOf(value: ToTokens): String {
+    val tokens = TokenStream.new()
+    value.toTokens(tokens)
+    return tokens.toString()
 }

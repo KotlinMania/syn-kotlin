@@ -28,6 +28,8 @@ public class ThreadBound<T> private constructor(
     override fun hashCode(): Int = 31 * (value?.hashCode() ?: 0) + threadId.hashCode()
 
     public fun deepCopy(): ThreadBound<T> = clone()
+
+    public fun fmt(): String = toString()
 }
 
 /** A reference that is safe to send across contexts. */

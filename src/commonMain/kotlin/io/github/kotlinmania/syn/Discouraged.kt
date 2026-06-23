@@ -101,3 +101,10 @@ internal fun ParseBuffer.parseAnyDelimiterImpl(): SynResult<AnyDelimiterResult> 
             SynResult.failure(cursor.error("expected any delimiter"))
         }
     }
+
+public fun advanceTo(buffer: ParseBuffer, fork: ParseBuffer) {
+    buffer.advanceToSpeculative(fork)
+}
+
+public fun parseAnyDelimiter(buffer: ParseBuffer): SynResult<AnyDelimiterResult> =
+    buffer.parseAnyDelimiterImpl()

@@ -43,7 +43,14 @@ private fun isXidStart(ch: Char): Boolean =
     ch == '_' || ch.isLetter()
 
 private fun isXidContinue(ch: Char): Boolean =
-    isXidStart(ch) || ch.isDigit()
+    isXidStart(ch) || ch.isDigit() || ch.category in XID_CONTINUE_MARK_CATEGORIES
+
+private val XID_CONTINUE_MARK_CATEGORIES =
+    setOf(
+        CharCategory.NON_SPACING_MARK,
+        CharCategory.ENCLOSING_MARK,
+        CharCategory.COMBINING_SPACING_MARK,
+    )
 
 internal fun acceptAsIdent(ident: Ident): Boolean {
     val s = ident.toString()

@@ -135,7 +135,7 @@ public object AsPeek : Peek {
         return ident.toString() == "as"
     }
 
-    override fun display(): String = "as"
+    override fun display(): String = "`as`"
 }
 
 /** Parses the casting keyword token. */
@@ -144,9 +144,9 @@ public object AsParse : Parse<As> {
         input.step { cursor ->
             val (ident, rest) =
                 cursor.ident()
-                    ?: return@step SynResult.failure(cursor.error("expected as"))
+                    ?: return@step SynResult.failure(cursor.error("expected `as`"))
             if (ident.toString() != "as") {
-                return@step SynResult.failure(cursor.error("expected as"))
+                return@step SynResult.failure(cursor.error("expected `as`"))
             }
             SynResult.success(As.from(ident.span()) to rest)
         }
@@ -159,7 +159,7 @@ public object AsyncPeek : Peek {
         return ident.toString() == "async"
     }
 
-    override fun display(): String = "async"
+    override fun display(): String = "`async`"
 }
 
 /** Parses the asynchronous keyword token. */
@@ -168,9 +168,9 @@ public object AsyncParse : Parse<Async> {
         input.step { cursor ->
             val (ident, rest) =
                 cursor.ident()
-                    ?: return@step SynResult.failure(cursor.error("expected async"))
+                    ?: return@step SynResult.failure(cursor.error("expected `async`"))
             if (ident.toString() != "async") {
-                return@step SynResult.failure(cursor.error("expected async"))
+                return@step SynResult.failure(cursor.error("expected `async`"))
             }
             SynResult.success(Async.from(ident.span()) to rest)
         }
@@ -207,7 +207,7 @@ public object AwaitPeek : Peek {
         return ident.toString() == "await"
     }
 
-    override fun display(): String = "await"
+    override fun display(): String = "`await`"
 }
 
 /** Parses the await-expression keyword token. */
@@ -216,9 +216,9 @@ public object AwaitParse : Parse<Await> {
         input.step { cursor ->
             val (ident, rest) =
                 cursor.ident()
-                    ?: return@step SynResult.failure(cursor.error("expected await"))
+                    ?: return@step SynResult.failure(cursor.error("expected `await`"))
             if (ident.toString() != "await") {
-                return@step SynResult.failure(cursor.error("expected await"))
+                return@step SynResult.failure(cursor.error("expected `await`"))
             }
             SynResult.success(Await.from(ident.span()) to rest)
         }
@@ -255,7 +255,7 @@ public object BoxPeek : Peek {
         return ident.toString() == "box"
     }
 
-    override fun display(): String = "box"
+    override fun display(): String = "`box`"
 }
 
 /** Parses the heap-alloc keyword token. */
@@ -264,9 +264,9 @@ public object BoxParse : Parse<Box> {
         input.step { cursor ->
             val (ident, rest) =
                 cursor.ident()
-                    ?: return@step SynResult.failure(cursor.error("expected box"))
+                    ?: return@step SynResult.failure(cursor.error("expected `box`"))
             if (ident.toString() != "box") {
-                return@step SynResult.failure(cursor.error("expected box"))
+                return@step SynResult.failure(cursor.error("expected `box`"))
             }
             SynResult.success(Box.from(ident.span()) to rest)
         }
@@ -279,7 +279,7 @@ public object BreakPeek : Peek {
         return ident.toString() == "break"
     }
 
-    override fun display(): String = "break"
+    override fun display(): String = "`break`"
 }
 
 /** Parses the loop-break keyword token. */
@@ -288,9 +288,9 @@ public object BreakParse : Parse<Break> {
         input.step { cursor ->
             val (ident, rest) =
                 cursor.ident()
-                    ?: return@step SynResult.failure(cursor.error("expected break"))
+                    ?: return@step SynResult.failure(cursor.error("expected `break`"))
             if (ident.toString() != "break") {
-                return@step SynResult.failure(cursor.error("expected break"))
+                return@step SynResult.failure(cursor.error("expected `break`"))
             }
             SynResult.success(Break.from(ident.span()) to rest)
         }
@@ -303,7 +303,7 @@ public object ConstPeek : Peek {
         return ident.toString() == "const"
     }
 
-    override fun display(): String = "const"
+    override fun display(): String = "`const`"
 }
 
 /** Parses the compile-time-constant keyword token. */
@@ -312,9 +312,9 @@ public object ConstParse : Parse<Const> {
         input.step { cursor ->
             val (ident, rest) =
                 cursor.ident()
-                    ?: return@step SynResult.failure(cursor.error("expected const"))
+                    ?: return@step SynResult.failure(cursor.error("expected `const`"))
             if (ident.toString() != "const") {
-                return@step SynResult.failure(cursor.error("expected const"))
+                return@step SynResult.failure(cursor.error("expected `const`"))
             }
             SynResult.success(Const.from(ident.span()) to rest)
         }
@@ -327,7 +327,7 @@ public object ContinuePeek : Peek {
         return ident.toString() == "continue"
     }
 
-    override fun display(): String = "continue"
+    override fun display(): String = "`continue`"
 }
 
 /** Parses the loop-continue keyword token. */
@@ -336,9 +336,9 @@ public object ContinueParse : Parse<Continue> {
         input.step { cursor ->
             val (ident, rest) =
                 cursor.ident()
-                    ?: return@step SynResult.failure(cursor.error("expected continue"))
+                    ?: return@step SynResult.failure(cursor.error("expected `continue`"))
             if (ident.toString() != "continue") {
-                return@step SynResult.failure(cursor.error("expected continue"))
+                return@step SynResult.failure(cursor.error("expected `continue`"))
             }
             SynResult.success(Continue.from(ident.span()) to rest)
         }
@@ -351,7 +351,7 @@ public object CratePeek : Peek {
         return ident.toString() == "crate"
     }
 
-    override fun display(): String = "crate"
+    override fun display(): String = "`crate`"
 }
 
 /** Parses the crate-root keyword token. */
@@ -360,9 +360,9 @@ public object CrateParse : Parse<Crate> {
         input.step { cursor ->
             val (ident, rest) =
                 cursor.ident()
-                    ?: return@step SynResult.failure(cursor.error("expected crate"))
+                    ?: return@step SynResult.failure(cursor.error("expected `crate`"))
             if (ident.toString() != "crate") {
-                return@step SynResult.failure(cursor.error("expected crate"))
+                return@step SynResult.failure(cursor.error("expected `crate`"))
             }
             SynResult.success(Crate.from(ident.span()) to rest)
         }
@@ -423,7 +423,7 @@ public object DynPeek : Peek {
         return ident.toString() == "dyn"
     }
 
-    override fun display(): String = "dyn"
+    override fun display(): String = "`dyn`"
 }
 
 /** Parses the dynamic-dispatch keyword token. */
@@ -432,9 +432,9 @@ public object DynParse : Parse<Dyn> {
         input.step { cursor ->
             val (ident, rest) =
                 cursor.ident()
-                    ?: return@step SynResult.failure(cursor.error("expected dyn"))
+                    ?: return@step SynResult.failure(cursor.error("expected `dyn`"))
             if (ident.toString() != "dyn") {
-                return@step SynResult.failure(cursor.error("expected dyn"))
+                return@step SynResult.failure(cursor.error("expected `dyn`"))
             }
             SynResult.success(Dyn.from(ident.span()) to rest)
         }
@@ -447,7 +447,7 @@ public object ElsePeek : Peek {
         return ident.toString() == "else"
     }
 
-    override fun display(): String = "else"
+    override fun display(): String = "`else`"
 }
 
 /** Parses the alternative keyword token. */
@@ -456,9 +456,9 @@ public object ElseParse : Parse<Else> {
         input.step { cursor ->
             val (ident, rest) =
                 cursor.ident()
-                    ?: return@step SynResult.failure(cursor.error("expected else"))
+                    ?: return@step SynResult.failure(cursor.error("expected `else`"))
             if (ident.toString() != "else") {
-                return@step SynResult.failure(cursor.error("expected else"))
+                return@step SynResult.failure(cursor.error("expected `else`"))
             }
             SynResult.success(Else.from(ident.span()) to rest)
         }
@@ -471,7 +471,7 @@ public object EnumPeek : Peek {
         return ident.toString() == "enum"
     }
 
-    override fun display(): String = "enum"
+    override fun display(): String = "`enum`"
 }
 
 /** Parses the enumeration keyword token. */
@@ -480,9 +480,9 @@ public object EnumParse : Parse<Enum> {
         input.step { cursor ->
             val (ident, rest) =
                 cursor.ident()
-                    ?: return@step SynResult.failure(cursor.error("expected enum"))
+                    ?: return@step SynResult.failure(cursor.error("expected `enum`"))
             if (ident.toString() != "enum") {
-                return@step SynResult.failure(cursor.error("expected enum"))
+                return@step SynResult.failure(cursor.error("expected `enum`"))
             }
             SynResult.success(Enum.from(ident.span()) to rest)
         }
@@ -495,7 +495,7 @@ public object ExternPeek : Peek {
         return ident.toString() == "extern"
     }
 
-    override fun display(): String = "extern"
+    override fun display(): String = "`extern`"
 }
 
 /** Parses the foreign-function keyword token. */
@@ -504,9 +504,9 @@ public object ExternParse : Parse<Extern> {
         input.step { cursor ->
             val (ident, rest) =
                 cursor.ident()
-                    ?: return@step SynResult.failure(cursor.error("expected extern"))
+                    ?: return@step SynResult.failure(cursor.error("expected `extern`"))
             if (ident.toString() != "extern") {
-                return@step SynResult.failure(cursor.error("expected extern"))
+                return@step SynResult.failure(cursor.error("expected `extern`"))
             }
             SynResult.success(Extern.from(ident.span()) to rest)
         }
@@ -543,7 +543,7 @@ public object FnPeek : Peek {
         return ident.toString() == "fn"
     }
 
-    override fun display(): String = "fn"
+    override fun display(): String = "`fn`"
 }
 
 /** Parses the function keyword token. */
@@ -552,9 +552,9 @@ public object FnParse : Parse<Fn> {
         input.step { cursor ->
             val (ident, rest) =
                 cursor.ident()
-                    ?: return@step SynResult.failure(cursor.error("expected fn"))
+                    ?: return@step SynResult.failure(cursor.error("expected `fn`"))
             if (ident.toString() != "fn") {
-                return@step SynResult.failure(cursor.error("expected fn"))
+                return@step SynResult.failure(cursor.error("expected `fn`"))
             }
             SynResult.success(Fn.from(ident.span()) to rest)
         }
@@ -567,7 +567,7 @@ public object ForPeek : Peek {
         return ident.toString() == "for"
     }
 
-    override fun display(): String = "for"
+    override fun display(): String = "`for`"
 }
 
 /** Parses the for-loop keyword token. */
@@ -576,9 +576,9 @@ public object ForParse : Parse<For> {
         input.step { cursor ->
             val (ident, rest) =
                 cursor.ident()
-                    ?: return@step SynResult.failure(cursor.error("expected for"))
+                    ?: return@step SynResult.failure(cursor.error("expected `for`"))
             if (ident.toString() != "for") {
-                return@step SynResult.failure(cursor.error("expected for"))
+                return@step SynResult.failure(cursor.error("expected `for`"))
             }
             SynResult.success(For.from(ident.span()) to rest)
         }
@@ -591,7 +591,7 @@ public object IfPeek : Peek {
         return ident.toString() == "if"
     }
 
-    override fun display(): String = "if"
+    override fun display(): String = "`if`"
 }
 
 /** Parses the conditional keyword token. */
@@ -600,9 +600,9 @@ public object IfParse : Parse<If> {
         input.step { cursor ->
             val (ident, rest) =
                 cursor.ident()
-                    ?: return@step SynResult.failure(cursor.error("expected if"))
+                    ?: return@step SynResult.failure(cursor.error("expected `if`"))
             if (ident.toString() != "if") {
-                return@step SynResult.failure(cursor.error("expected if"))
+                return@step SynResult.failure(cursor.error("expected `if`"))
             }
             SynResult.success(If.from(ident.span()) to rest)
         }
@@ -615,7 +615,7 @@ public object ImplPeek : Peek {
         return ident.toString() == "impl"
     }
 
-    override fun display(): String = "impl"
+    override fun display(): String = "`impl`"
 }
 
 /** Parses the implementation keyword token. */
@@ -624,9 +624,9 @@ public object ImplParse : Parse<Impl> {
         input.step { cursor ->
             val (ident, rest) =
                 cursor.ident()
-                    ?: return@step SynResult.failure(cursor.error("expected impl"))
+                    ?: return@step SynResult.failure(cursor.error("expected `impl`"))
             if (ident.toString() != "impl") {
-                return@step SynResult.failure(cursor.error("expected impl"))
+                return@step SynResult.failure(cursor.error("expected `impl`"))
             }
             SynResult.success(Impl.from(ident.span()) to rest)
         }
@@ -639,7 +639,7 @@ public object LetPeek : Peek {
         return ident.toString() == "let"
     }
 
-    override fun display(): String = "let"
+    override fun display(): String = "`let`"
 }
 
 /** Parses the binding keyword token. */
@@ -648,9 +648,9 @@ public object LetParse : Parse<Let> {
         input.step { cursor ->
             val (ident, rest) =
                 cursor.ident()
-                    ?: return@step SynResult.failure(cursor.error("expected let"))
+                    ?: return@step SynResult.failure(cursor.error("expected `let`"))
             if (ident.toString() != "let") {
-                return@step SynResult.failure(cursor.error("expected let"))
+                return@step SynResult.failure(cursor.error("expected `let`"))
             }
             SynResult.success(Let.from(ident.span()) to rest)
         }
@@ -663,7 +663,7 @@ public object LoopPeek : Peek {
         return ident.toString() == "loop"
     }
 
-    override fun display(): String = "loop"
+    override fun display(): String = "`loop`"
 }
 
 /** Parses the infinite-loop keyword token. */
@@ -672,9 +672,9 @@ public object LoopParse : Parse<Loop> {
         input.step { cursor ->
             val (ident, rest) =
                 cursor.ident()
-                    ?: return@step SynResult.failure(cursor.error("expected loop"))
+                    ?: return@step SynResult.failure(cursor.error("expected `loop`"))
             if (ident.toString() != "loop") {
-                return@step SynResult.failure(cursor.error("expected loop"))
+                return@step SynResult.failure(cursor.error("expected `loop`"))
             }
             SynResult.success(Loop.from(ident.span()) to rest)
         }
@@ -687,7 +687,7 @@ public object MacroPeek : Peek {
         return ident.toString() == "macro"
     }
 
-    override fun display(): String = "macro"
+    override fun display(): String = "`macro`"
 }
 
 /** Parses the macro-definition keyword token. */
@@ -696,9 +696,9 @@ public object MacroParse : Parse<Macro> {
         input.step { cursor ->
             val (ident, rest) =
                 cursor.ident()
-                    ?: return@step SynResult.failure(cursor.error("expected macro"))
+                    ?: return@step SynResult.failure(cursor.error("expected `macro`"))
             if (ident.toString() != "macro") {
-                return@step SynResult.failure(cursor.error("expected macro"))
+                return@step SynResult.failure(cursor.error("expected `macro`"))
             }
             SynResult.success(Macro.from(ident.span()) to rest)
         }
@@ -711,7 +711,7 @@ public object MatchPeek : Peek {
         return ident.toString() == "match"
     }
 
-    override fun display(): String = "match"
+    override fun display(): String = "`match`"
 }
 
 /** Parses the pattern-match keyword token. */
@@ -720,9 +720,9 @@ public object MatchParse : Parse<Match> {
         input.step { cursor ->
             val (ident, rest) =
                 cursor.ident()
-                    ?: return@step SynResult.failure(cursor.error("expected match"))
+                    ?: return@step SynResult.failure(cursor.error("expected `match`"))
             if (ident.toString() != "match") {
-                return@step SynResult.failure(cursor.error("expected match"))
+                return@step SynResult.failure(cursor.error("expected `match`"))
             }
             SynResult.success(Match.from(ident.span()) to rest)
         }
@@ -735,7 +735,7 @@ public object ModPeek : Peek {
         return ident.toString() == "mod"
     }
 
-    override fun display(): String = "mod"
+    override fun display(): String = "`mod`"
 }
 
 /** Parses the module keyword token. */
@@ -744,9 +744,9 @@ public object ModParse : Parse<Mod> {
         input.step { cursor ->
             val (ident, rest) =
                 cursor.ident()
-                    ?: return@step SynResult.failure(cursor.error("expected mod"))
+                    ?: return@step SynResult.failure(cursor.error("expected `mod`"))
             if (ident.toString() != "mod") {
-                return@step SynResult.failure(cursor.error("expected mod"))
+                return@step SynResult.failure(cursor.error("expected `mod`"))
             }
             SynResult.success(Mod.from(ident.span()) to rest)
         }
@@ -759,7 +759,7 @@ public object MovePeek : Peek {
         return ident.toString() == "move"
     }
 
-    override fun display(): String = "move"
+    override fun display(): String = "`move`"
 }
 
 /** Parses the capture keyword token. */
@@ -768,9 +768,9 @@ public object MoveParse : Parse<Move> {
         input.step { cursor ->
             val (ident, rest) =
                 cursor.ident()
-                    ?: return@step SynResult.failure(cursor.error("expected move"))
+                    ?: return@step SynResult.failure(cursor.error("expected `move`"))
             if (ident.toString() != "move") {
-                return@step SynResult.failure(cursor.error("expected move"))
+                return@step SynResult.failure(cursor.error("expected `move`"))
             }
             SynResult.success(Move.from(ident.span()) to rest)
         }
@@ -783,7 +783,7 @@ public object MutPeek : Peek {
         return ident.toString() == "mut"
     }
 
-    override fun display(): String = "mut"
+    override fun display(): String = "`mut`"
 }
 
 /** Parses the mutable keyword token. */
@@ -792,9 +792,9 @@ public object MutParse : Parse<Mut> {
         input.step { cursor ->
             val (ident, rest) =
                 cursor.ident()
-                    ?: return@step SynResult.failure(cursor.error("expected mut"))
+                    ?: return@step SynResult.failure(cursor.error("expected `mut`"))
             if (ident.toString() != "mut") {
-                return@step SynResult.failure(cursor.error("expected mut"))
+                return@step SynResult.failure(cursor.error("expected `mut`"))
             }
             SynResult.success(Mut.from(ident.span()) to rest)
         }
@@ -855,7 +855,7 @@ public object RawPeek : Peek {
         return ident.toString() == "raw"
     }
 
-    override fun display(): String = "raw"
+    override fun display(): String = "`raw`"
 }
 
 /** Parses the raw-identifier keyword token. */
@@ -864,9 +864,9 @@ public object RawParse : Parse<Raw> {
         input.step { cursor ->
             val (ident, rest) =
                 cursor.ident()
-                    ?: return@step SynResult.failure(cursor.error("expected raw"))
+                    ?: return@step SynResult.failure(cursor.error("expected `raw`"))
             if (ident.toString() != "raw") {
-                return@step SynResult.failure(cursor.error("expected raw"))
+                return@step SynResult.failure(cursor.error("expected `raw`"))
             }
             SynResult.success(Raw.from(ident.span()) to rest)
         }
@@ -879,7 +879,7 @@ public object RefPeek : Peek {
         return ident.toString() == "ref"
     }
 
-    override fun display(): String = "ref"
+    override fun display(): String = "`ref`"
 }
 
 /** Parses the reference-binding keyword token. */
@@ -888,9 +888,9 @@ public object RefParse : Parse<Ref> {
         input.step { cursor ->
             val (ident, rest) =
                 cursor.ident()
-                    ?: return@step SynResult.failure(cursor.error("expected ref"))
+                    ?: return@step SynResult.failure(cursor.error("expected `ref`"))
             if (ident.toString() != "ref") {
-                return@step SynResult.failure(cursor.error("expected ref"))
+                return@step SynResult.failure(cursor.error("expected `ref`"))
             }
             SynResult.success(Ref.from(ident.span()) to rest)
         }
@@ -903,7 +903,7 @@ public object ReturnPeek : Peek {
         return ident.toString() == "return"
     }
 
-    override fun display(): String = "return"
+    override fun display(): String = "`return`"
 }
 
 /** Parses the return-value keyword token. */
@@ -912,9 +912,9 @@ public object ReturnParse : Parse<Return> {
         input.step { cursor ->
             val (ident, rest) =
                 cursor.ident()
-                    ?: return@step SynResult.failure(cursor.error("expected return"))
+                    ?: return@step SynResult.failure(cursor.error("expected `return`"))
             if (ident.toString() != "return") {
-                return@step SynResult.failure(cursor.error("expected return"))
+                return@step SynResult.failure(cursor.error("expected `return`"))
             }
             SynResult.success(Return.from(ident.span()) to rest)
         }
@@ -927,7 +927,7 @@ public object StaticPeek : Peek {
         return ident.toString() == "static"
     }
 
-    override fun display(): String = "static"
+    override fun display(): String = "`static`"
 }
 
 /** Parses the static-storage keyword token. */
@@ -936,9 +936,9 @@ public object StaticParse : Parse<Static> {
         input.step { cursor ->
             val (ident, rest) =
                 cursor.ident()
-                    ?: return@step SynResult.failure(cursor.error("expected static"))
+                    ?: return@step SynResult.failure(cursor.error("expected `static`"))
             if (ident.toString() != "static") {
-                return@step SynResult.failure(cursor.error("expected static"))
+                return@step SynResult.failure(cursor.error("expected `static`"))
             }
             SynResult.success(Static.from(ident.span()) to rest)
         }
@@ -951,7 +951,7 @@ public object StructPeek : Peek {
         return ident.toString() == "struct"
     }
 
-    override fun display(): String = "struct"
+    override fun display(): String = "`struct`"
 }
 
 /** Parses the structure keyword token. */
@@ -960,9 +960,9 @@ public object StructParse : Parse<Struct> {
         input.step { cursor ->
             val (ident, rest) =
                 cursor.ident()
-                    ?: return@step SynResult.failure(cursor.error("expected struct"))
+                    ?: return@step SynResult.failure(cursor.error("expected `struct`"))
             if (ident.toString() != "struct") {
-                return@step SynResult.failure(cursor.error("expected struct"))
+                return@step SynResult.failure(cursor.error("expected `struct`"))
             }
             SynResult.success(Struct.from(ident.span()) to rest)
         }
@@ -975,7 +975,7 @@ public object SuperPeek : Peek {
         return ident.toString() == "super"
     }
 
-    override fun display(): String = "super"
+    override fun display(): String = "`super`"
 }
 
 /** Parses the parent-scope keyword token. */
@@ -984,9 +984,9 @@ public object SuperParse : Parse<Super> {
         input.step { cursor ->
             val (ident, rest) =
                 cursor.ident()
-                    ?: return@step SynResult.failure(cursor.error("expected super"))
+                    ?: return@step SynResult.failure(cursor.error("expected `super`"))
             if (ident.toString() != "super") {
-                return@step SynResult.failure(cursor.error("expected super"))
+                return@step SynResult.failure(cursor.error("expected `super`"))
             }
             SynResult.success(Super.from(ident.span()) to rest)
         }
@@ -999,7 +999,7 @@ public object TraitPeek : Peek {
         return ident.toString() == "trait"
     }
 
-    override fun display(): String = "trait"
+    override fun display(): String = "`trait`"
 }
 
 /** Parses the trait-definition keyword token. */
@@ -1008,9 +1008,9 @@ public object TraitParse : Parse<io.github.kotlinmania.syn.token.Trait> {
         input.step { cursor ->
             val (ident, rest) =
                 cursor.ident()
-                    ?: return@step SynResult.failure(cursor.error("expected trait"))
+                    ?: return@step SynResult.failure(cursor.error("expected `trait`"))
             if (ident.toString() != "trait") {
-                return@step SynResult.failure(cursor.error("expected trait"))
+                return@step SynResult.failure(cursor.error("expected `trait`"))
             }
             SynResult.success(
                 io.github.kotlinmania.syn.token.Trait
@@ -1050,7 +1050,7 @@ public object UnionPeek : Peek {
         return ident.toString() == "union"
     }
 
-    override fun display(): String = "union"
+    override fun display(): String = "`union`"
 }
 
 /** Parses the union-definition keyword token. */
@@ -1059,9 +1059,9 @@ public object UnionParse : Parse<Union> {
         input.step { cursor ->
             val (ident, rest) =
                 cursor.ident()
-                    ?: return@step SynResult.failure(cursor.error("expected union"))
+                    ?: return@step SynResult.failure(cursor.error("expected `union`"))
             if (ident.toString() != "union") {
-                return@step SynResult.failure(cursor.error("expected union"))
+                return@step SynResult.failure(cursor.error("expected `union`"))
             }
             SynResult.success(Union.from(ident.span()) to rest)
         }
@@ -1074,7 +1074,7 @@ public object UnsafePeek : Peek {
         return ident.toString() == UNSAFE_KW
     }
 
-    override fun display(): String = UNSAFE_KW
+    override fun display(): String = "`$UNSAFE_KW`"
 }
 
 /** Parses the memory-safety keyword. */
@@ -1083,9 +1083,9 @@ public object UnsafeParse : Parse<Unsafe> {
         input.step { cursor ->
             val (ident, rest) =
                 cursor.ident()
-                    ?: return@step SynResult.failure(cursor.error("expected $UNSAFE_KW"))
+                    ?: return@step SynResult.failure(cursor.error("expected `$UNSAFE_KW`"))
             if (ident.toString() != UNSAFE_KW) {
-                return@step SynResult.failure(cursor.error("expected $UNSAFE_KW"))
+                return@step SynResult.failure(cursor.error("expected `$UNSAFE_KW`"))
             }
             SynResult.success(Unsafe.from(ident.span()) to rest)
         }
@@ -1122,7 +1122,7 @@ public object UsePeek : Peek {
         return ident.toString() == "use"
     }
 
-    override fun display(): String = "use"
+    override fun display(): String = "`use`"
 }
 
 /** Parses the import keyword token. */
@@ -1131,9 +1131,9 @@ public object UseParse : Parse<Use> {
         input.step { cursor ->
             val (ident, rest) =
                 cursor.ident()
-                    ?: return@step SynResult.failure(cursor.error("expected use"))
+                    ?: return@step SynResult.failure(cursor.error("expected `use`"))
             if (ident.toString() != "use") {
-                return@step SynResult.failure(cursor.error("expected use"))
+                return@step SynResult.failure(cursor.error("expected `use`"))
             }
             SynResult.success(Use.from(ident.span()) to rest)
         }
@@ -1170,7 +1170,7 @@ public object WherePeek : Peek {
         return ident.toString() == "where"
     }
 
-    override fun display(): String = "where"
+    override fun display(): String = "`where`"
 }
 
 /** Parses the constraint keyword token. */
@@ -1179,9 +1179,9 @@ public object WhereParse : Parse<Where> {
         input.step { cursor ->
             val (ident, rest) =
                 cursor.ident()
-                    ?: return@step SynResult.failure(cursor.error("expected where"))
+                    ?: return@step SynResult.failure(cursor.error("expected `where`"))
             if (ident.toString() != "where") {
-                return@step SynResult.failure(cursor.error("expected where"))
+                return@step SynResult.failure(cursor.error("expected `where`"))
             }
             SynResult.success(Where.from(ident.span()) to rest)
         }
@@ -1194,7 +1194,7 @@ public object WhilePeek : Peek {
         return ident.toString() == "while"
     }
 
-    override fun display(): String = "while"
+    override fun display(): String = "`while`"
 }
 
 /** Parses the conditional-loop keyword token. */
@@ -1203,9 +1203,9 @@ public object WhileParse : Parse<While> {
         input.step { cursor ->
             val (ident, rest) =
                 cursor.ident()
-                    ?: return@step SynResult.failure(cursor.error("expected while"))
+                    ?: return@step SynResult.failure(cursor.error("expected `while`"))
             if (ident.toString() != "while") {
-                return@step SynResult.failure(cursor.error("expected while"))
+                return@step SynResult.failure(cursor.error("expected `while`"))
             }
             SynResult.success(While.from(ident.span()) to rest)
         }
@@ -1218,7 +1218,7 @@ public object YieldPeek : Peek {
         return ident.toString() == "yield"
     }
 
-    override fun display(): String = "yield"
+    override fun display(): String = "`yield`"
 }
 
 /** Parses the generator-yield keyword token. */
@@ -1227,9 +1227,9 @@ public object YieldParse : Parse<Yield> {
         input.step { cursor ->
             val (ident, rest) =
                 cursor.ident()
-                    ?: return@step SynResult.failure(cursor.error("expected yield"))
+                    ?: return@step SynResult.failure(cursor.error("expected `yield`"))
             if (ident.toString() != "yield") {
-                return@step SynResult.failure(cursor.error("expected yield"))
+                return@step SynResult.failure(cursor.error("expected `yield`"))
             }
             SynResult.success(Yield.from(ident.span()) to rest)
         }
@@ -1242,7 +1242,7 @@ public object SelfTypePeek : Peek {
         return ident.toString() == "Self"
     }
 
-    override fun display(): String = "Self"
+    override fun display(): String = "`Self`"
 }
 
 /** Parses the capital-self keyword token. */
@@ -1251,9 +1251,9 @@ public object SelfTypeParse : Parse<io.github.kotlinmania.syn.token.SelfType> {
         input.step { cursor ->
             val (ident, rest) =
                 cursor.ident()
-                    ?: return@step SynResult.failure(cursor.error("expected Self"))
+                    ?: return@step SynResult.failure(cursor.error("expected `Self`"))
             if (ident.toString() != "Self") {
-                return@step SynResult.failure(cursor.error("expected Self"))
+                return@step SynResult.failure(cursor.error("expected `Self`"))
             }
             SynResult.success(
                 io.github.kotlinmania.syn.token.SelfType
@@ -1269,7 +1269,7 @@ public object SelfValuePeek : Peek {
         return ident.toString() == "self"
     }
 
-    override fun display(): String = "self"
+    override fun display(): String = "`self`"
 }
 
 /** Parses the lowercase-self keyword token. */
@@ -1278,9 +1278,9 @@ public object SelfValueParse : Parse<io.github.kotlinmania.syn.token.SelfValue> 
         input.step { cursor ->
             val (ident, rest) =
                 cursor.ident()
-                    ?: return@step SynResult.failure(cursor.error("expected self"))
+                    ?: return@step SynResult.failure(cursor.error("expected `self`"))
             if (ident.toString() != "self") {
-                return@step SynResult.failure(cursor.error("expected self"))
+                return@step SynResult.failure(cursor.error("expected `self`"))
             }
             SynResult.success(
                 io.github.kotlinmania.syn.token.SelfValue
@@ -1296,7 +1296,7 @@ public object SynTypePeek : Peek {
         return ident.toString() == "type"
     }
 
-    override fun display(): String = "type"
+    override fun display(): String = "`type`"
 }
 
 /** Parses the type-alias keyword token. */
@@ -1305,9 +1305,9 @@ public object SynTypeParse : Parse<io.github.kotlinmania.syn.token.SynTypeToken>
         input.step { cursor ->
             val (ident, rest) =
                 cursor.ident()
-                    ?: return@step SynResult.failure(cursor.error("expected type"))
+                    ?: return@step SynResult.failure(cursor.error("expected `type`"))
             if (ident.toString() != "type") {
-                return@step SynResult.failure(cursor.error("expected type"))
+                return@step SynResult.failure(cursor.error("expected `type`"))
             }
             SynResult.success(
                 io.github.kotlinmania.syn.token.SynTypeToken
@@ -2666,7 +2666,7 @@ internal fun keyword(input: ParseStream, token: String): SynResult<io.github.kot
                 return@step SynResult.success(ident.span() to rest)
             }
         }
-        SynResult.failure(cursor.error("expected $token"))
+        SynResult.failure(cursor.error("expected `$token`"))
     }
 
 internal fun peekKeyword(cursor: Cursor, token: String): Boolean {
@@ -2701,7 +2701,7 @@ internal fun punctHelper(input: ParseStream, token: String, spans: MutableList<i
             }
             c = rest
         }
-        SynResult.failure(cursor.error("expected $token"))
+        SynResult.failure(cursor.error("expected `$token`"))
     }
 }
 
@@ -2766,12 +2766,3 @@ internal fun printPunct(s: String, spans: List<io.github.kotlinmania.procmacro2.
     )
     tokens.extendPuncts(puncts)
 }
-
-public fun Group(span: io.github.kotlinmania.procmacro2.Span): io.github.kotlinmania.syn.token.Group =
-    io.github.kotlinmania.syn.token.Group.from(span)
-
-public fun fmt(group: io.github.kotlinmania.syn.token.Group): String = group.toString()
-
-public fun eq(a: io.github.kotlinmania.syn.token.Group, b: io.github.kotlinmania.syn.token.Group): Boolean = a == b
-
-public fun hash(group: io.github.kotlinmania.syn.token.Group): Int = group.hashCode()

@@ -76,6 +76,17 @@ class VisitTest {
                 ),
                 parseItem("trait Alias<T> = Iterator<Item = T> + Send;"),
                 parseItem("static mut COUNT: usize = 0;"),
+                parseItem("extern crate alloc as memory;"),
+                parseItem(
+                    """
+                    extern "C" {
+                        pub fn puts(s: *const c_char);
+                        static errno: i32;
+                        type Opaque;
+                        callback!();
+                    }
+                    """.trimIndent(),
+                ),
                 parseItem(
                     """
                     mod nested {
@@ -100,6 +111,12 @@ class VisitTest {
         visitor.assertEvent("implItem:fn:call")
         visitor.assertEvent("item:traitalias:Alias")
         visitor.assertEvent("item:static:COUNT")
+        visitor.assertEvent("item:externcrate:alloc")
+        visitor.assertEvent("item:foreignmod")
+        visitor.assertEvent("foreignItem:fn:puts")
+        visitor.assertEvent("foreignItem:static:errno")
+        visitor.assertEvent("foreignItem:type:Opaque")
+        visitor.assertEvent("foreignItem:macro")
         visitor.assertEvent("item:mod:nested")
         visitor.assertEvent("item:macro")
         visitor.assertEvent("item:use")
@@ -158,10 +175,14 @@ class VisitTest {
         visitor.visitPat(parsePat("1..=2"))
         visitor.visitLabel(Label(Lifetime.new("'lbl", span), io.github.kotlinmania.syn.token.Colon.from(span)))
         visitor.visitUnOp(UnOp.NotOp(io.github.kotlinmania.syn.token.Not.from(span)))
+        visitor.visitLit(parseStr(LitParse, "c\"hello\"").getOrThrow())
+        visitor.visitType(parseStr(SynTypeParseExpr, "<Self as Trait>::Assoc").getOrThrow())
 
         visitor.assertEvent("range:closed")
         visitor.assertEvent("label:'lbl")
         visitor.assertEvent("unop:not")
+        visitor.assertEvent("lit:cstr")
+        visitor.assertEvent("qself")
     }
 
     private fun parseItem(source: String): Item =
@@ -240,12 +261,26 @@ class VisitTest {
             super.visitImplItem(i)
         }
 
+        override fun visitForeignItem(i: ForeignItem) {
+            events +=
+                when (i) {
+                    is ForeignItem.Fn -> "foreignItem:fn:${i.sig.ident}"
+                    is ForeignItem.Static -> "foreignItem:static:${i.ident}"
+                    is ForeignItem.ItemType -> "foreignItem:type:${i.ident}"
+                    is ForeignItem.Macro -> "foreignItem:macro"
+                    is ForeignItem.Verbatim -> "foreignItem:verbatim"
+                }
+            super.visitForeignItem(i)
+        }
+
         override fun visitItem(i: Item) {
             events +=
                 when (i) {
                     is Item.Const -> "item:const:${i.ident}"
                     is Item.Enum -> "item:enum:${i.ident}"
+                    is Item.ExternCrate -> "item:externcrate:${i.ident}"
                     is Item.Fn -> "item:fn:${i.ident}"
+                    is Item.ForeignMod -> "item:foreignmod"
                     is Item.Impl -> "item:impl"
                     is Item.Macro -> "item:macro"
                     is Item.Mod -> "item:mod:${i.ident}"
@@ -273,9 +308,19 @@ class VisitTest {
             super.visitPath(p)
         }
 
+        override fun visitLitCstr(l: LitCStr) {
+            events += "lit:cstr"
+            super.visitLitCstr(l)
+        }
+
         override fun visitLabel(label: Label) {
             events += "label:${label.name}"
             super.visitLabel(label)
+        }
+
+        override fun visitQself(q: QSelf) {
+            events += "qself"
+            super.visitQself(q)
         }
 
         override fun visitRangeLimits(limits: RangeLimits) {

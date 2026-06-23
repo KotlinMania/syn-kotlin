@@ -198,13 +198,37 @@ class DeriveInputTest {
     fun testTupleStructWhereClauseAfterFields() {
         val input = parse("struct S<T>(T) where T: Copy;")
 
-        val whereClause = assertNotNull(input.generics.whereClause)
-        val predicate = assertIs<WherePredicate.TypePredicate>(whereClause.predicates.toList().single())
-        assertPathType(predicate.boundedTy, "T")
-        assertEquals("Copy", assertIs<TypeParamBound.Trait>(predicate.bounds.toList().single()).path.toString())
+        assertSingleTypeWhereClause(input.generics, "T", "Copy")
         val data = assertIs<Data.Struct>(input.data).value
         assertNotNull(data.semiToken)
         assertPathType(unnamedFields(data.fields).single().ty, "T")
+    }
+
+    @Test
+    fun testWhereClauseBeforeDataBody() {
+        val namedStruct = parse("struct S<T> where T: Copy { value: T }")
+        assertSingleTypeWhereClause(namedStruct.generics, "T", "Copy")
+        assertNamedPathField(namedFields(assertIs<Data.Struct>(namedStruct.data).fields).single(), "value", "T")
+
+        val unitStruct = parse("struct Unit<T> where T: Copy;")
+        assertSingleTypeWhereClause(unitStruct.generics, "T", "Copy")
+        assertIs<Fields.Unit>(assertIs<Data.Struct>(unitStruct.data).fields)
+
+        val enumInput = parse("enum E<T> where T: Copy { Value(T) }")
+        assertSingleTypeWhereClause(enumInput.generics, "T", "Copy")
+        val variant = assertIs<Data.Enum>(enumInput.data).variants.toList().single()
+        assertPathType(unnamedFields(variant.fields).single().ty, "T")
+
+        val unionInput = parse("union U<T> where T: Copy { value: T }")
+        assertSingleTypeWhereClause(unionInput.generics, "T", "Copy")
+        assertNamedPathField(assertIs<Data.Union>(unionInput.data).fields.named.toList().single(), "value", "T")
+    }
+
+    @Test
+    fun testMalformedWhereClauseIsRejected() {
+        assertTrue(parseStr(DeriveInputParse, "struct S where <T> { value: T }").isFailure)
+        assertTrue(parseStr(DeriveInputParse, "enum E where <T> { Value }").isFailure)
+        assertTrue(parseStr(DeriveInputParse, "union U where <T> { value: T }").isFailure)
     }
 
     @Test
@@ -296,6 +320,17 @@ class DeriveInputTest {
         for ((param, name) in params.zip(names)) {
             assertEquals(name, assertIs<GenericParam.TypeParam>(param).ident.toString())
         }
+    }
+
+    private fun assertSingleTypeWhereClause(
+        generics: Generics,
+        boundedTy: String,
+        bound: String,
+    ) {
+        val whereClause = assertNotNull(generics.whereClause)
+        val predicate = assertIs<WherePredicate.TypePredicate>(whereClause.predicates.toList().single())
+        assertPathType(predicate.boundedTy, boundedTy)
+        assertEquals(bound, assertIs<TypeParamBound.Trait>(predicate.bounds.toList().single()).path.toString())
     }
 
     private fun assertRestrictedVisibility(

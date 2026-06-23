@@ -133,6 +133,8 @@ public sealed class Lit : ToTokens {
             is Verbatim -> value.toTokens(tokens)
         }
     }
+
+    public fun fmt(): String = toString()
 }
 
 private data class LitRepr(

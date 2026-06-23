@@ -86,6 +86,40 @@ private fun parseRestOfItem(
                 Item.Enum(attrs, vis, enumToken, ident, generics, bracesVal.token, variants),
             )
         }
+        if (input.peek(ExternPeek)) {
+            val ahead = input.fork()
+            ahead.parse(ExternParse).getOrElse { return SynResult.failure(it) }
+            if (ahead.peek(CratePeek)) {
+                return parseItemExternCrate(attrs, vis, input)
+            }
+            if (!vis.isInherited()) {
+                return SynResult.failure(input.error("expected foreign module"))
+            }
+            return parseItemForeignMod(attrs, input)
+        }
+        if (input.peek(UnsafePeek) && input.peek2(ExternPeek)) {
+            if (!vis.isInherited()) {
+                return SynResult.failure(input.error("expected foreign module"))
+            }
+            return parseItemForeignMod(attrs, input)
+        }
+        if (input.peek(UnsafePeek) && (input.peek2(TraitPeek) || input.peek2(AutoPeek))) {
+            val unsafety = input.parse(UnsafeParse).getOrElse { return SynResult.failure(it) }
+            val autoToken = input.parse(AutoParse).getOrNull()
+            val traitToken = input.parse(TraitParse).getOrElse { return SynResult.failure(it) }
+            val ident = input.parse(IdentParse).getOrElse { return SynResult.failure(it) }
+            val generics = parseGenerics(input).getOrElse { return SynResult.failure(it) }
+            return parseRestOfTrait(input, attrs, vis, unsafety, autoToken, traitToken, ident, generics)
+                .map { it }
+        }
+        if (input.peek(AutoPeek) && input.peek2(TraitPeek)) {
+            val autoToken = input.parse(AutoParse).getOrElse { return SynResult.failure(it) }
+            val traitToken = input.parse(TraitParse).getOrElse { return SynResult.failure(it) }
+            val ident = input.parse(IdentParse).getOrElse { return SynResult.failure(it) }
+            val generics = parseGenerics(input).getOrElse { return SynResult.failure(it) }
+            return parseRestOfTrait(input, attrs, vis, null, autoToken, traitToken, ident, generics)
+                .map { it }
+        }
         if (input.peek(TraitPeek)) {
             return parseTraitOrTraitAlias(input, attrs, vis)
         }
@@ -147,13 +181,14 @@ private fun parseRestOfItem(
         if (input.peek(UsePeek)) {
             return parseItemUse(begin, attrs, vis, input, allowCrateRootInPath = true)
         }
-        if (input.peek(ModPeek)) {
+        if (input.peek(ModPeek) || (input.peek(UnsafePeek) && input.peek2(ModPeek))) {
+            val unsafety = input.parse(UnsafeParse).getOrNull()
             val modToken = input.parse(ModParse).getOrThrow()
             val ident = input.parse(IdentParse).getOrThrow()
             val semiResult = input.parse(SemiParse)
             if (semiResult.isSuccess) {
                 return SynResult.success(
-                    Item.Mod(attrs, vis, modToken, ident, ModContent.Unnamed(semiResult.getOrThrow())),
+                    Item.Mod(attrs, vis, unsafety, modToken, ident, ModContent.Unnamed(semiResult.getOrThrow())),
                 )
             }
             val bracesVal = braced(input).getOrThrow()
@@ -165,7 +200,7 @@ private fun parseRestOfItem(
             }
             bracesVal.content.finishChildBuffer()
             return SynResult.success(
-                Item.Mod(attrs, vis, modToken, ident, ModContent.Inline(bracesVal.token, items)),
+                Item.Mod(attrs, vis, unsafety, modToken, ident, ModContent.Inline(bracesVal.token, items)),
             )
         }
         if (input.peek(MacroPeek)) {
@@ -192,6 +227,140 @@ internal object StaticMutabilityParse : Parse<StaticMutability> {
             },
         )
     }
+}
+
+private fun parseItemExternCrate(
+    attrs: List<Attribute>,
+    vis: Visibility,
+    input: ParseStream,
+): SynResult<Item> {
+    val externToken = input.parse(ExternParse).getOrElse { return SynResult.failure(it) }
+    val crateToken = input.parse(CrateParse).getOrElse { return SynResult.failure(it) }
+    val ident =
+        if (input.peek(SelfValuePeek)) {
+            from(input.parse(SelfValueParse).getOrElse { return SynResult.failure(it) })
+        } else {
+            input.parse(IdentParse).getOrElse { return SynResult.failure(it) }
+        }
+    val rename =
+        if (input.peek(AsPeek)) {
+            val asToken = input.parse(AsParse).getOrElse { return SynResult.failure(it) }
+            val renamed =
+                if (input.peek(UnderscorePeek)) {
+                    from(input.parse(UnderscoreParse).getOrElse { return SynResult.failure(it) })
+                } else {
+                    input.parse(IdentParse).getOrElse { return SynResult.failure(it) }
+                }
+            AsIdent(asToken, renamed)
+        } else {
+            null
+        }
+    val semiToken = input.parse(SemiParse).getOrElse { return SynResult.failure(it) }
+    return SynResult.success(Item.ExternCrate(attrs, vis, externToken, crateToken, ident, rename, semiToken))
+}
+
+private fun parseItemForeignMod(
+    attrs: List<Attribute>,
+    input: ParseStream,
+): SynResult<Item> {
+    val itemAttrs = attrs.toMutableList()
+    val unsafety = input.parse(UnsafeParse).getOrNull()
+    val abi = parseAbi(input).getOrElse { return SynResult.failure(it) }
+    val bracesVal = braced(input).getOrElse { return SynResult.failure(it) }
+    parseInner(bracesVal.content, itemAttrs).getOrElse { return SynResult.failure(it) }
+    val items = mutableListOf<ForeignItem>()
+    while (!bracesVal.content.isEmpty()) {
+        val item = bracesVal.content.call { parseForeignItem(it) }
+        if (item.isFailure) return asFailure(item)
+        items.add(item.getOrThrow())
+    }
+    bracesVal.content.finishChildBuffer()
+    return SynResult.success(Item.ForeignMod(itemAttrs, unsafety, abi, bracesVal.token, items))
+}
+
+internal fun parseForeignItem(input: ParseStream): SynResult<ForeignItem> {
+    val begin = input.fork()
+    val attrs = parseOuterAttributes(input).getOrElse { return SynResult.failure(it) }
+    val vis = input.parse(VisibilityParse).getOrElse { return SynResult.failure(it) }
+
+    if (peekSignature(input)) {
+        val sig = parseSignature(input).getOrElse { return SynResult.failure(it) }
+        if (input.peek(BracePeek)) {
+            parseBlock(input).getOrElse { return SynResult.failure(it) }
+            return SynResult.success(ForeignItem.Verbatim(between(begin, input)))
+        }
+        val semiToken = input.parse(SemiParse).getOrElse { return SynResult.failure(it) }
+        return SynResult.success(ForeignItem.Fn(attrs, vis, sig, semiToken))
+    }
+
+    if (input.peek(StaticPeek) || (input.peek(UnsafePeek) && input.peek2(StaticPeek))) {
+        val unsafety = input.parse(UnsafeParse).getOrNull()
+        val staticToken = input.parse(StaticParse).getOrElse { return SynResult.failure(it) }
+        val mutability = input.parse(StaticMutabilityParse).getOrElse { return SynResult.failure(it) }
+        val ident = input.parse(IdentParse).getOrElse { return SynResult.failure(it) }
+        val colonToken = input.parse(ColonParse).getOrElse { return SynResult.failure(it) }
+        val ty = parseTypeFull(input).getOrElse { return SynResult.failure(it) }
+        val hasValue = input.peek(EqPeek)
+        if (hasValue) {
+            input.parse(EqParse).getOrElse { return SynResult.failure(it) }
+            parseExprFull(input).getOrElse { return SynResult.failure(it) }
+        }
+        val semiToken = input.parse(SemiParse).getOrElse { return SynResult.failure(it) }
+        return if (unsafety != null || hasValue) {
+            SynResult.success(ForeignItem.Verbatim(between(begin, input)))
+        } else {
+            SynResult.success(ForeignItem.Static(attrs, vis, staticToken, mutability, ident, colonToken, ty, semiToken))
+        }
+    }
+
+    if (input.peek(SynTypePeek)) {
+        return parseForeignItemType(begin, attrs, vis, input)
+    }
+
+    val macroAhead = input.fork()
+    if (vis.isInherited() && parseModStylePath(macroAhead).isSuccess && macroAhead.peek(NotPeek)) {
+        return parseForeignItemMacro(attrs, input)
+    }
+
+    return SynResult.failure(input.error("expected foreign item"))
+}
+
+private fun parseForeignItemType(
+    begin: ParseStream,
+    attrs: List<Attribute>,
+    vis: Visibility,
+    input: ParseStream,
+): SynResult<ForeignItem> {
+    val typeToken = input.parse(SynTypeParse).getOrElse { return SynResult.failure(it) }
+    val ident = input.parse(IdentParse).getOrElse { return SynResult.failure(it) }
+    val generics = parseGenerics(input).getOrElse { return SynResult.failure(it) }
+    val (colonToken, _) = FlexibleItemType.parseOptionalBounds(input).getOrElse { return SynResult.failure(it) }
+    generics.whereClause = parseWhereClause(input).getOrNull()
+    val ty = FlexibleItemType.parseOptionalDefinition(input).getOrElse { return SynResult.failure(it) }
+    if (generics.whereClause == null) {
+        generics.whereClause = parseWhereClause(input).getOrNull()
+    }
+    val semiToken = input.parse(SemiParse).getOrElse { return SynResult.failure(it) }
+
+    return if (colonToken != null || ty != null) {
+        SynResult.success(ForeignItem.Verbatim(between(begin, input)))
+    } else {
+        SynResult.success(ForeignItem.ItemType(attrs, vis, typeToken, ident, generics, semiToken))
+    }
+}
+
+private fun parseForeignItemMacro(
+    attrs: List<Attribute>,
+    input: ParseStream,
+): SynResult<ForeignItem> {
+    val mac = input.parse(Macro).getOrElse { return SynResult.failure(it) }
+    val semiToken =
+        if (mac.delimiter.isBrace) {
+            null
+        } else {
+            input.parse(SemiParse).getOrElse { return SynResult.failure(it) }
+        }
+    return SynResult.success(ForeignItem.Macro(attrs, mac, semiToken))
 }
 
 private fun parseItemType(
@@ -279,7 +448,7 @@ private fun parseRestOfTrait(
     }
     bracesVal.content.finishChildBuffer()
     return SynResult.success(
-        Item.Trait(attrs, vis, unsafety, autoToken, traitToken, ident, generics, colonToken, supertraits, bracesVal.token, items),
+        Item.Trait(attrs, vis, unsafety, autoToken, null, traitToken, ident, generics, colonToken, supertraits, bracesVal.token, items),
     )
 }
 

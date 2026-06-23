@@ -85,6 +85,8 @@ public class Lookahead1 internal constructor(
 
     public override fun toString(): String =
         comparisons.joinToString(", ", "Lookahead1[", "]")
+
+    public fun fmt(): String = toString()
 }
 
 internal fun new(scope: Span, cursor: Cursor): Lookahead1 =
