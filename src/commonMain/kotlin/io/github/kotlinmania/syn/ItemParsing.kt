@@ -673,10 +673,10 @@ private data class FlexibleItemType(
             allowDefaultness: TypeDefaultness,
             whereClauseLocation: WhereClauseLocation,
         ): SynResult<FlexibleItemType> {
-            val vis = input.parse(VisibilityParse).getOrElse { return SynResult.failure(it) }
+            val vis = VisibilityParse.parse(input).getOrElse { return SynResult.failure(it) }
             val defaultness =
                 when (allowDefaultness) {
-                    TypeDefaultness.Optional -> input.parse(DefaultParse).getOrNull()
+                    TypeDefaultness.Optional -> DefaultParse.parse(input).getOrNull()
                     TypeDefaultness.Disallowed -> null
                 }
     val typeToken = SynTypeParse.parse(input).getOrElse { return SynResult.failure(it) }
@@ -702,7 +702,7 @@ private data class FlexibleItemType(
                 WhereClauseLocation.BeforeEq -> {}
             }
 
-            val semiToken = input.parse(SemiParse).getOrElse { return SynResult.failure(it) }
+            val semiToken = SemiParse.parse(input).getOrElse { return SynResult.failure(it) }
             return SynResult.success(
                 FlexibleItemType(
                     vis,
@@ -719,7 +719,7 @@ private data class FlexibleItemType(
         }
 
         fun parseOptionalBounds(input: ParseStream): SynResult<Pair<Colon?, TypeParamBoundList>> {
-            val colonToken = input.parse(ColonParse).getOrNull()
+            val colonToken = ColonParse.parse(input).getOrNull()
             val bounds = TypeParamBoundList()
             if (colonToken != null) {
                 while (true) {
@@ -739,7 +739,7 @@ private data class FlexibleItemType(
         }
 
         fun parseOptionalDefinition(input: ParseStream): SynResult<EqSynType?> {
-            val eqToken = input.parse(EqParse).getOrNull() ?: return SynResult.success(null)
+            val eqToken = EqParse.parse(input).getOrNull() ?: return SynResult.success(null)
             val definition = parseTypeFull(input).getOrElse { return SynResult.failure(it) }
             return SynResult.success(EqSynType(eqToken, definition))
         }
@@ -762,9 +762,9 @@ private fun peekFlexibleItemType(
     allowDefaultness: TypeDefaultness,
 ): Boolean {
     val ahead = input.fork()
-    ahead.parse(VisibilityParse)
+    VisibilityParse.parse(ahead)
     if (allowDefaultness == TypeDefaultness.Optional) {
-        ahead.parse(DefaultParse)
+        DefaultParse.parse(ahead)
     }
     return ahead.peek(SynTypePeek)
 }
@@ -777,21 +777,21 @@ private fun Visibility.isInherited(): Boolean =
 
 internal fun peekSignature(input: ParseStream): Boolean {
     val fork = input.fork()
-    fork.parse(ConstParse)
-    fork.parse(AsyncParse)
-    fork.parse(UnsafeParse)
+    ConstParse.parse(fork)
+    AsyncParse.parse(fork)
+    UnsafeParse.parse(fork)
     parseAbi(fork)
     return fork.peek(FnPeek)
 }
 
 private fun parseSignature(input: ParseStream): SynResult<Signature> {
-    val constness = input.parse(ConstParse).getOrNull()
-    val asyncness = input.parse(AsyncParse).getOrNull()
-    val unsafety = input.parse(UnsafeParse).getOrNull()
+    val constness = ConstParse.parse(input).getOrNull()
+    val asyncness = AsyncParse.parse(input).getOrNull()
+    val unsafety = UnsafeParse.parse(input).getOrNull()
     val abi = parseAbi(input).getOrNull()
-    val fnTokenResult = input.parse(FnParse)
+    val fnTokenResult = FnParse.parse(input)
     if (fnTokenResult.isFailure) return asFailure(fnTokenResult)
-    val identResult = input.parse(IdentParse)
+    val identResult = IdentParse.parse(input)
     if (identResult.isFailure) return asFailure(identResult)
     val generics = parseGenerics(input).getOrElse { return SynResult.failure(it) }
     val parensResult = parenthesized(input)
@@ -822,9 +822,9 @@ private fun parseSignature(input: ParseStream): SynResult<Signature> {
 }
 
 internal fun parseAbi(input: ParseStream): SynResult<Abi> {
-    val externResult = input.parse(ExternParse)
+    val externResult = ExternParse.parse(input)
     if (externResult.isFailure) return asFailure(externResult)
-    val name = input.parse(LitStrParse).getOrNull()
+    val name = LitStrParse.parse(input).getOrNull()
     return SynResult.success(Abi(externResult.getOrThrow(), name))
 }
 
@@ -840,7 +840,7 @@ private fun parseFnArgs(content: ParseStream): SynResult<Pair<FnArgList, Variadi
     while (!content.isEmpty()) {
         val attrs = parseOuterAttributes(content).getOrElse { return SynResult.failure(it) }
 
-        val dots = content.parse(DotDotDotParse).getOrNull()
+        val dots = DotDotDotParse.parse(content).getOrNull()
         if (dots != null) {
             val comma =
                 if (content.isEmpty()) {
