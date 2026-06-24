@@ -194,7 +194,7 @@ private fun parseRestOfItem(
             val bracesVal = braced(input).getOrThrow()
             val items = mutableListOf<Item>()
             while (!bracesVal.content.isEmpty()) {
-                val i = bracesVal.content.call { ItemParse.parse(it) }
+                val i = ItemParse.parse(bracesVal.content)
                 if (i.isFailure) break
                 items.add(i.getOrThrow())
             }
@@ -270,7 +270,7 @@ private fun parseItemForeignMod(
     parseInner(bracesVal.content, itemAttrs).getOrElse { return SynResult.failure(it) }
     val items = mutableListOf<ForeignItem>()
     while (!bracesVal.content.isEmpty()) {
-        val item = bracesVal.content.call { parseForeignItem(it) }
+        val item = parseForeignItem(bracesVal.content)
         if (item.isFailure) return asFailure(item)
         items.add(item.getOrThrow())
     }
@@ -442,7 +442,7 @@ private fun parseRestOfTrait(
     val bracesVal = braced(input).getOrThrow()
     val items = mutableListOf<TraitItem>()
     while (!bracesVal.content.isEmpty()) {
-        val i = bracesVal.content.call { parseTraitItem(it) }
+        val i = parseTraitItem(bracesVal.content)
         if (i.isFailure) break
         items.add(i.getOrThrow())
     }
@@ -646,7 +646,7 @@ private fun parseImpl(
     val bracesVal = braced(input).getOrThrow()
     val items = mutableListOf<ImplItem>()
     while (!bracesVal.content.isEmpty()) {
-        val i = bracesVal.content.call { parseImplItem(it) }
+        val i = parseImplItem(bracesVal.content)
         if (i.isFailure) break
         items.add(i.getOrThrow())
     }
@@ -912,7 +912,7 @@ private fun parseBlock(input: ParseStream): SynResult<Block> {
     val bracesVal = bracesResult.getOrThrow()
     val stmts = mutableListOf<Stmt>()
     while (!bracesVal.content.isEmpty()) {
-        val stmtResult = bracesVal.content.call { parseStmtFull(it) }
+        val stmtResult = parseStmtFull(bracesVal.content)
         if (stmtResult.isFailure) return asFailure(stmtResult)
         stmts.add(stmtResult.getOrThrow())
     }
@@ -933,7 +933,7 @@ private fun parseRestOfFn(
     parseInner(bracesVal.content, itemAttrs).getOrElse { return SynResult.failure(it) }
     val stmts = mutableListOf<Stmt>()
     while (!bracesVal.content.isEmpty()) {
-        val stmtResult = bracesVal.content.call { parseStmtFull(it) }
+        val stmtResult = parseStmtFull(bracesVal.content)
         if (stmtResult.isFailure) return asFailure(stmtResult)
         stmts.add(stmtResult.getOrThrow())
     }
@@ -980,7 +980,7 @@ private fun parseFnArgOrVariadic(
         )
     }
 
-    val patResult = input.call { parsePatFull(it) }
+    val patResult = parsePatFull(input)
     if (patResult.isFailure) return asFailure(patResult)
     val colonResult = ColonParse.parse(input)
     if (colonResult.isFailure) return asFailure(colonResult)
@@ -1181,7 +1181,7 @@ private fun parseCapturedParam(input: ParseStream): SynResult<CapturedParam> {
 internal fun parseNamedFieldList(input: ParseStream): SynResult<FieldList> {
     val fields = FieldList()
     while (!input.isEmpty()) {
-        val field = input.call { parseNamedField(it) }.getOrElse { return SynResult.failure(it) }
+        val field = parseNamedField(input).getOrElse { return SynResult.failure(it) }
         fields.pushValue(field)
         if (input.isEmpty()) break
         val comma = CommaParse.parse(input).getOrElse { return SynResult.failure(it) }
@@ -1193,7 +1193,7 @@ internal fun parseNamedFieldList(input: ParseStream): SynResult<FieldList> {
 internal fun parseUnnamedFieldList(input: ParseStream): SynResult<FieldList> {
     val fields = FieldList()
     while (!input.isEmpty()) {
-        val field = input.call { parseUnnamedField(it) }.getOrElse { return SynResult.failure(it) }
+        val field = parseUnnamedField(input).getOrElse { return SynResult.failure(it) }
         fields.pushValue(field)
         if (input.isEmpty()) break
         val comma = CommaParse.parse(input).getOrElse { return SynResult.failure(it) }
@@ -1205,7 +1205,7 @@ internal fun parseUnnamedFieldList(input: ParseStream): SynResult<FieldList> {
 internal fun parseVariantList(input: ParseStream): SynResult<VariantList> {
     val variants = VariantList()
     while (!input.isEmpty()) {
-        val variant = input.call { parseVariant(it) }.getOrElse { return SynResult.failure(it) }
+        val variant = parseVariant(input).getOrElse { return SynResult.failure(it) }
         variants.pushValue(variant)
         if (input.isEmpty()) break
         val comma = CommaParse.parse(input).getOrElse { return SynResult.failure(it) }
@@ -1463,7 +1463,7 @@ private fun parseImplItemFn(
     parseInner(bracesVal.content, attrs).getOrElse { return SynResult.failure(it) }
     val stmts = mutableListOf<Stmt>()
     while (!bracesVal.content.isEmpty()) {
-        val stmtResult = bracesVal.content.call { parseStmtFull(it) }
+        val stmtResult = parseStmtFull(bracesVal.content)
         if (stmtResult.isFailure) return asFailure(stmtResult)
         stmts.add(stmtResult.getOrThrow())
     }

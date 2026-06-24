@@ -75,7 +75,7 @@ class AttributeTest {
 
     @Test
     fun testParseNestedMeta() {
-        val attrs = parserFromFunction(::parseOuterAttributes).parseStr("#[tea(kind = \"EarlGrey\", hot, with(sugar, milk),)]").getOrThrow()
+        val attrs = parseStr(::parseOuterAttributes, "#[tea(kind = \"EarlGrey\", hot, with(sugar, milk),)]").getOrThrow()
         val attr = attrs.single()
         var kind: String? = null
         var hot = false
@@ -86,7 +86,7 @@ class AttributeTest {
                 when {
                     meta.path.isIdent("kind") -> {
                         val value = meta.value().getOrElse { return@parseNestedMeta SynResult.failure(it) }
-                        val lit = value.parse(LitStrParse::parse).getOrElse { return@parseNestedMeta SynResult.failure(it) }
+                        val lit = LitStrParse.parse(value).getOrElse { return@parseNestedMeta SynResult.failure(it) }
                         kind = lit.value()
                         SynResult.success(Unit)
                     }
@@ -112,7 +112,7 @@ class AttributeTest {
     @Test
     fun testParseArgs() {
         val attr = parseOuterAttribute("#[precondition(value < 5)]")
-        val expr = attr.parseArgs(ExprParse::parse).getOrThrow()
+        val expr = attr.parseArgsWith(ExprParse::parse).getOrThrow()
         assertIs<Expr.Binary>(expr)
     }
 
@@ -142,7 +142,7 @@ class AttributeTest {
 
     @Test
     fun testParseOuterRejectsInnerAttribute() {
-        val result = parserFromFunction(Attribute::parseOuter).parseStr("#![feature(test)]")
+        val result = parseStr(Attribute::parseOuter, "#![feature(test)]")
         assertTrue(result.isFailure)
     }
 }
@@ -152,7 +152,7 @@ private fun parseOuterMeta(input: String): Meta {
 }
 
 private fun parseOuterAttribute(input: String): Attribute {
-    val attrs = parserFromFunction(::parseOuterAttributes).parseStr(input).getOrThrow()
+    val attrs = parseStr(::parseOuterAttributes, input).getOrThrow()
     assertEquals(1, attrs.size)
     val attr = attrs.single()
     assertIs<AttrStyle.Outer>(attr.style)

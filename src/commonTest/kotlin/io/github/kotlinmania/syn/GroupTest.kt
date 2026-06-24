@@ -28,16 +28,17 @@ class GroupTest {
             )
 
         val parsed =
-            parserFromFunction { input ->
-                val group = parseGroup(input).getOrElse { return@parserFromFunction SynResult.failure(it) }
-                assertFalse(group.content.isEmpty())
-                val content = group.content.parse(TokenStreamParse::parse).getOrElse { return@parserFromFunction SynResult.failure(it) }
-                assertEquals("inner", content.toString())
-                assertTrue(group.content.isEmpty())
-                SynResult.success(group)
-            }
-                .parse2(tokens)
-                .getOrThrow()
+            parse2(
+                parser@ { input: ParseStream ->
+                    val group = parseGroup(input).getOrElse { return@parser SynResult.failure(it) }
+                    assertFalse(group.content.isEmpty())
+                    val content = TokenStreamParse.parse(group.content).getOrElse { return@parser SynResult.failure(it) }
+                    assertEquals("inner", content.toString())
+                    assertTrue(group.content.isEmpty())
+                    SynResult.success(group)
+                },
+                tokens,
+            ).getOrThrow()
 
         assertEquals("Group", parsed.token.toString())
     }
@@ -56,7 +57,7 @@ class GroupTest {
                 ),
             )
 
-        val result = parserFromFunction(::parseGroup).parse2(tokens)
+        val result = parse2(::parseGroup, tokens)
 
         assertTrue(result.isFailure)
         assertEquals("expected invisible group", result.exceptionOrNull()?.toString())

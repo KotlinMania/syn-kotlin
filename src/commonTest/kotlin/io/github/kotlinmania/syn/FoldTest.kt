@@ -241,7 +241,7 @@ class FoldTest {
         parseStr(ItemParse::parse, source).getOrThrow()
 
     private fun parsePat(source: String): Pat =
-        parserFromFunction(Pat.Companion::parseMulti).parseStr(source).getOrThrow()
+        parseStr(Pat.Companion::parseMulti, source).getOrThrow()
 
     private class RenamingFold : Fold() {
         override fun foldIdent(id: Ident): Ident =

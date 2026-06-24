@@ -30,10 +30,10 @@ class PathTest {
             )
 
         val parser =
-            parserFromFunction { input ->
+            parser@ { input: ParseStream ->
                 PathParse.parse(input)
             }
-        val path = parser.parse2(tokens).getOrThrow()
+        val path = parse2(parser, tokens).getOrThrow()
         val segments = path.segments.toList()
         assertEquals(2, segments.size)
         assertEquals("first", segments[0].ident.toString())

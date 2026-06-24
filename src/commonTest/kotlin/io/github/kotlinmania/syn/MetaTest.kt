@@ -98,7 +98,7 @@ class MetaTest {
                 when {
                     meta.path.isIdent("kind") -> {
                         val value = meta.value().getOrElse { return@parser SynResult.failure(it) }
-                        val lit = value.parse(LitStrParse::parse).getOrElse { return@parser SynResult.failure(it) }
+                        val lit = LitStrParse.parse(value).getOrElse { return@parser SynResult.failure(it) }
                         kind = lit.value()
                         SynResult.success(Unit)
                     }
@@ -110,7 +110,7 @@ class MetaTest {
                 }
             }
 
-        val result = teaParser.parseStr("kind = \"EarlGrey\", hot,")
+        val result = parseStr(teaParser, "kind = \"EarlGrey\", hot,")
         assertTrue(result.isSuccess)
         assertEquals("EarlGrey", kind)
         assertTrue(hot)
@@ -119,18 +119,18 @@ class MetaTest {
     @Test
     fun testFatArrowAfterMeta() {
         val parser =
-            parserFromFunction { input ->
+            parser@ { input: ParseStream ->
                 while (!input.isEmpty()) {
-                    input.parse(MetaParse::parse).getOrElse { return@parserFromFunction SynResult.failure(it) }
-                    input.parse(FatArrowParse::parse).getOrElse { return@parserFromFunction SynResult.failure(it) }
-                    val braces = braced(input).getOrElse { return@parserFromFunction SynResult.failure(it) }
+                    MetaParse.parse(input).getOrElse { return@parser SynResult.failure(it) }
+                    FatArrowParse.parse(input).getOrElse { return@parser SynResult.failure(it) }
+                    val braces = braced(input).getOrElse { return@parser SynResult.failure(it) }
                     braces.content.finishChildBuffer()
                 }
                 SynResult.success(Unit)
             }
 
         val input = "target_os = \"linux\" => {} windows => {}"
-        val result = parser.parseStr(input)
+        val result = parseStr(parser, input)
         assertTrue(result.isSuccess)
     }
 }

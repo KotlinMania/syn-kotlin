@@ -92,18 +92,6 @@ public class ParseBuffer internal constructor(
     public fun fmt(): String = toString()
 
     /**
-     * Parses a syntax tree node of type [T], advancing the position of our
-     * parse stream past it.
-     */
-    public fun <T> parse(parser: (ParseStream) -> SynResult<T>): SynResult<T> = parser(this)
-
-    /**
-     * Calls the given parser function to parse a syntax tree node of type [T]
-     * from this stream.
-     */
-    public fun <T> call(function: (ParseStream) -> SynResult<T>): SynResult<T> = function(this)
-
-    /**
      * Looks at the next token in the parse stream to determine whether it
      * matches the requested type of token. Does not advance the position of
      * the parse stream.
@@ -396,50 +384,6 @@ private fun spanOfUnexpectedIgnoringNones(initial: Cursor): Pair<Span, Delimiter
 
 /** Parser functions for the procmacro2 token types and stdlib containers. */
 
-public fun <T> ((ParseStream) -> SynResult<T>).parse(input: ParseStream): SynResult<T> =
-    this(input)
-
-/**
- * Parse a procmacro2 token stream using this parser function.
- *
- * This function enforces that the input is fully parsed. If there are any
- * unparsed tokens at the end of the stream, an error is returned.
- */
-public fun <T> ((ParseStream) -> SynResult<T>).parse2(tokens: TokenStream): SynResult<T> =
-    parseScoped(this, Span.callSite(), tokens)
-
-/**
- * Parse a string of source code using this parser function.
- *
- * This function enforces that the input is fully parsed. If there are any
- * unparsed tokens at the end of the string, an error is returned.
- *
- * # Hygiene
- *
- * Every span in the resulting syntax tree will be set to resolve at the macro
- * call site.
- */
-public fun <T> ((ParseStream) -> SynResult<T>).parseStr(s: String): SynResult<T> =
-    TokenStream.fromString(s).fold(
-        onSuccess = { parse2(it) },
-        onFailure = { SynResult.failure(SynError.from(it as io.github.kotlinmania.procmacro2.LexError)) },
-    )
-
-/**
- * Parser strategy for an optional result — emits a `null` rather than
- * an error if the peek target does not match.
- */
-public fun <T : Any> ((ParseStream) -> SynResult<T>).optional(peek: Peek): (ParseStream) -> SynResult<T?> {
-    val parser = this
-    return { input ->
-        if (peek.peek(input.cursor())) {
-            parser(input).map { it }
-        } else {
-            SynResult.success(null)
-        }
-    }
-}
-
 /** Parser strategy that consumes the remainder of the stream as a [TokenStream]. */
 public object TokenStreamParse {
     public fun parse(input: ParseStream): SynResult<TokenStream> =
@@ -487,13 +431,6 @@ public object LiteralParse {
             SynResult.success(pair)
         }
 }
-
-/**
- * Adapts a parser closure `(ParseStream) -> SynResult<T>` into the canonical
- * typed parser-function shape.
- */
-public fun <T> parserFromFunction(function: (ParseStream) -> SynResult<T>): (ParseStream) -> SynResult<T> =
-    function
 
 internal fun <T> parseScoped(
     parser: (ParseStream) -> SynResult<T>,

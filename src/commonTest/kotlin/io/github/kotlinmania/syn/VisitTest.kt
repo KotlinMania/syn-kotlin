@@ -189,7 +189,7 @@ class VisitTest {
         parseStr(ItemParse::parse, source).getOrThrow()
 
     private fun parsePat(source: String): Pat =
-        parserFromFunction(Pat.Companion::parseMulti).parseStr(source).getOrThrow()
+        parseStr(Pat.Companion::parseMulti, source).getOrThrow()
 
     private class RecordingVisit : Visit() {
         val events = mutableListOf<String>()

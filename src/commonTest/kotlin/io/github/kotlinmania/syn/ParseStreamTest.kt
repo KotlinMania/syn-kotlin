@@ -32,16 +32,14 @@ class ParseStreamTest {
         logic: (ParseStream) -> SynResult<Unit>,
     ) {
         val tokens = TokenStream.fromString(source).getOrThrow()
-        val parser = parserFromFunction(logic)
-        parser.parse2(tokens).getOrThrow()
+        parse2(logic, tokens).getOrThrow()
     }
 
     private fun runParserTokens(
         tokens: TokenStream,
         logic: (ParseStream) -> SynResult<Unit>,
     ) {
-        val parser = parserFromFunction(logic)
-        parser.parse2(tokens).getOrThrow()
+        parse2(logic, tokens).getOrThrow()
     }
 
     @Test
@@ -76,7 +74,7 @@ class ParseStreamTest {
             return SynResult.success(Unit)
         }
 
-        parserFromFunction(::assert).parse2(tokens).getOrThrow()
+        parse2(::assert, tokens).getOrThrow()
     }
 
     @Test
@@ -102,7 +100,7 @@ class ParseStreamTest {
             return SynResult.success(Unit)
         }
 
-        parserFromFunction(::assert).parse2(tokens).getOrThrow()
+        parse2(::assert, tokens).getOrThrow()
     }
 
     @Test
@@ -117,7 +115,7 @@ class ParseStreamTest {
 
         fun assert(input: ParseStream): SynResult<Unit> {
             assertFalse(input.peek(LifetimePeek))
-            val optionalPunct = (PunctParse::parse).optional(NotPeek).parse(input).getOrThrow()
+            val optionalPunct = if (input.peek(NotPeek)) PunctParse.parse(input).getOrThrow() else null
             assertTrue(optionalPunct == null)
 
             TokenTreeParse.parse(input).getOrThrow()
@@ -128,7 +126,7 @@ class ParseStreamTest {
             return SynResult.success(Unit)
         }
 
-        parserFromFunction(::assert).parse2(tokens).getOrThrow()
+        parse2(::assert, tokens).getOrThrow()
     }
 
     @Test
@@ -151,7 +149,7 @@ class ParseStreamTest {
             return SynResult.success(Unit)
         }
 
-        parserFromFunction(::assert).parse2(tokens).getOrThrow()
+        parse2(::assert, tokens).getOrThrow()
     }
 
     @Test
@@ -259,20 +257,20 @@ class ParseStreamTest {
             return SynResult.success(Unit)
         }
 
-        parserFromFunction(::assert).parse2(tokens).getOrThrow()
+        parse2(::assert, tokens).getOrThrow()
     }
 
     @Test
     fun lookaheadEndUsesScopeCloseDelimiter() {
-        val parser =
-            parserFromFunction<Unit> { input ->
+        val parser: (ParseStream) -> SynResult<Unit> =
+            parser@ { input: ParseStream ->
                 val content = parenthesized(input).getOrThrow().content
                 val lookahead = content.lookahead1()
                 assertFalse(lookahead.peek(End))
                 SynResult.failure(lookahead.error())
             }
 
-        val result = parser.parse2(TokenStream.fromString("(name)").getOrThrow())
+        val result = parse2(parser, TokenStream.fromString("(name)").getOrThrow())
 
         assertTrue(result.isFailure)
         assertEquals("expected `)`", result.exceptionOrNull()?.toString())
@@ -280,8 +278,8 @@ class ParseStreamTest {
 
     @Test
     fun lookaheadFormatsManyExpectedTokens() {
-        val parser =
-            parserFromFunction<Unit> { input ->
+        val parser: (ParseStream) -> SynResult<Unit> =
+            parser@ { input: ParseStream ->
                 val lookahead = input.lookahead1()
                 assertFalse(lookahead.peek(IdentPeek))
                 assertFalse(lookahead.peek(LifetimePeek))
@@ -289,7 +287,7 @@ class ParseStreamTest {
                 SynResult.failure(lookahead.error())
             }
 
-        val result = parser.parse2(TokenStream.fromString("!").getOrThrow())
+        val result = parse2(parser, TokenStream.fromString("!").getOrThrow())
 
         assertTrue(result.isFailure)
         assertEquals("expected one of: identifier, lifetime, `const`", result.exceptionOrNull()?.toString())

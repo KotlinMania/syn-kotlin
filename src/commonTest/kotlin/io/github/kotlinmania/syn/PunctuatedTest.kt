@@ -375,11 +375,11 @@ class PunctuatedTest {
     @Test
     fun parseTerminatedAcceptsTrailingPunctuation() {
         val parser =
-            parserFromFunction { input ->
+            parser@ { input: ParseStream ->
                 Punctuated.parseTerminated(input, LitIntParse::parse, CommaParse::parse)
             }
 
-        val parsed = parser.parse2(TokenStream.fromString("1, 2,").getOrThrow()).getOrThrow()
+        val parsed = parse2(parser, TokenStream.fromString("1, 2,").getOrThrow()).getOrThrow()
 
         assertEquals(listOf(1L, 2L), parsed.litIntValues())
         assertTrue(parsed.trailingPunct())
@@ -388,21 +388,21 @@ class PunctuatedTest {
     @Test
     fun parseSeparatedNonemptyStopsBeforeNonSeparator() {
         val parser =
-            parserFromFunction { input ->
+            parser@ { input: ParseStream ->
                 val parsed =
                     Punctuated.parseSeparatedNonempty(
                         input,
                         LitIntParse::parse,
                         CommaPeek,
                         CommaParse::parse,
-                    ).getOrElse { return@parserFromFunction SynResult.failure(it) }
+                    ).getOrElse { return@parser SynResult.failure(it) }
 
-                val remaining = LitIntParse.parse(input).getOrElse { return@parserFromFunction SynResult.failure(it) }
+                val remaining = LitIntParse.parse(input).getOrElse { return@parser SynResult.failure(it) }
                 assertEquals(3L, remaining.base10Parse())
                 SynResult.success(parsed)
             }
 
-        val parsed = parser.parse2(TokenStream.fromString("1, 2 3").getOrThrow()).getOrThrow()
+        val parsed = parse2(parser, TokenStream.fromString("1, 2 3").getOrThrow()).getOrThrow()
 
         assertEquals(listOf(1L, 2L), parsed.litIntValues())
         assertFalse(parsed.trailingPunct())
@@ -411,7 +411,7 @@ class PunctuatedTest {
     @Test
     fun parseSeparatedNonemptyRequiresOneElement() {
         val parser =
-            parserFromFunction { input ->
+            parser@ { input: ParseStream ->
                 Punctuated.parseSeparatedNonempty(
                     input,
                     LitIntParse::parse,
@@ -420,6 +420,6 @@ class PunctuatedTest {
                 )
             }
 
-        assertTrue(parser.parse2(TokenStream.fromString("").getOrThrow()).isFailure)
+        assertTrue(parse2(parser, TokenStream.fromString("").getOrThrow()).isFailure)
     }
 }

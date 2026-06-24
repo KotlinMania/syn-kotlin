@@ -21,7 +21,7 @@ class LitTest {
             TokenStream.fromTokenTrees(
                 listOf(TokenTree.Literal(Literal.fromStrUnchecked(s.trim()))),
             )
-        return parserFromFunction(LitParse::parse).parse2(tokens).getOrThrow()
+        return parse2(LitParse::parse, tokens).getOrThrow()
     }
 
     @Test
@@ -351,7 +351,7 @@ class LitTest {
                 ),
             )
 
-        val parsed = assertIs<Lit.Str>(parserFromFunction(LitParse::parse).parse2(tokens).getOrThrow())
+        val parsed = assertIs<Lit.Str>(parse2(LitParse::parse, tokens).getOrThrow())
         val emitted = TokenStream.new()
         parsed.toTokens(emitted)
         assertEquals("\"hi\"", emitted.toString())
@@ -360,11 +360,11 @@ class LitTest {
     @Test
     fun litPeekAcceptsNegativeLiteral() {
         val parser =
-            parserFromFunction<Lit> { input ->
+            parser@ { input: ParseStream ->
                 assertTrue(input.peek(LitPeek))
-                input.parse(LitParse::parse)
+                LitParse.parse(input)
             }
-        assertIs<Lit.Int>(parser.parseStr("-1").getOrThrow())
+        assertIs<Lit.Int>(parseStr(parser, "-1").getOrThrow())
     }
 
     @Test
@@ -385,7 +385,7 @@ class LitTest {
         val modStyle = lit.parseWith { input -> Path.parseModStyle(input) }.getOrThrow()
         assertEquals(listOf("a", "b", "c"), modStyle.segments.toList().map { it.ident.toString() })
 
-        val defaultPath = lit.parse(PathParse::parse).getOrThrow()
+        val defaultPath = lit.parseWith(PathParse::parse).getOrThrow()
         assertEquals(listOf("a", "b", "c"), defaultPath.segments.toList().map { it.ident.toString() })
     }
 

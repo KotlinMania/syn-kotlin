@@ -1574,7 +1574,7 @@ public fun exprStructHelper(
             val dot2Result = DotDotParse.parse(content)
             if (dot2Result.isFailure) return SynResult.failure((dot2Result as SynResult.Failure).error)
             val rest: Expr? = if (content.isEmpty()) null else {
-                val restResult = content.call { parseExprFull(it) }
+                val restResult = parseExprFull(content)
                 if (restResult.isFailure) return SynResult.failure((restResult as SynResult.Failure).error)
                 restResult.getOrThrow()
             }
@@ -1591,7 +1591,7 @@ public fun exprStructHelper(
                 ),
             )
         }
-        val fieldResult = content.call { parseFieldValueImpl(it) }
+        val fieldResult = parseFieldValueImpl(content)
         if (fieldResult.isFailure) return SynResult.failure((fieldResult as SynResult.Failure).error)
         fields.pushValue(fieldResult.getOrThrow())
         if (content.isEmpty()) break

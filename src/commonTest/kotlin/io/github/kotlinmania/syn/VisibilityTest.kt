@@ -19,18 +19,18 @@ import kotlin.test.assertTrue
 class VisibilityTest {
     private fun visRestParse(input: String): Pair<Visibility, String> {
         val parser =
-            parserFromFunction { stream ->
+            parser@ { stream: ParseStream ->
                 val visResult = VisibilityParse.parse(stream)
                 if (visResult.isFailure) {
-                    return@parserFromFunction SynResult.failure(visResult.exceptionOrNull()!!)
+                    return@parser SynResult.failure(visResult.exceptionOrNull()!!)
                 }
                 val restResult = TokenStreamParse.parse(stream)
                 if (restResult.isFailure) {
-                    return@parserFromFunction SynResult.failure(restResult.exceptionOrNull()!!)
+                    return@parser SynResult.failure(restResult.exceptionOrNull()!!)
                 }
                 SynResult.success(visResult.getOrThrow() to restResult.getOrThrow().toString())
             }
-        return parser.parseStr(input).getOrThrow()
+        return parseStr(parser, input).getOrThrow()
     }
 
     private fun assertVisClass(input: String, expectedClass: kotlin.reflect.KClass<out Visibility>) {
@@ -54,18 +54,18 @@ class VisibilityTest {
 
     private fun assertVisErr(input: String) {
         val parser =
-            parserFromFunction { stream ->
+            parser@ { stream: ParseStream ->
                 val visResult = VisibilityParse.parse(stream)
                 if (visResult.isFailure) {
-                    return@parserFromFunction SynResult.failure(visResult.exceptionOrNull()!!)
+                    return@parser SynResult.failure(visResult.exceptionOrNull()!!)
                 }
                 val restResult = TokenStreamParse.parse(stream)
                 if (restResult.isFailure) {
-                    return@parserFromFunction SynResult.failure(restResult.exceptionOrNull()!!)
+                    return@parser SynResult.failure(restResult.exceptionOrNull()!!)
                 }
                 SynResult.success(visResult.getOrThrow() to restResult.getOrThrow().toString())
             }
-        assertTrue(parser.parseStr(input).isFailure, "expected parse error for: $input")
+        assertTrue(parseStr(parser, input).isFailure, "expected parse error for: $input")
     }
 
     @Test

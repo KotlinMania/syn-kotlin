@@ -14,7 +14,7 @@ class DiscouragedTest {
     @Test
     fun speculativeAdvanceToPropagatesUnexpectedTokensFromFork() {
         val parser =
-            parserFromFunction { input ->
+            parser@ { input: ParseStream ->
                 val fork = input.fork()
                 val parens = parenthesized(fork).getOrThrow()
                 parens.content.finishChildBuffer()
@@ -24,7 +24,7 @@ class DiscouragedTest {
                 SynResult.success(Unit)
             }
 
-        val result = parser.parseStr("(+)")
+        val result = parseStr(parser, "(+)")
 
         assertTrue(result.isFailure)
         assertEquals("unexpected token, expected `)`", result.exceptionOrNull()?.toString())
@@ -43,13 +43,16 @@ class DiscouragedTest {
             )
 
         val parsed =
-            parserFromFunction { input ->
-                val anyDelimiter = assertIs<AnyDelimiter>(input)
-                val delimiter = anyDelimiter.parseAnyDelimiter().getOrElse { return@parserFromFunction SynResult.failure(it) }
-                val ident = delimiter.content.parse(IdentParse::parse).getOrElse { return@parserFromFunction SynResult.failure(it) }
-                delimiter.content.finishChildBuffer()
-                SynResult.success(delimiter to ident)
-            }.parse2(tokens).getOrThrow()
+            parse2(
+                parser@ { input: ParseStream ->
+                    val anyDelimiter = assertIs<AnyDelimiter>(input)
+                    val delimiter = anyDelimiter.parseAnyDelimiter().getOrElse { return@parser SynResult.failure(it) }
+                    val ident = IdentParse.parse(delimiter.content).getOrElse { return@parser SynResult.failure(it) }
+                    delimiter.content.finishChildBuffer()
+                    SynResult.success(delimiter to ident)
+                },
+                tokens,
+            ).getOrThrow()
 
         assertEquals(Delimiter.None, parsed.first.delimiter)
         assertEquals("inner", parsed.second.toString())

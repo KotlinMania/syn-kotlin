@@ -34,9 +34,6 @@ public data class Attribute(
     public fun path(): Path =
         meta.path()
 
-    public fun <T> parseArgs(parser: (ParseStream) -> SynResult<T>): SynResult<T> =
-        parseArgsWith(parser)
-
     public fun <T> parseArgsWith(parser: (ParseStream) -> SynResult<T>): SynResult<T> =
         when (val metaValue = meta) {
             is Meta.PathMeta -> {
@@ -61,7 +58,7 @@ public data class Attribute(
         }
 
     public fun parseNestedMeta(logic: (ParseNestedMeta) -> SynResult<Unit>): SynResult<Unit> =
-        parseArgsWith(parser(logic)::parse)
+        parseArgsWith(parser(logic))
 
     public fun deepCopy(): Attribute =
         copy(meta = meta.copy())
@@ -180,14 +177,11 @@ public sealed class Meta : ToTokens {
         val delimiter: MacroDelimiter,
         val tokens: TokenStream,
     ) : Meta() {
-        public fun <T> parseArgs(parser: (ParseStream) -> SynResult<T>): SynResult<T> =
-            parseArgsWith(parser)
-
         public fun <T> parseArgsWith(parser: (ParseStream) -> SynResult<T>): SynResult<T> =
             parseScoped(parser, delimiter.closeSpan(), tokens)
 
         public fun parseNestedMeta(logic: (ParseNestedMeta) -> SynResult<Unit>): SynResult<Unit> =
-            parseArgsWith(parser(logic)::parse)
+            parseArgsWith(parser(logic))
 
         override fun toTokens(tokens: TokenStream) {
             path.toTokens(tokens)

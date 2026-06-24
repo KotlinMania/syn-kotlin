@@ -126,7 +126,7 @@ private fun parseStmt(input: ParseStream, allowNoSemi: AllowNoSemi): SynResult<S
 
 internal fun stmtLocal(input: ParseStream): SynResult<Stmt.Local> {
     val letToken = LetParse.parse(input).getOrThrow()
-    var pat = input.call { parsePatFull(it) }.getOrElse { return SynResult.failure(it) }
+    var pat = parsePatFull(input).getOrElse { return SynResult.failure(it) }
     if (input.peek(ColonPeek)) {
         val colonToken = ColonParse.parse(input).getOrElse { return SynResult.failure(it) }
         val ty = parseTypeFull(input).getOrElse { return SynResult.failure(it) }

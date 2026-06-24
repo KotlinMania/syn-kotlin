@@ -16,33 +16,32 @@ import kotlin.test.assertTrue
  *
  * The upstream Rust tests use the `parse_quote!` macro, which expands to a
  * type-inferred call into the quote parsing machinery. In Kotlin, the
- * equivalent is [parseQuote] paired with explicit [ParseQuote] adapters for
- * the target type.
+ * equivalent is a concrete parse-quote entrypoint for the target type.
  */
 class ParseQuoteTest {
     private fun tokens(source: String): TokenStream =
         TokenStream.fromString(source).getOrThrow()
 
-    private inline fun <reified T> parseQuoteAs(source: String, parser: ParseQuote): T =
-        assertIs<T>(parseQuote(tokens(source), parser))
-
     private fun parseLitOrPunctuated(source: String): Punctuated =
-        parserFromFunction { input ->
-            Punctuated.parseTerminatedWith(
-                input,
-                { stream -> stream.parse(LitParse::parse) },
-                OrParse::parse,
-            )
-        }.parse2(tokens(source)).getOrThrow()
+        parse2(
+            parser@ { input: ParseStream ->
+                Punctuated.parseTerminatedWith(
+                    input,
+                    { stream -> LitParse.parse(stream) },
+                    OrParse::parse,
+                )
+            },
+            tokens(source),
+        ).getOrThrow()
 
     @Test
     fun testAttribute() {
-        val outer = parseQuoteAs<Attribute>("#[test]", AttributeParseQuote)
+        val outer = parseQuoteAttribute(tokens("#[test]"))
         assertIs<AttrStyle.Outer>(outer.style)
         val outerMeta = assertIs<Meta.PathMeta>(outer.meta)
         assertEquals("test", outerMeta.path.toString())
 
-        val inner = parseQuoteAs<Attribute>("#![no_std]", AttributeParseQuote)
+        val inner = parseQuoteAttribute(tokens("#![no_std]"))
         assertIs<AttrStyle.Inner>(inner.style)
         val innerMeta = assertIs<Meta.PathMeta>(inner.meta)
         assertEquals("no_std", innerMeta.path.toString())
@@ -50,14 +49,14 @@ class ParseQuoteTest {
 
     @Test
     fun testField() {
-        val named = parseQuoteAs<Field>("pub enabled: bool", FieldParseQuote)
+        val named = parseQuoteField(tokens("pub enabled: bool"))
         assertIs<Visibility.Public>(named.vis)
         assertEquals("enabled", named.ident?.toString())
         assertNotNull(named.colonToken)
         val namedTy = assertIs<SynType.Path>(named.ty)
         assertEquals(listOf("bool"), namedTy.path.segments.toList().map { it.ident.toString() })
 
-        val unnamed = parseQuoteAs<Field>("primitive::bool", FieldParseQuote)
+        val unnamed = parseQuoteField(tokens("primitive::bool"))
         assertIs<Visibility.Inherited>(unnamed.vis)
         assertNull(unnamed.ident)
         assertNull(unnamed.colonToken)
@@ -67,7 +66,7 @@ class ParseQuoteTest {
 
     @Test
     fun testPat() {
-        val pat = assertIs<Pat.Or>(parseQuoteAs<Pat>("Some(false) | None", PatParseQuote))
+        val pat = assertIs<Pat.Or>(parseQuotePat(tokens("Some(false) | None")))
         assertNull(pat.leadingVert)
         val cases = pat.cases.toList()
         assertEquals(2, cases.size)
@@ -102,7 +101,7 @@ class ParseQuoteTest {
 
     @Test
     fun testVecStmt() {
-        val stmts = parseQuoteAs<List<Stmt>>("let _; true", StmtListParseQuote)
+        val stmts = parseQuoteStmtList(tokens("let _; true"))
         assertEquals(2, stmts.size)
 
         val local = assertIs<Stmt.Local>(stmts[0])

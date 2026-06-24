@@ -30,7 +30,7 @@ class StmtTest {
 
     @Test
     fun testRawOperator() {
-        val stmt = parserFromFunction(::parseStmtFull).parseStr("let _ = &raw const x;").getOrThrow()
+        val stmt = parseStr(::parseStmtFull, "let _ = &raw const x;").getOrThrow()
         val local = assertIs<Stmt.Local>(stmt)
         assertIs<Pat.Wild>(local.pat)
         val init = local.init
@@ -47,7 +47,7 @@ class StmtTest {
         // `&raw` without a following `const`/`mut` parses as a reference
         // expression to the path `raw`; the local binding's pattern is a
         // wildcard and the initializer's inner expression is a path.
-        val stmt = parserFromFunction(::parseStmtFull).parseStr("let _ = &raw;").getOrThrow()
+        val stmt = parseStr(::parseStmtFull, "let _ = &raw;").getOrThrow()
         val local = assertIs<Stmt.Local>(stmt)
         assertIs<Pat.Wild>(local.pat)
         val init = local.init
@@ -68,7 +68,7 @@ class StmtTest {
         // `parseStmtFull` throws `SynError` on the missing `;` rather
         // than returning a `Failure`, so the assertion uses
         // `runCatching` to treat either outcome as a parse rejection.
-        val result = runCatching { parserFromFunction(::parseStmtFull).parseStr("let _ = &raw x;") }
+        val result = runCatching { parseStr(::parseStmtFull, "let _ = &raw x;") }
         assertTrue(result.isFailure || result.getOrNull()?.isFailure == true, "expected parse error for: let _ = &raw x;")
     }
 
@@ -110,7 +110,7 @@ class StmtTest {
         val tokens =
             Group(Delimiter.None, TokenStream.fromString("let None = None").getOrThrow())
                 .let { TokenStream.fromTokenTrees(listOf(TokenTree.Group(it))) }
-        val stmts = parserFromFunction(::parseWithin).parse2(tokens).getOrThrow()
+        val stmts = parse2(::parseWithin, tokens).getOrThrow()
 
         assertEquals(1, stmts.size)
         val stmt = assertIs<Stmt.ExprStmt>(stmts[0])
@@ -124,7 +124,7 @@ class StmtTest {
 
     @Test
     fun testLetDotDot() {
-        val stmt = parserFromFunction(::parseStmtFull).parseStr("let .. = 10;").getOrThrow()
+        val stmt = parseStr(::parseStmtFull, "let .. = 10;").getOrThrow()
         val local = assertIs<Stmt.Local>(stmt)
         assertIs<Pat.Rest>(local.pat)
         val init = local.init
@@ -136,9 +136,7 @@ class StmtTest {
     @Test
     fun testLetElse() {
         val stmt =
-            parserFromFunction(::parseStmtFull)
-                .parseStr("let Some(x) = None else { return 0; };")
-                .getOrThrow()
+            parseStr(::parseStmtFull, "let Some(x) = None else { return 0; };").getOrThrow()
 
         val local = assertIs<Stmt.Local>(stmt)
         val pat = assertIs<Pat.TupleStruct>(local.pat)
@@ -164,8 +162,7 @@ class StmtTest {
     @Test
     fun testMacros() {
         val stmt =
-            parserFromFunction(::parseStmtFull)
-                .parseStr("fn main() { macro_rules! mac {} thread_local! { static FOO } println!(\"\"); vec![] }")
+            parseStr(::parseStmtFull, "fn main() { macro_rules! mac {} thread_local! { static FOO } println!(\"\"); vec![] }")
                 .getOrThrow()
 
         val itemStmt = assertIs<Stmt.ItemStmt>(stmt)
@@ -204,7 +201,7 @@ class StmtTest {
 
     @Test
     fun testEarlyParseLoop() {
-        val stmts = parserFromFunction(::parseWithin).parseStr("loop {} ()").getOrThrow()
+        val stmts = parseStr(::parseWithin, "loop {} ()").getOrThrow()
 
         assertEquals(2, stmts.size)
         val loopStmt = assertIs<Stmt.ExprStmt>(stmts[0])
@@ -214,7 +211,7 @@ class StmtTest {
         assertIs<Expr.Tuple>(tupleStmt.expr)
         assertNull(tupleStmt.semiToken)
 
-        val labeled = parserFromFunction(::parseWithin).parseStr("'a: loop {} ()").getOrThrow()
+        val labeled = parseStr(::parseWithin, "'a: loop {} ()").getOrThrow()
         assertEquals(2, labeled.size)
         val labeledLoopStmt = assertIs<Stmt.ExprStmt>(labeled[0])
         val labeledLoop = assertIs<Expr.Loop>(labeledLoopStmt.expr)
@@ -229,7 +226,7 @@ class StmtTest {
     fun testStatementSemicolonRules() {
         assertTrue(parseStr(StmtParse::parse, "x").isFailure)
         assertTrue(parseStr(StmtParse::parse, "return 1").isFailure)
-        assertTrue(parserFromFunction(::parseWithin).parseStr("x y").isFailure)
+        assertTrue(parseStr(::parseWithin, "x y").isFailure)
 
         val loopStmt = assertIs<Stmt.ExprStmt>(parseStr(StmtParse::parse, "loop {}").getOrThrow())
         assertIs<Expr.Loop>(loopStmt.expr)
