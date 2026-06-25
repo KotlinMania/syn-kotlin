@@ -93,10 +93,15 @@ private fun Expr.toTokensAsRightmostConditionOperand(
 private fun Expr.toTokensAsConditionPostfixBase(tokens: TokenStream) {
     if (Precedence.of(this) < Precedence.Unambiguous ||
         this is Expr.Struct ||
-        this is Expr.BlockExpr && attrs.isEmpty() && label == null ||
-        this is Expr.Break && expr == null ||
-        this is Expr.Return && expr == null ||
-        this is Expr.Yield && expr == null
+        this is Expr.BlockExpr &&
+        attrs.isEmpty() &&
+        label == null ||
+        this is Expr.Break &&
+        expr == null ||
+        this is Expr.Return &&
+        expr == null ||
+        this is Expr.Yield &&
+        expr == null
     ) {
         io.github.kotlinmania.syn.token.Paren.default().surround(tokens) { inner ->
             toTokens(inner)
@@ -141,10 +146,15 @@ private fun Expr.toTokensAsOptionalOperand(tokens: TokenStream) {
 
 private fun Expr.toTokensAsOptionalOperandPostfixBase(tokens: TokenStream) {
     if (Precedence.of(this) < Precedence.Unambiguous ||
-        this is Expr.BlockExpr && attrs.isEmpty() && label == null ||
-        this is Expr.Break && expr == null ||
-        this is Expr.Return && expr == null ||
-        this is Expr.Yield && expr == null
+        this is Expr.BlockExpr &&
+        attrs.isEmpty() &&
+        label == null ||
+        this is Expr.Break &&
+        expr == null ||
+        this is Expr.Return &&
+        expr == null ||
+        this is Expr.Yield &&
+        expr == null
     ) {
         io.github.kotlinmania.syn.token.Paren.default().surround(tokens) { inner ->
             toTokens(inner)
@@ -155,11 +165,15 @@ private fun Expr.toTokensAsOptionalOperandPostfixBase(tokens: TokenStream) {
 }
 
 private fun Expr.toTokensAsConditionTail(tokens: TokenStream) {
-    if (this is Expr.Break && expr == null ||
+    if (this is Expr.Break &&
+        expr == null ||
         this is Expr.Path ||
-        this is Expr.Range && end == null ||
-        this is Expr.Return && expr == null ||
-        this is Expr.Yield && expr == null
+        this is Expr.Range &&
+        end == null ||
+        this is Expr.Return &&
+        expr == null ||
+        this is Expr.Yield &&
+        expr == null
     ) {
         io.github.kotlinmania.syn.token.Paren.default().surround(tokens) { inner ->
             toTokens(inner)
@@ -236,7 +250,8 @@ private fun Expr.toTokensAsOptionalOperandCallee(tokens: TokenStream) {
 private fun Expr.toTokensAsRangeStart(tokens: TokenStream) {
     if (Precedence.of(this).ordinal <= Precedence.Range.ordinal ||
         endsWithRange() ||
-        this !is Expr.Binary && rightEdgeNeedsGroupBeforeRange()
+        this !is Expr.Binary &&
+        rightEdgeNeedsGroupBeforeRange()
     ) {
         io.github.kotlinmania.syn.token.Paren.default().surround(tokens) { inner ->
             toTokens(inner)
@@ -249,16 +264,22 @@ private fun Expr.toTokensAsRangeStart(tokens: TokenStream) {
 }
 
 private fun Expr.needsParensAsConditionJumpValue(): Boolean =
-        this is Expr.Assign ||
+    this is Expr.Assign ||
         this is Expr.Binary ||
-        this is Expr.BlockExpr && attrs.isEmpty() && label == null ||
-        this is Expr.Break && (expr !is Expr.BlockExpr || expr.attrs.isNotEmpty() || expr.label != null) ||
+        this is Expr.BlockExpr &&
+        attrs.isEmpty() &&
+        label == null ||
+        this is Expr.Break &&
+        (expr !is Expr.BlockExpr || expr.attrs.isNotEmpty() || expr.label != null) ||
         canConsumeTrailingBraceAsStruct() ||
         this is Expr.Let ||
         this is Expr.Path ||
-        this is Expr.Range && (end == null || end.canConsumeTrailingBraceAsStruct()) ||
-        this is Expr.Return && expr == null ||
-        this is Expr.Yield && expr == null
+        this is Expr.Range &&
+        (end == null || end.canConsumeTrailingBraceAsStruct()) ||
+        this is Expr.Return &&
+        expr == null ||
+        this is Expr.Yield &&
+        expr == null
 
 private fun Expr.canConsumeTrailingBraceAsStruct(): Boolean =
     when (this) {
@@ -292,7 +313,9 @@ private fun Expr.Assign.toTokensAsCondition(tokens: TokenStream) {
         right.toTokensAsRightmostConditionOperand(target, Precedence.Assign, ExprPosition.RightOperand)
     }
     if (attrs.isNotEmpty()) {
-        io.github.kotlinmania.syn.token.Paren.default().surround(tokens, emit)
+        io.github.kotlinmania.syn.token.Paren
+            .default()
+            .surround(tokens, emit)
     } else {
         emit(tokens)
     }
@@ -306,7 +329,9 @@ private fun Expr.Assign.toTokensAsConditionTail(tokens: TokenStream) {
         right.toTokensAsConditionTailOperand(target, Precedence.Assign, ExprPosition.RightOperand)
     }
     if (attrs.isNotEmpty()) {
-        io.github.kotlinmania.syn.token.Paren.default().surround(tokens, emit)
+        io.github.kotlinmania.syn.token.Paren
+            .default()
+            .surround(tokens, emit)
     } else {
         emit(tokens)
     }
@@ -361,7 +386,9 @@ private fun Expr.Binary.toTokensAsCondition(tokens: TokenStream) {
         right.toTokensAsRightmostConditionOperand(target, precedence, ExprPosition.RightOperand)
     }
     if (attrs.isNotEmpty()) {
-        io.github.kotlinmania.syn.token.Paren.default().surround(tokens, emit)
+        io.github.kotlinmania.syn.token.Paren
+            .default()
+            .surround(tokens, emit)
     } else {
         emit(tokens)
     }
@@ -386,7 +413,9 @@ private fun Expr.Binary.toTokensAsConditionTail(tokens: TokenStream) {
         right.toTokensAsConditionTailOperand(target, precedence, ExprPosition.RightOperand)
     }
     if (attrs.isNotEmpty()) {
-        io.github.kotlinmania.syn.token.Paren.default().surround(tokens, emit)
+        io.github.kotlinmania.syn.token.Paren
+            .default()
+            .surround(tokens, emit)
     } else {
         emit(tokens)
     }
@@ -634,15 +663,20 @@ private fun Expr.Binary.toTokensAsRangeStart(tokens: TokenStream) {
 private fun Expr.needsParens(parentPrecedence: Precedence, position: ExprPosition): Boolean {
     if (position == ExprPosition.Condition) {
         return this is Expr.Struct ||
-            this is Expr.Return && expr == null ||
-            this is Expr.Yield && expr == null
+            this is Expr.Return &&
+            expr == null ||
+            this is Expr.Yield &&
+            expr == null
     }
 
     if (position == ExprPosition.PostfixBase) {
         return Precedence.of(this) < Precedence.Unambiguous ||
-            this is Expr.Break && expr == null ||
-            this is Expr.Return && expr == null ||
-            this is Expr.Yield && expr == null
+            this is Expr.Break &&
+            expr == null ||
+            this is Expr.Return &&
+            expr == null ||
+            this is Expr.Yield &&
+            expr == null
     }
 
     if (position == ExprPosition.LeftOperand && parentPrecedence == Precedence.Assign && this is Expr.Range) {
@@ -680,11 +714,13 @@ private fun Expr.needsParens(parentPrecedence: Precedence, position: ExprPositio
     }
 
     if ((position == ExprPosition.LeftOperand || position == ExprPosition.RightOperand) &&
-        (this is Expr.Assign ||
-            (this is Expr.BlockExpr && !(parentPrecedence == Precedence.Range && position == ExprPosition.RightOperand)) ||
-            this is Expr.Cast ||
-            this is Expr.Struct ||
-            (this is Expr.Macro && mac.isBrace()))
+        (
+            this is Expr.Assign ||
+                (this is Expr.BlockExpr && !(parentPrecedence == Precedence.Range && position == ExprPosition.RightOperand)) ||
+                this is Expr.Cast ||
+                this is Expr.Struct ||
+                (this is Expr.Macro && mac.isBrace())
+        )
     ) {
         return true
     }
@@ -716,14 +752,18 @@ private fun binOpCanBeginExpr(op: BinOp): Boolean =
         is BinOp.BitAnd,
         is BinOp.BitOr,
         is BinOp.Shl,
-        is BinOp.Lt -> true
+        is BinOp.Lt,
+        -> true
         else -> false
     }
 
 private fun Expr.isValueLessJump(): Boolean =
-    this is Expr.Break && expr == null ||
-        this is Expr.Return && expr == null ||
-        this is Expr.Yield && expr == null
+    this is Expr.Break &&
+        expr == null ||
+        this is Expr.Return &&
+        expr == null ||
+        this is Expr.Yield &&
+        expr == null
 
 private fun Expr.endsWithRange(): Boolean =
     when (this) {
@@ -808,7 +848,9 @@ public sealed class Expr : ToTokens {
                 right.toTokensWithParens(target, Precedence.Assign, ExprPosition.RightOperand)
             }
             if (attrs.isNotEmpty()) {
-                io.github.kotlinmania.syn.token.Paren.default().surround(tokens, emit)
+                io.github.kotlinmania.syn.token.Paren
+                    .default()
+                    .surround(tokens, emit)
             } else {
                 emit(tokens)
             }
@@ -877,7 +919,9 @@ public sealed class Expr : ToTokens {
                 right.toTokensWithParens(target, precedence, ExprPosition.RightOperand)
             }
             if (attrs.isNotEmpty()) {
-                io.github.kotlinmania.syn.token.Paren.default().surround(tokens, emit)
+                io.github.kotlinmania.syn.token.Paren
+                    .default()
+                    .surround(tokens, emit)
             } else {
                 emit(tokens)
             }
@@ -959,7 +1003,9 @@ public sealed class Expr : ToTokens {
                 ty.toTokens(target)
             }
             if (attrs.isNotEmpty()) {
-                io.github.kotlinmania.syn.token.Paren.default().surround(tokens, emit)
+                io.github.kotlinmania.syn.token.Paren
+                    .default()
+                    .surround(tokens, emit)
             } else {
                 emit(tokens)
             }
@@ -1431,7 +1477,9 @@ public sealed class Expr : ToTokens {
             parenToken.surround(tokens) { inner ->
                 elems.toTokens(inner)
                 if (elems.len() == 1 && !elems.trailingPunct()) {
-                    io.github.kotlinmania.syn.token.Comma.default().toTokens(inner)
+                    io.github.kotlinmania.syn.token.Comma
+                        .default()
+                        .toTokens(inner)
                 }
             }
         }
@@ -1540,7 +1588,6 @@ public sealed class Member : ToTokens {
             index.toTokens(tokens)
         }
     }
-
 }
 
 /** A tuple field index such as `0` in `obj.0`. */
@@ -1549,7 +1596,9 @@ public data class Index(
     public val span: Span,
 ) : ToTokens {
     override fun toTokens(tokens: TokenStream) {
-        val literal = io.github.kotlinmania.procmacro2.Literal.i64Unsuffixed(index.toLong())
+        val literal =
+            io.github.kotlinmania.procmacro2.Literal
+                .i64Unsuffixed(index.toLong())
         literal.setSpan(span)
         tokens.append(literal)
     }
@@ -1698,8 +1747,8 @@ public fun parseMember(input: ParseStream): SynResult<Member> = parseMemberImpl(
 
 public fun continueParsingEarly(expr: Expr): Boolean = continueParsingEarlyImpl(expr)
 
-public fun Expr.replaceAttrs(attrs: List<Attribute>): Expr {
-    return when (this) {
+public fun Expr.replaceAttrs(attrs: List<Attribute>): Expr =
+    when (this) {
         is Expr.Binary -> copy(attrs = attrs)
         is Expr.Assign -> copy(attrs = attrs)
         is Expr.Unary -> copy(attrs = attrs)
@@ -1741,7 +1790,6 @@ public fun Expr.replaceAttrs(attrs: List<Attribute>): Expr {
         is Expr.Cast -> copy(attrs = attrs)
         is Expr.Verbatim -> this
     }
-}
 
 public fun Expr.isNamed(name: String): Boolean {
     if (this is Expr.Path) {
@@ -1751,9 +1799,7 @@ public fun Expr.isNamed(name: String): Boolean {
     return false
 }
 
-public fun Expr.span(): io.github.kotlinmania.procmacro2.Span {
-    return spanOf(this)
-}
+public fun Expr.span(): io.github.kotlinmania.procmacro2.Span = spanOf(this)
 
 public fun printExpr(expr: Expr, tokens: TokenStream) {
     expr.toTokens(tokens)
@@ -1763,25 +1809,81 @@ public fun printSubexpression(expr: Expr, tokens: TokenStream) {
     expr.toTokens(tokens)
 }
 
-public fun printExprAssign(e: Expr.Assign, tokens: TokenStream) { e.toTokens(tokens) }
-public fun printExprAwait(e: Expr.Await, tokens: TokenStream) { e.toTokens(tokens) }
-public fun printExprBinary(e: Expr.Binary, tokens: TokenStream) { e.toTokens(tokens) }
-public fun printExprBlock(e: Expr.BlockExpr, tokens: TokenStream) { e.toTokens(tokens) }
-public fun printExprBreak(e: Expr.Break, tokens: TokenStream) { e.toTokens(tokens) }
-public fun printExprCall(e: Expr.Call, tokens: TokenStream) { e.toTokens(tokens) }
-public fun printExprCast(e: Expr.Cast, tokens: TokenStream) { e.toTokens(tokens) }
-public fun printExprClosure(e: Expr.Closure, tokens: TokenStream) { e.toTokens(tokens) }
-public fun printExprField(e: Expr.Field, tokens: TokenStream) { e.toTokens(tokens) }
-public fun printExprIndex(e: Expr.Index, tokens: TokenStream) { e.toTokens(tokens) }
-public fun printExprLet(e: Expr.Let, tokens: TokenStream) { e.toTokens(tokens) }
-public fun printExprMethodCall(e: Expr.MethodCall, tokens: TokenStream) { e.toTokens(tokens) }
-public fun printExprRange(e: Expr.Range, tokens: TokenStream) { e.toTokens(tokens) }
-public fun printExprRawAddr(e: Expr.Reference, tokens: TokenStream) { e.toTokens(tokens) }
-public fun printExprReference(e: Expr.Reference, tokens: TokenStream) { e.toTokens(tokens) }
-public fun printExprReturn(e: Expr.Return, tokens: TokenStream) { e.toTokens(tokens) }
-public fun printExprTry(e: Expr.Try, tokens: TokenStream) { e.toTokens(tokens) }
-public fun printExprUnary(e: Expr.Unary, tokens: TokenStream) { e.toTokens(tokens) }
-public fun printExprYield(e: Expr.Yield, tokens: TokenStream) { e.toTokens(tokens) }
+public fun printExprAssign(e: Expr.Assign, tokens: TokenStream) {
+    e.toTokens(tokens)
+}
+
+public fun printExprAwait(e: Expr.Await, tokens: TokenStream) {
+    e.toTokens(tokens)
+}
+
+public fun printExprBinary(e: Expr.Binary, tokens: TokenStream) {
+    e.toTokens(tokens)
+}
+
+public fun printExprBlock(e: Expr.BlockExpr, tokens: TokenStream) {
+    e.toTokens(tokens)
+}
+
+public fun printExprBreak(e: Expr.Break, tokens: TokenStream) {
+    e.toTokens(tokens)
+}
+
+public fun printExprCall(e: Expr.Call, tokens: TokenStream) {
+    e.toTokens(tokens)
+}
+
+public fun printExprCast(e: Expr.Cast, tokens: TokenStream) {
+    e.toTokens(tokens)
+}
+
+public fun printExprClosure(e: Expr.Closure, tokens: TokenStream) {
+    e.toTokens(tokens)
+}
+
+public fun printExprField(e: Expr.Field, tokens: TokenStream) {
+    e.toTokens(tokens)
+}
+
+public fun printExprIndex(e: Expr.Index, tokens: TokenStream) {
+    e.toTokens(tokens)
+}
+
+public fun printExprLet(e: Expr.Let, tokens: TokenStream) {
+    e.toTokens(tokens)
+}
+
+public fun printExprMethodCall(e: Expr.MethodCall, tokens: TokenStream) {
+    e.toTokens(tokens)
+}
+
+public fun printExprRange(e: Expr.Range, tokens: TokenStream) {
+    e.toTokens(tokens)
+}
+
+public fun printExprRawAddr(e: Expr.Reference, tokens: TokenStream) {
+    e.toTokens(tokens)
+}
+
+public fun printExprReference(e: Expr.Reference, tokens: TokenStream) {
+    e.toTokens(tokens)
+}
+
+public fun printExprReturn(e: Expr.Return, tokens: TokenStream) {
+    e.toTokens(tokens)
+}
+
+public fun printExprTry(e: Expr.Try, tokens: TokenStream) {
+    e.toTokens(tokens)
+}
+
+public fun printExprUnary(e: Expr.Unary, tokens: TokenStream) {
+    e.toTokens(tokens)
+}
+
+public fun printExprYield(e: Expr.Yield, tokens: TokenStream) {
+    e.toTokens(tokens)
+}
 
 public fun outerAttrsToTokens(attrs: List<Attribute>, tokens: TokenStream) {
     for (attr in attrs) {
@@ -1799,23 +1901,31 @@ public fun innerAttrsToTokens(attrs: List<Attribute>, tokens: TokenStream) {
     }
 }
 
-public fun peekExpr(input: ParseStream): Boolean {
-    return input.peek(IdentPeekAny) && !input.peek(AsPeek)
-        || input.peek(ParenPeek)
-        || input.peek(BracketPeek)
-        || input.peek(BracePeek)
-        || input.peek(LitPeek)
-        || input.peek(NotPeek) && !input.peek(NePeek)
-        || input.peek(MinusPeek) && !input.peek(MinusEqPeek) && !input.peek(RArrowPeek)
-        || input.peek(StarPeek) && !input.peek(StarEqPeek)
-        || input.peek(OrPeek) && !input.peek(OrEqPeek)
-        || input.peek(AndPeek) && !input.peek(AndEqPeek)
-        || input.peek(DotDotPeek)
-        || input.peek(LtPeek) && !input.peek(LePeek) && !input.peek(ShlEqPeek)
-        || input.peek(PathSepPeek)
-        || input.peek(LifetimePeek)
-        || input.peek(PoundPeek)
-}
+public fun peekExpr(input: ParseStream): Boolean =
+    input.peek(IdentPeekAny) &&
+        !input.peek(AsPeek) ||
+        input.peek(ParenPeek) ||
+        input.peek(BracketPeek) ||
+        input.peek(BracePeek) ||
+        input.peek(LitPeek) ||
+        input.peek(NotPeek) &&
+        !input.peek(NePeek) ||
+        input.peek(MinusPeek) &&
+        !input.peek(MinusEqPeek) &&
+        !input.peek(RArrowPeek) ||
+        input.peek(StarPeek) &&
+        !input.peek(StarEqPeek) ||
+        input.peek(OrPeek) &&
+        !input.peek(OrEqPeek) ||
+        input.peek(AndPeek) &&
+        !input.peek(AndEqPeek) ||
+        input.peek(DotDotPeek) ||
+        input.peek(LtPeek) &&
+        !input.peek(LePeek) &&
+        !input.peek(ShlEqPeek) ||
+        input.peek(PathSepPeek) ||
+        input.peek(LifetimePeek) ||
+        input.peek(PoundPeek)
 
 public fun memberFromIdent(ident: io.github.kotlinmania.procmacro2.Ident): Member =
     Member.Named(ident)
@@ -1828,7 +1938,11 @@ public fun memberFromUSize(index: Int): Member =
 
 public fun indexFromUSize(index: Int): Index {
     require(index < 0xFFFFFFFF) { "index overflow" }
-    return Index(index.toUInt(), io.github.kotlinmania.procmacro2.Span.callSite())
+    return Index(
+        index.toUInt(),
+        io.github.kotlinmania.procmacro2.Span
+            .callSite(),
+    )
 }
 
 public fun atomLabeled(input: ParseStream): SynResult<Expr> {
@@ -1839,29 +1953,30 @@ public fun atomLabeled(input: ParseStream): SynResult<Expr> {
     if (colonResult.isFailure) return SynResult.failure((colonResult as SynResult.Failure).error)
     val theLabelColon = colonResult.getOrThrow()
     val label = Label(theLabel, theLabelColon)
-    val expr: Expr = when {
-        input.peek(WhilePeek) -> {
-            val whileResult = parseExprWhileLabeled(input)
-            if (whileResult.isFailure) return whileResult
-            whileResult.getOrThrow()
+    val expr: Expr =
+        when {
+            input.peek(WhilePeek) -> {
+                val whileResult = parseExprWhileLabeled(input)
+                if (whileResult.isFailure) return whileResult
+                whileResult.getOrThrow()
+            }
+            input.peek(ForPeek) -> {
+                val forResult = parseExprForLabeled(input)
+                if (forResult.isFailure) return forResult
+                forResult.getOrThrow()
+            }
+            input.peek(LoopPeek) -> {
+                val loopResult = parseExprLoopLabeled(input)
+                if (loopResult.isFailure) return loopResult
+                loopResult.getOrThrow()
+            }
+            input.peek(BracePeek) -> {
+                val blockResult = parseExprBlock(input)
+                if (blockResult.isFailure) return blockResult
+                blockResult.getOrThrow()
+            }
+            else -> return SynResult.failure(input.error("expected loop or block expression"))
         }
-        input.peek(ForPeek) -> {
-            val forResult = parseExprForLabeled(input)
-            if (forResult.isFailure) return forResult
-            forResult.getOrThrow()
-        }
-        input.peek(LoopPeek) -> {
-            val loopResult = parseExprLoopLabeled(input)
-            if (loopResult.isFailure) return loopResult
-            loopResult.getOrThrow()
-        }
-        input.peek(BracePeek) -> {
-            val blockResult = parseExprBlock(input)
-            if (blockResult.isFailure) return blockResult
-            blockResult.getOrThrow()
-        }
-        else -> return SynResult.failure(input.error("expected loop or block expression"))
-    }
     return when (expr) {
         is Expr.While -> SynResult.success(expr.copy(label = label))
         is Expr.ForLoop -> SynResult.success(expr.copy(label = label))
@@ -1937,11 +2052,14 @@ public fun exprStructHelper(
         if (content.peek(DotDotPeek)) {
             val dot2Result = DotDotParse.parse(content)
             if (dot2Result.isFailure) return SynResult.failure((dot2Result as SynResult.Failure).error)
-            val rest: Expr? = if (content.isEmpty()) null else {
-                val restResult = parseExprFull(content)
-                if (restResult.isFailure) return SynResult.failure((restResult as SynResult.Failure).error)
-                restResult.getOrThrow()
-            }
+            val rest: Expr? =
+                if (content.isEmpty()) {
+                    null
+                } else {
+                    val restResult = parseExprFull(content)
+                    if (restResult.isFailure) return SynResult.failure((restResult as SynResult.Failure).error)
+                    restResult.getOrThrow()
+                }
             content.finishChildBuffer()
             return SynResult.success(
                 Expr.Struct(
@@ -2092,13 +2210,14 @@ public fun exprBreak(input: ParseStream, allowStruct: Boolean): SynResult<Expr.B
         return SynResult.failure(SynError.new2(label.apostrophe, input.span(), "parentheses required"))
     }
     input.advanceTo(ahead)
-    val expr: Expr? = if (peekExpr(input) && (allowStruct || !input.peek(BracePeek))) {
-        val exprResult = parseExprFull(input)
-        if (exprResult.isFailure) return SynResult.failure((exprResult as SynResult.Failure).error)
-        exprResult.getOrThrow()
-    } else {
-        null
-    }
+    val expr: Expr? =
+        if (peekExpr(input) && (allowStruct || !input.peek(BracePeek))) {
+            val exprResult = parseExprFull(input)
+            if (exprResult.isFailure) return SynResult.failure((exprResult as SynResult.Failure).error)
+            exprResult.getOrThrow()
+        } else {
+            null
+        }
     return SynResult.success(
         Expr.Break(emptyList(), breakResult.getOrThrow(), label, expr),
     )
@@ -2136,14 +2255,15 @@ public object ArmParse {
         val attrs = emptyList<Attribute>()
         val patResult = parsePatMultiWithLeadingVert(input)
         if (patResult.isFailure) return SynResult.failure((patResult as SynResult.Failure).error)
-        val guard: IfExpr? = if (input.peek(IfPeek)) {
-            val ifToken = IfParse.parse(input).getOrThrow()
-            val guardExpr = parseExprFull(input)
-            if (guardExpr.isFailure) return SynResult.failure((guardExpr as SynResult.Failure).error)
-            IfExpr(ifToken, guardExpr.getOrThrow())
-        } else {
-            null
-        }
+        val guard: IfExpr? =
+            if (input.peek(IfPeek)) {
+                val ifToken = IfParse.parse(input).getOrThrow()
+                val guardExpr = parseExprFull(input)
+                if (guardExpr.isFailure) return SynResult.failure((guardExpr as SynResult.Failure).error)
+                IfExpr(ifToken, guardExpr.getOrThrow())
+            } else {
+                null
+            }
         val fatArrowResult = FatArrowParse.parse(input)
         if (fatArrowResult.isFailure) return SynResult.failure((fatArrowResult as SynResult.Failure).error)
         val bodyResult = parseExprWithEarlierBoundaryRuleImpl(input)
@@ -2165,18 +2285,20 @@ public object ArmParse {
 
 public fun parseRangeEnd(input: ParseStream, limits: RangeLimits, allowStruct: Boolean): SynResult<Expr?> {
     val isHalfOpen = limits is RangeLimits.HalfOpen
-    val stop = isHalfOpen && (
-        input.isEmpty() ||
-            input.peek(CommaPeek) ||
-            input.peek(SemiPeek) ||
-            (input.peek(DotPeek) && !input.peek(DotDotPeek)) ||
-            input.peek(QuestionPeek) ||
-            input.peek(FatArrowPeek) ||
-            (!allowStruct && input.peek(BracePeek)) ||
-            input.peek(EqPeek) ||
-            input.peek(PlusPeek) ||
-            input.peek(AsPeek)
-    )
+    val stop =
+        isHalfOpen &&
+            (
+                input.isEmpty() ||
+                    input.peek(CommaPeek) ||
+                    input.peek(SemiPeek) ||
+                    (input.peek(DotPeek) && !input.peek(DotDotPeek)) ||
+                    input.peek(QuestionPeek) ||
+                    input.peek(FatArrowPeek) ||
+                    (!allowStruct && input.peek(BracePeek)) ||
+                    input.peek(EqPeek) ||
+                    input.peek(PlusPeek) ||
+                    input.peek(AsPeek)
+            )
     if (stop) {
         return SynResult.success(null)
     }
@@ -2227,20 +2349,25 @@ public fun multiIndex(e: Expr, dotToken: io.github.kotlinmania.syn.token.Dot, fl
         val index: Index = Index(part.toUInt(), floatSpan)
         val partEnd = offset + part.length
         val base = currentExpr
-        currentExpr = Expr.Field(
-            emptyList(),
-            base,
-            currentDot,
-            Member.Unnamed(index),
-        )
-        currentDot = io.github.kotlinmania.syn.token.Dot.from(floatSpan)
+        currentExpr =
+            Expr.Field(
+                emptyList(),
+                base,
+                currentDot,
+                Member.Unnamed(index),
+            )
+        currentDot =
+            io.github.kotlinmania.syn.token.Dot
+                .from(floatSpan)
         offset = partEnd + 1
     }
     return SynResult.success(MultiIndexResult(currentExpr, !trailingDot))
 }
 
 @JvmInline
-internal value class AllowStruct(val value: Boolean)
+internal value class AllowStruct(
+    val value: Boolean,
+)
 
 public fun parseWithoutEagerBrace(input: ParseStream): SynResult<Expr> =
     ambiguousExprImpl(input, allowStruct = false)

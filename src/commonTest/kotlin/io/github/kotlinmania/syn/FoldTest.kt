@@ -499,7 +499,7 @@ class FoldTest {
                 when (mutability) {
                     is PointerMutability.Const -> "pointer:const"
                     is PointerMutability.Mut -> "pointer:mut"
-            }
+                }
             return super.foldPointerMutability(mutability)
         }
 

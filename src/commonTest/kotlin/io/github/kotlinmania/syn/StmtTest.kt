@@ -19,13 +19,25 @@ import kotlin.test.assertTrue
 class StmtTest {
     private fun assertMacroPath(mac: Macro, ident: String) {
         assertEquals(1, mac.path.segments.len())
-        assertEquals(ident, mac.path.segments.first()?.ident?.toString())
+        assertEquals(
+            ident,
+            mac.path.segments
+                .first()
+                ?.ident
+                ?.toString(),
+        )
     }
 
     private fun assertPathExpr(expr: Expr, ident: String) {
         val path = assertIs<Expr.Path>(expr)
         assertEquals(1, path.path.segments.len())
-        assertEquals(ident, path.path.segments.first()?.ident?.toString())
+        assertEquals(
+            ident,
+            path.path.segments
+                .first()
+                ?.ident
+                ?.toString(),
+        )
     }
 
     @Test
@@ -39,7 +51,13 @@ class StmtTest {
         assertIs<PointerMutability.Const>(raw.mutability)
         val path = assertIs<Expr.Path>(raw.expr)
         assertEquals(1, path.path.segments.len())
-        assertEquals("x", path.path.segments.first()?.ident?.toString())
+        assertEquals(
+            "x",
+            path.path.segments
+                .first()
+                ?.ident
+                ?.toString(),
+        )
     }
 
     @Test
@@ -215,7 +233,13 @@ class StmtTest {
         assertEquals(2, labeled.size)
         val labeledLoopStmt = assertIs<Stmt.ExprStmt>(labeled[0])
         val labeledLoop = assertIs<Expr.Loop>(labeledLoopStmt.expr)
-        assertEquals("a", labeledLoop.label?.name?.ident?.toString())
+        assertEquals(
+            "a",
+            labeledLoop.label
+                ?.name
+                ?.ident
+                ?.toString(),
+        )
         assertNull(labeledLoopStmt.semiToken)
         val labeledTupleStmt = assertIs<Stmt.ExprStmt>(labeled[1])
         assertIs<Expr.Tuple>(labeledTupleStmt.expr)

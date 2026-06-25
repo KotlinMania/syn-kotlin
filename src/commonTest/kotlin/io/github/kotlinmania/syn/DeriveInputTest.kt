@@ -46,7 +46,14 @@ class DeriveInputTest {
         assertEquals(2, fields.size)
         assertPublicNamedPathField(fields[0], "ident", "Ident")
         assertPublicNamedPathField(fields[1], "attrs", "Vec")
-        val vecArgs = assertIs<PathArguments.AngleBracketed>(assertPathType(fields[1].ty, "Vec").segments.toList().single().arguments)
+        val vecArgs =
+            assertIs<PathArguments.AngleBracketed>(
+                assertPathType(fields[1].ty, "Vec")
+                    .segments
+                    .toList()
+                    .single()
+                    .arguments,
+            )
         val arg = assertIs<GenericArgument.TypeArg>(vecArgs.args.toList().single())
         assertPathType(arg.type, "Attribute")
     }
@@ -221,7 +228,14 @@ class DeriveInputTest {
 
         val unionInput = parse("union U<T> where T: Copy { value: T }")
         assertSingleTypeWhereClause(unionInput.generics, "T", "Copy")
-        assertNamedPathField(assertIs<Data.Union>(unionInput.data).fields.named.toList().single(), "value", "T")
+        assertNamedPathField(
+            assertIs<Data.Union>(unionInput.data)
+                .fields.named
+                .toList()
+                .single(),
+            "value",
+            "T",
+        )
     }
 
     @Test

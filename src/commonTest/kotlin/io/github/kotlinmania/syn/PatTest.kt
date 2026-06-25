@@ -50,7 +50,12 @@ class PatTest {
         assertTrue(parseStr(StmtParse::parse, "let TS(|| A): TS;").isFailure)
 
         val struct = assertIs<Pat.Struct>(assertLocalType("let NS { f: | A }: NS;").pat)
-        assertSingleLeadingOr(struct.fields.toList().single().pat)
+        assertSingleLeadingOr(
+            struct.fields
+                .toList()
+                .single()
+                .pat,
+        )
         assertTrue(parseStr(StmtParse::parse, "let NS { f: || A }: NS;").isFailure)
     }
 
@@ -124,7 +129,12 @@ class PatTest {
         assertEquals(2, twoTrailing.elems.size)
         assertTrue(twoTrailing.elems.trailingPunct())
 
-        val tuple = Pat.Tuple(io.github.kotlinmania.syn.token.Paren.default(), PatList())
+        val tuple =
+            Pat.Tuple(
+                io.github.kotlinmania.syn.token.Paren
+                    .default(),
+                PatList(),
+            )
         assertIs<Pat.Tuple>(roundTrip(tuple))
 
         val wild = assertIs<Pat.Wild>(parsePat("_"))
@@ -133,7 +143,10 @@ class PatTest {
         assertEquals(1, onePrinted.elems.size)
         assertTrue(onePrinted.elems.trailingPunct())
 
-        tuple.elems.pushPunct(io.github.kotlinmania.syn.token.Comma.default())
+        tuple.elems.pushPunct(
+            io.github.kotlinmania.syn.token.Comma
+                .default(),
+        )
         val oneTrailingPrinted = assertIs<Pat.Tuple>(roundTrip(tuple))
         assertEquals(1, oneTrailingPrinted.elems.size)
         assertTrue(oneTrailingPrinted.elems.trailingPunct())
@@ -143,7 +156,10 @@ class PatTest {
         assertEquals(2, twoPrinted.elems.size)
         assertFalse(twoPrinted.elems.trailingPunct())
 
-        tuple.elems.pushPunct(io.github.kotlinmania.syn.token.Comma.default())
+        tuple.elems.pushPunct(
+            io.github.kotlinmania.syn.token.Comma
+                .default(),
+        )
         val twoTrailingPrinted = assertIs<Pat.Tuple>(roundTrip(tuple))
         assertEquals(2, twoTrailingPrinted.elems.size)
         assertTrue(twoTrailingPrinted.elems.trailingPunct())

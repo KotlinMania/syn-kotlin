@@ -93,7 +93,15 @@ class PunctuatedTest {
         val pairs = p.pairs()
         assertEquals(3, pairs.len())
         assertEquals(3 to 3, pairs.sizeHint())
-        assertEquals(4, pairs.clone().nextBack()?.intoValue()?.intToken()?.v)
+        assertEquals(
+            4,
+            pairs
+                .clone()
+                .nextBack()
+                ?.intoValue()
+                ?.intToken()
+                ?.v,
+        )
 
         val pairsList = p.intoPairs().remainingList()
         assertEquals(3, pairsList.size)
@@ -104,10 +112,24 @@ class PunctuatedTest {
         assertNull(lastPair.punct())
         assertTrue(lastPair is Punctuated.Pair.End)
         val firstPair = pairsList.first()
-        assertEquals(2, firstPair.intoTuple().first.intToken().v)
+        assertEquals(
+            2,
+            firstPair
+                .intoTuple()
+                .first
+                .intToken()
+                .v,
+        )
         assertNotNull(firstPair.punct())
         assertNotNull(firstPair.punctMut())
-        assertEquals(2, firstPair.cloned().value().intToken().v)
+        assertEquals(
+            2,
+            firstPair
+                .cloned()
+                .value()
+                .intToken()
+                .v,
+        )
         assertTrue(firstPair is Punctuated.Pair.Punctuated)
     }
 
@@ -191,10 +213,31 @@ class PunctuatedTest {
         assertEquals(3, p.iter().remainingCount())
         assertEquals(3, p.iterMut().remainingCount())
         assertEquals(3, p.pairsMut().remainingCount())
-        assertEquals(4, p.iter().nextBack()?.intToken()?.v)
-        assertEquals(2, p.iterMut().next().intToken().v)
+        assertEquals(
+            4,
+            p
+                .iter()
+                .nextBack()
+                ?.intToken()
+                ?.v,
+        )
+        assertEquals(
+            2,
+            p
+                .iterMut()
+                .next()
+                .intToken()
+                .v,
+        )
         assertEquals(3, p.intoIter().len())
-        assertEquals(4, p.intoIter().nextBack()?.intToken()?.v)
+        assertEquals(
+            4,
+            p
+                .intoIter()
+                .nextBack()
+                ?.intToken()
+                ?.v,
+        )
     }
 
     @Test
@@ -202,12 +245,47 @@ class PunctuatedTest {
         val p = punctuatedIntComma(1, 2, 3)
 
         val pairs = p.intoPairs()
-        assertEquals(1, pairs.next().intoValue().intToken().v)
+        assertEquals(
+            1,
+            pairs
+                .next()
+                .intoValue()
+                .intToken()
+                .v,
+        )
         val pairsClone = pairs.clone()
-        assertEquals(2, pairs.next().intoValue().intToken().v)
-        assertEquals(2, pairsClone.next().intoValue().intToken().v)
-        assertEquals(3, pairs.nextBack()?.intoValue()?.intToken()?.v)
-        assertEquals(3, pairsClone.nextBack()?.intoValue()?.intToken()?.v)
+        assertEquals(
+            2,
+            pairs
+                .next()
+                .intoValue()
+                .intToken()
+                .v,
+        )
+        assertEquals(
+            2,
+            pairsClone
+                .next()
+                .intoValue()
+                .intToken()
+                .v,
+        )
+        assertEquals(
+            3,
+            pairs
+                .nextBack()
+                ?.intoValue()
+                ?.intToken()
+                ?.v,
+        )
+        assertEquals(
+            3,
+            pairsClone
+                .nextBack()
+                ?.intoValue()
+                ?.intToken()
+                ?.v,
+        )
 
         val values = p.intoIter()
         assertEquals(1, values.next().intToken().v)
@@ -375,7 +453,7 @@ class PunctuatedTest {
     @Test
     fun parseTerminatedAcceptsTrailingPunctuation() {
         val parser =
-            parser@ { input: ParseStream ->
+            parser@{ input: ParseStream ->
                 Punctuated.parseTerminated(input, LitIntParse::parse, CommaParse::parse)
             }
 
@@ -388,14 +466,15 @@ class PunctuatedTest {
     @Test
     fun parseSeparatedNonemptyStopsBeforeNonSeparator() {
         val parser =
-            parser@ { input: ParseStream ->
+            parser@{ input: ParseStream ->
                 val parsed =
-                    Punctuated.parseSeparatedNonempty(
-                        input,
-                        LitIntParse::parse,
-                        CommaPeek,
-                        CommaParse::parse,
-                    ).getOrElse { return@parser SynResult.failure(it) }
+                    Punctuated
+                        .parseSeparatedNonempty(
+                            input,
+                            LitIntParse::parse,
+                            CommaPeek,
+                            CommaParse::parse,
+                        ).getOrElse { return@parser SynResult.failure(it) }
 
                 val remaining = LitIntParse.parse(input).getOrElse { return@parser SynResult.failure(it) }
                 assertEquals(3L, remaining.base10Parse())
@@ -411,7 +490,7 @@ class PunctuatedTest {
     @Test
     fun parseSeparatedNonemptyRequiresOneElement() {
         val parser =
-            parser@ { input: ParseStream ->
+            parser@{ input: ParseStream ->
                 Punctuated.parseSeparatedNonempty(
                     input,
                     LitIntParse::parse,

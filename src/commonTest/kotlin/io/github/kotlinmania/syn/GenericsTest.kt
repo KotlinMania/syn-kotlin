@@ -36,7 +36,13 @@ class GenericsTest {
         assertEquals(listOf("'a"), b.bounds.toList().map { it.toString() })
 
         val t = assertIs<GenericParam.TypeParam>(params[2])
-        assertEquals("may_dangle", t.attrs.single().path().toString())
+        assertEquals(
+            "may_dangle",
+            t.attrs
+                .single()
+                .path()
+                .toString(),
+        )
         assertEquals("T", t.ident.toString())
         assertNotNull(t.colonToken)
         assertEquals("'a", assertIs<TypeParamBound.LifetimeBound>(t.bounds.toList().single()).lifetime.toString())
@@ -66,7 +72,11 @@ class GenericsTest {
         assertNull(typeOnlyT.colonToken)
         assertTrue(typeOnlyT.bounds.isEmpty())
 
-        val turbofishArgs = split.typeGenerics.asTurbofish().params.toList()
+        val turbofishArgs =
+            split.typeGenerics
+                .asTurbofish()
+                .params
+                .toList()
         assertEquals(3, turbofishArgs.size)
         assertEquals("'a", assertIs<GenericArgument.LifetimeArg>(turbofishArgs[0]).lifetime.toString())
         assertEquals("'b", assertIs<GenericArgument.LifetimeArg>(turbofishArgs[1]).lifetime.toString())
@@ -128,7 +138,9 @@ class GenericsTest {
             )
 
         assertEquals("f", item.sig.ident.toString())
-        val params = item.sig.generics.params.toList()
+        val params =
+            item.sig.generics.params
+                .toList()
         assertEquals(1, params.size)
         assertEquals("G", assertIs<GenericParam.TypeParam>(params.single()).ident.toString())
 
@@ -139,7 +151,10 @@ class GenericsTest {
         assertEquals(2, bounds.size)
 
         val fnOnce = assertIs<TypeParamBound.Trait>(bounds[0])
-        val fnOnceSegment = fnOnce.path.segments.toList().single()
+        val fnOnceSegment =
+            fnOnce.path.segments
+                .toList()
+                .single()
         assertEquals("FnOnce", fnOnceSegment.ident.toString())
         val args = assertIs<PathArguments.Parenthesized>(fnOnceSegment.arguments)
         assertEquals(0, args.inputs.len())
@@ -178,7 +193,14 @@ class GenericsTest {
         assertEquals("'a", lifetime.lifetime.toString())
         assertPathType(predicate.boundedTy, "Foo")
         val bound = assertIs<TypeParamBound.Trait>(predicate.bounds.toList().single())
-        assertEquals("Trait", bound.path.segments.toList().single().ident.toString())
+        assertEquals(
+            "Trait",
+            bound.path.segments
+                .toList()
+                .single()
+                .ident
+                .toString(),
+        )
     }
 
     @Test
@@ -232,7 +254,13 @@ class GenericsTest {
         input.generics.toTokens(tokens)
         assertEquals("< 'a , T , const N : usize >", tokens.toString())
 
-        val turbofishArgs = input.generics.splitForImpl().typeGenerics.asTurbofish().params.toList()
+        val turbofishArgs =
+            input.generics
+                .splitForImpl()
+                .typeGenerics
+                .asTurbofish()
+                .params
+                .toList()
         assertEquals("'a", assertIs<GenericArgument.LifetimeArg>(turbofishArgs[0]).lifetime.toString())
         assertPathType(assertIs<GenericArgument.TypeArg>(turbofishArgs[1]).type, "T")
         assertEquals("N", assertIs<Expr.Path>(assertIs<GenericArgument.ConstArg>(turbofishArgs[2]).expr).path.toString())

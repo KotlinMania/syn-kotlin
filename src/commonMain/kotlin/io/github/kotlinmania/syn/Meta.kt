@@ -47,7 +47,7 @@ public fun parseMetaPath(input: ParseStream): SynResult<Path> {
  * handler function that processes each nested attribute property.
  */
 public fun parser(logic: (ParseNestedMeta) -> SynResult<Unit>): (ParseStream) -> SynResult<Unit> =
-    parser@ { input: ParseStream ->
+    parser@{ input: ParseStream ->
         if (input.isEmpty()) {
             SynResult.success(Unit)
         } else {

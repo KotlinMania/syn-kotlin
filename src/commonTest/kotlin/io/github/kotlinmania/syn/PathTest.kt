@@ -30,7 +30,7 @@ class PathTest {
             )
 
         val parser =
-            parser@ { input: ParseStream ->
+            parser@{ input: ParseStream ->
                 PathParse.parse(input)
             }
         val path = parse2(parser, tokens).getOrThrow()
@@ -44,7 +44,10 @@ class PathTest {
     fun parseParenthesizedPathArgumentsWithDisambiguator() {
         val ty = assertIs<SynType.TraitObject>(parseStr(SynTypeParseExpr::parse, "dyn FnOnce::() -> !").getOrThrow())
         val bound = assertIs<TypeParamBound.Trait>(ty.bounds.toList().single())
-        val segment = bound.path.segments.toList().single()
+        val segment =
+            bound.path.segments
+                .toList()
+                .single()
 
         assertEquals("FnOnce", segment.ident.toString())
         val args = assertIs<PathArguments.Parenthesized>(segment.arguments)
@@ -84,9 +87,10 @@ class PathTest {
 
     @Test
     fun qselfSpanUsesDelimiters() {
-        val ty = assertIs<SynType.Path>(
-            parseStr(SynTypeParseExpr::parse, "<Vec<T> as a::b::Trait>::AssociatedItem").getOrThrow(),
-        )
+        val ty =
+            assertIs<SynType.Path>(
+                parseStr(SynTypeParseExpr::parse, "<Vec<T> as a::b::Trait>::AssociatedItem").getOrThrow(),
+            )
         val qself = assertNotNull(ty.qself)
 
         assertEquals(qself.ltToken.span.join(qself.gtToken.span), qself.span())

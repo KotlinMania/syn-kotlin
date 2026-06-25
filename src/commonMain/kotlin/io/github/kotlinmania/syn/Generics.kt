@@ -95,13 +95,12 @@ public data class Generics(
         return whereClause!!
     }
 
-    public fun splitForImpl(): SplitForImpl {
-        return SplitForImpl(
+    public fun splitForImpl(): SplitForImpl =
+        SplitForImpl(
             ImplGenerics(this),
             TypeGenerics(this),
             whereClause,
         )
-    }
 
     override fun toTokens(tokens: TokenStream) {
         if (params.isEmpty()) return
@@ -280,7 +279,8 @@ internal fun chooseGenericsOverQpath(input: ParseStream): Boolean =
                 (
                     input.peek3(GenericsDisambiguationGtPeek) ||
                         input.peek3(CommaPeek) ||
-                        input.peek3(ColonPeek) && !input.peek3(PathSepPeek) ||
+                        input.peek3(ColonPeek) &&
+                        !input.peek3(PathSepPeek) ||
                         input.peek3(EqPeek)
                 ) ||
                 input.peek2(ConstPeek)
@@ -317,9 +317,19 @@ private fun Generics.implGenerics(): Generics {
             is GenericParam.LifetimeParam ->
                 implGenerics.params.push(value.deepCopy()) { Comma(Span.callSite()) }
             is GenericParam.TypeParam ->
-                implGenerics.params.push(value.deepCopy().also { it.eqToken = null; it.default = null }) { Comma(Span.callSite()) }
+                implGenerics.params.push(
+                    value.deepCopy().also {
+                        it.eqToken = null
+                        it.default = null
+                    },
+                ) { Comma(Span.callSite()) }
             is GenericParam.ConstParam ->
-                implGenerics.params.push(value.deepCopy().also { it.eqToken = null; it.default = null }) { Comma(Span.callSite()) }
+                implGenerics.params.push(
+                    value.deepCopy().also {
+                        it.eqToken = null
+                        it.default = null
+                    },
+                ) { Comma(Span.callSite()) }
         }
     }
     return implGenerics
@@ -350,7 +360,12 @@ private fun Generics.typeGenerics(): Generics {
                     ),
                 ) { Comma(Span.callSite()) }
             is GenericParam.ConstParam ->
-                typeGenerics.params.push(value.deepCopy().also { it.eqToken = null; it.default = null }) { Comma(Span.callSite()) }
+                typeGenerics.params.push(
+                    value.deepCopy().also {
+                        it.eqToken = null
+                        it.default = null
+                    },
+                ) { Comma(Span.callSite()) }
         }
     }
     return typeGenerics
@@ -499,11 +514,12 @@ public sealed class GenericParam : ToTokens {
                         !input.peek(EqPeek)
                     ) {
                         bounds.pushValue(
-                            TypeParamBound.parseSingle(
-                                input,
-                                allowPreciseCapture = false,
-                                allowConst = true,
-                            ).getOrElse { return SynResult.failure(it) },
+                            TypeParamBound
+                                .parseSingle(
+                                    input,
+                                    allowPreciseCapture = false,
+                                    allowConst = true,
+                                ).getOrElse { return SynResult.failure(it) },
                         )
                         if (!input.peek(PlusPeek)) break
                         bounds.pushPunct(PlusParse.parse(input).getOrElse { return SynResult.failure(it) })
@@ -636,7 +652,8 @@ internal fun printConstArgument(expr: Expr, tokens: TokenStream) {
                 }
             }
         is Expr.BlockExpr,
-        is Expr.Verbatim -> expr.toTokens(tokens)
+        is Expr.Verbatim,
+        -> expr.toTokens(tokens)
         else ->
             io.github.kotlinmania.syn.token.Brace.default().surround(tokens) { inner ->
                 printExpr(expr, inner)
@@ -679,11 +696,12 @@ public sealed class WherePredicate : ToTokens {
                 !input.peek(EqPeek)
             ) {
                 bounds.pushValue(
-                    TypeParamBound.parseSingle(
-                        input,
-                        allowPreciseCapture = false,
-                        allowConst = true,
-                    ).getOrElse { return SynResult.failure(it) },
+                    TypeParamBound
+                        .parseSingle(
+                            input,
+                            allowPreciseCapture = false,
+                            allowConst = true,
+                        ).getOrElse { return SynResult.failure(it) },
                 )
                 if (!input.peek(PlusPeek)) break
                 bounds.pushPunct(PlusParse.parse(input).getOrElse { return SynResult.failure(it) })
@@ -790,12 +808,15 @@ public sealed class TypeParamBound : ToTokens {
                 )
                 if (!(allowPlus && input.peek(PlusPeek))) break
                 bounds.pushPunct(PlusParse.parse(input).getOrElse { return SynResult.failure(it) })
-                if (!(input.peek(IdentPeekAny) ||
-                        input.peek(PathSepPeek) ||
-                        input.peek(QuestionPeek) ||
-                        input.peek(LifetimePeek) ||
-                        input.peek(ParenPeek) ||
-                        allowConst && (input.peek(BracketPeek) || input.peek(ConstPeek)))
+                if (!(
+                        input.peek(IdentPeekAny) ||
+                            input.peek(PathSepPeek) ||
+                            input.peek(QuestionPeek) ||
+                            input.peek(LifetimePeek) ||
+                            input.peek(ParenPeek) ||
+                            allowConst &&
+                            (input.peek(BracketPeek) || input.peek(ConstPeek))
+                    )
                 ) {
                     break
                 }
@@ -1001,7 +1022,8 @@ public data class BoundLifetimes(
     public companion object {
         public fun default(): BoundLifetimes =
             BoundLifetimes(
-                io.github.kotlinmania.syn.token.For.default(),
+                io.github.kotlinmania.syn.token.For
+                    .default(),
                 Lt.default(),
                 GenericParamList(),
                 Gt.default(),

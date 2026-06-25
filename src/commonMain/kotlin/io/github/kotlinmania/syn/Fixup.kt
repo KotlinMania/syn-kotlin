@@ -142,23 +142,36 @@ public data class FixupContext(
             ((stmt || leftmostSubexpressionInStmt) && expr is Expr.Let) ||
             (leftmostSubexpressionInMatchArm && !Classify.requiresCommaToBeMatchArm(expr)) ||
             (condition && expr is Expr.Struct) ||
-            (rightmostSubexpressionInCondition &&
-                (expr is Expr.Return && expr.expr == null || expr is Expr.Yield && expr.expr == null)) ||
-            (rightmostSubexpressionInCondition &&
-                !condition &&
-                (expr is Expr.Break && expr.expr == null ||
-                    expr is Expr.Path ||
-                    expr is Expr.Range && expr.end == null)) ||
-            (leftmostSubexpressionInOptionalOperand &&
-                expr is Expr.BlockExpr &&
-                expr.attrs.isEmpty() &&
-                expr.label == null)
+            (
+                rightmostSubexpressionInCondition &&
+                    (expr is Expr.Return && expr.expr == null || expr is Expr.Yield && expr.expr == null)
+            ) ||
+            (
+                rightmostSubexpressionInCondition &&
+                    !condition &&
+                    (
+                        expr is Expr.Break &&
+                            expr.expr == null ||
+                            expr is Expr.Path ||
+                            expr is Expr.Range &&
+                            expr.end == null
+                    )
+            ) ||
+            (
+                leftmostSubexpressionInOptionalOperand &&
+                    expr is Expr.BlockExpr &&
+                    expr.attrs.isEmpty() &&
+                    expr.label == null
+            )
 
     public fun precedence(expr: Expr): Precedence {
         if (nextOperatorCanBeginExpr) {
-            if (expr is Expr.Break && expr.expr == null ||
-                expr is Expr.Return && expr.expr == null ||
-                expr is Expr.Yield && expr.expr == null
+            if (expr is Expr.Break &&
+                expr.expr == null ||
+                expr is Expr.Return &&
+                expr.expr == null ||
+                expr is Expr.Yield &&
+                expr.expr == null
             ) {
                 return Precedence.Jump
             }
@@ -222,10 +235,13 @@ private fun scanRight(
     bailoutOffset: Int,
 ): Scan {
     val consumeByPrecedence =
-        if ((when (precedence) {
-                Precedence.Assign, Precedence.Compare -> precedence <= fixup.nextOperator
-                else -> precedence < fixup.nextOperator
-            }) || fixup.nextOperator == Precedence.MIN
+        if ((
+                when (precedence) {
+                    Precedence.Assign, Precedence.Compare -> precedence <= fixup.nextOperator
+                    else -> precedence < fixup.nextOperator
+                }
+            ) ||
+            fixup.nextOperator == Precedence.MIN
         ) {
             Scan.Consume
         } else {
@@ -482,7 +498,9 @@ private fun scanRightClosure(
     bailoutOffset: Int,
 ): Scan =
     if (expr.output == ReturnType.Default ||
-        expr.body is Expr.BlockExpr && expr.body.attrs.isEmpty() && expr.body.label == null
+        expr.body is Expr.BlockExpr &&
+        expr.body.attrs.isEmpty() &&
+        expr.body.label == null
     ) {
         if (bailoutOffset >= 1) {
             Scan.Consume

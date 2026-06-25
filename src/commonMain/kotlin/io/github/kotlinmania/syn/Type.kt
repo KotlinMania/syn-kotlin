@@ -382,10 +382,14 @@ internal fun parseBareFnArg(
 
     var hasSelf = false
     var name =
-        if ((input.peek(IdentPeek) || input.peek(UnderscorePeek) || run {
-                hasSelf = allowSelf && input.peek(SelfValuePeek)
-                hasSelf
-            }) &&
+        if ((
+                input.peek(IdentPeek) ||
+                    input.peek(UnderscorePeek) ||
+                    run {
+                        hasSelf = allowSelf && input.peek(SelfValuePeek)
+                        hasSelf
+                    }
+            ) &&
             input.peek2(ColonPeek) &&
             !input.peek2(PathSepPeek)
         ) {

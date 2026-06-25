@@ -24,7 +24,7 @@ class ParseQuoteTest {
 
     private fun parseLitOrPunctuated(source: String): Punctuated =
         parse2(
-            parser@ { input: ParseStream ->
+            parser@{ input: ParseStream ->
                 Punctuated.parseTerminatedWith(
                     input,
                     { stream -> LitParse.parse(stream) },
@@ -54,14 +54,24 @@ class ParseQuoteTest {
         assertEquals("enabled", named.ident?.toString())
         assertNotNull(named.colonToken)
         val namedTy = assertIs<SynType.Path>(named.ty)
-        assertEquals(listOf("bool"), namedTy.path.segments.toList().map { it.ident.toString() })
+        assertEquals(
+            listOf("bool"),
+            namedTy.path.segments
+                .toList()
+                .map { it.ident.toString() },
+        )
 
         val unnamed = parseQuoteField(tokens("primitive::bool"))
         assertIs<Visibility.Inherited>(unnamed.vis)
         assertNull(unnamed.ident)
         assertNull(unnamed.colonToken)
         val unnamedTy = assertIs<SynType.Path>(unnamed.ty)
-        assertEquals(listOf("primitive", "bool"), unnamedTy.path.segments.toList().map { it.ident.toString() })
+        assertEquals(
+            listOf("primitive", "bool"),
+            unnamedTy.path.segments
+                .toList()
+                .map { it.ident.toString() },
+        )
     }
 
     @Test

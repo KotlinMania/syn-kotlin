@@ -16,7 +16,12 @@ class ShebangTest {
         assertTrue(file.attrs.isEmpty())
         val item = assertIs<Item.Fn>(file.items.single())
         assertEquals("main", item.ident.toString())
-        assertTrue(item.block?.stmts.orEmpty().isEmpty())
+        assertTrue(
+            item.block
+                ?.stmts
+                .orEmpty()
+                .isEmpty(),
+        )
     }
 
     @Test
@@ -27,7 +32,13 @@ class ShebangTest {
         val attr = file.attrs.single()
         assertIs<AttrStyle.Inner>(attr.style)
         val meta = assertIs<Meta.List>(attr.meta)
-        assertEquals("allow", meta.path.segments.first()?.ident.toString())
+        assertEquals(
+            "allow",
+            meta.path.segments
+                .first()
+                ?.ident
+                .toString(),
+        )
         assertTrue(meta.delimiter is MacroDelimiter.Paren)
         assertEquals("dead_code", meta.tokens.toString())
         val item = assertIs<Item.Fn>(file.items.single())

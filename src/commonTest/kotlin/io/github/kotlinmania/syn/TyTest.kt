@@ -84,7 +84,12 @@ class TyTest {
             )
         val tyGeneric = assertIs<SynType.Path>(parseType(tokens))
         assertPath(tyGeneric.path, "ty")
-        val args = assertIs<PathArguments.AngleBracketed>(tyGeneric.path.segments.first()!!.arguments)
+        val args =
+            assertIs<PathArguments.AngleBracketed>(
+                tyGeneric.path.segments
+                    .first()!!
+                    .arguments,
+            )
         assertNull(args.colon2Token)
         assertPathTypeArg(args, 0, "T")
 
@@ -101,7 +106,12 @@ class TyTest {
             )
         val tyTurbofish = assertIs<SynType.Path>(parseType(turbofishTokens))
         assertPath(tyTurbofish.path, "ty")
-        val turbofishArgs = assertIs<PathArguments.AngleBracketed>(tyTurbofish.path.segments.first()!!.arguments)
+        val turbofishArgs =
+            assertIs<PathArguments.AngleBracketed>(
+                tyTurbofish.path.segments
+                    .first()!!
+                    .arguments,
+            )
         assertNotNull(turbofishArgs.colon2Token)
         assertPathTypeArg(turbofishArgs, 0, "T")
     }
@@ -119,12 +129,22 @@ class TyTest {
             )
         val option = assertIs<SynType.Path>(parseType(tokens))
         assertPath(option.path, "Option")
-        val args = assertIs<PathArguments.AngleBracketed>(option.path.segments.first()!!.arguments)
+        val args =
+            assertIs<PathArguments.AngleBracketed>(
+                option.path.segments
+                    .first()!!
+                    .arguments,
+            )
         val arg = assertIs<GenericArgument.TypeArg>(args.args.toList().single())
         val group = assertIs<SynType.Group>(arg.type)
         val vec = assertIs<SynType.Path>(group.elem)
         assertPath(vec.path, "Vec")
-        val vecArgs = assertIs<PathArguments.AngleBracketed>(vec.path.segments.first()!!.arguments)
+        val vecArgs =
+            assertIs<PathArguments.AngleBracketed>(
+                vec.path.segments
+                    .first()!!
+                    .arguments,
+            )
         assertPathTypeArg(vecArgs, 0, "u8")
     }
 
@@ -141,7 +161,12 @@ class TyTest {
             )
         val path = assertIs<SynType.Path>(parseType(tokens))
         assertPath(path.path, "Vec", "Item")
-        val vecArgs = assertIs<PathArguments.AngleBracketed>(path.path.segments.first()!!.arguments)
+        val vecArgs =
+            assertIs<PathArguments.AngleBracketed>(
+                path.path.segments
+                    .first()!!
+                    .arguments,
+            )
         assertPathTypeArg(vecArgs, 0, "u8")
 
         val qselfTokens =
@@ -174,7 +199,12 @@ class TyTest {
         val lifetimes = assertNotNull(trait.lifetimes)
         val lifetimeParam = assertIs<GenericParam.LifetimeParam>(lifetimes.lifetimes.toList().single())
         assertEquals("'a", lifetimeParam.lifetime.toString())
-        val arguments = assertIs<PathArguments.AngleBracketed>(trait.path.segments.first()!!.arguments)
+        val arguments =
+            assertIs<PathArguments.AngleBracketed>(
+                trait.path.segments
+                    .first()!!
+                    .arguments,
+            )
         val lifetimeArg = assertIs<GenericArgument.LifetimeArg>(arguments.args.toList().single())
         assertEquals("'a", lifetimeArg.lifetime.toString())
         assertLifetimeBound(withForBounds[1], "'static")
@@ -200,7 +230,12 @@ class TyTest {
         val lifetimes = assertNotNull(trait.lifetimes)
         val lifetimeParam = assertIs<GenericParam.LifetimeParam>(lifetimes.lifetimes.toList().single())
         assertEquals("'a", lifetimeParam.lifetime.toString())
-        val arguments = assertIs<PathArguments.AngleBracketed>(trait.path.segments.first()!!.arguments)
+        val arguments =
+            assertIs<PathArguments.AngleBracketed>(
+                trait.path.segments
+                    .first()!!
+                    .arguments,
+            )
         val lifetimeArg = assertIs<GenericArgument.LifetimeArg>(arguments.args.toList().single())
         assertEquals("'a", lifetimeArg.lifetime.toString())
     }

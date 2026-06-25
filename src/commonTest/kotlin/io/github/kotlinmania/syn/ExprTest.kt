@@ -136,7 +136,13 @@ class ExprTest {
     private fun assertPathExpr(expr: Expr, ident: String) {
         val path = assertIs<Expr.Path>(expr).path
         assertEquals(1, path.segments.len())
-        assertEquals(ident, path.segments.first()?.ident?.toString())
+        assertEquals(
+            ident,
+            path.segments
+                .first()
+                ?.ident
+                ?.toString(),
+        )
     }
 
     private fun assertPathExpr(expr: Expr, vararg segments: String) {
@@ -258,10 +264,22 @@ class ExprTest {
             ),
         )
         val attributedCall = assertIs<Expr.Call>(parseTokens(attributedTokens))
-        assertEquals("outside", attributedCall.attrs.single().path().toString())
+        assertEquals(
+            "outside",
+            attributedCall.attrs
+                .single()
+                .path()
+                .toString(),
+        )
         val attributedGroup = assertIs<Expr.Group>(attributedCall.func)
         val attributedFunc = assertIs<Expr.Path>(attributedGroup.expr)
-        assertEquals("inside", attributedFunc.attrs.single().path().toString())
+        assertEquals(
+            "inside",
+            attributedFunc.attrs
+                .single()
+                .path()
+                .toString(),
+        )
         assertPathExpr(attributedFunc, "f")
     }
 
@@ -292,8 +310,18 @@ class ExprTest {
             )
         val expr = parseTokens(tokens)
         val macro = assertIs<Expr.Macro>(expr)
-        assertEquals(1, macro.mac.path.segments.len())
-        assertEquals("m", macro.mac.path.segments.first()?.ident?.toString())
+        assertEquals(
+            1,
+            macro.mac.path.segments
+                .len(),
+        )
+        assertEquals(
+            "m",
+            macro.mac.path.segments
+                .first()
+                ?.ident
+                ?.toString(),
+        )
         assertIs<MacroDelimiter.Paren>(macro.mac.delimiter)
         assertEquals("", macro.mac.tokens.toString())
     }
@@ -372,7 +400,13 @@ class ExprTest {
         assertIs<Pat.Wild>(attrArm.pat)
         val attrGroup = assertIs<Expr.Group>(attrArm.body)
         val attrTuple = assertIs<Expr.Tuple>(attrGroup.expr)
-        assertEquals("a", attrTuple.attrs.single().path().toString())
+        assertEquals(
+            "a",
+            attrTuple.attrs
+                .single()
+                .path()
+                .toString(),
+        )
 
         val armBody = Group(Delimiter.None, TokenStream.fromString("loop {} + 1").getOrThrow())
         val armTokens = TokenStream.fromString("_ =>").getOrThrow()
@@ -615,37 +649,65 @@ class ExprTest {
     // required).
     @Test
     fun testAmbiguousLabel() {
-        val returnStmt = assertIs<Stmt.ExprStmt>(
-            parseStr(StmtParse::parse, "return 'label: loop { break 'label 42; };").getOrThrow(),
-        )
+        val returnStmt =
+            assertIs<Stmt.ExprStmt>(
+                parseStr(StmtParse::parse, "return 'label: loop { break 'label 42; };").getOrThrow(),
+            )
         val returnExpr = assertIs<Expr.Return>(returnStmt.expr)
         val returnLoop = assertIs<Expr.Loop>(returnExpr.expr)
-        assertEquals("label", returnLoop.label?.name?.ident?.toString())
-
-        val parenthesizedBreak = assertIs<Stmt.ExprStmt>(
-            parseStr(StmtParse::parse, "break ('label: loop { break 'label 42; });").getOrThrow(),
+        assertEquals(
+            "label",
+            returnLoop.label
+                ?.name
+                ?.ident
+                ?.toString(),
         )
+
+        val parenthesizedBreak =
+            assertIs<Stmt.ExprStmt>(
+                parseStr(StmtParse::parse, "break ('label: loop { break 'label 42; });").getOrThrow(),
+            )
         val breakExpr = assertIs<Expr.Break>(parenthesizedBreak.expr)
         val paren = assertIs<Expr.Paren>(breakExpr.expr)
         val parenLoop = assertIs<Expr.Loop>(paren.expr)
-        assertEquals("label", parenLoop.label?.name?.ident?.toString())
-
-        val binaryBreak = assertIs<Stmt.ExprStmt>(
-            parseStr(StmtParse::parse, "break 1 + 'label: loop { break 'label 42; };").getOrThrow(),
+        assertEquals(
+            "label",
+            parenLoop.label
+                ?.name
+                ?.ident
+                ?.toString(),
         )
+
+        val binaryBreak =
+            assertIs<Stmt.ExprStmt>(
+                parseStr(StmtParse::parse, "break 1 + 'label: loop { break 'label 42; };").getOrThrow(),
+            )
         val binaryBreakExpr = assertIs<Expr.Break>(binaryBreak.expr)
         val binary = assertIs<Expr.Binary>(binaryBreakExpr.expr)
         assertIs<BinOp.Add>(binary.op)
         val rhsLoop = assertIs<Expr.Loop>(binary.right)
-        assertEquals("label", rhsLoop.label?.name?.ident?.toString())
-
-        val nestedBreak = assertIs<Stmt.ExprStmt>(
-            parseStr(StmtParse::parse, "break 'outer 'inner: loop { break 'inner 42; };").getOrThrow(),
+        assertEquals(
+            "label",
+            rhsLoop.label
+                ?.name
+                ?.ident
+                ?.toString(),
         )
+
+        val nestedBreak =
+            assertIs<Stmt.ExprStmt>(
+                parseStr(StmtParse::parse, "break 'outer 'inner: loop { break 'inner 42; };").getOrThrow(),
+            )
         val nestedBreakExpr = assertIs<Expr.Break>(nestedBreak.expr)
         assertEquals("outer", nestedBreakExpr.label?.ident?.toString())
         val innerLoop = assertIs<Expr.Loop>(nestedBreakExpr.expr)
-        assertEquals("inner", innerLoop.label?.name?.ident?.toString())
+        assertEquals(
+            "inner",
+            innerLoop.label
+                ?.name
+                ?.ident
+                ?.toString(),
+        )
 
         assertTrue(parseStr(StmtParse::parse, "break 'label: loop { break 'label 42; };").isFailure)
     }
@@ -680,7 +742,12 @@ class ExprTest {
                 ),
             )
         val structExpr = assertIs<Expr.Struct>(parseTokens(structTokens))
-        assertEquals(listOf("a", "b"), structExpr.path.segments.toList().map { it.ident.toString() })
+        assertEquals(
+            listOf("a", "b"),
+            structExpr.path.segments
+                .toList()
+                .map { it.ident.toString() },
+        )
 
         val pathTokens =
             TokenStream.fromTokenTrees(
@@ -720,25 +787,48 @@ class ExprTest {
     @Test
     fun testTupleComma() {
         val elems = ExprList()
-        val expr = Expr.Tuple(emptyList(), io.github.kotlinmania.syn.token.Paren.default(), elems)
+        val expr =
+            Expr.Tuple(
+                emptyList(),
+                io.github.kotlinmania.syn.token.Paren
+                    .default(),
+                elems,
+            )
 
         val empty = roundTrip(expr)
         val emptyTuple = assertIs<Expr.Tuple>(empty)
         assertEquals(0, emptyTuple.elems.len())
 
-        elems.pushValue(Expr.Continue(emptyList(), io.github.kotlinmania.syn.token.Continue.default(), null))
+        elems.pushValue(
+            Expr.Continue(
+                emptyList(),
+                io.github.kotlinmania.syn.token.Continue
+                    .default(),
+                null,
+            ),
+        )
         val one = roundTrip(expr)
         val oneTuple = assertIs<Expr.Tuple>(one)
         assertEquals(1, oneTuple.elems.len())
         assertIs<Expr.Continue>(oneTuple.elems.first())
 
-        elems.pushPunct(io.github.kotlinmania.syn.token.Comma.default())
+        elems.pushPunct(
+            io.github.kotlinmania.syn.token.Comma
+                .default(),
+        )
         val oneTrailing = roundTrip(expr)
         val oneTrailingTuple = assertIs<Expr.Tuple>(oneTrailing)
         assertEquals(1, oneTrailingTuple.elems.len())
         assertIs<Expr.Continue>(oneTrailingTuple.elems.first())
 
-        elems.pushValue(Expr.Continue(emptyList(), io.github.kotlinmania.syn.token.Continue.default(), null))
+        elems.pushValue(
+            Expr.Continue(
+                emptyList(),
+                io.github.kotlinmania.syn.token.Continue
+                    .default(),
+                null,
+            ),
+        )
         val two = roundTrip(expr)
         val twoTuple = assertIs<Expr.Tuple>(two)
         assertEquals(2, twoTuple.elems.len())
@@ -746,7 +836,10 @@ class ExprTest {
         assertIs<Expr.Continue>(twoElems[0])
         assertIs<Expr.Continue>(twoElems[1])
 
-        elems.pushPunct(io.github.kotlinmania.syn.token.Comma.default())
+        elems.pushPunct(
+            io.github.kotlinmania.syn.token.Comma
+                .default(),
+        )
         val twoTrailing = roundTrip(expr)
         val twoTrailingTuple = assertIs<Expr.Tuple>(twoTrailing)
         assertEquals(2, twoTrailingTuple.elems.len())
@@ -822,55 +915,56 @@ class ExprTest {
 
     @Test
     fun testParseUnparenthesize() {
-        val cases = listOf(
-            "2 * (1 + 1)",
-            "0 + (0 + 0)",
-            "(a = b) = c",
-            "(x as i32) < 0",
-            "1 + (x as i32) < 0",
-            "(1 + 1).abs()",
-            "(lo..hi)[..]",
-            "(a..b)..(c..d)",
-            "(x > ..) > x",
-            "(&mut fut).await",
-            "&mut (x as i32)",
-            "-(x as i32)",
-            "if (S {}) == 1 {}",
-            "{ (m! {}) - 1 }",
-            "match m { _ => ({}) - 1 }",
-            "if let _ = (a && b) && c {}",
-            "if let _ = (S {}) {}",
-            "if (S {}) == 0 && let Some(_) = x {}",
-            "break ('a: loop { break 'a 1 } + 1)",
-            "a + (|| b) + c",
-            "if let _ = ((break) - 1 || true) {}",
-            "if let _ = (break + 1 || true) {}",
-            "if break (break) {}",
-            "if break break {} {}",
-            "if return (..) {}",
-            "if return .. {} {}",
-            "if || (Struct {}) {}",
-            "if || (Struct {}).await {}",
-            "if break || Struct {}.await {}",
-            "if break 'outer 'block: {} {}",
-            "if ..'block: {} {}",
-            "if break ({}).await {}",
-            "(break)()",
-            "(..) = ()",
-            "(..) += ()",
-            "(1 < 2) == (3 < 4)",
-            "{ (let _ = ()) }",
-            "(#[attr] thing).field",
-            "#[attr] (1 + 1)",
-            "#[attr] (x = 1)",
-            "#[attr] (x += 1)",
-            "#[attr] (1 as T)",
-            "(return #[attr] (x + ..)).field",
-            "(self.f)()",
-            "(return)..=return",
-            "1 + (return)..=1 + return",
-            ".. .. .. .. .. .. .. .. .. .. .. .. .. .. .. .. .. .. .. .. .. .. .. .. .. .. .. .. .. .. ..",
-        )
+        val cases =
+            listOf(
+                "2 * (1 + 1)",
+                "0 + (0 + 0)",
+                "(a = b) = c",
+                "(x as i32) < 0",
+                "1 + (x as i32) < 0",
+                "(1 + 1).abs()",
+                "(lo..hi)[..]",
+                "(a..b)..(c..d)",
+                "(x > ..) > x",
+                "(&mut fut).await",
+                "&mut (x as i32)",
+                "-(x as i32)",
+                "if (S {}) == 1 {}",
+                "{ (m! {}) - 1 }",
+                "match m { _ => ({}) - 1 }",
+                "if let _ = (a && b) && c {}",
+                "if let _ = (S {}) {}",
+                "if (S {}) == 0 && let Some(_) = x {}",
+                "break ('a: loop { break 'a 1 } + 1)",
+                "a + (|| b) + c",
+                "if let _ = ((break) - 1 || true) {}",
+                "if let _ = (break + 1 || true) {}",
+                "if break (break) {}",
+                "if break break {} {}",
+                "if return (..) {}",
+                "if return .. {} {}",
+                "if || (Struct {}) {}",
+                "if || (Struct {}).await {}",
+                "if break || Struct {}.await {}",
+                "if break 'outer 'block: {} {}",
+                "if ..'block: {} {}",
+                "if break ({}).await {}",
+                "(break)()",
+                "(..) = ()",
+                "(..) += ()",
+                "(1 < 2) == (3 < 4)",
+                "{ (let _ = ()) }",
+                "(#[attr] thing).field",
+                "#[attr] (1 + 1)",
+                "#[attr] (x = 1)",
+                "#[attr] (x += 1)",
+                "#[attr] (1 as T)",
+                "(return #[attr] (x + ..)).field",
+                "(self.f)()",
+                "(return)..=return",
+                "1 + (return)..=1 + return",
+                ".. .. .. .. .. .. .. .. .. .. .. .. .. .. .. .. .. .. .. .. .. .. .. .. .. .. .. .. .. .. ..",
+            )
 
         for (case in cases) {
             val original = parseStr(ExprParse::parse, case).getOrElse { error("failed to parse `$case`: $it") }

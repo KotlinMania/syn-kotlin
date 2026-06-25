@@ -10,7 +10,12 @@ class MacTest {
     fun parseMacroWithParenDelimiter() {
         val mac = parseStr(Macro::parse, "println!(\"\")").getOrThrow()
 
-        assertEquals(listOf("println"), mac.path.segments.toList().map { it.ident.toString() })
+        assertEquals(
+            listOf("println"),
+            mac.path.segments
+                .toList()
+                .map { it.ident.toString() },
+        )
         assertIs<MacroDelimiter.Paren>(mac.delimiter)
         assertEquals("\"\"", mac.tokens.toString())
     }
@@ -19,7 +24,12 @@ class MacTest {
     fun parseMacroWithBracketDelimiter() {
         val mac = parseStr(Macro::parse, "vec![a, b]").getOrThrow()
 
-        assertEquals(listOf("vec"), mac.path.segments.toList().map { it.ident.toString() })
+        assertEquals(
+            listOf("vec"),
+            mac.path.segments
+                .toList()
+                .map { it.ident.toString() },
+        )
         assertIs<MacroDelimiter.Bracket>(mac.delimiter)
         assertEquals("a , b", mac.tokens.toString())
     }
@@ -28,7 +38,12 @@ class MacTest {
     fun parseMacroWithModStylePathAndBraceDelimiter() {
         val mac = parseStr(Macro::parse, "foo::bar! { baz }").getOrThrow()
 
-        assertEquals(listOf("foo", "bar"), mac.path.segments.toList().map { it.ident.toString() })
+        assertEquals(
+            listOf("foo", "bar"),
+            mac.path.segments
+                .toList()
+                .map { it.ident.toString() },
+        )
         assertIs<MacroDelimiter.Brace>(mac.delimiter)
         assertEquals("baz", mac.tokens.toString())
     }

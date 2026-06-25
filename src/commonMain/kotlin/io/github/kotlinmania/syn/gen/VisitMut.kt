@@ -3,12 +3,12 @@ package io.github.kotlinmania.syn.gen
 
 import io.github.kotlinmania.procmacro2.Span
 import io.github.kotlinmania.procmacro2.TokenStream
-import io.github.kotlinmania.syn.Attribute
-import io.github.kotlinmania.syn.Arm
 import io.github.kotlinmania.syn.Abi
+import io.github.kotlinmania.syn.Arm
 import io.github.kotlinmania.syn.AssocConst
 import io.github.kotlinmania.syn.AssocType
 import io.github.kotlinmania.syn.AttrStyle
+import io.github.kotlinmania.syn.Attribute
 import io.github.kotlinmania.syn.BareFnArg
 import io.github.kotlinmania.syn.BareVariadic
 import io.github.kotlinmania.syn.BinOp

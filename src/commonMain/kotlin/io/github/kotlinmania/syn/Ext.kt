@@ -89,6 +89,4 @@ internal object PunctExt {
 }
 
 /** Constructs a [Punct] with the given character, spacing, and span. */
-internal fun punctNewSpanned(ch: Char, spacing: Spacing, span: Span): Punct {
-    return PunctExt.newSpanned(ch, spacing, span)
-}
+internal fun punctNewSpanned(ch: Char, spacing: Spacing, span: Span): Punct = PunctExt.newSpanned(ch, spacing, span)

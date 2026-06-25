@@ -14,7 +14,7 @@ class DiscouragedTest {
     @Test
     fun speculativeAdvanceToPropagatesUnexpectedTokensFromFork() {
         val parser =
-            parser@ { input: ParseStream ->
+            parser@{ input: ParseStream ->
                 val fork = input.fork()
                 val parens = parenthesized(fork).getOrThrow()
                 parens.content.finishChildBuffer()
@@ -44,7 +44,7 @@ class DiscouragedTest {
 
         val parsed =
             parse2(
-                parser@ { input: ParseStream ->
+                parser@{ input: ParseStream ->
                     val anyDelimiter = assertIs<AnyDelimiter>(input)
                     val delimiter = anyDelimiter.parseAnyDelimiter().getOrElse { return@parser SynResult.failure(it) }
                     val ident = IdentParse.parse(delimiter.content).getOrElse { return@parser SynResult.failure(it) }

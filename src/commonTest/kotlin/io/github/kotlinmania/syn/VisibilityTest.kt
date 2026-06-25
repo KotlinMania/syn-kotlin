@@ -19,7 +19,7 @@ import kotlin.test.assertTrue
 class VisibilityTest {
     private fun visRestParse(input: String): Pair<Visibility, String> {
         val parser =
-            parser@ { stream: ParseStream ->
+            parser@{ stream: ParseStream ->
                 val visResult = VisibilityParse.parse(stream)
                 if (visResult.isFailure) {
                     return@parser SynResult.failure(visResult.exceptionOrNull()!!)
@@ -54,7 +54,7 @@ class VisibilityTest {
 
     private fun assertVisErr(input: String) {
         val parser =
-            parser@ { stream: ParseStream ->
+            parser@{ stream: ParseStream ->
                 val visResult = VisibilityParse.parse(stream)
                 if (visResult.isFailure) {
                     return@parser SynResult.failure(visResult.exceptionOrNull()!!)
@@ -198,7 +198,12 @@ class VisibilityTest {
         } else {
             assertNull(restricted.inToken)
         }
-        assertEquals(segments.toList(), restricted.path.segments.toList().map { it.ident.toString() })
+        assertEquals(
+            segments.toList(),
+            restricted.path.segments
+                .toList()
+                .map { it.ident.toString() },
+        )
     }
 
     private fun assertTypePath(

@@ -22,7 +22,7 @@ class ParseBufferTest {
     fun smuggledSpeculativeCursorBetweenSources() {
         fun parse(input1: ParseStream): SynResult<Unit> {
             val nested =
-                parser@ { input2: ParseStream ->
+                parser@{ input2: ParseStream ->
                     input1.advanceTo(input2)
                     SynResult.success(Unit)
                 }
@@ -101,7 +101,7 @@ class ParseBufferTest {
     @Test
     fun parseBufferDropPropagatesUnexpectedChildTokens() {
         val parser =
-            parser@ { input: ParseStream ->
+            parser@{ input: ParseStream ->
                 val parens = parenthesized(input).getOrThrow()
                 parens.content.drop()
                 SynResult.success(Unit)
@@ -126,7 +126,7 @@ class ParseBufferTest {
     @Test
     fun parseStreamIsEmptyAtEof() {
         val parser =
-            parser@ { input: ParseStream ->
+            parser@{ input: ParseStream ->
                 assertTrue(input.isEmpty())
                 SynResult.success(Unit)
             }
@@ -136,7 +136,7 @@ class ParseBufferTest {
     @Test
     fun parseStreamIsNotEmptyForContent() {
         val parser =
-            parser@ { input: ParseStream ->
+            parser@{ input: ParseStream ->
                 assertFalse(input.isEmpty())
                 IdentParse.parse(input).getOrThrow()
                 SynResult.success(Unit)
@@ -147,7 +147,7 @@ class ParseBufferTest {
     @Test
     fun parseStreamCursorReturnsIdent() {
         val parser =
-            parser@ { input: ParseStream ->
+            parser@{ input: ParseStream ->
                 val cursor = input.cursor()
                 val pair = cursor.ident()
                 assertNotNull(pair)
@@ -165,7 +165,7 @@ class ParseBufferTest {
     @Test
     fun parseStreamCursorReturnsNullAtEof() {
         val parser =
-            parser@ { input: ParseStream ->
+            parser@{ input: ParseStream ->
                 val cursor = input.cursor()
                 assertNull(cursor.ident())
                 SynResult.success(Unit)
@@ -187,9 +187,10 @@ class ParseBufferTest {
         val first = buffer.begin()
         val second = first.ident()!!.second
         val other =
-            TokenBuffer.new2(
-                TokenStream.fromTokenTree(TokenTree.Ident(Ident.new("c", Span.callSite()))),
-            ).begin()
+            TokenBuffer
+                .new2(
+                    TokenStream.fromTokenTree(TokenTree.Ident(Ident.new("c", Span.callSite()))),
+                ).begin()
 
         assertEquals(first, first.clone())
         assertEquals(0, first.partialCmp(first.clone()))
@@ -201,7 +202,7 @@ class ParseBufferTest {
     @Test
     fun parseStreamForkDoesNotAdvanceParent() {
         val parser =
-            parser@ { input: ParseStream ->
+            parser@{ input: ParseStream ->
                 val fork = input.fork()
                 IdentParse.parse(fork).getOrThrow()
                 assertTrue(!input.isEmpty(), "parsing from fork must not advance the parent")
@@ -214,7 +215,7 @@ class ParseBufferTest {
     @Test
     fun parseStreamPeekDoesNotAdvance() {
         val parser =
-            parser@ { input: ParseStream ->
+            parser@{ input: ParseStream ->
                 assertTrue(input.peek(IdentPeek))
                 assertTrue(!input.isEmpty())
                 IdentParse.parse(input).getOrThrow()
@@ -227,7 +228,7 @@ class ParseBufferTest {
     @Test
     fun parseStreamStepAdvancesOnSuccess() {
         val parser =
-            parser@ { input: ParseStream ->
+            parser@{ input: ParseStream ->
                 val parsed: SynResult<Ident> =
                     input.step { cursor ->
                         val (ident, rest) =
@@ -245,7 +246,7 @@ class ParseBufferTest {
     @Test
     fun stepCursorDerefExposesCursor() {
         val parser =
-            parser@ { input: ParseStream ->
+            parser@{ input: ParseStream ->
                 input.step { cursor ->
                     assertEquals(cursor.raw, cursor.deref())
                     val (ident, rest) =
@@ -262,7 +263,7 @@ class ParseBufferTest {
     @Test
     fun parseStreamStepDoesNotAdvanceOnFailure() {
         val parser =
-            parser@ { input: ParseStream ->
+            parser@{ input: ParseStream ->
                 val parsed: SynResult<Unit> =
                     input.step { cursor ->
                         SynResult.failure<Pair<Unit, Cursor>>(cursor.error("expected failure"))

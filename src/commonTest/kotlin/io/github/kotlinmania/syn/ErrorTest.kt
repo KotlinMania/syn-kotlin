@@ -56,7 +56,14 @@ class ErrorTest {
 
         error.extend(others)
 
-        assertEquals(listOf("first", "second", "third"), error.iter().asSequence().map { it.toString() }.toList())
+        assertEquals(
+            listOf("first", "second", "third"),
+            error
+                .iter()
+                .asSequence()
+                .map { it.toString() }
+                .toList(),
+        )
     }
 
     @Test

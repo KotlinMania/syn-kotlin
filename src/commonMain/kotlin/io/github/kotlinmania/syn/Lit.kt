@@ -2,8 +2,8 @@
 
 package io.github.kotlinmania.syn
 
-import io.github.kotlinmania.procmacro2.Literal
 import io.github.kotlinmania.procmacro2.Group
+import io.github.kotlinmania.procmacro2.Literal
 import io.github.kotlinmania.procmacro2.Punct
 import io.github.kotlinmania.procmacro2.Span
 import io.github.kotlinmania.procmacro2.TokenStream
@@ -448,7 +448,7 @@ public class LitInt private constructor(
             LitInt(digits, suffix, span)
 
         internal fun from(token: Literal): LitInt {
-            val parsed = parseLitInt(token.toString()) ?: error("not an integer literal: `${token}`")
+            val parsed = parseLitInt(token.toString()) ?: error("not an integer literal: `$token`")
             return from(token, parsed.digits, parsed.suffix)
         }
 
@@ -478,9 +478,7 @@ public class LitInt private constructor(
         repr.token.setSpan(span)
     }
 
-    public fun token(): Literal {
-        return cloneLiteral(repr.token)
-    }
+    public fun token(): Literal = cloneLiteral(repr.token)
 
     override fun toTokens(tokens: TokenStream) {
         tokens.append(TokenTree.Literal(token()))
@@ -505,7 +503,7 @@ public class LitFloat private constructor(
             LitFloat(digits, suffix, span)
 
         internal fun from(token: Literal): LitFloat {
-            val parsed = parseLitFloat(token.toString()) ?: error("not a float literal: `${token}`")
+            val parsed = parseLitFloat(token.toString()) ?: error("not a float literal: `$token`")
             return from(token, parsed.digits, parsed.suffix)
         }
 
@@ -535,9 +533,7 @@ public class LitFloat private constructor(
         repr.token.setSpan(span)
     }
 
-    public fun token(): Literal {
-        return cloneLiteral(repr.token)
-    }
+    public fun token(): Literal = cloneLiteral(repr.token)
 
     override fun toTokens(tokens: TokenStream) {
         tokens.append(TokenTree.Literal(token()))
@@ -803,10 +799,11 @@ private fun parseLitByteStrCooked(s: String): ByteStringLiteralParts? {
 private fun parseLitByteStrRaw(s: String): ByteStringLiteralParts? {
     if (!s.startsWith("br")) return null
     val parsed = parseLitStrRaw(s.substring(1)) ?: return null
-    val bytes = parsed.value.map { ch ->
-        if (ch.code > 0x7f) return null
-        ch.code.toUByte()
-    }
+    val bytes =
+        parsed.value.map { ch ->
+            if (ch.code > 0x7f) return null
+            ch.code.toUByte()
+        }
     return ByteStringLiteralParts(bytes, parsed.suffix)
 }
 
@@ -1075,10 +1072,11 @@ private fun parseLitInt(s: String): DigitsLiteralParts? {
     if (!hasDigit) return null
     val suffix = s.substring(index)
     if (suffix.isNotEmpty() && !xidOk(suffix)) return null
-    val digits = buildString {
-        if (negative) append('-')
-        append(value.toString())
-    }
+    val digits =
+        buildString {
+            if (negative) append('-')
+            append(value.toString())
+        }
     return DigitsLiteralParts(digits, suffix)
 }
 
@@ -1151,7 +1149,7 @@ private fun parseNegativeLit(neg: Punct, cursor: Cursor): Pair<Lit, Cursor>? {
     val (literal, rest) = cursor.literal() ?: return null
     var span = neg.span()
     span = span.join(literal.span()) ?: span
-    val repr = "-${literal}"
+    val repr = "-$literal"
     parseLitInt(repr)?.let {
         val token = Literal.fromStrUnchecked(repr)
         token.setSpan(span)

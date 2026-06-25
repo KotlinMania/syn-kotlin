@@ -360,7 +360,7 @@ class LitTest {
     @Test
     fun litPeekAcceptsNegativeLiteral() {
         val parser =
-            parser@ { input: ParseStream ->
+            parser@{ input: ParseStream ->
                 assertTrue(input.peek(LitPeek))
                 LitParse.parse(input)
             }

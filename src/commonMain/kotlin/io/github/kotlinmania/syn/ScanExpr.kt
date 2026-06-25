@@ -54,7 +54,8 @@ internal fun continueParsingEarlyImpl(expr: Expr): Boolean =
         is Expr.Match,
         is Expr.Unsafe,
         is Expr.Const,
-        is Expr.BlockExpr -> false
+        is Expr.BlockExpr,
+        -> false
         else -> true
     }
 
@@ -412,7 +413,9 @@ internal fun multiIndexImpl(
         val partSpan = floatToken.subspan(offset untilIntRange partEnd) ?: floatSpan
         val index = parseIndexPart(part, partSpan).getOrElse { return SynResult.failure(it) }
         current = Expr.Field(emptyList(), current, nextDot, Member.Unnamed(index))
-        nextDot = io.github.kotlinmania.syn.token.Dot.from(floatToken.subspan(partEnd..partEnd) ?: floatSpan)
+        nextDot =
+            io.github.kotlinmania.syn.token.Dot
+                .from(floatToken.subspan(partEnd..partEnd) ?: floatSpan)
         offset = partEnd + 1
     }
     return SynResult.success(MultiIndexResult(current, complete = !trailingDot))
@@ -426,15 +429,17 @@ private fun parseIndexPart(part: String, span: Span): SynResult<Index> {
         return SynResult.failure(SynError.new(span, "expected unsuffixed integer"))
     }
     val digits = part.replace("_", "")
-    val idx = digits.toUIntOrNull()
-        ?: return SynResult.failure(SynError.new(span, "expected unsuffixed integer"))
+    val idx =
+        digits.toUIntOrNull()
+            ?: return SynResult.failure(SynError.new(span, "expected unsuffixed integer"))
     return SynResult.success(Index(idx, span))
 }
 
 private fun parseIndex(lit: LitInt): SynResult<Index> {
     val digits = lit.base10Digits()
-    val idx = digits.toUIntOrNull()
-        ?: return SynResult.failure(SynError.new(lit.span(), "expected unsuffixed integer"))
+    val idx =
+        digits.toUIntOrNull()
+            ?: return SynResult.failure(SynError.new(lit.span(), "expected unsuffixed integer"))
     return SynResult.success(Index(idx, lit.span()))
 }
 
@@ -771,7 +776,6 @@ private fun parseRangeLimits(input: ParseStream): SynResult<RangeLimits> =
         else -> SynResult.failure(input.error("expected range limits"))
     }
 
-
 private fun parseExprIf(input: ParseStream): SynResult<Expr> {
     val ifToken = IfParse.parse(input).getOrThrow()
     val cond = ambiguousExprImpl(input, allowStruct = false)
@@ -1025,7 +1029,10 @@ private fun parseClosureOr(input: ParseStream): SynResult<io.github.kotlinmania.
         if (punct.asChar() != '|') {
             return@step SynResult.failure(cursor.error("expected `|`"))
         }
-        SynResult.success(io.github.kotlinmania.syn.token.Or.from(punct.span()) to rest)
+        SynResult.success(
+            io.github.kotlinmania.syn.token.Or
+                .from(punct.span()) to rest,
+        )
     }
 
 internal fun parseStmtFull(input: ParseStream): SynResult<Stmt> {
@@ -1046,7 +1053,7 @@ internal fun parseStmtFull(input: ParseStream): SynResult<Stmt> {
                 } else {
                     val diverge =
                         if (input.peek(ElsePeek)) {
-        val elseToken = ElseParse.parse(input).getOrThrow()
+                            val elseToken = ElseParse.parse(input).getOrThrow()
                             val block = parseExprBlock(input)
                             if (block.isFailure) return block.asFailure()
                             ElseExpr(elseToken, block.getOrThrow())
@@ -1319,8 +1326,9 @@ private fun parsePatRangeHalfOpen(input: ParseStream): SynResult<Pat> {
 }
 
 private fun parsePatLitOrRange(input: ParseStream): SynResult<Pat> {
-    val start = parsePatRangeBound(input).getOrElse { return SynResult.failure(it) }
-        ?: return SynResult.failure(input.error("expected range bound"))
+    val start =
+        parsePatRangeBound(input).getOrElse { return SynResult.failure(it) }
+            ?: return SynResult.failure(input.error("expected range bound"))
     if (input.peek(DotDotPeek) || input.peek(DotDotEqPeek) || input.peek(DotDotDotPeek)) {
         val limits = parsePatRangeLimitsObsolete(input).getOrElse { return SynResult.failure(it) }
         val end = parsePatRangeBound(input).getOrElse { return SynResult.failure(it) }
@@ -1340,7 +1348,12 @@ private fun parsePatLitOrRange(input: ParseStream): SynResult<Pat> {
 private fun parsePatRangeLimitsObsolete(input: ParseStream): SynResult<RangeLimits> {
     if (input.peek(DotDotDotPeek)) {
         val dots = DotDotDotParse.parse(input).getOrElse { return SynResult.failure(it) }
-        return SynResult.success(RangeLimits.Closed(io.github.kotlinmania.syn.token.DotDotEq.from(dots.spans)))
+        return SynResult.success(
+            RangeLimits.Closed(
+                io.github.kotlinmania.syn.token.DotDotEq
+                    .from(dots.spans),
+            ),
+        )
     }
     return parseRangeLimits(input)
 }
@@ -1433,229 +1446,233 @@ private fun ambigTyImpl(
     allowPlus: Boolean,
     allowGroupGeneric: Boolean,
 ): SynResult<SynType> {
-        val begin = input.fork()
-        val groupAhead = input.fork()
-        val groupResult = parseGroup(groupAhead)
-        if (groupResult.isSuccess) {
-            input.advanceTo(groupAhead)
-            val group = groupResult.getOrThrow()
-            val elem = parseTypeFull(group.content)
-            if (elem.isFailure) return elem.asFailure()
-            group.content.finishChildBuffer()
-            val elemValue = elem.getOrThrow()
-            if (elemValue is SynType.Path) {
-                if (allowGroupGeneric && (input.peek(LtPeek) || (input.peek(PathSepPeek) && input.peek3(LtPeek)))) {
-                    val last = elemValue.path.segments.last()
-                    if (last != null && last.arguments.isNone()) {
-                        last.arguments = parseAngleBracketedPathArguments(input).getOrElse {
+    val begin = input.fork()
+    val groupAhead = input.fork()
+    val groupResult = parseGroup(groupAhead)
+    if (groupResult.isSuccess) {
+        input.advanceTo(groupAhead)
+        val group = groupResult.getOrThrow()
+        val elem = parseTypeFull(group.content)
+        if (elem.isFailure) return elem.asFailure()
+        group.content.finishChildBuffer()
+        val elemValue = elem.getOrThrow()
+        if (elemValue is SynType.Path) {
+            if (allowGroupGeneric && (input.peek(LtPeek) || (input.peek(PathSepPeek) && input.peek3(LtPeek)))) {
+                val last = elemValue.path.segments.last()
+                if (last != null && last.arguments.isNone()) {
+                    last.arguments =
+                        parseAngleBracketedPathArguments(input).getOrElse {
                             return SynResult.failure(it)
                         }
-                        parsePathRest(input, elemValue.path).getOrElse { return SynResult.failure(it) }
-                        return SynResult.success(elemValue)
-                    }
-                }
-                if (input.peek(PathSepPeek) && input.peek3(IdentPeekAny)) {
                     parsePathRest(input, elemValue.path).getOrElse { return SynResult.failure(it) }
                     return SynResult.success(elemValue)
                 }
-            } else if (input.peek(PathSepPeek) && input.peek3(IdentPeekAny)) {
-                val path = PathParse.parse(input).getOrElse { return SynResult.failure(it) }
-                val qself =
-                    QSelf(
-                        io.github.kotlinmania.syn.token.Lt.from(group.token.span),
-                        elemValue,
-                        position = 0,
-                        asToken = null,
-                        gtToken = io.github.kotlinmania.syn.token.Gt.from(group.token.span),
-                    )
-                return SynResult.success(SynType.Path(qself, path))
             }
-            return SynResult.success(SynType.Group(group.token, elemValue))
+            if (input.peek(PathSepPeek) && input.peek3(IdentPeekAny)) {
+                parsePathRest(input, elemValue.path).getOrElse { return SynResult.failure(it) }
+                return SynResult.success(elemValue)
+            }
+        } else if (input.peek(PathSepPeek) && input.peek3(IdentPeekAny)) {
+            val path = PathParse.parse(input).getOrElse { return SynResult.failure(it) }
+            val qself =
+                QSelf(
+                    io.github.kotlinmania.syn.token.Lt
+                        .from(group.token.span),
+                    elemValue,
+                    position = 0,
+                    asToken = null,
+                    gtToken =
+                        io.github.kotlinmania.syn.token.Gt
+                            .from(group.token.span),
+                )
+            return SynResult.success(SynType.Path(qself, path))
+        }
+        return SynResult.success(SynType.Group(group.token, elemValue))
+    }
+
+    val lifetimes =
+        if (input.peek(ForPeek)) {
+            val parsed = parseBoundLifetimes(input).getOrElse { return SynResult.failure(it) }
+            if (!canContinueAfterBoundLifetimes(input) || input.peek(DynPeek)) {
+                return SynResult.failure(input.error("expected a type"))
+            }
+            parsed
+        } else {
+            null
         }
 
-        val lifetimes =
-            if (input.peek(ForPeek)) {
-                val parsed = parseBoundLifetimes(input).getOrElse { return SynResult.failure(it) }
-                if (!canContinueAfterBoundLifetimes(input) || input.peek(DynPeek)) {
-                    return SynResult.failure(input.error("expected a type"))
+    if (input.peek(ParenPeek)) {
+        val parens = parenthesized(input)
+        if (parens.isFailure) return parens.asFailure()
+        val parensVal = parens.getOrThrow()
+        val content = parensVal.content
+        if (content.isEmpty()) {
+            content.finishChildBuffer()
+            return SynResult.success(SynType.Tuple(parensVal.token, SynTypeList()))
+        }
+        if (content.peek(LifetimePeek)) {
+            val traitObject = parseTypeTraitObject(content, allowPlus = true).getOrElse { return SynResult.failure(it) }
+            content.finishChildBuffer()
+            return SynResult.success(SynType.Paren(parensVal.token, traitObject))
+        }
+        if (content.peek(QuestionPeek)) {
+            val bounds =
+                parseTypeParamBoundsMultiple(
+                    content,
+                    allowPlus = true,
+                    allowPreciseCapture = false,
+                    allowConst = false,
+                ).getOrElse { return SynResult.failure(it) }
+            content.finishChildBuffer()
+            val first = bounds.first()
+            val traitBounds =
+                if (first is TypeParamBound.Trait) {
+                    withFirstTypeParamBound(bounds, first.copy(parenToken = parensVal.token))
+                } else {
+                    bounds
                 }
-                parsed
-            } else {
-                null
-            }
+            parseOuterTraitObjectBounds(input, traitBounds, allowPlus).getOrElse { return SynResult.failure(it) }
+            return SynResult.success(SynType.TraitObject(null, traitBounds))
+        }
 
-        if (input.peek(ParenPeek)) {
-            val parens = parenthesized(input)
-            if (parens.isFailure) return parens.asFailure()
-            val parensVal = parens.getOrThrow()
-            val content = parensVal.content
-            if (content.isEmpty()) {
-                content.finishChildBuffer()
-                return SynResult.success(SynType.Tuple(parensVal.token, SynTypeList()))
-            }
-            if (content.peek(LifetimePeek)) {
-                val traitObject = parseTypeTraitObject(content, allowPlus = true).getOrElse { return SynResult.failure(it) }
-                content.finishChildBuffer()
-                return SynResult.success(SynType.Paren(parensVal.token, traitObject))
-            }
-            if (content.peek(QuestionPeek)) {
-                val bounds =
-                    parseTypeParamBoundsMultiple(
-                        content,
-                        allowPlus = true,
-                        allowPreciseCapture = false,
-                        allowConst = false,
-                    ).getOrElse { return SynResult.failure(it) }
-                content.finishChildBuffer()
-                val first = bounds.first()
-                val traitBounds =
-                    if (first is TypeParamBound.Trait) {
-                        withFirstTypeParamBound(bounds, first.copy(parenToken = parensVal.token))
-                    } else {
-                        bounds
-                    }
-                parseOuterTraitObjectBounds(input, traitBounds, allowPlus).getOrElse { return SynResult.failure(it) }
-                return SynResult.success(SynType.TraitObject(null, traitBounds))
-            }
-
-            val first = ambigTyImpl(content, allowPlus = true, allowGroupGeneric = true).getOrElse { return SynResult.failure(it) }
-            if (content.peek(CommaPeek)) {
-                val elems = SynTypeList()
-                elems.pushValue(first)
+        val first = ambigTyImpl(content, allowPlus = true, allowGroupGeneric = true).getOrElse { return SynResult.failure(it) }
+        if (content.peek(CommaPeek)) {
+            val elems = SynTypeList()
+            elems.pushValue(first)
+            elems.pushPunct(CommaParse.parse(content).getOrElse { return SynResult.failure(it) })
+            while (!content.isEmpty()) {
+                elems.pushValue(ambigTyImpl(content, allowPlus = true, allowGroupGeneric = true).getOrElse { return SynResult.failure(it) })
+                if (content.isEmpty()) break
                 elems.pushPunct(CommaParse.parse(content).getOrElse { return SynResult.failure(it) })
-                while (!content.isEmpty()) {
-                    elems.pushValue(ambigTyImpl(content, allowPlus = true, allowGroupGeneric = true).getOrElse { return SynResult.failure(it) })
-                    if (content.isEmpty()) break
-                    elems.pushPunct(CommaParse.parse(content).getOrElse { return SynResult.failure(it) })
-                }
-                content.finishChildBuffer()
-                return SynResult.success(SynType.Tuple(parensVal.token, elems))
             }
             content.finishChildBuffer()
-            val firstBound = parenthesizedTypeAsBound(parensVal.token, first)
-            if (allowPlus && firstBound != null && input.peek(PlusPeek)) {
-                val bounds = TypeParamBoundList()
-                bounds.pushValue(firstBound)
-                parseOuterTraitObjectBounds(input, bounds, allowPlus).getOrElse { return SynResult.failure(it) }
-                return SynResult.success(SynType.TraitObject(null, bounds))
-            }
-            return SynResult.success(SynType.Paren(parensVal.token, first))
+            return SynResult.success(SynType.Tuple(parensVal.token, elems))
         }
-
-        if (input.peek(FnPeek) || input.peek(UnsafePeek) || input.peek(ExternPeek)) {
-            return parseBareFnType(input, lifetimes).getOrElse { return SynResult.failure(it) }.let {
-                SynResult.success(it)
-            }
+        content.finishChildBuffer()
+        val firstBound = parenthesizedTypeAsBound(parensVal.token, first)
+        if (allowPlus && firstBound != null && input.peek(PlusPeek)) {
+            val bounds = TypeParamBoundList()
+            bounds.pushValue(firstBound)
+            parseOuterTraitObjectBounds(input, bounds, allowPlus).getOrElse { return SynResult.failure(it) }
+            return SynResult.success(SynType.TraitObject(null, bounds))
         }
+        return SynResult.success(SynType.Paren(parensVal.token, first))
+    }
 
-        if (input.peek(IdentPeek) ||
-            input.peek(PathSepPeek) ||
-            input.peek(SelfValuePeek) ||
-            input.peek(SelfTypePeek) ||
-            input.peek(SuperPeek) ||
-            input.peek(CratePeek) ||
-            input.peek(LtPeek)
-        ) {
-            val qpathResult = qpath(input, exprStyle = false)
-            if (qpathResult.isFailure) return qpathResult.asFailure()
-            val (qself, path) = qpathResult.getOrThrow()
-            if (qself != null) {
-                return SynResult.success(SynType.Path(qself, path))
-            }
-            if (input.peek(NotPeek) && !input.peek(NePeek) && path.isModStyle()) {
-                val bang = NotParse.parse(input).getOrElse { return SynResult.failure(it) }
-                val delimiter = parseDelimiter(input).getOrElse { return SynResult.failure(it) }
-                return SynResult.success(SynType.Macro(Macro(path, bang, delimiter.first, delimiter.second)))
-            }
-            if (lifetimes != null || allowPlus && input.peek(PlusPeek)) {
-                val bounds = TypeParamBoundList()
-                bounds.pushValue(TypeParamBound.Trait(null, TraitBoundModifier.None, lifetimes, path))
-                parseOuterTraitObjectBounds(input, bounds, allowPlus).getOrElse { return SynResult.failure(it) }
-                return SynResult.success(SynType.TraitObject(null, bounds))
-            }
-            return SynResult.success(SynType.Path(null, path))
+    if (input.peek(FnPeek) || input.peek(UnsafePeek) || input.peek(ExternPeek)) {
+        return parseBareFnType(input, lifetimes).getOrElse { return SynResult.failure(it) }.let {
+            SynResult.success(it)
         }
+    }
 
-        if (input.peek(DynPeek)) {
-            val dynToken = DynParse.parse(input).getOrElse { return SynResult.failure(it) }
-            val starToken = StarParse.parse(input).getOrNull()
-            val bounds = parseTraitObjectBounds(input, allowPlus).getOrElse { return SynResult.failure(it) }
-            return if (starToken != null) {
-                SynResult.success(SynType.Verbatim(between(begin, input)))
-            } else {
-                SynResult.success(SynType.TraitObject(dynToken, bounds))
-            }
+    if (input.peek(IdentPeek) ||
+        input.peek(PathSepPeek) ||
+        input.peek(SelfValuePeek) ||
+        input.peek(SelfTypePeek) ||
+        input.peek(SuperPeek) ||
+        input.peek(CratePeek) ||
+        input.peek(LtPeek)
+    ) {
+        val qpathResult = qpath(input, exprStyle = false)
+        if (qpathResult.isFailure) return qpathResult.asFailure()
+        val (qself, path) = qpathResult.getOrThrow()
+        if (qself != null) {
+            return SynResult.success(SynType.Path(qself, path))
         }
+        if (input.peek(NotPeek) && !input.peek(NePeek) && path.isModStyle()) {
+            val bang = NotParse.parse(input).getOrElse { return SynResult.failure(it) }
+            val delimiter = parseDelimiter(input).getOrElse { return SynResult.failure(it) }
+            return SynResult.success(SynType.Macro(Macro(path, bang, delimiter.first, delimiter.second)))
+        }
+        if (lifetimes != null || allowPlus && input.peek(PlusPeek)) {
+            val bounds = TypeParamBoundList()
+            bounds.pushValue(TypeParamBound.Trait(null, TraitBoundModifier.None, lifetimes, path))
+            parseOuterTraitObjectBounds(input, bounds, allowPlus).getOrElse { return SynResult.failure(it) }
+            return SynResult.success(SynType.TraitObject(null, bounds))
+        }
+        return SynResult.success(SynType.Path(null, path))
+    }
 
-        if (input.peek(BracketPeek)) {
-            val brackets = bracketed(input)
-            if (brackets.isFailure) return brackets.asFailure()
-            val bracketsVal = brackets.getOrThrow()
-            val elem = parseTypeFull(bracketsVal.content).getOrElse { return SynResult.failure(it) }
-            if (bracketsVal.content.peek(SemiPeek)) {
-                SemiParse.parse(bracketsVal.content).getOrElse { return SynResult.failure(it) }
-                val len = parseExprFull(bracketsVal.content).getOrElse { return SynResult.failure(it) }
-                bracketsVal.content.finishChildBuffer()
-                return SynResult.success(SynType.Array(elem, len))
-            }
+    if (input.peek(DynPeek)) {
+        val dynToken = DynParse.parse(input).getOrElse { return SynResult.failure(it) }
+        val starToken = StarParse.parse(input).getOrNull()
+        val bounds = parseTraitObjectBounds(input, allowPlus).getOrElse { return SynResult.failure(it) }
+        return if (starToken != null) {
+            SynResult.success(SynType.Verbatim(between(begin, input)))
+        } else {
+            SynResult.success(SynType.TraitObject(dynToken, bounds))
+        }
+    }
+
+    if (input.peek(BracketPeek)) {
+        val brackets = bracketed(input)
+        if (brackets.isFailure) return brackets.asFailure()
+        val bracketsVal = brackets.getOrThrow()
+        val elem = parseTypeFull(bracketsVal.content).getOrElse { return SynResult.failure(it) }
+        if (bracketsVal.content.peek(SemiPeek)) {
+            SemiParse.parse(bracketsVal.content).getOrElse { return SynResult.failure(it) }
+            val len = parseExprFull(bracketsVal.content).getOrElse { return SynResult.failure(it) }
             bracketsVal.content.finishChildBuffer()
-            return SynResult.success(SynType.Slice(elem))
+            return SynResult.success(SynType.Array(elem, len))
         }
+        bracketsVal.content.finishChildBuffer()
+        return SynResult.success(SynType.Slice(elem))
+    }
 
-        if (input.peek(StarPeek)) {
-            val starToken = StarParse.parse(input).getOrThrow()
-            val constToken: io.github.kotlinmania.syn.token.Const?
-            val mutability: io.github.kotlinmania.syn.token.Mut?
-            when {
-                input.peek(ConstPeek) -> {
-                    constToken = ConstParse.parse(input).getOrElse { return SynResult.failure(it) }
-                    mutability = null
-                }
-                input.peek(MutPeek) -> {
-                    constToken = null
-                    mutability = MutParse.parse(input).getOrElse { return SynResult.failure(it) }
-                }
-                else -> return SynResult.failure(input.error("expected `const` or `mut`"))
+    if (input.peek(StarPeek)) {
+        val starToken = StarParse.parse(input).getOrThrow()
+        val constToken: io.github.kotlinmania.syn.token.Const?
+        val mutability: io.github.kotlinmania.syn.token.Mut?
+        when {
+            input.peek(ConstPeek) -> {
+                constToken = ConstParse.parse(input).getOrElse { return SynResult.failure(it) }
+                mutability = null
             }
-            val inner = parseTypeWithoutPlus(input)
-            if (inner.isFailure) return inner.asFailure()
-            return SynResult.success(SynType.Ptr(starToken, constToken, mutability, inner.getOrThrow()))
-        }
-
-        if (input.peek(AndPeek)) {
-            val andToken = AndParse.parse(input).getOrThrow()
-            val ltResult = LifetimeParse.parse(input)
-            val lifetime = if (ltResult.isSuccess) ltResult.getOrThrow() else null
-            val mutResult = MutParse.parse(input)
-            val mutability = if (mutResult.isSuccess) mutResult.getOrThrow() else null
-            val inner = parseTypeWithoutPlus(input)
-            if (inner.isFailure) return inner.asFailure()
-            return SynResult.success(SynType.Reference(andToken, lifetime, mutability, inner.getOrThrow()))
-        }
-
-        if (input.peek(NotPeek) && !input.peek(NePeek)) {
-            val bang = NotParse.parse(input).getOrThrow()
-            return SynResult.success(SynType.Never(bang))
-        }
-
-        if (input.peek(ImplPeek)) {
-            return parseTypeImplTrait(input, allowPlus).let { result ->
-                if (result.isFailure) result.asFailure() else SynResult.success(result.getOrThrow())
+            input.peek(MutPeek) -> {
+                constToken = null
+                mutability = MutParse.parse(input).getOrElse { return SynResult.failure(it) }
             }
+            else -> return SynResult.failure(input.error("expected `const` or `mut`"))
         }
+        val inner = parseTypeWithoutPlus(input)
+        if (inner.isFailure) return inner.asFailure()
+        return SynResult.success(SynType.Ptr(starToken, constToken, mutability, inner.getOrThrow()))
+    }
 
-        if (input.peek(UnderscorePeek)) {
-            val underscore = UnderscoreParse.parse(input).getOrThrow()
-            return SynResult.success(SynType.Infer(underscore))
+    if (input.peek(AndPeek)) {
+        val andToken = AndParse.parse(input).getOrThrow()
+        val ltResult = LifetimeParse.parse(input)
+        val lifetime = if (ltResult.isSuccess) ltResult.getOrThrow() else null
+        val mutResult = MutParse.parse(input)
+        val mutability = if (mutResult.isSuccess) mutResult.getOrThrow() else null
+        val inner = parseTypeWithoutPlus(input)
+        if (inner.isFailure) return inner.asFailure()
+        return SynResult.success(SynType.Reference(andToken, lifetime, mutability, inner.getOrThrow()))
+    }
+
+    if (input.peek(NotPeek) && !input.peek(NePeek)) {
+        val bang = NotParse.parse(input).getOrThrow()
+        return SynResult.success(SynType.Never(bang))
+    }
+
+    if (input.peek(ImplPeek)) {
+        return parseTypeImplTrait(input, allowPlus).let { result ->
+            if (result.isFailure) result.asFailure() else SynResult.success(result.getOrThrow())
         }
+    }
 
-        if (input.peek(LifetimePeek)) {
-            return parseTypeTraitObject(input, allowPlus).let { result ->
-                if (result.isFailure) result.asFailure() else SynResult.success(result.getOrThrow())
-            }
+    if (input.peek(UnderscorePeek)) {
+        val underscore = UnderscoreParse.parse(input).getOrThrow()
+        return SynResult.success(SynType.Infer(underscore))
+    }
+
+    if (input.peek(LifetimePeek)) {
+        return parseTypeTraitObject(input, allowPlus).let { result ->
+            if (result.isFailure) result.asFailure() else SynResult.success(result.getOrThrow())
         }
+    }
 
-        return SynResult.failure(input.error("expected a type"))
+    return SynResult.failure(input.error("expected a type"))
 }
 
 private fun canContinueAfterBoundLifetimes(input: ParseStream): Boolean =
@@ -1730,7 +1747,8 @@ private fun canStartTypeParamBound(
         input.peek(QuestionPeek) ||
         input.peek(LifetimePeek) ||
         input.peek(ParenPeek) ||
-        allowConst && (input.peek(BracketPeek) || input.peek(ConstPeek))
+        allowConst &&
+        (input.peek(BracketPeek) || input.peek(ConstPeek))
 
 private fun appendTypeParamBounds(
     target: TypeParamBoundList,
@@ -1807,17 +1825,20 @@ private fun parseBareFnType(
     while (!args.isEmpty()) {
         val attrs = parseOuterAttributes(args).getOrElse { return SynResult.failure(it) }
         if (inputs.emptyOrTrailing() &&
-            (args.peek(DotDotDotPeek) ||
-                (args.peek(IdentPeek) || args.peek(UnderscorePeek)) &&
-                args.peek2(ColonPeek) &&
-                args.peek3(DotDotDotPeek))
+            (
+                args.peek(DotDotDotPeek) ||
+                    (args.peek(IdentPeek) || args.peek(UnderscorePeek)) &&
+                    args.peek2(ColonPeek) &&
+                    args.peek3(DotDotDotPeek)
+            )
         ) {
             variadic = parseBareVariadic(args, attrs).getOrElse { return SynResult.failure(it) }
             break
         }
-        val arg = parseBareFnArg(args, attrs, allowSelf = inputs.isEmpty()).getOrElse {
-            return SynResult.failure(it)
-        }
+        val arg =
+            parseBareFnArg(args, attrs, allowSelf = inputs.isEmpty()).getOrElse {
+                return SynResult.failure(it)
+            }
         inputs.pushValue(arg)
         if (args.isEmpty()) break
         val comma = CommaParse.parse(args).getOrElse { return SynResult.failure(it) }

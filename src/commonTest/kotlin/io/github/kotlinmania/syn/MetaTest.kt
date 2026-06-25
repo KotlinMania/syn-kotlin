@@ -119,7 +119,7 @@ class MetaTest {
     @Test
     fun testFatArrowAfterMeta() {
         val parser =
-            parser@ { input: ParseStream ->
+            parser@{ input: ParseStream ->
                 while (!input.isEmpty()) {
                     MetaParse.parse(input).getOrElse { return@parser SynResult.failure(it) }
                     FatArrowParse.parse(input).getOrElse { return@parser SynResult.failure(it) }

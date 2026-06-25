@@ -19,10 +19,39 @@ class HashTest {
     @Test
     fun variantHashesUseRustDiscriminants() {
         assertEquals(AttrStyle.Outer.hash(), AttrStyle.Outer.hash())
-        assertNotEquals(AttrStyle.Outer.hash(), AttrStyle.Inner(io.github.kotlinmania.syn.token.Not.default()).hash())
+        assertNotEquals(
+            AttrStyle.Outer.hash(),
+            AttrStyle
+                .Inner(
+                    io.github.kotlinmania.syn.token.Not
+                        .default(),
+                ).hash(),
+        )
 
-        assertEquals(BinOp.Add(io.github.kotlinmania.syn.token.Plus.default()).hash(), BinOp.Add(io.github.kotlinmania.syn.token.Plus.default()).hash())
-        assertNotEquals(BinOp.Add(io.github.kotlinmania.syn.token.Plus.default()).hash(), BinOp.Sub(io.github.kotlinmania.syn.token.Minus.default()).hash())
+        assertEquals(
+            BinOp
+                .Add(
+                    io.github.kotlinmania.syn.token.Plus
+                        .default(),
+                ).hash(),
+            BinOp
+                .Add(
+                    io.github.kotlinmania.syn.token.Plus
+                        .default(),
+                ).hash(),
+        )
+        assertNotEquals(
+            BinOp
+                .Add(
+                    io.github.kotlinmania.syn.token.Plus
+                        .default(),
+                ).hash(),
+            BinOp
+                .Sub(
+                    io.github.kotlinmania.syn.token.Minus
+                        .default(),
+                ).hash(),
+        )
     }
 
     @Test

@@ -19,11 +19,51 @@ class EqTest {
     @Test
     fun attrStyleAndBinOpEqCompareVariants() {
         assertTrue(AttrStyle.Outer.eq(AttrStyle.Outer))
-        assertTrue(AttrStyle.Inner(io.github.kotlinmania.syn.token.Not.default()).eq(AttrStyle.Inner(io.github.kotlinmania.syn.token.Not.default())))
-        assertFalse(AttrStyle.Outer.eq(AttrStyle.Inner(io.github.kotlinmania.syn.token.Not.default())))
+        assertTrue(
+            AttrStyle
+                .Inner(
+                    io.github.kotlinmania.syn.token.Not
+                        .default(),
+                ).eq(
+                    AttrStyle.Inner(
+                        io.github.kotlinmania.syn.token.Not
+                            .default(),
+                    ),
+                ),
+        )
+        assertFalse(
+            AttrStyle.Outer.eq(
+                AttrStyle.Inner(
+                    io.github.kotlinmania.syn.token.Not
+                        .default(),
+                ),
+            ),
+        )
 
-        assertTrue(BinOp.Add(io.github.kotlinmania.syn.token.Plus.default()).eq(BinOp.Add(io.github.kotlinmania.syn.token.Plus.default())))
-        assertFalse(BinOp.Add(io.github.kotlinmania.syn.token.Plus.default()).eq(BinOp.Sub(io.github.kotlinmania.syn.token.Minus.default())))
+        assertTrue(
+            BinOp
+                .Add(
+                    io.github.kotlinmania.syn.token.Plus
+                        .default(),
+                ).eq(
+                    BinOp.Add(
+                        io.github.kotlinmania.syn.token.Plus
+                            .default(),
+                    ),
+                ),
+        )
+        assertFalse(
+            BinOp
+                .Add(
+                    io.github.kotlinmania.syn.token.Plus
+                        .default(),
+                ).eq(
+                    BinOp.Sub(
+                        io.github.kotlinmania.syn.token.Minus
+                            .default(),
+                    ),
+                ),
+        )
     }
 
     @Test

@@ -32,7 +32,8 @@ public sealed class Pat : ToTokens {
                         input.peek2(DotDotEqPeek) ||
                         input.peek2(DotDotDotPeek)
                 ) ||
-                input.peek(SelfValuePeek) && input.peek2(PathSepPeek) ||
+                input.peek(SelfValuePeek) &&
+                input.peek2(PathSepPeek) ||
                 input.peek(PathSepPeek) ||
                 input.peek(LtPeek) ||
                 input.peek(SelfTypePeek) ||
@@ -118,7 +119,9 @@ public sealed class Pat : ToTokens {
             parenToken.surround(tokens) { inner ->
                 elems.toTokens(inner)
                 if (elems.len() == 1 && !elems.trailingPunct() && elems.first() !is Rest) {
-                    io.github.kotlinmania.syn.token.Comma.default().toTokens(inner)
+                    io.github.kotlinmania.syn.token.Comma
+                        .default()
+                        .toTokens(inner)
                 }
             }
         }
@@ -208,7 +211,9 @@ public sealed class Pat : ToTokens {
             braceToken.surround(tokens) { inner ->
                 fields.toTokens(inner)
                 if (!fields.emptyOrTrailing() && rest != null) {
-                    io.github.kotlinmania.syn.token.Comma.default().toTokens(inner)
+                    io.github.kotlinmania.syn.token.Comma
+                        .default()
+                        .toTokens(inner)
                 }
                 rest?.toTokens(inner)
                 dot2Token?.toTokens(inner)
@@ -553,10 +558,11 @@ private fun patStruct(
     while (!braces.content.isEmpty()) {
         val attrs = parseOuterAttributes(braces.content).getOrElse { return SynResult.failure(it) }
         if (braces.content.peek(DotDotPeek) && !braces.content.peek(DotDotDotPeek)) {
-            rest = PatRest(
-                dot2Token = DotDotParse.parse(braces.content).getOrElse { return SynResult.failure(it) },
-                attrs = attrs,
-            )
+            rest =
+                PatRest(
+                    dot2Token = DotDotParse.parse(braces.content).getOrElse { return SynResult.failure(it) },
+                    attrs = attrs,
+                )
             break
         }
         val value = fieldPat(braces.content).getOrElse { return SynResult.failure(it) }
@@ -662,8 +668,9 @@ private fun patReference(input: ParseStream): SynResult<Pat.Reference> {
 }
 
 private fun patLitOrRange(input: ParseStream): SynResult<Pat> {
-    val start = patRangeBound(input).getOrElse { return SynResult.failure(it) }
-        ?: return SynResult.failure(input.error("expected range bound"))
+    val start =
+        patRangeBound(input).getOrElse { return SynResult.failure(it) }
+            ?: return SynResult.failure(input.error("expected range bound"))
     if (input.peek(DotDotPeek) || input.peek(DotDotEqPeek) || input.peek(DotDotDotPeek)) {
         val limits = parsePatRangeLimitsObsolete(input).getOrElse { return SynResult.failure(it) }
         val end = patRangeBound(input).getOrElse { return SynResult.failure(it) }
@@ -676,9 +683,17 @@ private fun patLitOrRange(input: ParseStream): SynResult<Pat> {
 }
 
 private sealed class PatRangeBound {
-    data class Const(val pat: Expr.Const) : PatRangeBound()
-    data class Lit(val pat: Expr.Lit) : PatRangeBound()
-    data class Path(val pat: Expr.Path) : PatRangeBound()
+    data class Const(
+        val pat: Expr.Const,
+    ) : PatRangeBound()
+
+    data class Lit(
+        val pat: Expr.Lit,
+    ) : PatRangeBound()
+
+    data class Path(
+        val pat: Expr.Path,
+    ) : PatRangeBound()
 
     fun intoExpr(): Expr =
         when (this) {
@@ -700,7 +715,8 @@ private fun patRangeBound(input: ParseStream): SynResult<PatRangeBound?> {
         input.isEmpty() ||
         input.peek(OrPeek) ||
         input.peek(EqPeek) ||
-        input.peek(ColonPeek) && !input.peek(PathSepPeek) ||
+        input.peek(ColonPeek) &&
+        !input.peek(PathSepPeek) ||
         input.peek(CommaPeek) ||
         input.peek(SemiPeek) ||
         input.peek(IfPeek)
@@ -775,7 +791,12 @@ private fun parsePatConstExpr(input: ParseStream): SynResult<Expr.Const> {
 private fun parsePatRangeLimitsObsolete(input: ParseStream): SynResult<RangeLimits> {
     if (input.peek(DotDotDotPeek)) {
         val dots = DotDotDotParse.parse(input).getOrElse { return SynResult.failure(it) }
-        return SynResult.success(RangeLimits.Closed(io.github.kotlinmania.syn.token.DotDotEq.from(dots.spans)))
+        return SynResult.success(
+            RangeLimits.Closed(
+                io.github.kotlinmania.syn.token.DotDotEq
+                    .from(dots.spans),
+            ),
+        )
     }
     return RangeLimitsParse.parse(input)
 }

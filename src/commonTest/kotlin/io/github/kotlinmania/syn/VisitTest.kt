@@ -173,8 +173,19 @@ class VisitTest {
         val span = Span.callSite()
 
         visitor.visitPat(parsePat("1..=2"))
-        visitor.visitLabel(Label(Lifetime.new("'lbl", span), io.github.kotlinmania.syn.token.Colon.from(span)))
-        visitor.visitUnOp(UnOp.NotOp(io.github.kotlinmania.syn.token.Not.from(span)))
+        visitor.visitLabel(
+            Label(
+                Lifetime.new("'lbl", span),
+                io.github.kotlinmania.syn.token.Colon
+                    .from(span),
+            ),
+        )
+        visitor.visitUnOp(
+            UnOp.NotOp(
+                io.github.kotlinmania.syn.token.Not
+                    .from(span),
+            ),
+        )
         visitor.visitLit(parseStr(LitParse::parse, "c\"hello\"").getOrThrow())
         visitor.visitType(parseStr(SynTypeParseExpr::parse, "<Self as Trait>::Assoc").getOrThrow())
 

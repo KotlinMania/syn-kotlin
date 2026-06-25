@@ -87,6 +87,7 @@ class ParseStreamTest {
                     TokenTree.Punct(Punct(';', Spacing.Alone, Span.callSite())),
                 ),
             )
+
         fun assert(input: ParseStream): SynResult<Unit> {
             assertTrue(input.peek(LifetimePeek))
             assertTrue(input.peek2(SemiPeek))
@@ -263,7 +264,7 @@ class ParseStreamTest {
     @Test
     fun lookaheadEndUsesScopeCloseDelimiter() {
         val parser: (ParseStream) -> SynResult<Unit> =
-            parser@ { input: ParseStream ->
+            parser@{ input: ParseStream ->
                 val content = parenthesized(input).getOrThrow().content
                 val lookahead = content.lookahead1()
                 assertFalse(lookahead.peek(End))
@@ -279,7 +280,7 @@ class ParseStreamTest {
     @Test
     fun lookaheadFormatsManyExpectedTokens() {
         val parser: (ParseStream) -> SynResult<Unit> =
-            parser@ { input: ParseStream ->
+            parser@{ input: ParseStream ->
                 val lookahead = input.lookahead1()
                 assertFalse(lookahead.peek(IdentPeek))
                 assertFalse(lookahead.peek(LifetimePeek))

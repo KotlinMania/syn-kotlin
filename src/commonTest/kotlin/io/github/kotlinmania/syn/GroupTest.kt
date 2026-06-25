@@ -2,15 +2,15 @@ package io.github.kotlinmania.syn
 
 import io.github.kotlinmania.procmacro2.Delimiter
 import io.github.kotlinmania.procmacro2.Span
-import io.github.kotlinmania.procmacro2.Group as ProcMacroGroup
 import io.github.kotlinmania.procmacro2.TokenStream
 import io.github.kotlinmania.procmacro2.TokenTree
-import io.github.kotlinmania.syn.token.Group as TokenGroup
-import io.github.kotlinmania.syn.token.group as tokenGroup
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
+import io.github.kotlinmania.procmacro2.Group as ProcMacroGroup
+import io.github.kotlinmania.syn.token.Group as TokenGroup
+import io.github.kotlinmania.syn.token.group as tokenGroup
 
 class GroupTest {
     @Test
@@ -29,7 +29,7 @@ class GroupTest {
 
         val parsed =
             parse2(
-                parser@ { input: ParseStream ->
+                parser@{ input: ParseStream ->
                     val group = parseGroup(input).getOrElse { return@parser SynResult.failure(it) }
                     assertFalse(group.content.isEmpty())
                     val content = TokenStreamParse.parse(group.content).getOrElse { return@parser SynResult.failure(it) }

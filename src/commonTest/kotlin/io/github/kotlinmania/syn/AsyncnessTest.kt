@@ -16,9 +16,17 @@ class AsyncnessTest {
         assertIs<Visibility.Inherited>(fn.vis)
         assertNotNull(fn.sig.asyncness)
         assertEquals("process", fn.sig.ident.toString())
-        assertTrue(fn.sig.generics.params.isEmpty())
+        assertTrue(
+            fn.sig.generics.params
+                .isEmpty(),
+        )
         assertIs<ReturnType.Default>(fn.sig.output)
-        assertTrue(fn.block?.stmts.orEmpty().isEmpty())
+        assertTrue(
+            fn.block
+                ?.stmts
+                .orEmpty()
+                .isEmpty(),
+        )
     }
 
     @Test

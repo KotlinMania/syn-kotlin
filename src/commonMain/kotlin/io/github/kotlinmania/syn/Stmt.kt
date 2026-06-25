@@ -111,7 +111,9 @@ public object StmtParse {
         parseStmt(input)
 }
 
-private data class AllowNoSemi(val value: Boolean)
+private data class AllowNoSemi(
+    val value: Boolean,
+)
 
 public fun parseStmt(input: ParseStream): SynResult<Stmt> =
     parseStmt(input, AllowNoSemi(false))
