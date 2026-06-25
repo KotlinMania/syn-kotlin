@@ -991,8 +991,9 @@ class ExprTest {
         val parsed =
             runCatching { parseTokens(emitted) }
                 .getOrElse { error("failed to parse: $emitted\n$original\n$it") }
+        val asIfPrinted = AsIfPrinted().visitExprMut(original)
         val normalized = FlattenParens.combineAttrs().visitExpr(parsed)
-        assertEquals(original, normalized, "before: $emitted\nafter: ${tokens(normalized)}")
+        assertEquals(asIfPrinted, normalized, "before: $emitted\nafter: ${tokens(normalized)}")
 
         val tokensNoParen = FlattenParens.combineAttrs().visitTokenStreamMut(emitted)
         if (emitted.toString() == tokensNoParen.toString()) return

@@ -1556,7 +1556,7 @@ public sealed class Expr : ToTokens {
         val tokens: TokenStream,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
-            tokens.extendTokenStreams(listOf(tokens))
+            tokens.extendTokenStreams(listOf(this.tokens))
         }
 
         override fun deepCopy(): Verbatim = this

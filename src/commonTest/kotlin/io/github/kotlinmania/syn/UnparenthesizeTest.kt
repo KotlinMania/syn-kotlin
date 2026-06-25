@@ -90,7 +90,7 @@ private class FlattenParens(
     }
 }
 
-private class AsIfPrinted : VisitMut() {
+internal class AsIfPrinted : VisitMut() {
     override fun visitFile(f: File): File =
         super.visitFile(f.copy(shebang = null))
 
