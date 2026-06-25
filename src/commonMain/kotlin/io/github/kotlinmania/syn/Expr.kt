@@ -819,9 +819,9 @@ private fun exprLeadingLabel(expr: Expr): Boolean {
 public sealed class Expr : ToTokens {
     /** A slice literal expression: `[a, b, c, d]`. */
     public data class Array(
-        public val attrs: List<Attribute>,
-        public val bracketToken: io.github.kotlinmania.syn.token.Bracket,
-        public val elems: ExprList,
+        public var attrs: List<Attribute>,
+        public var bracketToken: io.github.kotlinmania.syn.token.Bracket,
+        public var elems: ExprList,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
@@ -835,10 +835,10 @@ public sealed class Expr : ToTokens {
 
     /** An assignment expression: `a = compute()`. */
     public data class Assign(
-        public val attrs: List<Attribute>,
-        public val left: Expr,
-        public val eqToken: io.github.kotlinmania.syn.token.Eq,
-        public val right: Expr,
+        public var attrs: List<Attribute>,
+        public var left: Expr,
+        public var eqToken: io.github.kotlinmania.syn.token.Eq,
+        public var right: Expr,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
@@ -861,10 +861,10 @@ public sealed class Expr : ToTokens {
 
     /** An async block: `async { ... }`. */
     public data class Async(
-        public val attrs: List<Attribute>,
-        public val asyncToken: io.github.kotlinmania.syn.token.Async,
-        public val capture: io.github.kotlinmania.syn.token.Move?,
-        public val block: Block,
+        public var attrs: List<Attribute>,
+        public var asyncToken: io.github.kotlinmania.syn.token.Async,
+        public var capture: io.github.kotlinmania.syn.token.Move?,
+        public var block: Block,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
@@ -878,10 +878,10 @@ public sealed class Expr : ToTokens {
 
     /** An await expression: `fut.await`. */
     public data class Await(
-        public val attrs: List<Attribute>,
-        public val base: Expr,
-        public val dotToken: io.github.kotlinmania.syn.token.Dot,
-        public val awaitToken: io.github.kotlinmania.syn.token.Await,
+        public var attrs: List<Attribute>,
+        public var base: Expr,
+        public var dotToken: io.github.kotlinmania.syn.token.Dot,
+        public var awaitToken: io.github.kotlinmania.syn.token.Await,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
@@ -895,10 +895,10 @@ public sealed class Expr : ToTokens {
 
     /** A binary operation: `a + b`, `a += b`. */
     public data class Binary(
-        public val attrs: List<Attribute>,
-        public val left: Expr,
-        public val op: BinOp,
-        public val right: Expr,
+        public var attrs: List<Attribute>,
+        public var left: Expr,
+        public var op: BinOp,
+        public var right: Expr,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
@@ -932,9 +932,9 @@ public sealed class Expr : ToTokens {
 
     /** A blocked scope: `{ ... }`. */
     public data class BlockExpr(
-        public val attrs: List<Attribute>,
-        public val label: Label?,
-        public val block: Block,
+        public var attrs: List<Attribute>,
+        public var label: Label?,
+        public var block: Block,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
@@ -947,10 +947,10 @@ public sealed class Expr : ToTokens {
 
     /** A `break`, with an optional label to break and an optional expression. */
     public data class Break(
-        public val attrs: List<Attribute>,
-        public val breakToken: io.github.kotlinmania.syn.token.Break,
-        public val label: Lifetime?,
-        public val expr: Expr?,
+        public var attrs: List<Attribute>,
+        public var breakToken: io.github.kotlinmania.syn.token.Break,
+        public var label: Lifetime?,
+        public var expr: Expr?,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
@@ -972,10 +972,10 @@ public sealed class Expr : ToTokens {
 
     /** A function call expression: `invoke(a, b)`. */
     public data class Call(
-        public val attrs: List<Attribute>,
-        public val func: Expr,
-        public val parenToken: io.github.kotlinmania.syn.token.Paren,
-        public val args: ExprList,
+        public var attrs: List<Attribute>,
+        public var func: Expr,
+        public var parenToken: io.github.kotlinmania.syn.token.Paren,
+        public var args: ExprList,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
@@ -990,10 +990,10 @@ public sealed class Expr : ToTokens {
 
     /** A cast expression: `foo as f64`. */
     public data class Cast(
-        public val attrs: List<Attribute>,
-        public val expr: Expr,
-        public val asToken: io.github.kotlinmania.syn.token.As,
-        public val ty: SynType,
+        public var attrs: List<Attribute>,
+        public var expr: Expr,
+        public var asToken: io.github.kotlinmania.syn.token.As,
+        public var ty: SynType,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
@@ -1016,15 +1016,15 @@ public sealed class Expr : ToTokens {
 
     /** A closure expression: `|a, b| a + b`. */
     public data class Closure(
-        public val attrs: List<Attribute>,
-        public val constness: io.github.kotlinmania.syn.token.Const?,
-        public val asyncness: io.github.kotlinmania.syn.token.Async?,
-        public val capture: io.github.kotlinmania.syn.token.Move?,
-        public val or1Token: io.github.kotlinmania.syn.token.Or,
-        public val inputs: PatList,
-        public val or2Token: io.github.kotlinmania.syn.token.Or,
-        public val output: ReturnType,
-        public val body: Expr,
+        public var attrs: List<Attribute>,
+        public var constness: io.github.kotlinmania.syn.token.Const?,
+        public var asyncness: io.github.kotlinmania.syn.token.Async?,
+        public var capture: io.github.kotlinmania.syn.token.Move?,
+        public var or1Token: io.github.kotlinmania.syn.token.Or,
+        public var inputs: PatList,
+        public var or2Token: io.github.kotlinmania.syn.token.Or,
+        public var output: ReturnType,
+        public var body: Expr,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
@@ -1043,9 +1043,9 @@ public sealed class Expr : ToTokens {
 
     /** A const block: `const { ... }`. */
     public data class Const(
-        public val attrs: List<Attribute>,
-        public val constToken: io.github.kotlinmania.syn.token.Const,
-        public val block: Block,
+        public var attrs: List<Attribute>,
+        public var constToken: io.github.kotlinmania.syn.token.Const,
+        public var block: Block,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
@@ -1058,9 +1058,9 @@ public sealed class Expr : ToTokens {
 
     /** A `continue`, with an optional label. */
     public data class Continue(
-        public val attrs: List<Attribute>,
-        public val continueToken: io.github.kotlinmania.syn.token.Continue,
-        public val label: Lifetime?,
+        public var attrs: List<Attribute>,
+        public var continueToken: io.github.kotlinmania.syn.token.Continue,
+        public var label: Lifetime?,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
@@ -1073,10 +1073,10 @@ public sealed class Expr : ToTokens {
 
     /** Access of a named field of a data class (`obj.k`) or indexed element of a tuple-like compound (`obj.0`). */
     public data class Field(
-        public val attrs: List<Attribute>,
-        public val base: Expr,
-        public val dotToken: io.github.kotlinmania.syn.token.Dot,
-        public val member: Member,
+        public var attrs: List<Attribute>,
+        public var base: Expr,
+        public var dotToken: io.github.kotlinmania.syn.token.Dot,
+        public var member: Member,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
@@ -1090,13 +1090,13 @@ public sealed class Expr : ToTokens {
 
     /** A for loop: `for pat in expr { ... }`. */
     public data class ForLoop(
-        public val attrs: List<Attribute>,
-        public val label: Label?,
-        public val forToken: io.github.kotlinmania.syn.token.For,
-        public val pat: Pat,
-        public val inToken: io.github.kotlinmania.syn.token.In,
-        public val expr: Expr,
-        public val body: Block,
+        public var attrs: List<Attribute>,
+        public var label: Label?,
+        public var forToken: io.github.kotlinmania.syn.token.For,
+        public var pat: Pat,
+        public var inToken: io.github.kotlinmania.syn.token.In,
+        public var expr: Expr,
+        public var body: Block,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
@@ -1113,9 +1113,9 @@ public sealed class Expr : ToTokens {
 
     /** An expression contained within invisible delimiters. */
     public data class Group(
-        public val attrs: List<Attribute>,
-        public val groupToken: io.github.kotlinmania.syn.token.Group,
-        public val expr: Expr,
+        public var attrs: List<Attribute>,
+        public var groupToken: io.github.kotlinmania.syn.token.Group,
+        public var expr: Expr,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
@@ -1127,11 +1127,11 @@ public sealed class Expr : ToTokens {
 
     /** An `if` expression with an optional `else` block. */
     public data class If(
-        public val attrs: List<Attribute>,
-        public val ifToken: io.github.kotlinmania.syn.token.If,
-        public val cond: Expr,
-        public val thenBranch: Block,
-        public val elseBranch: ElseExpr?,
+        public var attrs: List<Attribute>,
+        public var ifToken: io.github.kotlinmania.syn.token.If,
+        public var cond: Expr,
+        public var thenBranch: Block,
+        public var elseBranch: ElseExpr?,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
@@ -1146,10 +1146,10 @@ public sealed class Expr : ToTokens {
 
     /** A square bracketed indexing expression: `vector[2]`. */
     public data class Index(
-        public val attrs: List<Attribute>,
-        public val expr: Expr,
-        public val bracketToken: io.github.kotlinmania.syn.token.Bracket,
-        public val index: Expr,
+        public var attrs: List<Attribute>,
+        public var expr: Expr,
+        public var bracketToken: io.github.kotlinmania.syn.token.Bracket,
+        public var index: Expr,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
@@ -1162,8 +1162,8 @@ public sealed class Expr : ToTokens {
 
     /** The inferred value of a const generic argument, denoted `_`. */
     public data class Infer(
-        public val attrs: List<Attribute>,
-        public val underscoreToken: io.github.kotlinmania.syn.token.Underscore,
+        public var attrs: List<Attribute>,
+        public var underscoreToken: io.github.kotlinmania.syn.token.Underscore,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
@@ -1175,11 +1175,11 @@ public sealed class Expr : ToTokens {
 
     /** A pattern guard that tests whether a pattern matches a value. */
     public data class Let(
-        public val attrs: List<Attribute>,
-        public val letToken: io.github.kotlinmania.syn.token.Let,
-        public val pat: Pat,
-        public val eqToken: io.github.kotlinmania.syn.token.Eq,
-        public val expr: Expr,
+        public var attrs: List<Attribute>,
+        public var letToken: io.github.kotlinmania.syn.token.Let,
+        public var pat: Pat,
+        public var eqToken: io.github.kotlinmania.syn.token.Eq,
+        public var expr: Expr,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
@@ -1213,10 +1213,10 @@ public sealed class Expr : ToTokens {
 
     /** Conditionless loop: `loop { ... }`. */
     public data class Loop(
-        public val attrs: List<Attribute>,
-        public val label: Label?,
-        public val loopToken: io.github.kotlinmania.syn.token.Loop,
-        public val body: Block,
+        public var attrs: List<Attribute>,
+        public var label: Label?,
+        public var loopToken: io.github.kotlinmania.syn.token.Loop,
+        public var body: Block,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
@@ -1243,11 +1243,11 @@ public sealed class Expr : ToTokens {
 
     /** A `match` expression. */
     public data class Match(
-        public val attrs: List<Attribute>,
-        public val matchToken: io.github.kotlinmania.syn.token.Match,
-        public val expr: Expr,
-        public val braceToken: io.github.kotlinmania.syn.token.Brace,
-        public val arms: List<Arm>,
+        public var attrs: List<Attribute>,
+        public var matchToken: io.github.kotlinmania.syn.token.Match,
+        public var expr: Expr,
+        public var braceToken: io.github.kotlinmania.syn.token.Brace,
+        public var arms: List<Arm>,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
@@ -1263,13 +1263,13 @@ public sealed class Expr : ToTokens {
 
     /** A method call expression with optional turbofish and arguments. */
     public data class MethodCall(
-        public val attrs: List<Attribute>,
-        public val receiver: Expr,
-        public val dotToken: io.github.kotlinmania.syn.token.Dot,
-        public val method: Ident,
-        public val turbofish: PathArguments.AngleBracketed?,
-        public val parenToken: io.github.kotlinmania.syn.token.Paren,
-        public val args: ExprList,
+        public var attrs: List<Attribute>,
+        public var receiver: Expr,
+        public var dotToken: io.github.kotlinmania.syn.token.Dot,
+        public var method: Ident,
+        public var turbofish: PathArguments.AngleBracketed?,
+        public var parenToken: io.github.kotlinmania.syn.token.Paren,
+        public var args: ExprList,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
@@ -1287,9 +1287,9 @@ public sealed class Expr : ToTokens {
 
     /** A parenthesized expression: `(a + b)`. */
     public data class Paren(
-        public val attrs: List<Attribute>,
-        public val parenToken: io.github.kotlinmania.syn.token.Paren,
-        public val expr: Expr,
+        public var attrs: List<Attribute>,
+        public var parenToken: io.github.kotlinmania.syn.token.Paren,
+        public var expr: Expr,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
@@ -1321,10 +1321,10 @@ public sealed class Expr : ToTokens {
 
     /** A range expression: `1..2`, `1..`, `..2`, `1..=2`, `..=2`. */
     public data class Range(
-        public val attrs: List<Attribute>,
-        public val start: Expr?,
-        public val limits: RangeLimits,
-        public val end: Expr?,
+        public var attrs: List<Attribute>,
+        public var start: Expr?,
+        public var limits: RangeLimits,
+        public var end: Expr?,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
@@ -1338,11 +1338,11 @@ public sealed class Expr : ToTokens {
 
     /** Address-of operation: `&raw const place` or `&raw mut place`. */
     public data class RawAddr(
-        public val attrs: List<Attribute>,
-        public val andToken: io.github.kotlinmania.syn.token.And,
-        public val raw: io.github.kotlinmania.syn.token.Raw,
-        public val mutability: PointerMutability,
-        public val expr: Expr,
+        public var attrs: List<Attribute>,
+        public var andToken: io.github.kotlinmania.syn.token.And,
+        public var raw: io.github.kotlinmania.syn.token.Raw,
+        public var mutability: PointerMutability,
+        public var expr: Expr,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
@@ -1357,10 +1357,10 @@ public sealed class Expr : ToTokens {
 
     /** A referencing operation. */
     public data class Reference(
-        public val attrs: List<Attribute>,
-        public val andToken: io.github.kotlinmania.syn.token.And,
-        public val mutability: io.github.kotlinmania.syn.token.Mut?,
-        public val expr: Expr,
+        public var attrs: List<Attribute>,
+        public var andToken: io.github.kotlinmania.syn.token.And,
+        public var mutability: io.github.kotlinmania.syn.token.Mut?,
+        public var expr: Expr,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
@@ -1374,11 +1374,11 @@ public sealed class Expr : ToTokens {
 
     /** An array literal constructed from one repeated element: `[0u8; N]`. */
     public data class Repeat(
-        public val attrs: List<Attribute>,
-        public val bracketToken: io.github.kotlinmania.syn.token.Bracket,
-        public val expr: Expr,
-        public val semiToken: io.github.kotlinmania.syn.token.Semi,
-        public val len: Expr,
+        public var attrs: List<Attribute>,
+        public var bracketToken: io.github.kotlinmania.syn.token.Bracket,
+        public var expr: Expr,
+        public var semiToken: io.github.kotlinmania.syn.token.Semi,
+        public var len: Expr,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
@@ -1394,9 +1394,9 @@ public sealed class Expr : ToTokens {
 
     /** A `return`, with an optional value to be returned. */
     public data class Return(
-        public val attrs: List<Attribute>,
-        public val returnToken: io.github.kotlinmania.syn.token.Return,
-        public val expr: Expr?,
+        public var attrs: List<Attribute>,
+        public var returnToken: io.github.kotlinmania.syn.token.Return,
+        public var expr: Expr?,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
@@ -1409,13 +1409,13 @@ public sealed class Expr : ToTokens {
 
     /** A data-object initialization expression. */
     public data class Struct(
-        public val attrs: List<Attribute>,
-        public val qself: QSelf?,
-        public val path: io.github.kotlinmania.syn.Path,
-        public val braceToken: io.github.kotlinmania.syn.token.Brace,
-        public val fields: FieldValueList,
-        public val dot2Token: io.github.kotlinmania.syn.token.DotDot?,
-        public val rest: Expr?,
+        public var attrs: List<Attribute>,
+        public var qself: QSelf?,
+        public var path: io.github.kotlinmania.syn.Path,
+        public var braceToken: io.github.kotlinmania.syn.token.Brace,
+        public var fields: FieldValueList,
+        public var dot2Token: io.github.kotlinmania.syn.token.DotDot?,
+        public var rest: Expr?,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
@@ -1438,9 +1438,9 @@ public sealed class Expr : ToTokens {
 
     /** A try-expression: `expr?`. */
     public data class Try(
-        public val attrs: List<Attribute>,
-        public val expr: Expr,
-        public val questionToken: io.github.kotlinmania.syn.token.Question,
+        public var attrs: List<Attribute>,
+        public var expr: Expr,
+        public var questionToken: io.github.kotlinmania.syn.token.Question,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
@@ -1453,9 +1453,9 @@ public sealed class Expr : ToTokens {
 
     /** A try block: `try { ... }`. */
     public data class TryBlock(
-        public val attrs: List<Attribute>,
-        public val tryToken: io.github.kotlinmania.syn.token.Try,
-        public val block: Block,
+        public var attrs: List<Attribute>,
+        public var tryToken: io.github.kotlinmania.syn.token.Try,
+        public var block: Block,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
@@ -1468,9 +1468,9 @@ public sealed class Expr : ToTokens {
 
     /** A tuple expression: `(a, b, c, d)`. */
     public data class Tuple(
-        public val attrs: List<Attribute>,
-        public val parenToken: io.github.kotlinmania.syn.token.Paren,
-        public val elems: ExprList,
+        public var attrs: List<Attribute>,
+        public var parenToken: io.github.kotlinmania.syn.token.Paren,
+        public var elems: ExprList,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
@@ -1489,9 +1489,9 @@ public sealed class Expr : ToTokens {
 
     /** A unary prefix operation: negation or dereference. */
     public data class Unary(
-        public val attrs: List<Attribute>,
-        public val op: UnOp,
-        public val expr: Expr,
+        public var attrs: List<Attribute>,
+        public var op: UnOp,
+        public var expr: Expr,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
@@ -1504,9 +1504,9 @@ public sealed class Expr : ToTokens {
 
     /** A block expression that permits operations violating memory safety invariants. */
     public data class Unsafe(
-        public val attrs: List<Attribute>,
-        public val unsafeToken: io.github.kotlinmania.syn.token.Unsafe,
-        public val block: Block,
+        public var attrs: List<Attribute>,
+        public var unsafeToken: io.github.kotlinmania.syn.token.Unsafe,
+        public var block: Block,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
@@ -1519,11 +1519,11 @@ public sealed class Expr : ToTokens {
 
     /** A while loop: `while expr { ... }`. */
     public data class While(
-        public val attrs: List<Attribute>,
-        public val label: Label?,
-        public val whileToken: io.github.kotlinmania.syn.token.While,
-        public val cond: Expr,
-        public val body: Block,
+        public var attrs: List<Attribute>,
+        public var label: Label?,
+        public var whileToken: io.github.kotlinmania.syn.token.While,
+        public var cond: Expr,
+        public var body: Block,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
@@ -1538,9 +1538,9 @@ public sealed class Expr : ToTokens {
 
     /** A yield expression: `yield expr`. */
     public data class Yield(
-        public val attrs: List<Attribute>,
-        public val yieldToken: io.github.kotlinmania.syn.token.Yield,
-        public val expr: Expr?,
+        public var attrs: List<Attribute>,
+        public var yieldToken: io.github.kotlinmania.syn.token.Yield,
+        public var expr: Expr?,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
@@ -1592,8 +1592,8 @@ public sealed class Member : ToTokens {
 
 /** A tuple field index such as `0` in `obj.0`. */
 public data class Index(
-    public val index: UInt,
-    public val span: Span,
+    public var index: UInt,
+    public var span: Span,
 ) : ToTokens {
     override fun toTokens(tokens: TokenStream) {
         val literal =
@@ -1606,10 +1606,10 @@ public data class Index(
 
 /** A field-value pair in a data-object initialization. */
 public data class FieldValue(
-    public val attrs: List<Attribute>,
-    public val member: Member,
-    public val colonToken: io.github.kotlinmania.syn.token.Colon?,
-    public val expr: Expr,
+    public var attrs: List<Attribute>,
+    public var member: Member,
+    public var colonToken: io.github.kotlinmania.syn.token.Colon?,
+    public var expr: Expr,
 ) : ToTokens {
     override fun toTokens(tokens: TokenStream) {
         for (attr in attrs) attr.toTokens(tokens)
@@ -1623,8 +1623,8 @@ public data class FieldValue(
 
 /** A label on a `for`, `while`, or `loop`. */
 public data class Label(
-    public val name: Lifetime,
-    public val colonToken: io.github.kotlinmania.syn.token.Colon,
+    public var name: Lifetime,
+    public var colonToken: io.github.kotlinmania.syn.token.Colon,
 ) : ToTokens {
     override fun toTokens(tokens: TokenStream) {
         name.toTokens(tokens)
@@ -1636,12 +1636,12 @@ public data class Label(
 
 /** One arm of a `match` expression. */
 public data class Arm(
-    public val attrs: List<Attribute>,
-    public val pat: Pat,
-    public val guard: IfExpr?,
-    public val fatArrowToken: io.github.kotlinmania.syn.token.FatArrow,
-    public val body: Expr,
-    public val comma: io.github.kotlinmania.syn.token.Comma?,
+    public var attrs: List<Attribute>,
+    public var pat: Pat,
+    public var guard: IfExpr?,
+    public var fatArrowToken: io.github.kotlinmania.syn.token.FatArrow,
+    public var body: Expr,
+    public var comma: io.github.kotlinmania.syn.token.Comma?,
 ) : ToTokens {
     override fun toTokens(tokens: TokenStream) {
         for (attr in attrs) attr.toTokens(tokens)

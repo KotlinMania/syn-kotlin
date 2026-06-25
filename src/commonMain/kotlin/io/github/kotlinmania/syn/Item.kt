@@ -82,15 +82,15 @@ public sealed class Item : ToTokens {
 
     /** A constant item: `const MAX: UShort = 65535`. */
     public data class Const(
-        public val attrs: List<Attribute>,
-        public val vis: Visibility,
-        public val constToken: io.github.kotlinmania.syn.token.Const,
-        public val ident: Ident,
-        public val colonToken: Colon?,
-        public val ty: SynType,
-        public val eqToken: Eq?,
-        public val expr: Expr?,
-        public val semiToken: Semi,
+        public var attrs: List<Attribute>,
+        public var vis: Visibility,
+        public var constToken: io.github.kotlinmania.syn.token.Const,
+        public var ident: Ident,
+        public var colonToken: Colon?,
+        public var ty: SynType,
+        public var eqToken: Eq?,
+        public var expr: Expr?,
+        public var semiToken: Semi,
     ) : Item() {
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
@@ -107,13 +107,13 @@ public sealed class Item : ToTokens {
 
     /** An enum definition. */
     public data class Enum(
-        public val attrs: List<Attribute>,
-        public val vis: Visibility,
-        public val enumToken: io.github.kotlinmania.syn.token.Enum,
-        public val ident: Ident,
-        public val generics: Generics,
-        public val braceToken: Brace,
-        public val variants: VariantList,
+        public var attrs: List<Attribute>,
+        public var vis: Visibility,
+        public var enumToken: io.github.kotlinmania.syn.token.Enum,
+        public var ident: Ident,
+        public var generics: Generics,
+        public var braceToken: Brace,
+        public var variants: VariantList,
     ) : Item() {
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
@@ -129,13 +129,13 @@ public sealed class Item : ToTokens {
 
     /** An `extern crate` item. */
     public data class ExternCrate(
-        public val attrs: List<Attribute>,
-        public val vis: Visibility,
-        public val externToken: io.github.kotlinmania.syn.token.Extern,
-        public val crateToken: io.github.kotlinmania.syn.token.Crate,
-        public val ident: Ident,
-        public val rename: AsIdent?,
-        public val semiToken: Semi,
+        public var attrs: List<Attribute>,
+        public var vis: Visibility,
+        public var externToken: io.github.kotlinmania.syn.token.Extern,
+        public var crateToken: io.github.kotlinmania.syn.token.Crate,
+        public var ident: Ident,
+        public var rename: AsIdent?,
+        public var semiToken: Semi,
     ) : Item() {
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
@@ -150,10 +150,10 @@ public sealed class Item : ToTokens {
 
     /** A free-standing function. */
     public data class Fn(
-        public val attrs: List<Attribute>,
-        public val vis: Visibility,
-        public val sig: Signature,
-        public val block: Block?,
+        public var attrs: List<Attribute>,
+        public var vis: Visibility,
+        public var sig: Signature,
+        public var block: Block?,
     ) : Item() {
         public constructor(
             attrs: List<Attribute>,
@@ -172,22 +172,22 @@ public sealed class Item : ToTokens {
             block,
         )
 
-        public val fnToken: io.github.kotlinmania.syn.token.Fn
+        public var fnToken: io.github.kotlinmania.syn.token.Fn
             get() = sig.fnToken
 
-        public val ident: Ident
+        public var ident: Ident
             get() = sig.ident
 
-        public val generics: Generics
+        public var generics: Generics
             get() = sig.generics
 
-        public val parenToken: Paren
+        public var parenToken: Paren
             get() = sig.parenToken
 
-        public val inputs: FnArgList
+        public var inputs: FnArgList
             get() = sig.inputs
 
-        public val output: ReturnType
+        public var output: ReturnType
             get() = sig.output
 
         override fun toTokens(tokens: TokenStream) {
@@ -200,11 +200,11 @@ public sealed class Item : ToTokens {
 
     /** A block of foreign items. */
     public data class ForeignMod(
-        public val attrs: List<Attribute>,
-        public val unsafety: Unsafe?,
-        public val abi: Abi,
-        public val braceToken: Brace,
-        public val items: List<ForeignItem>,
+        public var attrs: List<Attribute>,
+        public var unsafety: Unsafe?,
+        public var abi: Abi,
+        public var braceToken: Brace,
+        public var items: List<ForeignItem>,
     ) : Item() {
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
@@ -218,13 +218,13 @@ public sealed class Item : ToTokens {
 
     /** A data class definition. */
     public data class Struct(
-        public val attrs: List<Attribute>,
-        public val vis: Visibility,
-        public val structToken: io.github.kotlinmania.syn.token.Struct,
-        public val ident: Ident,
-        public val generics: Generics,
-        public val fields: Fields,
-        public val semiToken: Semi?,
+        public var attrs: List<Attribute>,
+        public var vis: Visibility,
+        public var structToken: io.github.kotlinmania.syn.token.Struct,
+        public var ident: Ident,
+        public var generics: Generics,
+        public var fields: Fields,
+        public var semiToken: Semi?,
     ) : Item() {
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
@@ -239,12 +239,12 @@ public sealed class Item : ToTokens {
 
     /** A union definition. */
     public data class Union(
-        public val attrs: List<Attribute>,
-        public val vis: Visibility,
-        public val unionToken: io.github.kotlinmania.syn.token.Union,
-        public val ident: Ident,
-        public val generics: Generics,
-        public val fields: FieldsNamed,
+        public var attrs: List<Attribute>,
+        public var vis: Visibility,
+        public var unionToken: io.github.kotlinmania.syn.token.Union,
+        public var ident: Ident,
+        public var generics: Generics,
+        public var fields: FieldsNamed,
     ) : Item() {
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
@@ -259,12 +259,12 @@ public sealed class Item : ToTokens {
 
     /** A module or module declaration. */
     public data class Mod(
-        public val attrs: List<Attribute>,
-        public val vis: Visibility,
-        public val unsafety: Unsafe?,
-        public val modToken: io.github.kotlinmania.syn.token.Mod,
-        public val ident: Ident,
-        public val content: ModContent?,
+        public var attrs: List<Attribute>,
+        public var vis: Visibility,
+        public var unsafety: Unsafe?,
+        public var modToken: io.github.kotlinmania.syn.token.Mod,
+        public var ident: Ident,
+        public var content: ModContent?,
     ) : Item() {
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
@@ -278,12 +278,12 @@ public sealed class Item : ToTokens {
 
     /** A use declaration. */
     public data class Use(
-        public val attrs: List<Attribute>,
-        public val vis: Visibility,
-        public val useToken: io.github.kotlinmania.syn.token.Use,
-        public val leadingColon: PathSep?,
-        public val tree: UseTree,
-        public val semiToken: Semi,
+        public var attrs: List<Attribute>,
+        public var vis: Visibility,
+        public var useToken: io.github.kotlinmania.syn.token.Use,
+        public var leadingColon: PathSep?,
+        public var tree: UseTree,
+        public var semiToken: Semi,
     ) : Item() {
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
@@ -297,16 +297,16 @@ public sealed class Item : ToTokens {
 
     /** A static item. */
     public data class Static(
-        public val attrs: List<Attribute>,
-        public val vis: Visibility,
-        public val staticToken: io.github.kotlinmania.syn.token.Static,
-        public val mutability: StaticMutability,
-        public val ident: Ident,
-        public val colonToken: Colon,
-        public val ty: SynType,
-        public val eqToken: Eq,
-        public val expr: Expr,
-        public val semiToken: Semi,
+        public var attrs: List<Attribute>,
+        public var vis: Visibility,
+        public var staticToken: io.github.kotlinmania.syn.token.Static,
+        public var mutability: StaticMutability,
+        public var ident: Ident,
+        public var colonToken: Colon,
+        public var ty: SynType,
+        public var eqToken: Eq,
+        public var expr: Expr,
+        public var semiToken: Semi,
     ) : Item() {
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
@@ -324,18 +324,18 @@ public sealed class Item : ToTokens {
 
     /** A trait definition. */
     public data class Trait(
-        public val attrs: List<Attribute>,
-        public val vis: Visibility,
-        public val unsafety: Unsafe?,
-        public val autoToken: io.github.kotlinmania.syn.token.Auto?,
-        public val restriction: ImplRestriction?,
-        public val traitToken: io.github.kotlinmania.syn.token.Trait,
-        public val ident: Ident,
-        public val generics: Generics,
-        public val colonToken: Colon?,
-        public val supertraits: TypeParamBoundList,
-        public val braceToken: Brace,
-        public val items: List<TraitItem>,
+        public var attrs: List<Attribute>,
+        public var vis: Visibility,
+        public var unsafety: Unsafe?,
+        public var autoToken: io.github.kotlinmania.syn.token.Auto?,
+        public var restriction: ImplRestriction?,
+        public var traitToken: io.github.kotlinmania.syn.token.Trait,
+        public var ident: Ident,
+        public var generics: Generics,
+        public var colonToken: Colon?,
+        public var supertraits: TypeParamBoundList,
+        public var braceToken: Brace,
+        public var items: List<TraitItem>,
     ) : Item() {
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
@@ -359,14 +359,14 @@ public sealed class Item : ToTokens {
 
     /** A trait alias. */
     public data class TraitAlias(
-        public val attrs: List<Attribute>,
-        public val vis: Visibility,
-        public val traitToken: io.github.kotlinmania.syn.token.Trait,
-        public val ident: Ident,
-        public val generics: Generics,
-        public val eqToken: Eq,
-        public val bounds: TypeParamBoundList,
-        public val semiToken: Semi,
+        public var attrs: List<Attribute>,
+        public var vis: Visibility,
+        public var traitToken: io.github.kotlinmania.syn.token.Trait,
+        public var ident: Ident,
+        public var generics: Generics,
+        public var eqToken: Eq,
+        public var bounds: TypeParamBoundList,
+        public var semiToken: Semi,
     ) : Item() {
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
@@ -383,14 +383,14 @@ public sealed class Item : ToTokens {
 
     /** A type alias. */
     public data class ItemType(
-        public val attrs: List<Attribute>,
-        public val vis: Visibility,
-        public val typeToken: SynTypeToken,
-        public val ident: Ident,
-        public val generics: Generics,
-        public val eqToken: Eq,
-        public val ty: SynType,
-        public val semiToken: Semi,
+        public var attrs: List<Attribute>,
+        public var vis: Visibility,
+        public var typeToken: SynTypeToken,
+        public var ident: Ident,
+        public var generics: Generics,
+        public var eqToken: Eq,
+        public var ty: SynType,
+        public var semiToken: Semi,
     ) : Item() {
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
@@ -407,15 +407,15 @@ public sealed class Item : ToTokens {
 
     /** An impl block providing trait or associated items. */
     public data class Impl(
-        public val attrs: List<Attribute>,
-        public val defaultness: Default?,
-        public val unsafety: Unsafe?,
-        public val implToken: io.github.kotlinmania.syn.token.Impl,
-        public val generics: Generics,
-        public val traitPath: PathTrait?,
-        public val selfType: SynType,
-        public val braceToken: Brace,
-        public val items: List<ImplItem>,
+        public var attrs: List<Attribute>,
+        public var defaultness: Default?,
+        public var unsafety: Unsafe?,
+        public var implToken: io.github.kotlinmania.syn.token.Impl,
+        public var generics: Generics,
+        public var traitPath: PathTrait?,
+        public var selfType: SynType,
+        public var braceToken: Brace,
+        public var items: List<ImplItem>,
     ) : Item() {
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
@@ -438,10 +438,10 @@ public sealed class Item : ToTokens {
 
     /** A macro invocation, including declarative macro definitions. */
     public data class Macro(
-        public val attrs: List<Attribute>,
-        public val ident: Ident?,
-        public val mac: io.github.kotlinmania.syn.Macro,
-        public val semiToken: Semi?,
+        public var attrs: List<Attribute>,
+        public var ident: Ident?,
+        public var mac: io.github.kotlinmania.syn.Macro,
+        public var semiToken: Semi?,
     ) : Item() {
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
@@ -455,7 +455,7 @@ public sealed class Item : ToTokens {
 
     /** Tokens forming an item not interpreted by Syn. */
     public data class Verbatim(
-        public val tokens: TokenStream,
+        public var tokens: TokenStream,
     ) : Item() {
         override fun toTokens(tokens: TokenStream) {
             tokens.extendTokenStreams(listOf(this.tokens))
@@ -497,12 +497,12 @@ public fun from(input: Item.Union): DeriveInput =
 public sealed class FnArg : ToTokens {
     /** The receiver argument of an associated method. */
     public data class Receiver(
-        public val attrs: List<Attribute>,
-        public val reference: AndLifetime?,
-        public val mutability: io.github.kotlinmania.syn.token.Mut?,
-        public val selfToken: io.github.kotlinmania.syn.token.SelfValue,
-        public val colonToken: Colon?,
-        public val type: SynType,
+        public var attrs: List<Attribute>,
+        public var reference: AndLifetime?,
+        public var mutability: io.github.kotlinmania.syn.token.Mut?,
+        public var selfToken: io.github.kotlinmania.syn.token.SelfValue,
+        public var colonToken: Colon?,
+        public var type: SynType,
     ) : FnArg() {
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
@@ -520,7 +520,7 @@ public sealed class FnArg : ToTokens {
 
     /** A function argument accepted by pattern and type. */
     public data class Typed(
-        public val patType: PatType,
+        public var patType: PatType,
     ) : FnArg() {
         override fun toTokens(tokens: TokenStream) {
             patType.toTokens(tokens)
@@ -596,9 +596,9 @@ public sealed class UseTree : ToTokens {
 
 /** The trait path in an impl block. */
 public data class PathTrait(
-    public val polarity: io.github.kotlinmania.syn.token.Not?,
-    public val path: Path,
-    public val forToken: For,
+    public var polarity: io.github.kotlinmania.syn.token.Not?,
+    public var path: Path,
+    public var forToken: For,
 ) : ToTokens {
     override fun toTokens(tokens: TokenStream) {
         polarity?.toTokens(tokens)
@@ -609,17 +609,17 @@ public data class PathTrait(
 
 /** A function signature in a trait or implementation. */
 public data class Signature(
-    public val constness: io.github.kotlinmania.syn.token.Const?,
-    public val asyncness: io.github.kotlinmania.syn.token.Async?,
-    public val unsafety: Unsafe?,
-    public val abi: Abi?,
-    public val fnToken: io.github.kotlinmania.syn.token.Fn,
-    public val ident: Ident,
-    public val generics: Generics,
-    public val parenToken: Paren,
-    public val inputs: FnArgList,
-    public val variadic: Variadic?,
-    public val output: ReturnType,
+    public var constness: io.github.kotlinmania.syn.token.Const?,
+    public var asyncness: io.github.kotlinmania.syn.token.Async?,
+    public var unsafety: Unsafe?,
+    public var abi: Abi?,
+    public var fnToken: io.github.kotlinmania.syn.token.Fn,
+    public var ident: Ident,
+    public var generics: Generics,
+    public var parenToken: Paren,
+    public var inputs: FnArgList,
+    public var variadic: Variadic?,
+    public var output: ReturnType,
 ) : ToTokens {
     override fun toTokens(tokens: TokenStream) {
         constness?.toTokens(tokens)
@@ -653,8 +653,8 @@ public data class Signature(
 
 /** The ABI name in a function signature. */
 public data class Abi(
-    public val externToken: io.github.kotlinmania.syn.token.Extern,
-    public val name: LitStr?,
+    public var externToken: io.github.kotlinmania.syn.token.Extern,
+    public var name: LitStr?,
 ) : ToTokens {
     override fun toTokens(tokens: TokenStream) {
         externToken.toTokens(tokens)
@@ -664,10 +664,10 @@ public data class Abi(
 
 /** The variadic argument of a foreign function. */
 public data class Variadic(
-    public val attrs: List<Attribute>,
-    public val pat: PatColon?,
-    public val dots: io.github.kotlinmania.syn.token.DotDotDot,
-    public val comma: Comma?,
+    public var attrs: List<Attribute>,
+    public var pat: PatColon?,
+    public var dots: io.github.kotlinmania.syn.token.DotDotDot,
+    public var comma: Comma?,
 ) : ToTokens {
     override fun toTokens(tokens: TokenStream) {
         for (attr in attrs) attr.toTokens(tokens)
@@ -680,7 +680,7 @@ public data class Variadic(
 /** Mutability of a static item. */
 public sealed class StaticMutability : ToTokens {
     public data class Mut(
-        public val mutToken: io.github.kotlinmania.syn.token.Mut,
+        public var mutToken: io.github.kotlinmania.syn.token.Mut,
     ) : StaticMutability() {
         override fun toTokens(tokens: TokenStream) {
             mutToken.toTokens(tokens)
@@ -700,10 +700,10 @@ public sealed class ImplRestriction : ToTokens
 public sealed class ForeignItem : ToTokens {
     /** A foreign function in an extern block. */
     public data class Fn(
-        public val attrs: List<Attribute>,
-        public val vis: Visibility,
-        public val sig: Signature,
-        public val semiToken: Semi,
+        public var attrs: List<Attribute>,
+        public var vis: Visibility,
+        public var sig: Signature,
+        public var semiToken: Semi,
     ) : ForeignItem() {
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
@@ -715,14 +715,14 @@ public sealed class ForeignItem : ToTokens {
 
     /** A foreign static item in an extern block. */
     public data class Static(
-        public val attrs: List<Attribute>,
-        public val vis: Visibility,
-        public val staticToken: io.github.kotlinmania.syn.token.Static,
-        public val mutability: StaticMutability,
-        public val ident: Ident,
-        public val colonToken: Colon,
-        public val ty: SynType,
-        public val semiToken: Semi,
+        public var attrs: List<Attribute>,
+        public var vis: Visibility,
+        public var staticToken: io.github.kotlinmania.syn.token.Static,
+        public var mutability: StaticMutability,
+        public var ident: Ident,
+        public var colonToken: Colon,
+        public var ty: SynType,
+        public var semiToken: Semi,
     ) : ForeignItem() {
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
@@ -738,12 +738,12 @@ public sealed class ForeignItem : ToTokens {
 
     /** A foreign type in an extern block. */
     public data class ItemType(
-        public val attrs: List<Attribute>,
-        public val vis: Visibility,
-        public val typeToken: SynTypeToken,
-        public val ident: Ident,
-        public val generics: Generics,
-        public val semiToken: Semi,
+        public var attrs: List<Attribute>,
+        public var vis: Visibility,
+        public var typeToken: SynTypeToken,
+        public var ident: Ident,
+        public var generics: Generics,
+        public var semiToken: Semi,
     ) : ForeignItem() {
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
@@ -758,9 +758,9 @@ public sealed class ForeignItem : ToTokens {
 
     /** A macro invocation within an extern block. */
     public data class Macro(
-        public val attrs: List<Attribute>,
-        public val mac: io.github.kotlinmania.syn.Macro,
-        public val semiToken: Semi?,
+        public var attrs: List<Attribute>,
+        public var mac: io.github.kotlinmania.syn.Macro,
+        public var semiToken: Semi?,
     ) : ForeignItem() {
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
@@ -771,7 +771,7 @@ public sealed class ForeignItem : ToTokens {
 
     /** Tokens within an extern block not interpreted by Syn. */
     public data class Verbatim(
-        public val tokens: TokenStream,
+        public var tokens: TokenStream,
     ) : ForeignItem() {
         override fun toTokens(tokens: TokenStream) {
             tokens.extendTokenStreams(listOf(this.tokens))
@@ -783,14 +783,14 @@ public sealed class ForeignItem : ToTokens {
 public sealed class TraitItem : ToTokens {
     /** An associated constant within the definition of a trait. */
     public data class Const(
-        public val attrs: List<Attribute>,
-        public val constToken: io.github.kotlinmania.syn.token.Const,
-        public val ident: Ident,
-        public val generics: Generics,
-        public val colonToken: Colon,
-        public val ty: SynType,
-        public val default: EqExpr?,
-        public val semiToken: Semi,
+        public var attrs: List<Attribute>,
+        public var constToken: io.github.kotlinmania.syn.token.Const,
+        public var ident: Ident,
+        public var generics: Generics,
+        public var colonToken: Colon,
+        public var ty: SynType,
+        public var default: EqExpr?,
+        public var semiToken: Semi,
     ) : TraitItem() {
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
@@ -806,10 +806,10 @@ public sealed class TraitItem : ToTokens {
 
     /** An associated function within the definition of a trait. */
     public data class Fn(
-        public val attrs: List<Attribute>,
-        public val sig: Signature,
-        public val default: Block?,
-        public val semiToken: Semi?,
+        public var attrs: List<Attribute>,
+        public var sig: Signature,
+        public var default: Block?,
+        public var semiToken: Semi?,
     ) : TraitItem() {
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
@@ -826,14 +826,14 @@ public sealed class TraitItem : ToTokens {
 
     /** An associated type within the definition of a trait. */
     public data class AssocType(
-        public val attrs: List<Attribute>,
-        public val typeToken: io.github.kotlinmania.syn.token.SynTypeToken,
-        public val ident: Ident,
-        public val generics: Generics,
-        public val colonToken: Colon?,
-        public val bounds: TypeParamBoundList,
-        public val default: EqSynType?,
-        public val semiToken: Semi,
+        public var attrs: List<Attribute>,
+        public var typeToken: io.github.kotlinmania.syn.token.SynTypeToken,
+        public var ident: Ident,
+        public var generics: Generics,
+        public var colonToken: Colon?,
+        public var bounds: TypeParamBoundList,
+        public var default: EqSynType?,
+        public var semiToken: Semi,
     ) : TraitItem() {
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
@@ -852,9 +852,9 @@ public sealed class TraitItem : ToTokens {
 
     /** A macro invocation within the definition of a trait. */
     public data class Macro(
-        public val attrs: List<Attribute>,
-        public val mac: io.github.kotlinmania.syn.Macro,
-        public val semiToken: Semi?,
+        public var attrs: List<Attribute>,
+        public var mac: io.github.kotlinmania.syn.Macro,
+        public var semiToken: Semi?,
     ) : TraitItem() {
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
@@ -865,7 +865,7 @@ public sealed class TraitItem : ToTokens {
 
     /** Tokens within the definition of a trait not interpreted by Syn. */
     public data class Verbatim(
-        public val tokens: TokenStream,
+        public var tokens: TokenStream,
     ) : TraitItem() {
         override fun toTokens(tokens: TokenStream) {
             tokens.extendTokenStreams(listOf(this.tokens))
@@ -877,17 +877,17 @@ public sealed class TraitItem : ToTokens {
 public sealed class ImplItem : ToTokens {
     /** An associated constant within an impl block. */
     public data class Const(
-        public val attrs: List<Attribute>,
-        public val vis: Visibility,
-        public val defaultness: Default?,
-        public val constToken: io.github.kotlinmania.syn.token.Const,
-        public val ident: Ident,
-        public val generics: Generics,
-        public val colonToken: Colon,
-        public val ty: SynType,
-        public val eqToken: Eq,
-        public val expr: Expr,
-        public val semiToken: Semi,
+        public var attrs: List<Attribute>,
+        public var vis: Visibility,
+        public var defaultness: Default?,
+        public var constToken: io.github.kotlinmania.syn.token.Const,
+        public var ident: Ident,
+        public var generics: Generics,
+        public var colonToken: Colon,
+        public var ty: SynType,
+        public var eqToken: Eq,
+        public var expr: Expr,
+        public var semiToken: Semi,
     ) : ImplItem() {
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
@@ -905,11 +905,11 @@ public sealed class ImplItem : ToTokens {
 
     /** An associated function within an impl block. */
     public data class Fn(
-        public val attrs: List<Attribute>,
-        public val vis: Visibility,
-        public val defaultness: Default?,
-        public val sig: Signature,
-        public val block: Block,
+        public var attrs: List<Attribute>,
+        public var vis: Visibility,
+        public var defaultness: Default?,
+        public var sig: Signature,
+        public var block: Block,
     ) : ImplItem() {
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
@@ -924,15 +924,15 @@ public sealed class ImplItem : ToTokens {
 
     /** An associated type within an impl block. */
     public data class AssocType(
-        public val attrs: List<Attribute>,
-        public val vis: Visibility,
-        public val defaultness: Default?,
-        public val typeToken: io.github.kotlinmania.syn.token.SynTypeToken,
-        public val ident: Ident,
-        public val generics: Generics,
-        public val eqToken: Eq,
-        public val ty: SynType,
-        public val semiToken: Semi,
+        public var attrs: List<Attribute>,
+        public var vis: Visibility,
+        public var defaultness: Default?,
+        public var typeToken: io.github.kotlinmania.syn.token.SynTypeToken,
+        public var ident: Ident,
+        public var generics: Generics,
+        public var eqToken: Eq,
+        public var ty: SynType,
+        public var semiToken: Semi,
     ) : ImplItem() {
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
@@ -950,9 +950,9 @@ public sealed class ImplItem : ToTokens {
 
     /** A macro invocation within an impl block. */
     public data class Macro(
-        public val attrs: List<Attribute>,
-        public val mac: io.github.kotlinmania.syn.Macro,
-        public val semiToken: Semi?,
+        public var attrs: List<Attribute>,
+        public var mac: io.github.kotlinmania.syn.Macro,
+        public var semiToken: Semi?,
     ) : ImplItem() {
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
@@ -963,7 +963,7 @@ public sealed class ImplItem : ToTokens {
 
     /** Tokens within an impl block not interpreted by Syn. */
     public data class Verbatim(
-        public val tokens: TokenStream,
+        public var tokens: TokenStream,
     ) : ImplItem() {
         override fun toTokens(tokens: TokenStream) {
             tokens.extendTokenStreams(listOf(this.tokens))

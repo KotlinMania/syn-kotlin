@@ -11,8 +11,8 @@ import io.github.kotlinmania.syn.token.Semi
  * A braced block containing statements.
  */
 public data class Block(
-    public val braceToken: Brace,
-    public val stmts: List<Stmt>,
+    public var braceToken: Brace,
+    public var stmts: List<Stmt>,
 ) : ToTokens {
     override fun toTokens(tokens: TokenStream) {
         braceToken.surround(tokens) { inner ->
@@ -31,11 +31,11 @@ public sealed class Stmt : ToTokens {
 
     /** A local binding. */
     public data class Local(
-        public val attrs: List<Attribute>,
-        public val letToken: Let,
-        public val pat: Pat,
-        public val init: LocalInit?,
-        public val semiToken: Semi,
+        public var attrs: List<Attribute>,
+        public var letToken: Let,
+        public var pat: Pat,
+        public var init: LocalInit?,
+        public var semiToken: Semi,
     ) : Stmt() {
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
@@ -50,7 +50,7 @@ public sealed class Stmt : ToTokens {
 
     /** An item definition. */
     public data class ItemStmt(
-        public val item: Item,
+        public var item: Item,
     ) : Stmt() {
         override fun toTokens(tokens: TokenStream) {
             item.toTokens(tokens)
@@ -61,8 +61,8 @@ public sealed class Stmt : ToTokens {
 
     /** Expression, with or without trailing semicolon. */
     public data class ExprStmt(
-        public val expr: Expr,
-        public val semiToken: Semi?,
+        public var expr: Expr,
+        public var semiToken: Semi?,
     ) : Stmt() {
         override fun toTokens(tokens: TokenStream) {
             expr.toTokensAsStmt(tokens)
@@ -74,9 +74,9 @@ public sealed class Stmt : ToTokens {
 
     /** A macro invocation in statement position. */
     public data class MacroStmt(
-        public val attrs: List<Attribute>,
-        public val mac: Macro,
-        public val semiToken: Semi?,
+        public var attrs: List<Attribute>,
+        public var mac: Macro,
+        public var semiToken: Semi?,
     ) : Stmt() {
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
@@ -93,9 +93,9 @@ public sealed class Stmt : ToTokens {
  * diverging else block.
  */
 public data class LocalInit(
-    public val eqToken: io.github.kotlinmania.syn.token.Eq,
-    public val expr: Expr,
-    public val diverge: ElseExpr?,
+    public var eqToken: io.github.kotlinmania.syn.token.Eq,
+    public var expr: Expr,
+    public var diverge: ElseExpr?,
 ) : ToTokens {
     override fun toTokens(tokens: TokenStream) {
         eqToken.toTokens(tokens)

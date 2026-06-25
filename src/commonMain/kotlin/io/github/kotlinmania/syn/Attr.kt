@@ -8,10 +8,10 @@ import io.github.kotlinmania.quote.toTokens
 
 /** An attribute attached to an item or field. */
 public data class Attribute(
-    public val poundToken: io.github.kotlinmania.syn.token.Pound,
-    public val style: AttrStyle,
-    public val bracketToken: io.github.kotlinmania.syn.token.Bracket,
-    public val meta: Meta,
+    public var poundToken: io.github.kotlinmania.syn.token.Pound,
+    public var style: AttrStyle,
+    public var bracketToken: io.github.kotlinmania.syn.token.Bracket,
+    public var meta: Meta,
 ) : ToTokens {
     public typealias Ret = Iterator<Attribute>
 

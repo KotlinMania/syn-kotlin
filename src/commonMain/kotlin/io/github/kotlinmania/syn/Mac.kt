@@ -16,10 +16,10 @@ import io.github.kotlinmania.syn.token.Paren
  * A macro invocation consisting of a path, bang token, delimiter, and token stream.
  */
 public data class Macro(
-    public val path: Path,
-    public val bangToken: io.github.kotlinmania.syn.token.Not,
-    public val delimiter: MacroDelimiter,
-    public val tokens: TokenStream,
+    public var path: Path,
+    public var bangToken: io.github.kotlinmania.syn.token.Not,
+    public var delimiter: MacroDelimiter,
+    public var tokens: TokenStream,
 ) : ToTokens {
     public companion object {
         fun parse(input: ParseStream): SynResult<Macro> {

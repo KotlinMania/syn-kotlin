@@ -71,9 +71,9 @@ internal fun ParseBuffer.advanceToSpeculative(fork: ParseBuffer) {
  * delimiters the same as if they were visible.
  */
 public data class AnyDelimiterResult(
-    public val delimiter: Delimiter,
-    public val span: DelimSpan,
-    public val content: ParseBuffer,
+    public var delimiter: Delimiter,
+    public var span: DelimSpan,
+    public var content: ParseBuffer,
 )
 
 public interface Speculative {

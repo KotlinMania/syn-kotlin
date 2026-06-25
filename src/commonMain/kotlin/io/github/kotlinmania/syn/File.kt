@@ -10,9 +10,9 @@ import io.github.kotlinmania.quote.ToTokens
  * Typically [File] objects are created with [parseFile].
  */
 public data class File(
-    public val shebang: String?,
-    public val attrs: List<Attribute>,
-    public val items: List<Item>,
+    public var shebang: String?,
+    public var attrs: List<Attribute>,
+    public var items: List<Item>,
 ) : ToTokens {
     override fun toTokens(tokens: TokenStream) {
         for (attr in attrs) attr.toTokens(tokens)

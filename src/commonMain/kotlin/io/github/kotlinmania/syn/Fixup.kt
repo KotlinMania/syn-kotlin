@@ -20,7 +20,7 @@ public data class FixupContext(
     val nextOperatorCanBeginGenerics: Boolean,
 ) {
     public companion object {
-        public val NONE: FixupContext =
+        public var NONE: FixupContext =
             FixupContext(
                 previousOperator = Precedence.MIN,
                 nextOperator = Precedence.MIN,

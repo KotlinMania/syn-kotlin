@@ -13,10 +13,10 @@ import io.github.kotlinmania.syn.token.Paren
  * An enum variant.
  */
 public data class Variant(
-    public val attrs: List<Attribute>,
-    public val ident: Ident,
-    public val fields: Fields,
-    public val discriminant: EqExpr?,
+    public var attrs: List<Attribute>,
+    public var ident: Ident,
+    public var fields: Fields,
+    public var discriminant: EqExpr?,
 ) : ToTokens {
     override fun toTokens(tokens: TokenStream) {
         for (attr in attrs) attr.toTokens(tokens)
@@ -110,8 +110,8 @@ public class Members internal constructor(
 
 /** Named fields of a data structure such as `Point { x: f64, y: f64 }`. */
 public data class FieldsNamed(
-    public val braceToken: Brace,
-    public val named: FieldList,
+    public var braceToken: Brace,
+    public var named: FieldList,
 ) : ToTokens {
     override fun toTokens(tokens: TokenStream) {
         braceToken.surround(tokens) { inner ->
@@ -131,8 +131,8 @@ public object FieldsNamedParse {
 
 /** Unnamed fields of a tuple-style data structure such as `Some(T)`. */
 public data class FieldsUnnamed(
-    public val parenToken: Paren,
-    public val unnamed: FieldList,
+    public var parenToken: Paren,
+    public var unnamed: FieldList,
 ) : ToTokens {
     override fun toTokens(tokens: TokenStream) {
         parenToken.surround(tokens) { inner ->
@@ -152,12 +152,12 @@ public object FieldsUnnamedParse {
 
 /** A field of a data class or enum variant. */
 public data class Field(
-    public val attrs: List<Attribute>,
-    public val vis: Visibility,
-    public val mutability: FieldMutability,
-    public val ident: Ident?,
-    public val colonToken: Colon?,
-    public val ty: SynType,
+    public var attrs: List<Attribute>,
+    public var vis: Visibility,
+    public var mutability: FieldMutability,
+    public var ident: Ident?,
+    public var colonToken: Colon?,
+    public var ty: SynType,
 ) : ToTokens {
     override fun toTokens(tokens: TokenStream) {
         for (attr in attrs) attr.toTokens(tokens)

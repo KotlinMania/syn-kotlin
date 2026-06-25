@@ -18,7 +18,7 @@ import io.github.kotlinmania.syn.token.PathSep
 /** A path at which a named item is exported. */
 public class Path(
     public var leadingColon: PathSep?,
-    public val segments: PathSegmentList,
+    public var segments: PathSegmentList,
 ) {
     public companion object {
         public fun from(segment: Ident): Path {
@@ -219,9 +219,9 @@ public sealed class PathArguments : ToTokens {
     /** Generic arguments surrounded by angle brackets. */
     public data class AngleBracketed(
         public var colon2Token: PathSep?,
-        public val ltToken: Lt,
-        public val args: GenericArgumentList,
-        public val gtToken: Gt,
+        public var ltToken: Lt,
+        public var args: GenericArgumentList,
+        public var gtToken: Gt,
     ) : PathArguments() {
         public companion object {
             /** Parse `::<...>` with mandatory leading `::`. */
@@ -261,9 +261,9 @@ public sealed class PathArguments : ToTokens {
 
     /** The `(A, B) -> C` in `Fn(A, B) -> C`. */
     public data class Parenthesized(
-        public val parenToken: Paren,
-        public val inputs: SynTypeList,
-        public val output: ReturnType,
+        public var parenToken: Paren,
+        public var inputs: SynTypeList,
+        public var output: ReturnType,
     ) : PathArguments()
 
     public fun isEmpty(): Boolean =
@@ -338,10 +338,10 @@ public sealed class GenericArgument : ToTokens {
 
 /** A binding on an associated type, such as `Item = UByte`. */
 public data class AssocType(
-    public val ident: Ident,
-    public val generics: PathArguments.AngleBracketed?,
-    public val eqToken: io.github.kotlinmania.syn.token.Eq,
-    public val ty: SynType,
+    public var ident: Ident,
+    public var generics: PathArguments.AngleBracketed?,
+    public var eqToken: io.github.kotlinmania.syn.token.Eq,
+    public var ty: SynType,
 ) : ToTokens {
     override fun toTokens(tokens: TokenStream) {
         ident.toTokens(tokens)
@@ -355,10 +355,10 @@ public data class AssocType(
 
 /** An equality constraint on an associated constant. */
 public data class AssocConst(
-    public val ident: Ident,
-    public val generics: PathArguments.AngleBracketed?,
-    public val eqToken: io.github.kotlinmania.syn.token.Eq,
-    public val value: Expr,
+    public var ident: Ident,
+    public var generics: PathArguments.AngleBracketed?,
+    public var eqToken: io.github.kotlinmania.syn.token.Eq,
+    public var value: Expr,
 ) : ToTokens {
     override fun toTokens(tokens: TokenStream) {
         ident.toTokens(tokens)
@@ -372,10 +372,10 @@ public data class AssocConst(
 
 /** An associated type bound such as `Iterator<Item: Display>`. */
 public data class Constraint(
-    public val ident: Ident,
-    public val generics: PathArguments.AngleBracketed?,
-    public val colonToken: Colon,
-    public val bounds: TypeParamBoundList,
+    public var ident: Ident,
+    public var generics: PathArguments.AngleBracketed?,
+    public var colonToken: Colon,
+    public var bounds: TypeParamBoundList,
 ) : ToTokens {
     override fun toTokens(tokens: TokenStream) {
         ident.toTokens(tokens)
@@ -389,11 +389,11 @@ public data class Constraint(
 
 /** The explicit Self type in a qualified path. */
 public data class QSelf(
-    public val ltToken: Lt,
-    public val ty: SynType,
-    public val position: Int,
-    public val asToken: io.github.kotlinmania.syn.token.As?,
-    public val gtToken: Gt,
+    public var ltToken: Lt,
+    public var ty: SynType,
+    public var position: Int,
+    public var asToken: io.github.kotlinmania.syn.token.As?,
+    public var gtToken: Gt,
 ) : Spanned {
     override fun span(): Span =
         QSelfDelimiters(this).span()

@@ -290,9 +290,9 @@ public sealed class SynType : ToTokens {
 }
 
 public data class BareFnArg(
-    public val attrs: List<Attribute>,
-    public val name: IdentColon?,
-    public val ty: SynType,
+    public var attrs: List<Attribute>,
+    public var name: IdentColon?,
+    public var ty: SynType,
 ) : ToTokens {
     public companion object {
         fun parse(input: ParseStream): SynResult<BareFnArg> {
@@ -314,10 +314,10 @@ public data class BareFnArg(
 
 /** The variadic argument of a function pointer. */
 public data class BareVariadic(
-    public val attrs: List<Attribute>,
-    public val name: IdentColon?,
-    public val dots: io.github.kotlinmania.syn.token.DotDotDot,
-    public val comma: io.github.kotlinmania.syn.token.Comma?,
+    public var attrs: List<Attribute>,
+    public var name: IdentColon?,
+    public var dots: io.github.kotlinmania.syn.token.DotDotDot,
+    public var comma: io.github.kotlinmania.syn.token.Comma?,
 ) : ToTokens {
     override fun toTokens(tokens: TokenStream) {
         for (attr in attrs) attr.toTokens(tokens)

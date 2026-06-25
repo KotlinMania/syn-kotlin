@@ -241,7 +241,7 @@ public class LitStr private constructor(
 
 /** A byte string literal: `b"foo"`. */
 public class LitByteStr(
-    public val bytes: List<UByte>,
+    public var bytes: List<UByte>,
     private var spanValue: Span,
     private val suffix: String = "",
     private val literal: Literal? = null,
@@ -463,7 +463,7 @@ public class LitInt private constructor(
         }
     }
 
-    public val digits: String
+    public var digits: String
         get() = repr.digits
 
     public fun base10Digits(): String = repr.digits
@@ -518,7 +518,7 @@ public class LitFloat private constructor(
         }
     }
 
-    public val digits: String
+    public var digits: String
         get() = repr.digits
 
     public fun base10Digits(): String = repr.digits
@@ -582,7 +582,7 @@ public sealed class StrStyle {
     public data object Cooked : StrStyle()
 
     public data class Raw(
-        public val pounds: Int,
+        public var pounds: Int,
     ) : StrStyle()
 }
 

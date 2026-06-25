@@ -9,11 +9,11 @@ import io.github.kotlinmania.syn.token.Semi
 
 /** Data structure supplied to a derive macro. */
 public data class DeriveInput(
-    public val attrs: List<Attribute>,
-    public val vis: Visibility,
-    public val ident: Ident,
-    public val generics: Generics,
-    public val data: Data,
+    public var attrs: List<Attribute>,
+    public var vis: Visibility,
+    public var ident: Ident,
+    public var generics: Generics,
+    public var data: Data,
 ) : ToTokens {
     override fun toTokens(tokens: TokenStream) {
         for (attr in attrs) attr.toTokens(tokens)
@@ -64,7 +64,7 @@ public sealed class Data : ToTokens {
     public data class Struct(
         val value: DataStruct,
     ) : Data() {
-        public val fields: Fields get() = value.fields
+        public var fields: Fields get() = value.fields
 
         override fun toTokens(tokens: TokenStream) {
             value.toTokens(tokens)
@@ -74,7 +74,7 @@ public sealed class Data : ToTokens {
     public data class Enum(
         val value: DataEnum,
     ) : Data() {
-        public val variants: VariantList get() = value.variants
+        public var variants: VariantList get() = value.variants
 
         override fun toTokens(tokens: TokenStream) {
             value.toTokens(tokens)
@@ -84,7 +84,7 @@ public sealed class Data : ToTokens {
     public data class Union(
         val value: DataUnion,
     ) : Data() {
-        public val fields: FieldsNamed get() = value.fields
+        public var fields: FieldsNamed get() = value.fields
 
         override fun toTokens(tokens: TokenStream) {
             value.toTokens(tokens)
@@ -94,9 +94,9 @@ public sealed class Data : ToTokens {
 
 /** A data-class-like input to a derive macro. */
 public data class DataStruct(
-    public val structToken: io.github.kotlinmania.syn.token.Struct,
-    public val fields: Fields,
-    public val semiToken: Semi?,
+    public var structToken: io.github.kotlinmania.syn.token.Struct,
+    public var fields: Fields,
+    public var semiToken: Semi?,
 ) : ToTokens {
     override fun toTokens(tokens: TokenStream) {
         structToken.toTokens(tokens)
@@ -107,9 +107,9 @@ public data class DataStruct(
 
 /** An enum input to a derive macro. */
 public data class DataEnum(
-    public val enumToken: io.github.kotlinmania.syn.token.Enum,
-    public val braceToken: Brace,
-    public val variants: VariantList,
+    public var enumToken: io.github.kotlinmania.syn.token.Enum,
+    public var braceToken: Brace,
+    public var variants: VariantList,
 ) : ToTokens {
     override fun toTokens(tokens: TokenStream) {
         enumToken.toTokens(tokens)
@@ -121,8 +121,8 @@ public data class DataEnum(
 
 /** An untagged union input to a derive macro. */
 public data class DataUnion(
-    public val unionToken: io.github.kotlinmania.syn.token.Union,
-    public val fields: FieldsNamed,
+    public var unionToken: io.github.kotlinmania.syn.token.Union,
+    public var fields: FieldsNamed,
 ) : ToTokens {
     override fun toTokens(tokens: TokenStream) {
         unionToken.toTokens(tokens)

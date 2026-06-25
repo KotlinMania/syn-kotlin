@@ -120,11 +120,11 @@ public data class Generics(
 }
 
 public data class SplitForImpl(
-    public val implGenerics: ImplGenerics,
-    public val typeGenerics: TypeGenerics,
-    public val whereClause: WhereClause?,
+    public var implGenerics: ImplGenerics,
+    public var typeGenerics: TypeGenerics,
+    public var whereClause: WhereClause?,
 ) {
-    public val turbofish: Turbofish
+    public var turbofish: Turbofish
         get() = typeGenerics.asTurbofish()
 }
 
@@ -201,15 +201,15 @@ public class ConstParamsMut(
 }
 
 public data class ImplGenerics(
-    public val generics: Generics,
+    public var generics: Generics,
 ) : ToTokens {
-    public val ltToken: Lt?
+    public var ltToken: Lt?
         get() = generics.ltToken
 
-    public val params: GenericParamList
+    public var params: GenericParamList
         get() = generics.implGenerics().params
 
-    public val gtToken: Gt?
+    public var gtToken: Gt?
         get() = generics.gtToken
 
     override fun toTokens(tokens: TokenStream) {
@@ -218,15 +218,15 @@ public data class ImplGenerics(
 }
 
 public data class TypeGenerics(
-    public val generics: Generics,
+    public var generics: Generics,
 ) : ToTokens {
-    public val ltToken: Lt?
+    public var ltToken: Lt?
         get() = generics.ltToken
 
-    public val params: GenericParamList
+    public var params: GenericParamList
         get() = generics.typeGenerics().params
 
-    public val gtToken: Gt?
+    public var gtToken: Gt?
         get() = generics.gtToken
 
     public fun asTurbofish(): Turbofish =
@@ -241,15 +241,15 @@ public data class TypeGenerics(
 }
 
 public data class Turbofish(
-    public val generics: Generics,
+    public var generics: Generics,
 ) : ToTokens {
-    public val ltToken: Lt?
+    public var ltToken: Lt?
         get() = generics.ltToken
 
-    public val params: GenericArgumentList
+    public var params: GenericArgumentList
         get() = generics.turbofishArguments()
 
-    public val gtToken: Gt?
+    public var gtToken: Gt?
         get() = generics.gtToken
 
     override fun toTokens(tokens: TokenStream) {
@@ -602,8 +602,8 @@ public sealed class GenericParam : ToTokens {
 }
 
 public data class WhereClause(
-    public val whereToken: Where,
-    public val predicates: WherePredicateList,
+    public var whereToken: Where,
+    public var predicates: WherePredicateList,
 ) : ToTokens {
     public companion object {
         public fun parse(input: ParseStream): SynResult<WhereClause> {
@@ -711,10 +711,10 @@ public sealed class WherePredicate : ToTokens {
     }
 
     public data class TypePredicate(
-        public val lifetimes: BoundLifetimes?,
-        public val boundedTy: SynType,
-        public val colonToken: Colon,
-        public val bounds: TypeParamBoundList,
+        public var lifetimes: BoundLifetimes?,
+        public var boundedTy: SynType,
+        public var colonToken: Colon,
+        public var bounds: TypeParamBoundList,
     ) : WherePredicate() {
         override fun toTokens(tokens: TokenStream) {
             lifetimes?.toTokens(tokens)
@@ -731,9 +731,9 @@ public sealed class WherePredicate : ToTokens {
     }
 
     public data class LifetimePredicate(
-        public val lifetime: Lifetime,
-        public val colonToken: Colon,
-        public val bounds: LifetimeList,
+        public var lifetime: Lifetime,
+        public var colonToken: Colon,
+        public var bounds: LifetimeList,
     ) : WherePredicate() {
         override fun toTokens(tokens: TokenStream) {
             lifetime.toTokens(tokens)
