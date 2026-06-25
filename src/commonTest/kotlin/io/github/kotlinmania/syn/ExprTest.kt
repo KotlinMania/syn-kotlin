@@ -6,11 +6,30 @@ import io.github.kotlinmania.procmacro2.Group
 import io.github.kotlinmania.procmacro2.Ident
 import io.github.kotlinmania.procmacro2.Literal
 import io.github.kotlinmania.procmacro2.Punct
-import io.github.kotlinmania.procmacro2.TokenStream
-import io.github.kotlinmania.procmacro2.TokenTree
 import io.github.kotlinmania.procmacro2.Spacing
 import io.github.kotlinmania.procmacro2.Span
+import io.github.kotlinmania.procmacro2.TokenStream
+import io.github.kotlinmania.procmacro2.TokenTree
+import io.github.kotlinmania.quote.intoTokenStream
 import io.github.kotlinmania.syn.gen.VisitMut
+import io.github.kotlinmania.syn.token.And
+import io.github.kotlinmania.syn.token.As
+import io.github.kotlinmania.syn.token.Brace
+import io.github.kotlinmania.syn.token.Break
+import io.github.kotlinmania.syn.token.Dot
+import io.github.kotlinmania.syn.token.DotDot
+import io.github.kotlinmania.syn.token.Eq
+import io.github.kotlinmania.syn.token.If
+import io.github.kotlinmania.syn.token.Let
+import io.github.kotlinmania.syn.token.Lt
+import io.github.kotlinmania.syn.token.Or
+import io.github.kotlinmania.syn.token.Paren
+import io.github.kotlinmania.syn.token.Plus
+import io.github.kotlinmania.syn.token.Question
+import io.github.kotlinmania.syn.token.Return
+import io.github.kotlinmania.syn.token.ShlEq
+import io.github.kotlinmania.syn.token.Star
+import io.github.kotlinmania.syn.token.Underscore
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
@@ -25,14 +44,8 @@ import kotlin.test.assertTrue
  * `syn::parse_str::<Expr>` to parse expression token streams, then
  * assert the structural shape via the `snapshot!` macro (which expands
  * to `insta::assert_debug_snapshot!` against a `Lite` debug wrapper).
- * The `Lite` snapshot helper is not ported; these Kotlin tests assert
- * the resulting [Expr] variant and key fields directly via
- * [parseStr] / [parse2] against [ExprParse].
- *
- * Tests that still require missing visitor or exhaustive generator
- * infrastructure carry an honest one-line comment naming the specific
- * missing semantic, rather than emitting a fake simulation that tests a
- * different invariant.
+ * These Kotlin tests assert the resulting [Expr] variant and key fields
+ * directly via [parseStr] / [parse2] against [ExprParse].
  */
 class ExprTest {
     private class FlattenParens(
@@ -49,6 +62,23 @@ class ExprTest {
             }
             return super.visitExpr(expr)
         }
+
+        override fun visitTokenStreamMut(tokens: TokenStream): TokenStream =
+            TokenStream.fromTokenTrees(tokens.flatMap(::flattenTokenTree))
+
+        private fun flattenTokenTree(token: TokenTree): List<TokenTree> =
+            when (token) {
+                is TokenTree.Group -> {
+                    val delimiter = token.value.delimiter()
+                    val content = visitTokenStreamMut(token.value.stream())
+                    if (delimiter == Delimiter.Parenthesis) {
+                        content.toList()
+                    } else {
+                        listOf(TokenTree.Group(Group(delimiter, content)))
+                    }
+                }
+                else -> listOf(token)
+            }
 
         private fun combineAttrs(expr: Expr, attrs: List<Attribute>): Expr =
             when (expr) {
@@ -81,6 +111,9 @@ class ExprTest {
         expr.toTokens(tokens)
         return parseTokens(tokens)
     }
+
+    private fun tokens(expr: Expr): TokenStream =
+        TokenStream.new().also(expr::toTokens)
 
     private fun assertUnboundedHalfOpenRange(expr: Expr) {
         val range = assertIs<Expr.Range>(expr)
@@ -849,15 +882,134 @@ class ExprTest {
         }
     }
 
-    // Upstream recursively generates expression permutations, emits
-    // each to a token stream, re-parses, and asserts equality, exiting
-    // non-zero on any failure. The Kotlin `Expr` variants cannot be
-    // directly constructed with the upstream test's default-token
-    // shortcuts, and `ExprParse` does not parse the full expression
-    // grammar; the permutation round-trip cannot be reproduced.
-    // Not ported: `Expr` variants cannot be constructed with the
-    // upstream test's default-token shortcuts, and `ExprParse` does
-    // not parse the full expression grammar; the upstream recursive
-    // permutation round-trip cannot be reproduced without the missing
-    // constructor and parser surface.
+    @Test
+    fun testPermutations() {
+        var checked = 0
+        iterExprPermutations(4) { original ->
+            assertPermutationRoundTrip(original)
+            checked += 1
+        }
+        assertEquals(243_101, checked)
+    }
+
+    private fun assertPermutationRoundTrip(original: Expr) {
+        val emitted = tokens(original)
+        val parsed =
+            runCatching { parseTokens(emitted) }
+                .getOrElse { error("failed to parse: $emitted\n$original\n$it") }
+        val normalized = FlattenParens.combineAttrs().visitExpr(parsed)
+        assertEquals(original, normalized, "before: $emitted\nafter: ${tokens(normalized)}")
+
+        val tokensNoParen = FlattenParens.combineAttrs().visitTokenStreamMut(emitted)
+        if (emitted.toString() == tokensNoParen.toString()) return
+
+        val parsedNoParen = parse2(ExprParse::parse, tokensNoParen).getOrNull() ?: return
+        val normalizedNoParen = FlattenParens.combineAttrs().visitExpr(parsedNoParen)
+        if (original == normalizedNoParen) {
+            error("redundant parens: $emitted")
+        }
+    }
+
+    private fun iterExprPermutations(depth: Int, emit: (Expr) -> Unit) {
+        emit(pathExpr("x"))
+        if (depth == 0) return
+
+        val nextDepth = depth - 1
+
+        iterExprPermutations(nextDepth) { expr ->
+            iterExprPermutations(0) { simple ->
+                emit(Expr.Assign(emptyList(), simple.deepCopy(), Eq.default(), expr.deepCopy()))
+                emit(Expr.Assign(emptyList(), expr.deepCopy(), Eq.default(), simple.deepCopy()))
+            }
+        }
+
+        iterExprPermutations(nextDepth) { expr ->
+            iterExprPermutations(0) { simple ->
+                for (op in listOf(BinOp.Add(Plus.default()), BinOp.Lt(Lt.default()), BinOp.ShlAssign(ShlEq.default()))) {
+                    emit(Expr.Binary(emptyList(), simple.deepCopy(), op, expr.deepCopy()))
+                    emit(Expr.Binary(emptyList(), expr.deepCopy(), op, simple.deepCopy()))
+                }
+            }
+        }
+
+        emit(Expr.BlockExpr(emptyList(), null, emptyBlock()))
+        emit(Expr.Break(emptyList(), Break.default(), null, null))
+
+        iterExprPermutations(nextDepth) { expr ->
+            emit(Expr.Break(emptyList(), Break.default(), null, expr.deepCopy()))
+        }
+
+        iterExprPermutations(nextDepth) { expr ->
+            emit(Expr.Call(emptyList(), expr.deepCopy(), Paren.default(), ExprList()))
+        }
+
+        iterExprPermutations(nextDepth) { expr ->
+            emit(Expr.Cast(emptyList(), expr.deepCopy(), As.default(), typePath("T")))
+        }
+
+        iterExprPermutations(nextDepth) { expr ->
+            emit(
+                Expr.Closure(
+                    attrs = emptyList(),
+                    constness = null,
+                    asyncness = null,
+                    capture = null,
+                    or1Token = Or.default(),
+                    inputs = PatList(),
+                    or2Token = Or.default(),
+                    output = ReturnType.Default,
+                    body = expr.deepCopy(),
+                ),
+            )
+        }
+
+        iterExprPermutations(nextDepth) { expr ->
+            emit(Expr.Field(emptyList(), expr.deepCopy(), Dot.default(), Member.Named(Ident.new("field", Span.callSite()))))
+        }
+
+        iterExprPermutations(nextDepth) { expr ->
+            emit(Expr.If(emptyList(), If.default(), expr.deepCopy(), emptyBlock(), null))
+        }
+
+        iterExprPermutations(nextDepth) { expr ->
+            emit(Expr.Let(emptyList(), Let.default(), wildPat(), Eq.default(), expr.deepCopy()))
+        }
+
+        emit(Expr.Range(emptyList(), null, RangeLimits.HalfOpen(DotDot.default()), null))
+
+        iterExprPermutations(nextDepth) { expr ->
+            emit(Expr.Range(emptyList(), null, RangeLimits.HalfOpen(DotDot.default()), expr.deepCopy()))
+            emit(Expr.Range(emptyList(), expr.deepCopy(), RangeLimits.HalfOpen(DotDot.default()), null))
+        }
+
+        iterExprPermutations(nextDepth) { expr ->
+            emit(Expr.Reference(emptyList(), And.default(), null, expr.deepCopy()))
+        }
+
+        emit(Expr.Return(emptyList(), Return.default(), null))
+
+        iterExprPermutations(nextDepth) { expr ->
+            emit(Expr.Return(emptyList(), Return.default(), expr.deepCopy()))
+        }
+
+        iterExprPermutations(nextDepth) { expr ->
+            emit(Expr.Try(emptyList(), expr.deepCopy(), Question.default()))
+        }
+
+        iterExprPermutations(nextDepth) { expr ->
+            emit(Expr.Unary(emptyList(), UnOp.Deref(Star.default()), expr.deepCopy()))
+        }
+    }
+
+    private fun pathExpr(ident: String): Expr =
+        Expr.Path(emptyList(), null, Path.from(Ident.new(ident, Span.callSite())))
+
+    private fun typePath(ident: String): SynType =
+        SynType.Path(null, Path.from(Ident.new(ident, Span.callSite())))
+
+    private fun emptyBlock(): Block =
+        Block(Brace.default(), emptyList())
+
+    private fun wildPat(): Pat =
+        Pat.Wild(emptyList(), Underscore.default())
 }

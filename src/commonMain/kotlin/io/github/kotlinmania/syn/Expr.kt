@@ -45,22 +45,59 @@ internal fun Expr.toTokensAsStmt(tokens: TokenStream) {
 
 private fun Expr.toTokensInCondition(tokens: TokenStream) {
     when (this) {
+        is Expr.Assign -> toTokensAsCondition(tokens)
         is Expr.Await -> toTokensAsCondition(tokens)
+        is Expr.Binary -> toTokensAsCondition(tokens)
         is Expr.Break -> toTokensAsCondition(tokens)
         is Expr.Call -> toTokensAsCondition(tokens)
         is Expr.Closure -> toTokensAsCondition(tokens)
         is Expr.Field -> toTokensAsCondition(tokens)
         is Expr.Index -> toTokensAsCondition(tokens)
         is Expr.MethodCall -> toTokensAsCondition(tokens)
+        is Expr.Let -> toTokensAsCondition(tokens)
+        is Expr.RawAddr -> toTokensAsCondition(tokens)
+        is Expr.Reference -> toTokensAsCondition(tokens)
+        is Expr.Range -> toTokensAsCondition(tokens)
         is Expr.Return -> toTokensAsCondition(tokens)
         is Expr.Try -> toTokensAsCondition(tokens)
+        is Expr.Unary -> toTokensAsCondition(tokens)
         is Expr.Yield -> toTokensAsCondition(tokens)
         else -> toTokens(tokens)
     }
 }
 
+private fun Expr.toTokensAsRightmostCondition(tokens: TokenStream) {
+    if (this is Expr.BlockExpr && attrs.isEmpty() && label == null) {
+        io.github.kotlinmania.syn.token.Paren.default().surround(tokens) { inner ->
+            toTokens(inner)
+        }
+    } else {
+        toTokensWithParens(tokens, Precedence.MIN, ExprPosition.Condition)
+    }
+}
+
+private fun Expr.toTokensAsRightmostConditionOperand(
+    tokens: TokenStream,
+    parentPrecedence: Precedence,
+    position: ExprPosition,
+) {
+    if (needsParens(parentPrecedence, position)) {
+        io.github.kotlinmania.syn.token.Paren.default().surround(tokens) { inner ->
+            toTokens(inner)
+        }
+    } else {
+        toTokensAsRightmostCondition(tokens)
+    }
+}
+
 private fun Expr.toTokensAsConditionPostfixBase(tokens: TokenStream) {
-    if (Precedence.of(this) < Precedence.Unambiguous || this is Expr.Struct) {
+    if (Precedence.of(this) < Precedence.Unambiguous ||
+        this is Expr.Struct ||
+        this is Expr.BlockExpr && attrs.isEmpty() && label == null ||
+        this is Expr.Break && expr == null ||
+        this is Expr.Return && expr == null ||
+        this is Expr.Yield && expr == null
+    ) {
         io.github.kotlinmania.syn.token.Paren.default().surround(tokens) { inner ->
             toTokens(inner)
         }
@@ -75,7 +112,7 @@ private fun Expr.toTokensAsConditionJumpValue(tokens: TokenStream) {
             toTokens(inner)
         }
     } else {
-        toTokens(tokens)
+        toTokensAsConditionTail(tokens)
     }
 }
 
@@ -85,7 +122,7 @@ private fun Expr.toTokensAsConditionBreakValue(tokens: TokenStream) {
             toTokens(inner)
         }
     } else {
-        toTokensAsOptionalOperand(tokens)
+        toTokensAsConditionTail(tokens)
     }
 }
 
@@ -93,6 +130,7 @@ private fun Expr.toTokensAsOptionalOperand(tokens: TokenStream) {
     when (this) {
         is Expr.Await -> toTokensAsOptionalOperand(tokens)
         is Expr.Call -> toTokensAsOptionalOperand(tokens)
+        is Expr.Closure -> toTokensAsOptionalOperand(tokens)
         is Expr.Field -> toTokensAsOptionalOperand(tokens)
         is Expr.Index -> toTokensAsOptionalOperand(tokens)
         is Expr.MethodCall -> toTokensAsOptionalOperand(tokens)
@@ -103,13 +141,65 @@ private fun Expr.toTokensAsOptionalOperand(tokens: TokenStream) {
 
 private fun Expr.toTokensAsOptionalOperandPostfixBase(tokens: TokenStream) {
     if (Precedence.of(this) < Precedence.Unambiguous ||
-        this is Expr.BlockExpr && attrs.isEmpty() && label == null
+        this is Expr.BlockExpr && attrs.isEmpty() && label == null ||
+        this is Expr.Break && expr == null ||
+        this is Expr.Return && expr == null ||
+        this is Expr.Yield && expr == null
     ) {
         io.github.kotlinmania.syn.token.Paren.default().surround(tokens) { inner ->
             toTokens(inner)
         }
     } else {
         toTokens(tokens)
+    }
+}
+
+private fun Expr.toTokensAsConditionTail(tokens: TokenStream) {
+    if (this is Expr.Break && expr == null ||
+        this is Expr.Path ||
+        this is Expr.Range && end == null ||
+        this is Expr.Return && expr == null ||
+        this is Expr.Yield && expr == null
+    ) {
+        io.github.kotlinmania.syn.token.Paren.default().surround(tokens) { inner ->
+            toTokens(inner)
+        }
+        return
+    }
+
+    when (this) {
+        is Expr.Assign -> toTokensAsConditionTail(tokens)
+        is Expr.Await -> toTokensAsOptionalOperand(tokens)
+        is Expr.Binary -> toTokensAsConditionTail(tokens)
+        is Expr.Break -> toTokensAsConditionTail(tokens)
+        is Expr.Call -> toTokensAsOptionalOperand(tokens)
+        is Expr.Closure -> toTokensAsConditionTail(tokens)
+        is Expr.Field -> toTokensAsOptionalOperand(tokens)
+        is Expr.Index -> toTokensAsOptionalOperand(tokens)
+        is Expr.Let -> toTokensAsConditionTail(tokens)
+        is Expr.MethodCall -> toTokensAsOptionalOperand(tokens)
+        is Expr.Range -> toTokensAsConditionTail(tokens)
+        is Expr.RawAddr -> toTokensAsConditionTail(tokens)
+        is Expr.Reference -> toTokensAsConditionTail(tokens)
+        is Expr.Return -> toTokensAsConditionTail(tokens)
+        is Expr.Try -> toTokensAsOptionalOperand(tokens)
+        is Expr.Unary -> toTokensAsConditionTail(tokens)
+        is Expr.Yield -> toTokensAsConditionTail(tokens)
+        else -> toTokens(tokens)
+    }
+}
+
+private fun Expr.toTokensAsConditionTailOperand(
+    tokens: TokenStream,
+    parentPrecedence: Precedence,
+    position: ExprPosition,
+) {
+    if (needsParens(parentPrecedence, position)) {
+        io.github.kotlinmania.syn.token.Paren.default().surround(tokens) { inner ->
+            toTokens(inner)
+        }
+    } else {
+        toTokensAsConditionTail(tokens)
     }
 }
 
@@ -144,7 +234,14 @@ private fun Expr.toTokensAsOptionalOperandCallee(tokens: TokenStream) {
 }
 
 private fun Expr.toTokensAsRangeStart(tokens: TokenStream) {
-    if (this is Expr.Binary && attrs.isEmpty()) {
+    if (Precedence.of(this).ordinal <= Precedence.Range.ordinal ||
+        endsWithRange() ||
+        this !is Expr.Binary && rightEdgeNeedsGroupBeforeRange()
+    ) {
+        io.github.kotlinmania.syn.token.Paren.default().surround(tokens) { inner ->
+            toTokens(inner)
+        }
+    } else if (this is Expr.Binary && attrs.isEmpty()) {
         toTokensAsRangeStart(tokens)
     } else {
         toTokensWithParens(tokens, Precedence.Range, ExprPosition.LeftOperand)
@@ -152,17 +249,67 @@ private fun Expr.toTokensAsRangeStart(tokens: TokenStream) {
 }
 
 private fun Expr.needsParensAsConditionJumpValue(): Boolean =
-    this is Expr.Break && expr == null ||
+        this is Expr.Assign ||
+        this is Expr.Binary ||
+        this is Expr.BlockExpr && attrs.isEmpty() && label == null ||
+        this is Expr.Break && (expr !is Expr.BlockExpr || expr.attrs.isNotEmpty() || expr.label != null) ||
+        canConsumeTrailingBraceAsStruct() ||
+        this is Expr.Let ||
         this is Expr.Path ||
-        this is Expr.Range && end == null ||
+        this is Expr.Range && (end == null || end.canConsumeTrailingBraceAsStruct()) ||
         this is Expr.Return && expr == null ||
         this is Expr.Yield && expr == null
+
+private fun Expr.canConsumeTrailingBraceAsStruct(): Boolean =
+    when (this) {
+        is Expr.Assign -> right.canConsumeTrailingBraceAsStruct()
+        is Expr.Binary -> right.canConsumeTrailingBraceAsStruct()
+        is Expr.Break -> expr?.canConsumeTrailingBraceAsStruct() == true
+        is Expr.Cast -> false
+        is Expr.Path -> true
+        is Expr.RawAddr -> expr.canConsumeTrailingBraceAsStruct()
+        is Expr.Reference -> expr.canConsumeTrailingBraceAsStruct()
+        is Expr.Range -> end?.canConsumeTrailingBraceAsStruct() == true
+        is Expr.Return -> expr?.canConsumeTrailingBraceAsStruct() == true
+        is Expr.Try -> expr.canConsumeTrailingBraceAsStruct()
+        is Expr.Unary -> expr.canConsumeTrailingBraceAsStruct()
+        is Expr.Yield -> expr?.canConsumeTrailingBraceAsStruct() == true
+        else -> false
+    }
 
 private fun Expr.Await.toTokensAsCondition(tokens: TokenStream) {
     for (attr in attrs) attr.toTokens(tokens)
     base.toTokensAsConditionPostfixBase(tokens)
     dotToken.toTokens(tokens)
     awaitToken.toTokens(tokens)
+}
+
+private fun Expr.Assign.toTokensAsCondition(tokens: TokenStream) {
+    for (attr in attrs) attr.toTokens(tokens)
+    val emit = { target: TokenStream ->
+        left.toTokensWithParens(target, Precedence.Assign, ExprPosition.LeftOperand)
+        eqToken.toTokens(target)
+        right.toTokensAsRightmostConditionOperand(target, Precedence.Assign, ExprPosition.RightOperand)
+    }
+    if (attrs.isNotEmpty()) {
+        io.github.kotlinmania.syn.token.Paren.default().surround(tokens, emit)
+    } else {
+        emit(tokens)
+    }
+}
+
+private fun Expr.Assign.toTokensAsConditionTail(tokens: TokenStream) {
+    for (attr in attrs) attr.toTokens(tokens)
+    val emit = { target: TokenStream ->
+        left.toTokensWithParens(target, Precedence.Assign, ExprPosition.LeftOperand)
+        eqToken.toTokens(target)
+        right.toTokensAsConditionTailOperand(target, Precedence.Assign, ExprPosition.RightOperand)
+    }
+    if (attrs.isNotEmpty()) {
+        io.github.kotlinmania.syn.token.Paren.default().surround(tokens, emit)
+    } else {
+        emit(tokens)
+    }
 }
 
 private fun Expr.Break.toTokensAsCondition(tokens: TokenStream) {
@@ -177,6 +324,71 @@ private fun Expr.Break.toTokensAsCondition(tokens: TokenStream) {
         } else {
             expr.toTokensAsConditionBreakValue(tokens)
         }
+    }
+}
+
+private fun Expr.Break.toTokensAsConditionTail(tokens: TokenStream) {
+    for (attr in attrs) attr.toTokens(tokens)
+    breakToken.toTokens(tokens)
+    label?.toTokens(tokens)
+    if (expr != null) {
+        if (label == null && exprLeadingLabel(expr)) {
+            io.github.kotlinmania.syn.token.Paren.default().surround(tokens) { inner ->
+                expr.toTokens(inner)
+            }
+        } else {
+            expr.toTokensAsConditionTail(tokens)
+        }
+    }
+}
+
+private fun Expr.Binary.toTokensAsCondition(tokens: TokenStream) {
+    for (attr in attrs) attr.toTokens(tokens)
+    val emit = { target: TokenStream ->
+        val precedence = Precedence.ofBinop(op)
+        if (left.isValueLessJump() && binOpCanBeginExpr(op)) {
+            io.github.kotlinmania.syn.token.Paren.default().surround(target) { inner ->
+                left.toTokens(inner)
+            }
+        } else if (left.endsWithRange()) {
+            io.github.kotlinmania.syn.token.Paren.default().surround(target) { inner ->
+                left.toTokens(inner)
+            }
+        } else {
+            left.toTokensWithParens(target, precedence, ExprPosition.LeftOperand)
+        }
+        op.toTokens(target)
+        right.toTokensAsRightmostConditionOperand(target, precedence, ExprPosition.RightOperand)
+    }
+    if (attrs.isNotEmpty()) {
+        io.github.kotlinmania.syn.token.Paren.default().surround(tokens, emit)
+    } else {
+        emit(tokens)
+    }
+}
+
+private fun Expr.Binary.toTokensAsConditionTail(tokens: TokenStream) {
+    for (attr in attrs) attr.toTokens(tokens)
+    val emit = { target: TokenStream ->
+        val precedence = Precedence.ofBinop(op)
+        if (left.isValueLessJump() && binOpCanBeginExpr(op)) {
+            io.github.kotlinmania.syn.token.Paren.default().surround(target) { inner ->
+                left.toTokens(inner)
+            }
+        } else if (left.endsWithRange()) {
+            io.github.kotlinmania.syn.token.Paren.default().surround(target) { inner ->
+                left.toTokens(inner)
+            }
+        } else {
+            left.toTokensWithParens(target, precedence, ExprPosition.LeftOperand)
+        }
+        op.toTokens(target)
+        right.toTokensAsConditionTailOperand(target, precedence, ExprPosition.RightOperand)
+    }
+    if (attrs.isNotEmpty()) {
+        io.github.kotlinmania.syn.token.Paren.default().surround(tokens, emit)
+    } else {
+        emit(tokens)
     }
 }
 
@@ -198,6 +410,22 @@ private fun Expr.Closure.toTokensAsCondition(tokens: TokenStream) {
     or2Token.toTokens(tokens)
     output.toTokens(tokens)
     body.toTokensWithParens(tokens, Precedence.MIN, ExprPosition.Condition)
+}
+
+private fun Expr.Closure.toTokensAsConditionTail(tokens: TokenStream) {
+    for (attr in attrs) attr.toTokens(tokens)
+    constness?.toTokens(tokens)
+    asyncness?.toTokens(tokens)
+    capture?.toTokens(tokens)
+    or1Token.toTokens(tokens)
+    inputs.toTokens(tokens)
+    or2Token.toTokens(tokens)
+    output.toTokens(tokens)
+    body.toTokensAsConditionTail(tokens)
+}
+
+private fun Expr.Closure.toTokensAsOptionalOperand(tokens: TokenStream) {
+    toTokensAsConditionTail(tokens)
 }
 
 private fun Expr.Await.toTokensAsOptionalOperand(tokens: TokenStream) {
@@ -235,6 +463,22 @@ private fun Expr.Index.toTokensAsCondition(tokens: TokenStream) {
     bracketToken.surround(tokens) { inner -> index.toTokens(inner) }
 }
 
+private fun Expr.Let.toTokensAsCondition(tokens: TokenStream) {
+    for (attr in attrs) attr.toTokens(tokens)
+    letToken.toTokens(tokens)
+    pat.toTokens(tokens)
+    eqToken.toTokens(tokens)
+    expr.toTokensAsRightmostConditionOperand(tokens, Precedence.Let, ExprPosition.RightOperand)
+}
+
+private fun Expr.Let.toTokensAsConditionTail(tokens: TokenStream) {
+    for (attr in attrs) attr.toTokens(tokens)
+    letToken.toTokens(tokens)
+    pat.toTokens(tokens)
+    eqToken.toTokens(tokens)
+    expr.toTokensAsConditionTailOperand(tokens, Precedence.Let, ExprPosition.RightOperand)
+}
+
 private fun Expr.Index.toTokensAsOptionalOperand(tokens: TokenStream) {
     for (attr in attrs) attr.toTokens(tokens)
     expr.toTokensAsOptionalOperandPostfixBase(tokens)
@@ -269,6 +513,50 @@ private fun Expr.Return.toTokensAsCondition(tokens: TokenStream) {
     expr?.toTokensAsConditionJumpValue(tokens)
 }
 
+private fun Expr.Range.toTokensAsCondition(tokens: TokenStream) {
+    for (attr in attrs) attr.toTokens(tokens)
+    start?.toTokensAsRangeStart(tokens)
+    limits.toTokens(tokens)
+    end?.toTokensAsRightmostConditionOperand(tokens, Precedence.Range, ExprPosition.RightOperand)
+}
+
+private fun Expr.Range.toTokensAsConditionTail(tokens: TokenStream) {
+    for (attr in attrs) attr.toTokens(tokens)
+    start?.toTokensAsRangeStart(tokens)
+    limits.toTokens(tokens)
+    end?.toTokensAsConditionTailOperand(tokens, Precedence.Range, ExprPosition.RightOperand)
+}
+
+private fun Expr.RawAddr.toTokensAsCondition(tokens: TokenStream) {
+    for (attr in attrs) attr.toTokens(tokens)
+    andToken.toTokens(tokens)
+    raw.toTokens(tokens)
+    mutability.toTokens(tokens)
+    expr.toTokensAsRightmostConditionOperand(tokens, Precedence.Prefix, ExprPosition.PrefixOperand)
+}
+
+private fun Expr.RawAddr.toTokensAsConditionTail(tokens: TokenStream) {
+    for (attr in attrs) attr.toTokens(tokens)
+    andToken.toTokens(tokens)
+    raw.toTokens(tokens)
+    mutability.toTokens(tokens)
+    expr.toTokensAsConditionTailOperand(tokens, Precedence.Prefix, ExprPosition.PrefixOperand)
+}
+
+private fun Expr.Reference.toTokensAsCondition(tokens: TokenStream) {
+    for (attr in attrs) attr.toTokens(tokens)
+    andToken.toTokens(tokens)
+    mutability?.toTokens(tokens)
+    expr.toTokensAsRightmostConditionOperand(tokens, Precedence.Prefix, ExprPosition.PrefixOperand)
+}
+
+private fun Expr.Reference.toTokensAsConditionTail(tokens: TokenStream) {
+    for (attr in attrs) attr.toTokens(tokens)
+    andToken.toTokens(tokens)
+    mutability?.toTokens(tokens)
+    expr.toTokensAsConditionTailOperand(tokens, Precedence.Prefix, ExprPosition.PrefixOperand)
+}
+
 private fun Expr.Try.toTokensAsCondition(tokens: TokenStream) {
     for (attr in attrs) attr.toTokens(tokens)
     expr.toTokensAsConditionPostfixBase(tokens)
@@ -287,9 +575,37 @@ private fun Expr.Yield.toTokensAsCondition(tokens: TokenStream) {
     expr?.toTokensAsConditionJumpValue(tokens)
 }
 
+private fun Expr.Return.toTokensAsConditionTail(tokens: TokenStream) {
+    for (attr in attrs) attr.toTokens(tokens)
+    returnToken.toTokens(tokens)
+    expr?.toTokensAsConditionTail(tokens)
+}
+
+private fun Expr.Yield.toTokensAsConditionTail(tokens: TokenStream) {
+    for (attr in attrs) attr.toTokens(tokens)
+    yieldToken.toTokens(tokens)
+    expr?.toTokensAsConditionTail(tokens)
+}
+
+private fun Expr.Unary.toTokensAsCondition(tokens: TokenStream) {
+    for (attr in attrs) attr.toTokens(tokens)
+    op.toTokens(tokens)
+    expr.toTokensAsRightmostConditionOperand(tokens, Precedence.Prefix, ExprPosition.PrefixOperand)
+}
+
+private fun Expr.Unary.toTokensAsConditionTail(tokens: TokenStream) {
+    for (attr in attrs) attr.toTokens(tokens)
+    op.toTokens(tokens)
+    expr.toTokensAsConditionTailOperand(tokens, Precedence.Prefix, ExprPosition.PrefixOperand)
+}
+
 private fun Expr.Binary.toTokensAsRangeStart(tokens: TokenStream) {
     val precedence = Precedence.ofBinop(op)
     if (left.isValueLessJump() && binOpCanBeginExpr(op)) {
+        io.github.kotlinmania.syn.token.Paren.default().surround(tokens) { inner ->
+            left.toTokens(inner)
+        }
+    } else if (left.endsWithRange()) {
         io.github.kotlinmania.syn.token.Paren.default().surround(tokens) { inner ->
             left.toTokens(inner)
         }
@@ -301,6 +617,15 @@ private fun Expr.Binary.toTokensAsRangeStart(tokens: TokenStream) {
         io.github.kotlinmania.syn.token.Paren.default().surround(tokens) { inner ->
             right.toTokens(inner)
         }
+    } else if (right is Expr.Binary &&
+        right.attrs.isEmpty() &&
+        !right.needsParens(precedence, ExprPosition.RightOperand)
+    ) {
+        right.toTokensAsRangeStart(tokens)
+    } else if (right.rightEdgeNeedsGroupBeforeRange()) {
+        io.github.kotlinmania.syn.token.Paren.default().surround(tokens) { inner ->
+            right.toTokens(inner)
+        }
     } else {
         right.toTokensWithParens(tokens, precedence, ExprPosition.RightOperand)
     }
@@ -308,7 +633,9 @@ private fun Expr.Binary.toTokensAsRangeStart(tokens: TokenStream) {
 
 private fun Expr.needsParens(parentPrecedence: Precedence, position: ExprPosition): Boolean {
     if (position == ExprPosition.Condition) {
-        return this is Expr.Struct
+        return this is Expr.Struct ||
+            this is Expr.Return && expr == null ||
+            this is Expr.Yield && expr == null
     }
 
     if (position == ExprPosition.PostfixBase) {
@@ -318,16 +645,11 @@ private fun Expr.needsParens(parentPrecedence: Precedence, position: ExprPositio
             this is Expr.Yield && expr == null
     }
 
-    if ((position == ExprPosition.LeftOperand || position == ExprPosition.RightOperand) &&
-        parentPrecedence == Precedence.Compare &&
-        this is Expr.Range &&
-        start == null &&
-        end == null
-    ) {
-        return false
+    if (position == ExprPosition.LeftOperand && parentPrecedence == Precedence.Assign && this is Expr.Range) {
+        return true
     }
 
-    if (position == ExprPosition.LeftOperand && parentPrecedence == Precedence.Assign && this is Expr.Range) {
+    if (position == ExprPosition.LeftOperand && parentPrecedence == Precedence.Assign && this is Expr.Let) {
         return true
     }
 
@@ -335,7 +657,18 @@ private fun Expr.needsParens(parentPrecedence: Precedence, position: ExprPositio
         return true
     }
 
-    if (position == ExprPosition.RightOperand && this is Expr.Range && start == null) {
+    if (position == ExprPosition.RightOperand &&
+        parentPrecedence == Precedence.Compare &&
+        this is Expr.Range &&
+        start == null
+    ) {
+        return false
+    }
+
+    if (position == ExprPosition.RightOperand &&
+        this is Expr.Range &&
+        start == null
+    ) {
         return false
     }
 
@@ -391,6 +724,33 @@ private fun Expr.isValueLessJump(): Boolean =
     this is Expr.Break && expr == null ||
         this is Expr.Return && expr == null ||
         this is Expr.Yield && expr == null
+
+private fun Expr.endsWithRange(): Boolean =
+    when (this) {
+        is Expr.Assign -> right.endsWithRange()
+        is Expr.Binary -> right.endsWithRange()
+        is Expr.Cast -> expr.endsWithRange()
+        is Expr.Range -> true
+        else -> false
+    }
+
+private fun Expr.rightEdgeNeedsGroupBeforeRange(): Boolean =
+    when (this) {
+        is Expr.Assign -> right.rightEdgeNeedsGroupBeforeRange()
+        is Expr.Binary -> right.isValueLessJump() || right.rightEdgeNeedsGroupBeforeRange()
+        is Expr.Break -> expr?.rightEdgeNeedsGroupBeforeRange() ?: true
+        is Expr.Cast -> expr.rightEdgeNeedsGroupBeforeRange()
+        is Expr.Closure -> body.rightEdgeNeedsGroupBeforeRange()
+        is Expr.Let -> expr.rightEdgeNeedsGroupBeforeRange()
+        is Expr.RawAddr -> expr.rightEdgeNeedsGroupBeforeRange()
+        is Expr.Reference -> expr.rightEdgeNeedsGroupBeforeRange()
+        is Expr.Range -> true
+        is Expr.Return -> expr?.rightEdgeNeedsGroupBeforeRange() ?: true
+        is Expr.Try -> expr.rightEdgeNeedsGroupBeforeRange()
+        is Expr.Unary -> expr.rightEdgeNeedsGroupBeforeRange()
+        is Expr.Yield -> expr?.rightEdgeNeedsGroupBeforeRange() ?: true
+        else -> false
+    }
 
 private fun exprLeadingLabel(expr: Expr): Boolean {
     var current = expr
@@ -503,6 +863,10 @@ public sealed class Expr : ToTokens {
             val emit = { target: TokenStream ->
                 val precedence = Precedence.ofBinop(op)
                 if (left.isValueLessJump() && binOpCanBeginExpr(op)) {
+                    io.github.kotlinmania.syn.token.Paren.default().surround(target) { inner ->
+                        left.toTokens(inner)
+                    }
+                } else if (left.endsWithRange()) {
                     io.github.kotlinmania.syn.token.Paren.default().surround(target) { inner ->
                         left.toTokens(inner)
                     }
