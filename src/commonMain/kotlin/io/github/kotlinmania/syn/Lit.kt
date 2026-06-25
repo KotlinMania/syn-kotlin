@@ -241,7 +241,7 @@ public class LitStr private constructor(
 
 /** A byte string literal: `b"foo"`. */
 public class LitByteStr(
-    public var bytes: List<UByte>,
+    public var bytes: MutableList<UByte>,
     private var spanValue: Span,
     private val suffix: String = "",
     private val literal: Literal? = null,

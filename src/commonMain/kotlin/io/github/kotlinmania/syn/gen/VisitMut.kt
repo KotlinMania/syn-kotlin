@@ -452,9 +452,12 @@ public open class VisitMut {
             data = visitDataMut(di.data),
         )
 
-    public open fun visitBlock(block: Block): Block = block.copy(stmts = block.stmts.map { visitStmtMut(it) })
+    public open fun visitBlock(block: Block): Block = block.copy(stmts = block.stmts.mapTo(mutableListOf()) { visitStmtMut(it) })
 
-    public open fun visitAttributes(attrs: List<Attribute>): List<Attribute> = attrs.map { visitAttributeMut(it) }
+    public open fun visitAttributes(attrs: MutableList<Attribute>): MutableList<Attribute> {
+        for (i in attrs.indices) attrs[i] = visitAttributeMut(attrs[i])
+        return attrs
+    }
 
     public open fun visitSignature(sig: Signature): Signature {
         var result = sig
@@ -1202,7 +1205,7 @@ public open class VisitMut {
 
     public open fun visitBlockMut(block: Block): Block = visitBlock(block)
 
-    public open fun visitAttributesMut(attrs: List<Attribute>): List<Attribute> = visitAttributes(attrs)
+    public open fun visitAttributesMut(attrs: MutableList<Attribute>): MutableList<Attribute> = visitAttributes(attrs)
 
     public open fun visitSignatureMut(sig: Signature): Signature = visitSignature(sig)
 

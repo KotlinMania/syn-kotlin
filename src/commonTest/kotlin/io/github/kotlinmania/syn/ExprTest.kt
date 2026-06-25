@@ -1045,7 +1045,7 @@ class ExprTest {
         iterExprPermutations(nextDepth) { expr ->
             emit(
                 Expr.Closure(
-                    attrs = emptyList(),
+                    attrs = mutableListOf(),
                     constness = null,
                     asyncness = null,
                     capture = null,

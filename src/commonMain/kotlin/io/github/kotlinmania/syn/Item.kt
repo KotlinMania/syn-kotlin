@@ -82,7 +82,7 @@ public sealed class Item : ToTokens {
 
     /** A constant item: `const MAX: UShort = 65535`. */
     public data class Const(
-        public var attrs: List<Attribute>,
+        public var attrs: MutableList<Attribute>,
         public var vis: Visibility,
         public var constToken: io.github.kotlinmania.syn.token.Const,
         public var ident: Ident,
@@ -107,7 +107,7 @@ public sealed class Item : ToTokens {
 
     /** An enum definition. */
     public data class Enum(
-        public var attrs: List<Attribute>,
+        public var attrs: MutableList<Attribute>,
         public var vis: Visibility,
         public var enumToken: io.github.kotlinmania.syn.token.Enum,
         public var ident: Ident,
@@ -129,7 +129,7 @@ public sealed class Item : ToTokens {
 
     /** An `extern crate` item. */
     public data class ExternCrate(
-        public var attrs: List<Attribute>,
+        public var attrs: MutableList<Attribute>,
         public var vis: Visibility,
         public var externToken: io.github.kotlinmania.syn.token.Extern,
         public var crateToken: io.github.kotlinmania.syn.token.Crate,
@@ -150,7 +150,7 @@ public sealed class Item : ToTokens {
 
     /** A free-standing function. */
     public data class Fn(
-        public var attrs: List<Attribute>,
+        public var attrs: MutableList<Attribute>,
         public var vis: Visibility,
         public var sig: Signature,
         public var block: Block?,
@@ -200,11 +200,11 @@ public sealed class Item : ToTokens {
 
     /** A block of foreign items. */
     public data class ForeignMod(
-        public var attrs: List<Attribute>,
+        public var attrs: MutableList<Attribute>,
         public var unsafety: Unsafe?,
         public var abi: Abi,
         public var braceToken: Brace,
-        public var items: List<ForeignItem>,
+        public var items: MutableList<ForeignItem>,
     ) : Item() {
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
@@ -218,7 +218,7 @@ public sealed class Item : ToTokens {
 
     /** A data class definition. */
     public data class Struct(
-        public var attrs: List<Attribute>,
+        public var attrs: MutableList<Attribute>,
         public var vis: Visibility,
         public var structToken: io.github.kotlinmania.syn.token.Struct,
         public var ident: Ident,
@@ -239,7 +239,7 @@ public sealed class Item : ToTokens {
 
     /** A union definition. */
     public data class Union(
-        public var attrs: List<Attribute>,
+        public var attrs: MutableList<Attribute>,
         public var vis: Visibility,
         public var unionToken: io.github.kotlinmania.syn.token.Union,
         public var ident: Ident,
@@ -259,7 +259,7 @@ public sealed class Item : ToTokens {
 
     /** A module or module declaration. */
     public data class Mod(
-        public var attrs: List<Attribute>,
+        public var attrs: MutableList<Attribute>,
         public var vis: Visibility,
         public var unsafety: Unsafe?,
         public var modToken: io.github.kotlinmania.syn.token.Mod,
@@ -278,7 +278,7 @@ public sealed class Item : ToTokens {
 
     /** A use declaration. */
     public data class Use(
-        public var attrs: List<Attribute>,
+        public var attrs: MutableList<Attribute>,
         public var vis: Visibility,
         public var useToken: io.github.kotlinmania.syn.token.Use,
         public var leadingColon: PathSep?,
@@ -297,7 +297,7 @@ public sealed class Item : ToTokens {
 
     /** A static item. */
     public data class Static(
-        public var attrs: List<Attribute>,
+        public var attrs: MutableList<Attribute>,
         public var vis: Visibility,
         public var staticToken: io.github.kotlinmania.syn.token.Static,
         public var mutability: StaticMutability,
@@ -324,7 +324,7 @@ public sealed class Item : ToTokens {
 
     /** A trait definition. */
     public data class Trait(
-        public var attrs: List<Attribute>,
+        public var attrs: MutableList<Attribute>,
         public var vis: Visibility,
         public var unsafety: Unsafe?,
         public var autoToken: io.github.kotlinmania.syn.token.Auto?,
@@ -335,7 +335,7 @@ public sealed class Item : ToTokens {
         public var colonToken: Colon?,
         public var supertraits: TypeParamBoundList,
         public var braceToken: Brace,
-        public var items: List<TraitItem>,
+        public var items: MutableList<TraitItem>,
     ) : Item() {
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
@@ -359,7 +359,7 @@ public sealed class Item : ToTokens {
 
     /** A trait alias. */
     public data class TraitAlias(
-        public var attrs: List<Attribute>,
+        public var attrs: MutableList<Attribute>,
         public var vis: Visibility,
         public var traitToken: io.github.kotlinmania.syn.token.Trait,
         public var ident: Ident,
@@ -383,7 +383,7 @@ public sealed class Item : ToTokens {
 
     /** A type alias. */
     public data class ItemType(
-        public var attrs: List<Attribute>,
+        public var attrs: MutableList<Attribute>,
         public var vis: Visibility,
         public var typeToken: SynTypeToken,
         public var ident: Ident,
@@ -407,7 +407,7 @@ public sealed class Item : ToTokens {
 
     /** An impl block providing trait or associated items. */
     public data class Impl(
-        public var attrs: List<Attribute>,
+        public var attrs: MutableList<Attribute>,
         public var defaultness: Default?,
         public var unsafety: Unsafe?,
         public var implToken: io.github.kotlinmania.syn.token.Impl,
@@ -415,7 +415,7 @@ public sealed class Item : ToTokens {
         public var traitPath: PathTrait?,
         public var selfType: SynType,
         public var braceToken: Brace,
-        public var items: List<ImplItem>,
+        public var items: MutableList<ImplItem>,
     ) : Item() {
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
@@ -438,7 +438,7 @@ public sealed class Item : ToTokens {
 
     /** A macro invocation, including declarative macro definitions. */
     public data class Macro(
-        public var attrs: List<Attribute>,
+        public var attrs: MutableList<Attribute>,
         public var ident: Ident?,
         public var mac: io.github.kotlinmania.syn.Macro,
         public var semiToken: Semi?,
@@ -497,7 +497,7 @@ public fun from(input: Item.Union): DeriveInput =
 public sealed class FnArg : ToTokens {
     /** The receiver argument of an associated method. */
     public data class Receiver(
-        public var attrs: List<Attribute>,
+        public var attrs: MutableList<Attribute>,
         public var reference: AndLifetime?,
         public var mutability: io.github.kotlinmania.syn.token.Mut?,
         public var selfToken: io.github.kotlinmania.syn.token.SelfValue,
@@ -664,7 +664,7 @@ public data class Abi(
 
 /** The variadic argument of a foreign function. */
 public data class Variadic(
-    public var attrs: List<Attribute>,
+    public var attrs: MutableList<Attribute>,
     public var pat: PatColon?,
     public var dots: io.github.kotlinmania.syn.token.DotDotDot,
     public var comma: Comma?,
@@ -700,7 +700,7 @@ public sealed class ImplRestriction : ToTokens
 public sealed class ForeignItem : ToTokens {
     /** A foreign function in an extern block. */
     public data class Fn(
-        public var attrs: List<Attribute>,
+        public var attrs: MutableList<Attribute>,
         public var vis: Visibility,
         public var sig: Signature,
         public var semiToken: Semi,
@@ -715,7 +715,7 @@ public sealed class ForeignItem : ToTokens {
 
     /** A foreign static item in an extern block. */
     public data class Static(
-        public var attrs: List<Attribute>,
+        public var attrs: MutableList<Attribute>,
         public var vis: Visibility,
         public var staticToken: io.github.kotlinmania.syn.token.Static,
         public var mutability: StaticMutability,
@@ -738,7 +738,7 @@ public sealed class ForeignItem : ToTokens {
 
     /** A foreign type in an extern block. */
     public data class ItemType(
-        public var attrs: List<Attribute>,
+        public var attrs: MutableList<Attribute>,
         public var vis: Visibility,
         public var typeToken: SynTypeToken,
         public var ident: Ident,
@@ -758,7 +758,7 @@ public sealed class ForeignItem : ToTokens {
 
     /** A macro invocation within an extern block. */
     public data class Macro(
-        public var attrs: List<Attribute>,
+        public var attrs: MutableList<Attribute>,
         public var mac: io.github.kotlinmania.syn.Macro,
         public var semiToken: Semi?,
     ) : ForeignItem() {
@@ -783,7 +783,7 @@ public sealed class ForeignItem : ToTokens {
 public sealed class TraitItem : ToTokens {
     /** An associated constant within the definition of a trait. */
     public data class Const(
-        public var attrs: List<Attribute>,
+        public var attrs: MutableList<Attribute>,
         public var constToken: io.github.kotlinmania.syn.token.Const,
         public var ident: Ident,
         public var generics: Generics,
@@ -806,7 +806,7 @@ public sealed class TraitItem : ToTokens {
 
     /** An associated function within the definition of a trait. */
     public data class Fn(
-        public var attrs: List<Attribute>,
+        public var attrs: MutableList<Attribute>,
         public var sig: Signature,
         public var default: Block?,
         public var semiToken: Semi?,
@@ -826,7 +826,7 @@ public sealed class TraitItem : ToTokens {
 
     /** An associated type within the definition of a trait. */
     public data class AssocType(
-        public var attrs: List<Attribute>,
+        public var attrs: MutableList<Attribute>,
         public var typeToken: io.github.kotlinmania.syn.token.SynTypeToken,
         public var ident: Ident,
         public var generics: Generics,
@@ -852,7 +852,7 @@ public sealed class TraitItem : ToTokens {
 
     /** A macro invocation within the definition of a trait. */
     public data class Macro(
-        public var attrs: List<Attribute>,
+        public var attrs: MutableList<Attribute>,
         public var mac: io.github.kotlinmania.syn.Macro,
         public var semiToken: Semi?,
     ) : TraitItem() {
@@ -877,7 +877,7 @@ public sealed class TraitItem : ToTokens {
 public sealed class ImplItem : ToTokens {
     /** An associated constant within an impl block. */
     public data class Const(
-        public var attrs: List<Attribute>,
+        public var attrs: MutableList<Attribute>,
         public var vis: Visibility,
         public var defaultness: Default?,
         public var constToken: io.github.kotlinmania.syn.token.Const,
@@ -905,7 +905,7 @@ public sealed class ImplItem : ToTokens {
 
     /** An associated function within an impl block. */
     public data class Fn(
-        public var attrs: List<Attribute>,
+        public var attrs: MutableList<Attribute>,
         public var vis: Visibility,
         public var defaultness: Default?,
         public var sig: Signature,
@@ -924,7 +924,7 @@ public sealed class ImplItem : ToTokens {
 
     /** An associated type within an impl block. */
     public data class AssocType(
-        public var attrs: List<Attribute>,
+        public var attrs: MutableList<Attribute>,
         public var vis: Visibility,
         public var defaultness: Default?,
         public var typeToken: io.github.kotlinmania.syn.token.SynTypeToken,
@@ -950,7 +950,7 @@ public sealed class ImplItem : ToTokens {
 
     /** A macro invocation within an impl block. */
     public data class Macro(
-        public var attrs: List<Attribute>,
+        public var attrs: MutableList<Attribute>,
         public var mac: io.github.kotlinmania.syn.Macro,
         public var semiToken: Semi?,
     ) : ImplItem() {

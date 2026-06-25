@@ -11,8 +11,8 @@ import io.github.kotlinmania.quote.ToTokens
  */
 public data class File(
     public var shebang: String?,
-    public var attrs: List<Attribute>,
-    public var items: List<Item>,
+    public var attrs: MutableList<Attribute>,
+    public var items: MutableList<Item>,
 ) : ToTokens {
     override fun toTokens(tokens: TokenStream) {
         for (attr in attrs) attr.toTokens(tokens)

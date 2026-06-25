@@ -358,7 +358,7 @@ internal fun parseMetaNameValueAfterPath(path: Path, input: ParseStream): SynRes
     val value: Expr =
         if (lit is SynResult.Success && ahead.isEmpty()) {
             input.advanceTo(ahead)
-            Expr.Lit(attrs = emptyList(), lit = lit.value)
+            Expr.Lit(attrs = mutableListOf(), lit = lit.value)
         } else if (input.peek(PoundPeek) && input.peek2(BracketPeek)) {
             return SynResult.failure(input.error("unexpected attribute inside of attribute"))
         } else {

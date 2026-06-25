@@ -86,7 +86,7 @@ public sealed class Pat : ToTokens {
 
     /** A pattern that binds a new variable, optionally with a reference, mutability, and sub-pattern. */
     public data class Ident(
-        public var attrs: List<Attribute>,
+        public var attrs: MutableList<Attribute>,
         public var byRef: io.github.kotlinmania.syn.token.Ref?,
         public var mutability: FieldMutability,
         public var ident: io.github.kotlinmania.procmacro2.Ident,
@@ -109,7 +109,7 @@ public sealed class Pat : ToTokens {
     public data class Tuple(
         public var parenToken: io.github.kotlinmania.syn.token.Paren,
         public var elems: PatList,
-        public var attrs: List<Attribute> = emptyList(),
+        public var attrs: MutableList<Attribute> = mutableListOf(),
     ) : Pat() {
         override fun deepCopy(): Pat =
             copy(attrs = attrs.map { it.deepCopy() }, elems = elems.copy({ it.deepCopy() }, { it }))
@@ -131,7 +131,7 @@ public sealed class Pat : ToTokens {
     public data class Or(
         public var leadingVert: io.github.kotlinmania.syn.token.Or?,
         public var cases: PatList,
-        public var attrs: List<Attribute> = emptyList(),
+        public var attrs: MutableList<Attribute> = mutableListOf(),
     ) : Pat() {
         override fun deepCopy(): Pat =
             copy(attrs = attrs.map { it.deepCopy() }, cases = cases.copy({ it.deepCopy() }, { it }))
@@ -150,7 +150,7 @@ public sealed class Pat : ToTokens {
     public data class PatParen(
         public var parenToken: io.github.kotlinmania.syn.token.Paren,
         public var pat: Pat,
-        public var attrs: List<Attribute> = emptyList(),
+        public var attrs: MutableList<Attribute> = mutableListOf(),
     ) : Pat() {
         override fun deepCopy(): Pat =
             copy(attrs = attrs.map { it.deepCopy() }, pat = pat.deepCopy())
@@ -166,7 +166,7 @@ public sealed class Pat : ToTokens {
         public var andToken: io.github.kotlinmania.syn.token.And,
         public var mutability: FieldMutability,
         public var pat: Pat,
-        public var attrs: List<Attribute> = emptyList(),
+        public var attrs: MutableList<Attribute> = mutableListOf(),
     ) : Pat() {
         override fun deepCopy(): Pat =
             copy(attrs = attrs.map { it.deepCopy() }, andToken = andToken, mutability = mutability, pat = pat.deepCopy())
@@ -187,7 +187,7 @@ public sealed class Pat : ToTokens {
         public var fields: FieldPatList,
         public var rest: PatRest?,
         public var dot2Token: io.github.kotlinmania.syn.token.DotDot?,
-        public var attrs: List<Attribute> = emptyList(),
+        public var attrs: MutableList<Attribute> = mutableListOf(),
     ) : Pat() {
         override fun deepCopy(): Pat =
             copy(
@@ -225,7 +225,7 @@ public sealed class Pat : ToTokens {
     public data class Slice(
         public var bracketToken: io.github.kotlinmania.syn.token.Bracket,
         public var elems: PatList,
-        public var attrs: List<Attribute> = emptyList(),
+        public var attrs: MutableList<Attribute> = mutableListOf(),
     ) : Pat() {
         override fun deepCopy(): Pat =
             copy(attrs = attrs.map { it.deepCopy() }, elems = elems.copy({ it.deepCopy() }, { it }))
@@ -240,7 +240,7 @@ public sealed class Pat : ToTokens {
 
     /** A type ascription pattern. */
     public data class TypeAscription(
-        public var attrs: List<Attribute>,
+        public var attrs: MutableList<Attribute>,
         public var pat: Pat,
         public var colonToken: Colon,
         public var ty: SynType,
@@ -257,7 +257,7 @@ public sealed class Pat : ToTokens {
 
     /** A const block pattern: `const { ... }`. */
     public data class Const(
-        public var attrs: List<Attribute>,
+        public var attrs: MutableList<Attribute>,
         public var constToken: io.github.kotlinmania.syn.token.Const,
         public var block: Block,
     ) : Pat() {
@@ -272,7 +272,7 @@ public sealed class Pat : ToTokens {
 
     /** A literal pattern: `0`. */
     public data class Lit(
-        public var attrs: List<Attribute>,
+        public var attrs: MutableList<Attribute>,
         public var lit: io.github.kotlinmania.syn.Lit,
     ) : Pat() {
         override fun deepCopy(): Pat = copy(attrs = attrs.map { it.deepCopy() }, lit = lit)
@@ -285,7 +285,7 @@ public sealed class Pat : ToTokens {
 
     /** A macro invocation in pattern position. */
     public data class Macro(
-        public var attrs: List<Attribute>,
+        public var attrs: MutableList<Attribute>,
         public var mac: io.github.kotlinmania.syn.Macro,
     ) : Pat() {
         override fun deepCopy(): Pat = copy(attrs = attrs.map { it.deepCopy() }, mac = mac.deepCopy())
@@ -298,7 +298,7 @@ public sealed class Pat : ToTokens {
 
     /** A path pattern like `Color::Red`, optionally qualified with a self-type. */
     public data class Path(
-        public var attrs: List<Attribute>,
+        public var attrs: MutableList<Attribute>,
         public var qself: QSelf?,
         public var path: io.github.kotlinmania.syn.Path,
     ) : Pat() {
@@ -318,7 +318,7 @@ public sealed class Pat : ToTokens {
 
     /** A range pattern: `1..=2`. */
     public data class Range(
-        public var attrs: List<Attribute>,
+        public var attrs: MutableList<Attribute>,
         public var start: Expr?,
         public var limits: RangeLimits,
         public var end: Expr?,
@@ -335,7 +335,7 @@ public sealed class Pat : ToTokens {
 
     /** The dots in a tuple or slice pattern: `[0, 1, ..]`. */
     public data class Rest(
-        public var attrs: List<Attribute>,
+        public var attrs: MutableList<Attribute>,
         public var dot2Token: io.github.kotlinmania.syn.token.DotDot,
     ) : Pat() {
         override fun deepCopy(): Pat = copy(attrs = attrs.map { it.deepCopy() })
@@ -348,7 +348,7 @@ public sealed class Pat : ToTokens {
 
     /** A tuple struct or tuple variant pattern: `Variant(x, y, .., z)`. */
     public data class TupleStruct(
-        public var attrs: List<Attribute>,
+        public var attrs: MutableList<Attribute>,
         public var qself: QSelf?,
         public var path: io.github.kotlinmania.syn.Path,
         public var parenToken: io.github.kotlinmania.syn.token.Paren,
@@ -371,7 +371,7 @@ public sealed class Pat : ToTokens {
 
     /** A pattern that matches any value. */
     public data class Wild(
-        public var attrs: List<Attribute>,
+        public var attrs: MutableList<Attribute>,
         public var underscoreToken: Underscore,
     ) : Pat() {
         override fun deepCopy(): Pat = copy(attrs = attrs.map { it.deepCopy() })
@@ -399,7 +399,7 @@ public data class FieldPat(
     public var member: Member,
     public var colonToken: Colon?,
     public var pat: Pat,
-    public var attrs: List<Attribute> = emptyList(),
+    public var attrs: MutableList<Attribute> = mutableListOf(),
 ) : ToTokens {
     override fun toTokens(tokens: TokenStream) {
         for (attr in attrs) attr.toTokens(tokens)
@@ -417,7 +417,7 @@ public data class FieldPat(
 /** The rest pattern in a data-object pattern. */
 public data class PatRest(
     public var dot2Token: io.github.kotlinmania.syn.token.DotDot?,
-    public var attrs: List<Attribute> = emptyList(),
+    public var attrs: MutableList<Attribute> = mutableListOf(),
 ) : ToTokens {
     override fun toTokens(tokens: TokenStream) {
         for (attr in attrs) attr.toTokens(tokens)
@@ -430,7 +430,7 @@ public data class PatRest(
 
 /** A type ascription pattern. */
 public data class PatType(
-    public var attrs: List<Attribute>,
+    public var attrs: MutableList<Attribute>,
     public var pat: Pat,
     public var colonToken: Colon,
     public var ty: SynType,
@@ -466,7 +466,7 @@ private fun multiPatImpl(
             cases.pushPunct(OrParse.parse(input).getOrElse { return SynResult.failure(it) })
             cases.pushValue(Pat.parseSingle(input).getOrElse { return SynResult.failure(it) })
         }
-        pat = Pat.Or(leadingVert = leadingVert, cases = cases, attrs = emptyList())
+        pat = Pat.Or(leadingVert = leadingVert, cases = cases, attrs = mutableListOf())
     }
     return SynResult.success(pat)
 }
@@ -479,7 +479,7 @@ private fun patPathOrMacroOrStructOrRange(input: ParseStream): SynResult<Pat> {
         val (delimiter, tokens) = parseDelimiter(input).getOrElse { return SynResult.failure(it) }
         return SynResult.success(
             Pat.Macro(
-                attrs = emptyList(),
+                attrs = mutableListOf(),
                 mac = Macro(path, bangToken, delimiter, tokens),
             ),
         )
@@ -618,7 +618,7 @@ private fun patRange(
     }
     return SynResult.success(
         Pat.Range(
-            attrs = emptyList(),
+            attrs = mutableListOf(),
             start = Expr.Path(emptyList(), qself, path),
             limits = limits,
             end = end?.intoExpr(),

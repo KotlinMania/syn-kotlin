@@ -444,7 +444,7 @@ public sealed class GenericParam : ToTokens {
     }
 
     public data class LifetimeParam(
-        public var attrs: List<Attribute>,
+        public var attrs: MutableList<Attribute>,
         public var lifetime: Lifetime,
         public var colonToken: Colon?,
         public var bounds: LifetimeList,
@@ -487,7 +487,7 @@ public sealed class GenericParam : ToTokens {
     }
 
     public data class TypeParam(
-        public var attrs: List<Attribute>,
+        public var attrs: MutableList<Attribute>,
         public var ident: Ident,
         public var colonToken: Colon?,
         public var bounds: TypeParamBoundList,
@@ -554,7 +554,7 @@ public sealed class GenericParam : ToTokens {
     }
 
     public data class ConstParam(
-        public var attrs: List<Attribute>,
+        public var attrs: MutableList<Attribute>,
         public var constToken: io.github.kotlinmania.syn.token.Const,
         public var ident: Ident,
         public var colonToken: Colon,
