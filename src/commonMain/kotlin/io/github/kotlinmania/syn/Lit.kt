@@ -188,6 +188,9 @@ public class LitStr private constructor(
     public fun value(): String =
         cooked
 
+    public fun <T> parse(parser: (ParseStream) -> SynResult<T>): SynResult<T> =
+        parseWith(parser)
+
     public fun <T> parseWith(parser: (ParseStream) -> SynResult<T>): SynResult<T> {
         val span = span()
         val tokenStream =

@@ -34,31 +34,18 @@ public data class Attribute(
     public fun path(): Path =
         meta.path()
 
-    public fun <T> parseArgsWith(parser: (ParseStream) -> SynResult<T>): SynResult<T> =
-        when (val metaValue = meta) {
-            is Meta.PathMeta -> {
-                val first = metaValue.path.segments.first()?.ident?.span() ?: Span.callSite()
-                val last = metaValue.path.segments.last()?.ident?.span() ?: first
-                SynResult.failure(
-                    SynError.new2(
-                        first,
-                        last,
-                        "expected attribute arguments in parentheses: ${DisplayAttrStyle(style)}[${DisplayPath(metaValue.path)}(...)]",
-                    ),
-                )
-            }
-            is Meta.NameValue ->
-                SynResult.failure(
-                    SynError.new(
-                        metaValue.eqToken.span,
-                        "expected parentheses: ${DisplayAttrStyle(style)}[${DisplayPath(metaValue.path)}(...)]",
-                    ),
-                )
-            is Meta.List -> metaValue.parseArgsWith(parser)
-        }
+    public fun <T> parseArgs(parser: (ParseStream) -> SynResult<T>): SynResult<T> =
+        parseArgsWith(parser)
 
-    public fun parseNestedMeta(logic: (ParseNestedMeta) -> SynResult<Unit>): SynResult<Unit> =
-        parseArgsWith(parser(logic))
+    public fun <T> parseArgsWith(parser: (ParseStream) -> SynResult<T>): SynResult<T> {
+        val metaList = metaListForArgs().getOrElse { return SynResult.failure(it) }
+        return metaList.parseArgsWith(parser)
+    }
+
+    public fun parseNestedMeta(logic: (ParseNestedMeta) -> SynResult<Unit>): SynResult<Unit> {
+        val metaList = metaListForArgs().getOrElse { return SynResult.failure(it) }
+        return metaList.parseNestedMeta(logic)
+    }
 
     public fun deepCopy(): Attribute =
         copy(meta = meta.copy())
@@ -70,15 +57,51 @@ public data class Attribute(
     public fun fmt(): String = toString()
 }
 
+private fun Attribute.metaListForArgs(): SynResult<Meta.List> =
+    when (val metaValue = meta) {
+        is Meta.PathMeta -> {
+            val first =
+                metaValue.path
+                    .segments
+                    .first()
+                    ?.ident
+                    ?.span()
+                    ?: Span.callSite()
+            val last =
+                metaValue.path
+                    .segments
+                    .last()
+                    ?.ident
+                    ?.span()
+                    ?: first
+            SynResult.failure(
+                SynError.new2(
+                    first,
+                    last,
+                    "expected attribute arguments in parentheses: ${DisplayAttrStyle(style)}[${DisplayPath(metaValue.path)}(...)]",
+                ),
+            )
+        }
+        is Meta.NameValue ->
+            SynResult.failure(
+                SynError.new(
+                    metaValue.eqToken.span,
+                    "expected parentheses: ${DisplayAttrStyle(style)}[${DisplayPath(metaValue.path)}(...)]",
+                ),
+            )
+        is Meta.List -> SynResult.success(metaValue)
+    }
+
 public object AttributeParse {
     fun parse(input: ParseStream): SynResult<Attribute> =
         parseAttribute(input)
 }
 
 internal fun parseInnerAttributes(input: ParseStream): SynResult<List<Attribute>> =
-    mutableListOf<Attribute>().also { attrs ->
-        parseInner(input, attrs).getOrElse { return SynResult.failure(it) }
-    }.let { SynResult.success(it) }
+    mutableListOf<Attribute>()
+        .also { attrs ->
+            parseInner(input, attrs).getOrElse { return SynResult.failure(it) }
+        }.let { SynResult.success(it) }
 
 internal fun parseOuterAttributes(input: ParseStream): SynResult<List<Attribute>> {
     val attrs = mutableListOf<Attribute>()
@@ -177,11 +200,14 @@ public sealed class Meta : ToTokens {
         val delimiter: MacroDelimiter,
         val tokens: TokenStream,
     ) : Meta() {
+        public fun <T> parseArgs(parser: (ParseStream) -> SynResult<T>): SynResult<T> =
+            parseArgsWith(parser)
+
         public fun <T> parseArgsWith(parser: (ParseStream) -> SynResult<T>): SynResult<T> =
             parseScoped(parser, delimiter.closeSpan(), tokens)
 
         public fun parseNestedMeta(logic: (ParseNestedMeta) -> SynResult<Unit>): SynResult<Unit> =
-            parseArgsWith(parser(logic))
+            parseScoped(parser(logic), delimiter.closeSpan(), tokens)
 
         override fun toTokens(tokens: TokenStream) {
             path.toTokens(tokens)
@@ -219,8 +245,20 @@ public sealed class Meta : ToTokens {
         when (this) {
             is List -> SynResult.success(this)
             is PathMeta -> {
-                val first = path.segments.first()?.ident?.span() ?: Span.callSite()
-                val last = path.segments.last()?.ident?.span() ?: first
+                val first =
+                    path
+                        .segments
+                        .first()
+                        ?.ident
+                        ?.span()
+                        ?: Span.callSite()
+                val last =
+                    path
+                        .segments
+                        .last()
+                        ?.ident
+                        ?.span()
+                        ?: first
                 SynResult.failure(
                     SynError.new2(
                         first,
@@ -236,8 +274,20 @@ public sealed class Meta : ToTokens {
         when (this) {
             is NameValue -> SynResult.success(this)
             is PathMeta -> {
-                val first = path.segments.first()?.ident?.span() ?: Span.callSite()
-                val last = path.segments.last()?.ident?.span() ?: first
+                val first =
+                    path
+                        .segments
+                        .first()
+                        ?.ident
+                        ?.span()
+                        ?: Span.callSite()
+                val last =
+                    path
+                        .segments
+                        .last()
+                        ?.ident
+                        ?.span()
+                        ?: first
                 SynResult.failure(
                     SynError.new2(
                         first,

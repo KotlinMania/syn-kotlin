@@ -112,7 +112,7 @@ class AttributeTest {
     @Test
     fun testParseArgs() {
         val attr = parseOuterAttribute("#[precondition(value < 5)]")
-        val expr = attr.parseArgsWith(ExprParse::parse).getOrThrow()
+        val expr = attr.parseArgs(ExprParse::parse).getOrThrow()
         assertIs<Expr.Binary>(expr)
     }
 
@@ -147,9 +147,8 @@ class AttributeTest {
     }
 }
 
-private fun parseOuterMeta(input: String): Meta {
-    return parseOuterAttribute(input).meta
-}
+private fun parseOuterMeta(input: String): Meta =
+    parseOuterAttribute(input).meta
 
 private fun parseOuterAttribute(input: String): Attribute {
     val attrs = parseStr(::parseOuterAttributes, input).getOrThrow()

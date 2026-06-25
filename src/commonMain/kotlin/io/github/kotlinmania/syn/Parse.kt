@@ -27,17 +27,17 @@ import io.github.kotlinmania.quote.ToTokens
  * to parse these syntax tree data structures from a token stream.
  *
  * Once parser functions have been defined, they can be called conveniently from a
- * procedural-macro handler through [parseMacroInput] as shown at the bottom of the
- * snippet. If the caller provides syntactically invalid input to the
+ * procedural-macro handler through [parseMacroInput] or through the token-stream
+ * parsing helpers. If the caller provides syntactically invalid input to the
  * procedural-macro handler, they will receive a helpful compiler error message
  * pointing out the exact token that triggered the failure to parse.
  *
  * ## The `parse*` functions
  *
- * The top-level `parse`, `parse2`, and `parseStr` helpers serve as entry
- * points for parsing syntax tree nodes that can be parsed in an obvious
- * default way. These functions accept parser functions with the signature
- * `(ParseStream) -> SynResult<T>`, which includes most types in Syn.
+ * The top-level `parse2` and `parseStr` helpers serve as entry points for
+ * parsing syntax tree nodes from a token stream or string. These functions
+ * accept parser functions with the signature `(ParseStream) -> SynResult<T>`,
+ * which includes most types in Syn.
  *
  * ## Parser functions
  *
@@ -52,7 +52,7 @@ import io.github.kotlinmania.quote.ToTokens
  *
  * In these cases the types provide a choice of parser functions rather than a
  * single default parser function, and those parser functions can be invoked
- * through the top-level `parse*` helpers or their function extensions.
+ * directly or through the top-level `parse*` helpers.
  */
 
 /**
@@ -79,7 +79,7 @@ public typealias ParseStream = ParseBuffer
  *
  * - The [parseMacroInput] helper if parsing input of a procedural-macro handler;
  * - One of the top-level `parse*` functions; or
- * - A typed parser function's `parse2` or `parseStr` extension.
+ * - A concrete parser-specific entry point.
  */
 public class ParseBuffer internal constructor(
     internal val scope: Span,

@@ -4,20 +4,20 @@ package io.github.kotlinmania.syn
 
 import io.github.kotlinmania.procmacro2.TokenStream
 
-public sealed class ParseMacroSynResult {
-    public data class Success(
-        public val value: Any?,
-    ) : ParseMacroSynResult()
+public sealed class ParseMacroSynResult<out T> {
+    public data class Success<out T>(
+        public val value: T,
+    ) : ParseMacroSynResult<T>()
 
-    public data class CompileError(
+    public data class CompileError<out T>(
         public val tokens: TokenStream,
-    ) : ParseMacroSynResult()
+    ) : ParseMacroSynResult<T>()
 }
 
 public fun <T> parseMacroInput(
     tokens: TokenStream,
     parser: (ParseStream) -> SynResult<T>,
-): ParseMacroSynResult {
+): ParseMacroSynResult<T> {
     val result = parse2(parser, tokens)
     if (result.isSuccess) {
         return ParseMacroSynResult.Success(result.getOrThrow())
@@ -28,16 +28,8 @@ public fun <T> parseMacroInput(
     return ParseMacroSynResult.CompileError(syntaxError.toCompileError())
 }
 
-public fun parseMacroInputWith(
+public fun <T> parseMacroInputWith(
     tokens: TokenStream,
-    parser: (ParseStream) -> SynResult<Any?>,
-): ParseMacroSynResult {
-    val result = parse2(parser, tokens)
-    if (result.isSuccess) {
-        return ParseMacroSynResult.Success(result.getOrThrow())
-    }
-    val syntaxError =
-        result.exceptionOrNull()
-            ?: error("parseMacroInputWith parser returned no failure error")
-    return ParseMacroSynResult.CompileError(syntaxError.toCompileError())
-}
+    parser: (ParseStream) -> SynResult<T>,
+): ParseMacroSynResult<T> =
+    parseMacroInput(tokens, parser)
