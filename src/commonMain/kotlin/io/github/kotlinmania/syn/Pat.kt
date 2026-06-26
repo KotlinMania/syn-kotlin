@@ -785,7 +785,7 @@ private fun parsePatConstExpr(input: ParseStream): SynResult<Expr.Const> {
     var braces = braced(input).getOrElse { return SynResult.failure(it) }
     var stmts = parseWithin(braces.content).getOrElse { return SynResult.failure(it) }
     braces.content.finishChildBuffer()
-    return SynResult.success(Expr.Const(mutableListOf(), constToken, Block(braces.token, stmts)))
+    return SynResult.success(Expr.Const(mutableListOf(), constToken, Block(braces.token, stmts.toMutableList())))
 }
 
 private fun parsePatRangeLimitsObsolete(input: ParseStream): SynResult<RangeLimits> {

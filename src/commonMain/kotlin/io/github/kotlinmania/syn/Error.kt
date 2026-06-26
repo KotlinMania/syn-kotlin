@@ -33,12 +33,12 @@ import io.github.kotlinmania.quote.append
 public sealed class SynResult<out T> {
     /** Successful parse result carrying the parsed value. */
     public class Success<out T>(
-        public var value: T,
+        public val value: T,
     ) : SynResult<T>()
 
     /** Failed parse result carrying a syn [SynError]. */
     public class Failure<out T>(
-        public var error: SynError,
+        public val error: SynError,
     ) : SynResult<T>()
 
     /** `true` when this is a [Success]. */

@@ -2376,7 +2376,7 @@ public fun multiIndex(e: Expr, dotToken: io.github.kotlinmania.syn.token.Dot, fl
 
 @JvmInline
 internal value class AllowStruct(
-    var value: Boolean,
+    val value: Boolean,
 )
 
 public fun parseWithoutEagerBrace(input: ParseStream): SynResult<Expr> =

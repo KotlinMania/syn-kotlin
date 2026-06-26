@@ -249,7 +249,7 @@ public class LitByteStr(
     private val literal: Literal? = null,
 ) : ToTokens {
     public companion object {
-        public fun new(value: List<UByte>, span: Span): LitByteStr =
+        public fun new(value: MutableList<UByte>, span: Span): LitByteStr =
             LitByteStr(value, span)
     }
 
@@ -622,7 +622,7 @@ private data class StringLiteralParts(
 )
 
 private data class ByteStringLiteralParts(
-    var value: List<UByte>,
+    var value: MutableList<UByte>,
     var suffix: String,
 )
 

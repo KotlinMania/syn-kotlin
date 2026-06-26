@@ -19,7 +19,7 @@ public data class File(
         for (item in items) item.toTokens(tokens)
     }
 
-    public fun deepCopy(): File = File(shebang, attrs.mapTo(mutableListOf()) { it.deepCopy() }, items.map { it })
+    public fun deepCopy(): File = File(shebang, attrs.mapTo(mutableListOf()) { it.deepCopy() }, items.toMutableList())
 }
 
 public object FileParse {

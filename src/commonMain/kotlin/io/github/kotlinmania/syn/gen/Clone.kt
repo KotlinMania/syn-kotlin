@@ -1,8 +1,10 @@
 // port-lint: source gen/clone.rs
 package io.github.kotlinmania.syn.gen
 
+import io.github.kotlinmania.syn.AndLifetime
 import io.github.kotlinmania.syn.Abi
 import io.github.kotlinmania.syn.Arm
+import io.github.kotlinmania.syn.AsIdent
 import io.github.kotlinmania.syn.AssocConst
 import io.github.kotlinmania.syn.AssocType
 import io.github.kotlinmania.syn.AttrStyle
@@ -20,6 +22,8 @@ import io.github.kotlinmania.syn.DataStruct
 import io.github.kotlinmania.syn.DataUnion
 import io.github.kotlinmania.syn.DeriveInput
 import io.github.kotlinmania.syn.EqExpr
+import io.github.kotlinmania.syn.EqSynType
+import io.github.kotlinmania.syn.ElseExpr
 import io.github.kotlinmania.syn.Expr
 import io.github.kotlinmania.syn.Field
 import io.github.kotlinmania.syn.FieldMutability
@@ -35,6 +39,7 @@ import io.github.kotlinmania.syn.GenericArgument
 import io.github.kotlinmania.syn.GenericParam
 import io.github.kotlinmania.syn.Generics
 import io.github.kotlinmania.syn.Ident
+import io.github.kotlinmania.syn.IdentColon
 import io.github.kotlinmania.syn.ImplItem
 import io.github.kotlinmania.syn.ImplRestriction
 import io.github.kotlinmania.syn.Index
@@ -42,12 +47,14 @@ import io.github.kotlinmania.syn.Item
 import io.github.kotlinmania.syn.Label
 import io.github.kotlinmania.syn.Lifetime
 import io.github.kotlinmania.syn.Lit
+import io.github.kotlinmania.syn.LocalInit
 import io.github.kotlinmania.syn.Macro
 import io.github.kotlinmania.syn.MacroDelimiter
 import io.github.kotlinmania.syn.Member
 import io.github.kotlinmania.syn.Meta
 import io.github.kotlinmania.syn.ModContent
 import io.github.kotlinmania.syn.Pat
+import io.github.kotlinmania.syn.PatColon
 import io.github.kotlinmania.syn.PatRest
 import io.github.kotlinmania.syn.PatType
 import io.github.kotlinmania.syn.Path
@@ -810,6 +817,24 @@ public fun WherePredicate.clone(): WherePredicate =
         is WherePredicate.TypePredicate -> WherePredicate.TypePredicate(lifetimes?.clone(), boundedTy.clone(), colonToken, bounds.copy({ it.clone() }, { it }))
         is WherePredicate.LifetimePredicate -> WherePredicate.LifetimePredicate(lifetime.clone(), colonToken, bounds.copy({ it.clone() }, { it }))
     }
+
+public fun EqExpr.clone(): EqExpr = EqExpr(eqToken, expr.clone())
+
+public fun EqSynType.clone(): EqSynType = EqSynType(eqToken, type.clone())
+
+public fun ElseExpr.clone(): ElseExpr = ElseExpr(elseToken, expr.clone())
+
+public fun IfExpr.clone(): IfExpr = IfExpr(ifToken, expr.clone())
+
+public fun AndLifetime.clone(): AndLifetime = AndLifetime(andToken, lifetime?.clone())
+
+public fun AsIdent.clone(): AsIdent = AsIdent(asToken, Ident.new(ident.toString(), ident.span()))
+
+public fun IdentColon.clone(): IdentColon = IdentColon(Ident.new(ident.toString(), ident.span()), colonToken)
+
+public fun PatColon.clone(): PatColon = PatColon(pat.clone(), colonToken)
+
+public fun LocalInit.clone(): LocalInit = LocalInit(eqToken, expr.clone(), diverge?.clone())
 
 internal fun <T> MutableList<T>.cloneList(): MutableList<T> =
     mapTo(mutableListOf()) { it }
