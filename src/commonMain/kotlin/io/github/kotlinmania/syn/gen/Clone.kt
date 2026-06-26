@@ -53,6 +53,7 @@ import io.github.kotlinmania.syn.Path
 import io.github.kotlinmania.syn.PathArguments
 import io.github.kotlinmania.syn.PathSegment
 import io.github.kotlinmania.syn.PointerMutability
+import io.github.kotlinmania.syn.QSelf
 import io.github.kotlinmania.syn.RangeLimits
 import io.github.kotlinmania.syn.ReturnType
 import io.github.kotlinmania.syn.Signature
@@ -69,6 +70,9 @@ import io.github.kotlinmania.procmacro2.TokenStream
 
 public fun Abi.clone(): Abi =
     Abi(externToken, name?.clone())
+
+public fun QSelf.clone(): QSelf =
+    QSelf(ltToken, ty.clone(), position, asToken, gtToken)
 
 public fun PathArguments.AngleBracketed.clone(): PathArguments.AngleBracketed =
     PathArguments.AngleBracketed(colon2Token, ltToken, args.copy({ it.clone() }, { it }), gtToken)
@@ -273,7 +277,7 @@ public fun Expr.Match.clone(): Expr.Match =
     Expr.Match(attrs.cloneList(), matchToken, expr.clone(), braceToken, arms.cloneList())
 
 public fun Expr.MethodCall.clone(): Expr.MethodCall =
-    Expr.MethodCall(attrs.cloneList(), receiver.clone(), dotToken, method.clone(), turbofish?.let { it.clone() }, parenToken, args.copy({ it.clone() }, { it }))
+    Expr.MethodCall(attrs.cloneList(), receiver.clone(), dotToken, Ident.new(method.toString(), method.span()), turbofish?.let { it.clone() }, parenToken, args.copy({ it.clone() }, { it }))
 
 public fun Expr.Paren.clone(): Expr.Paren =
     Expr.Paren(attrs.cloneList(), parenToken, expr.clone())
