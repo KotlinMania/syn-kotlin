@@ -786,7 +786,7 @@ public fun TypeParamBound.clone(): TypeParamBound =
 public fun UnOp.clone(): UnOp =
     when (this) {
         is UnOp.Deref -> this
-        is UnOp.Not -> this
+        is UnOp.NotOp -> this
         is UnOp.Neg -> this
     }
 
@@ -796,7 +796,7 @@ public fun Variant.clone(): Variant =
 public fun Visibility.clone(): Visibility =
     when (this) {
         is Visibility.Public -> this
-        is Visibility.Restricted -> Visibility.Restricted(pubToken, parenToken, path.clone())
+        is Visibility.Restricted -> Visibility.Restricted(pubToken, parenToken, inToken, path.clone())
         is Visibility.Inherited -> Visibility.Inherited
     }
 
@@ -811,3 +811,6 @@ public fun WherePredicate.clone(): WherePredicate =
 
 internal fun <T> MutableList<T>.cloneList(): MutableList<T> =
     mapTo(mutableListOf()) { it }
+
+public fun TokenStream.clone(): TokenStream =
+    TokenStream.fromTokenTrees(this.toList())
