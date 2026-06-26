@@ -40,7 +40,7 @@ sealed interface SingleSpanToken : Token {
 }
 
 sealed interface MultiSpanToken : Token {
-    var spans: List<Span>
+    val spans: List<Span>
 }
 
 sealed class KeywordToken(

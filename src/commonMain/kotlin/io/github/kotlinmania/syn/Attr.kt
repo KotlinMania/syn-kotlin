@@ -97,7 +97,7 @@ public object AttributeParse {
         parseAttribute(input)
 }
 
-internal fun parseInnerAttributes(input: ParseStream): SynResult<List<Attribute>> =
+internal fun parseInnerAttributes(input: ParseStream): SynResult<MutableList<Attribute>> =
     mutableListOf<Attribute>()
         .also { attrs ->
             parseInner(input, attrs).getOrElse { return SynResult.failure(it) }
