@@ -1233,8 +1233,11 @@ public object LitParse {
 public object LitStrParse {
     public fun parse(input: ParseStream): SynResult<LitStr> {
         var result = LitParse.parse(input)
-        if (result is SynResult.Success && result.value is Lit.Str) {
-            return SynResult.success(result.value.value)
+        if (result is SynResult.Success) {
+            val value = result.value
+            if (value is Lit.Str) {
+                return SynResult.success(value.value)
+            }
         }
         return SynResult.failure(input.error("expected string literal"))
     }
@@ -1243,8 +1246,11 @@ public object LitStrParse {
 public object LitIntParse {
     public fun parse(input: ParseStream): SynResult<LitInt> {
         var result = LitParse.parse(input)
-        if (result is SynResult.Success && result.value is Lit.Int) {
-            return SynResult.success(result.value.value)
+        if (result is SynResult.Success) {
+            val value = result.value
+            if (value is Lit.Int) {
+                return SynResult.success(value.value)
+            }
         }
         return SynResult.failure(input.error("expected integer literal"))
     }
@@ -1253,8 +1259,11 @@ public object LitIntParse {
 public object LitFloatParse {
     public fun parse(input: ParseStream): SynResult<LitFloat> {
         var result = LitParse.parse(input)
-        if (result is SynResult.Success && result.value is Lit.Float) {
-            return SynResult.success(result.value.value)
+        if (result is SynResult.Success) {
+            val value = result.value
+            if (value is Lit.Float) {
+                return SynResult.success(value.value)
+            }
         }
         return SynResult.failure(input.error("expected float literal"))
     }

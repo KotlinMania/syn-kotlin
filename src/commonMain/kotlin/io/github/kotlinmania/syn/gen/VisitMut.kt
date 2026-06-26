@@ -526,12 +526,14 @@ public open class VisitMut {
             generics = visitGenericsMut(item.generics),
         )
 
-    public open fun visitReceiver(receiver: FnArg.Receiver): FnArg.Receiver =
-        receiver.copy(
+    public open fun visitReceiver(receiver: FnArg.Receiver): FnArg.Receiver {
+        val reference = receiver.reference
+        return receiver.copy(
             attrs = visitAttributesMut(receiver.attrs),
-            reference = receiver.reference?.copy(lifetime = receiver.reference.lifetime?.let { visitLifetimeMut(it) }),
+            reference = reference?.copy(lifetime = reference.lifetime?.let { visitLifetimeMut(it) }),
             `type` = visitTypeMut(receiver.type),
         )
+    }
 
     public open fun visitPatType(patType: PatType): PatType = patType.copy(pat = visitPatMut(patType.pat), ty = visitTypeMut(patType.ty))
 
@@ -621,18 +623,22 @@ public open class VisitMut {
             output = visitReturnTypeMut(ty.output),
         )
 
-    public open fun visitBareFnArg(arg: BareFnArg): BareFnArg =
-        arg.copy(
+    public open fun visitBareFnArg(arg: BareFnArg): BareFnArg {
+        val name = arg.name
+        return arg.copy(
             attrs = visitAttributesMut(arg.attrs),
-            name = arg.name?.copy(ident = visitIdentMut(arg.name.ident)),
+            name = name?.copy(ident = visitIdentMut(name.ident)),
             ty = visitTypeMut(arg.ty),
         )
+    }
 
-    public open fun visitBareVariadic(variadic: BareVariadic): BareVariadic =
-        variadic.copy(
+    public open fun visitBareVariadic(variadic: BareVariadic): BareVariadic {
+        val name = variadic.name
+        return variadic.copy(
             attrs = visitAttributesMut(variadic.attrs),
-            name = variadic.name?.copy(ident = visitIdentMut(variadic.name.ident)),
+            name = name?.copy(ident = visitIdentMut(name.ident)),
         )
+    }
 
     public open fun visitTypeParen(ty: SynType.Paren): SynType = ty.copy(elem = visitTypeMut(ty.elem))
 
@@ -739,13 +745,15 @@ public open class VisitMut {
     public open fun visitPathSegment(segment: PathSegment): PathSegment =
         segment.copy(ident = visitIdentMut(segment.ident), arguments = visitPathArgumentsMut(segment.arguments))
 
-    public open fun visitArm(arm: Arm): Arm =
-        arm.copy(
+    public open fun visitArm(arm: Arm): Arm {
+        val guard = arm.guard
+        return arm.copy(
             attrs = visitAttributesMut(arm.attrs),
             pat = visitPatMut(arm.pat),
-            guard = arm.guard?.copy(expr = visitExprMut(arm.guard.expr)),
+            guard = guard?.copy(expr = visitExprMut(guard.expr)),
             body = visitExprMut(arm.body),
         )
+    }
 
     public open fun visitElseExpr(elseExpr: ElseExpr): ElseExpr =
         elseExpr.copy(expr = visitExprMut(elseExpr.expr))
@@ -1047,14 +1055,16 @@ public open class VisitMut {
             }
         }
 
-    public open fun visitTraitItemConst(item: TraitItem.Const): TraitItem =
-        item.copy(
+    public open fun visitTraitItemConst(item: TraitItem.Const): TraitItem {
+        val default = item.default
+        return item.copy(
             attrs = visitAttributesMut(item.attrs),
             ident = visitIdentMut(item.ident),
             generics = visitGenericsMut(item.generics),
             ty = visitTypeMut(item.ty),
-            default = item.default?.copy(expr = visitExprMut(item.default.expr)),
+            default = default?.copy(expr = visitExprMut(default.expr)),
         )
+    }
 
     public open fun visitTraitItemFn(item: TraitItem.Fn): TraitItem =
         item.copy(
@@ -1066,14 +1076,16 @@ public open class VisitMut {
     public open fun visitTraitItemMacro(item: TraitItem.Macro): TraitItem =
         item.copy(attrs = visitAttributesMut(item.attrs), mac = visitMacroMut(item.mac))
 
-    public open fun visitTraitItemType(item: TraitItem.AssocType): TraitItem =
-        item.copy(
+    public open fun visitTraitItemType(item: TraitItem.AssocType): TraitItem {
+        val default = item.default
+        return item.copy(
             attrs = visitAttributesMut(item.attrs),
             ident = visitIdentMut(item.ident),
             generics = visitGenericsMut(item.generics),
             bounds = item.bounds.copy({ visitTypeParamBoundMut(it) }, { it }),
-            default = item.default?.copy(type = visitTypeMut(item.default.type)),
+            default = default?.copy(type = visitTypeMut(default.type)),
         )
+    }
 
     public open fun visitUseTree(useTree: UseTree): UseTree =
         when (useTree) {
@@ -1102,25 +1114,31 @@ public open class VisitMut {
             tree = useTree.tree?.let { visitUseTreeMut(it) },
         )
 
-    public open fun visitUseRename(useTree: UseTree.Name): UseTree =
-        useTree.copy(
+    public open fun visitUseRename(useTree: UseTree.Name): UseTree {
+        val rename = useTree.rename
+        return useTree.copy(
             ident = visitIdentMut(useTree.ident),
-            rename = useTree.rename?.copy(ident = visitIdentMut(useTree.rename.ident)),
+            rename = rename?.copy(ident = visitIdentMut(rename.ident)),
         )
+    }
 
-    public open fun visitVariadic(variadic: Variadic): Variadic =
-        variadic.copy(
+    public open fun visitVariadic(variadic: Variadic): Variadic {
+        val pat = variadic.pat
+        return variadic.copy(
             attrs = visitAttributesMut(variadic.attrs),
-            pat = variadic.pat?.copy(pat = visitPatMut(variadic.pat.pat)),
+            pat = pat?.copy(pat = visitPatMut(pat.pat)),
         )
+    }
 
-    public open fun visitVariant(variant: Variant): Variant =
-        variant.copy(
+    public open fun visitVariant(variant: Variant): Variant {
+        val discriminant = variant.discriminant
+        return variant.copy(
             attrs = visitAttributesMut(variant.attrs),
             ident = visitIdentMut(variant.ident),
             fields = visitFieldsMut(variant.fields),
-            discriminant = variant.discriminant?.copy(expr = visitExprMut(variant.discriminant.expr)),
+            discriminant = discriminant?.copy(expr = visitExprMut(discriminant.expr)),
         )
+    }
 
     public open fun visitVisibility(visibility: Visibility): Visibility =
         when (visibility) {

@@ -896,6 +896,7 @@ public sealed class TypeParamBound : ToTokens {
         }
 
         override fun toTokens(tokens: TokenStream) {
+            val parenToken = this.parenToken
             if (parenToken != null) {
                 parenToken.surround(tokens) { inner ->
                     modifier.toTokens(inner)

@@ -496,11 +496,12 @@ private fun scanRightClosure(
     expr: Expr.Closure,
     fixup: FixupContext,
     bailoutOffset: Int,
-): Scan =
-    if (expr.output == ReturnType.Default ||
-        expr.body is Expr.BlockExpr &&
-        expr.body.attrs.isEmpty() &&
-        expr.body.label == null
+): Scan {
+    val body = expr.body
+    return if (expr.output == ReturnType.Default ||
+        body is Expr.BlockExpr &&
+        body.attrs.isEmpty() &&
+        body.label == null
     ) {
         if (bailoutOffset >= 1) {
             Scan.Consume
@@ -514,6 +515,7 @@ private fun scanRightClosure(
     } else {
         Scan.Consume
     }
+}
 
 private fun scanRightLet(
     expr: Expr.Let,

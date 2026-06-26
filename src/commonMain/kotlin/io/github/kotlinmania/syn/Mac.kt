@@ -78,6 +78,7 @@ public fun <T> Macro.parseBody(parser: (ParseStream) -> SynResult<T>): SynResult
 
 /** Parse the tokens within the macro invocation's delimiters using the given parser. */
 public fun <T> Macro.parseBodyWith(parser: (ParseStream) -> SynResult<T>): SynResult<T> {
+    val delimiter = this.delimiter
     var scope =
         when (delimiter) {
             is MacroDelimiter.Paren -> delimiter.token.span.close()

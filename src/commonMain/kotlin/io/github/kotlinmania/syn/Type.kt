@@ -53,6 +53,7 @@ public sealed class SynType : ToTokens {
             fnToken.toTokens(tokens)
             parenToken.surround(tokens) { inner ->
                 inputs.toTokens(inner)
+                val variadic = this.variadic
                 if (variadic != null) {
                     if (!inputs.emptyOrTrailing()) {
                         io.github.kotlinmania.syn.token.Comma

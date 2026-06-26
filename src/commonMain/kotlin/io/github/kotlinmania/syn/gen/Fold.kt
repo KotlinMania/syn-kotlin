@@ -349,12 +349,14 @@ public open class Fold {
             is FnArg.Typed -> arg.copy(patType = foldPatType(arg.patType))
         }
 
-    public open fun foldReceiver(receiver: FnArg.Receiver): FnArg.Receiver =
-        receiver.copy(
+    public open fun foldReceiver(receiver: FnArg.Receiver): FnArg.Receiver {
+        val reference = receiver.reference
+        return receiver.copy(
             attrs = foldAttributes(receiver.attrs),
-            reference = receiver.reference?.copy(lifetime = receiver.reference.lifetime?.let { foldLifetime(it) }),
+            reference = reference?.copy(lifetime = reference.lifetime?.let { foldLifetime(it) }),
             `type` = foldType(receiver.type),
         )
+    }
 
     public open fun foldPatType(patType: PatType): PatType = patType.copy(pat = foldPat(patType.pat), ty = foldType(patType.ty))
 
@@ -461,18 +463,22 @@ public open class Fold {
             output = foldReturnType(ty.output),
         )
 
-    public open fun foldBareFnArg(arg: BareFnArg): BareFnArg =
-        arg.copy(
+    public open fun foldBareFnArg(arg: BareFnArg): BareFnArg {
+        val name = arg.name
+        return arg.copy(
             attrs = foldAttributes(arg.attrs),
-            name = arg.name?.copy(ident = foldIdent(arg.name.ident)),
+            name = name?.copy(ident = foldIdent(name.ident)),
             ty = foldType(arg.ty),
         )
+    }
 
-    public open fun foldBareVariadic(variadic: BareVariadic): BareVariadic =
-        variadic.copy(
+    public open fun foldBareVariadic(variadic: BareVariadic): BareVariadic {
+        val name = variadic.name
+        return variadic.copy(
             attrs = foldAttributes(variadic.attrs),
-            name = variadic.name?.copy(ident = foldIdent(variadic.name.ident)),
+            name = name?.copy(ident = foldIdent(name.ident)),
         )
+    }
 
     public open fun foldTypeParen(ty: SynType.Paren): SynType.Paren = ty.copy(elem = foldType(ty.elem))
 
@@ -875,13 +881,15 @@ public open class Fold {
     public open fun foldPathSegment(segment: PathSegment): PathSegment =
         segment.copy(ident = foldIdent(segment.ident), arguments = foldPathArguments(segment.arguments))
 
-    public open fun foldArm(arm: Arm): Arm =
-        arm.copy(
+    public open fun foldArm(arm: Arm): Arm {
+        val guard = arm.guard
+        return arm.copy(
             attrs = foldAttributes(arm.attrs),
             pat = foldPat(arm.pat),
-            guard = arm.guard?.copy(expr = foldExpr(arm.guard.expr)),
+            guard = guard?.copy(expr = foldExpr(guard.expr)),
             body = foldExpr(arm.body),
         )
+    }
 
     public open fun foldElseExpr(elseExpr: ElseExpr): ElseExpr =
         elseExpr.copy(expr = foldExpr(elseExpr.expr))
@@ -1216,14 +1224,16 @@ public open class Fold {
             }
         }
 
-    public open fun foldTraitItemConst(item: TraitItem.Const): TraitItem.Const =
-        item.copy(
+    public open fun foldTraitItemConst(item: TraitItem.Const): TraitItem.Const {
+        val default = item.default
+        return item.copy(
             attrs = foldAttributes(item.attrs),
             ident = foldIdent(item.ident),
             generics = foldGenerics(item.generics),
             ty = foldType(item.ty),
-            default = item.default?.copy(expr = foldExpr(item.default.expr)),
+            default = default?.copy(expr = foldExpr(default.expr)),
         )
+    }
 
     public open fun foldTraitItemFn(item: TraitItem.Fn): TraitItem.Fn =
         item.copy(
@@ -1235,14 +1245,16 @@ public open class Fold {
     public open fun foldTraitItemMacro(item: TraitItem.Macro): TraitItem.Macro =
         item.copy(attrs = foldAttributes(item.attrs), mac = foldMacro(item.mac))
 
-    public open fun foldTraitItemType(item: TraitItem.AssocType): TraitItem.AssocType =
-        item.copy(
+    public open fun foldTraitItemType(item: TraitItem.AssocType): TraitItem.AssocType {
+        val default = item.default
+        return item.copy(
             attrs = foldAttributes(item.attrs),
             ident = foldIdent(item.ident),
             generics = foldGenerics(item.generics),
             bounds = item.bounds.copy({ foldTypeParamBound(it) }, { it }),
-            default = item.default?.copy(type = foldType(item.default.type)),
+            default = default?.copy(type = foldType(default.type)),
         )
+    }
 
     public open fun foldUseTree(useTree: UseTree): UseTree =
         when (useTree) {
@@ -1271,25 +1283,31 @@ public open class Fold {
             tree = useTree.tree?.let { foldUseTree(it) },
         )
 
-    public open fun foldUseRename(useTree: UseTree.Name): UseTree.Name =
-        useTree.copy(
+    public open fun foldUseRename(useTree: UseTree.Name): UseTree.Name {
+        val rename = useTree.rename
+        return useTree.copy(
             ident = foldIdent(useTree.ident),
-            rename = useTree.rename?.copy(ident = foldIdent(useTree.rename.ident)),
+            rename = rename?.copy(ident = foldIdent(rename.ident)),
         )
+    }
 
-    public open fun foldVariadic(variadic: Variadic): Variadic =
-        variadic.copy(
+    public open fun foldVariadic(variadic: Variadic): Variadic {
+        val pat = variadic.pat
+        return variadic.copy(
             attrs = foldAttributes(variadic.attrs),
-            pat = variadic.pat?.copy(pat = foldPat(variadic.pat.pat)),
+            pat = pat?.copy(pat = foldPat(pat.pat)),
         )
+    }
 
-    public open fun foldVariant(variant: Variant): Variant =
-        variant.copy(
+    public open fun foldVariant(variant: Variant): Variant {
+        val discriminant = variant.discriminant
+        return variant.copy(
             attrs = foldAttributes(variant.attrs),
             ident = foldIdent(variant.ident),
             fields = foldFields(variant.fields),
-            discriminant = variant.discriminant?.copy(expr = foldExpr(variant.discriminant.expr)),
+            discriminant = discriminant?.copy(expr = foldExpr(discriminant.expr)),
         )
+    }
 
     public open fun foldVisibility(visibility: Visibility): Visibility =
         when (visibility) {

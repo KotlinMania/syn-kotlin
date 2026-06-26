@@ -814,6 +814,7 @@ public sealed class TraitItem : ToTokens {
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
             sig.toTokens(tokens)
+            val default = this.default
             if (default != null) {
                 default.braceToken.surround(tokens) { inner ->
                     for (stmt in default.stmts) stmt.toTokens(inner)
