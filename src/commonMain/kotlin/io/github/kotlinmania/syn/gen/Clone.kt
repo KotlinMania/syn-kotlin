@@ -574,22 +574,22 @@ public fun Pat.Ident.clone(): Pat.Ident =
     Pat.Ident(attrs.cloneList(), byRef, mutability.clone(), Ident.new(ident.toString(), ident.span()), atToken, subpat?.clone())
 
 public fun Pat.Tuple.clone(): Pat.Tuple =
-    Pat.Tuple(attrs.cloneList(), parenToken, elems.copy({ it.clone() }, { it }))
+    Pat.Tuple(parenToken, elems.copy({ it.clone() }, { it }), attrs.cloneList())
 
 public fun Pat.Or.clone(): Pat.Or =
-    Pat.Or(attrs.cloneList(), leadingVert, cases.copy({ it.clone() }, { it }))
+    Pat.Or(leadingVert, cases.copy({ it.clone() }, { it }), attrs.cloneList())
 
 public fun Pat.PatParen.clone(): Pat.PatParen =
     Pat.PatParen(parenToken, pat.clone(), attrs.cloneList())
 
 public fun Pat.Reference.clone(): Pat.Reference =
-    Pat.Reference(attrs.cloneList(), andToken, mutability, pat.clone())
+    Pat.Reference(andToken, mutability, pat.clone(), attrs.cloneList())
 
 public fun Pat.Struct.clone(): Pat.Struct =
-    Pat.Struct(attrs.cloneList(), qself?.clone(), path.clone(), braceToken, fields.copy({ it.clone() }, { it }), dot2Token, rest?.clone())
+    Pat.Struct(qself?.clone(), path.clone(), braceToken, fields.copy({ it.clone() }, { it }), rest?.clone(), dot2Token, attrs.cloneList())
 
 public fun Pat.Slice.clone(): Pat.Slice =
-    Pat.Slice(attrs.cloneList(), bracketToken, elems.copy({ it.clone() }, { it }))
+    Pat.Slice(bracketToken, elems.copy({ it.clone() }, { it }), attrs.cloneList())
 
 public fun Pat.TypeAscription.clone(): Pat.TypeAscription =
     Pat.TypeAscription(attrs.cloneList(), pat.clone(), colonToken, ty.clone())
@@ -598,7 +598,7 @@ public fun Pat.Const.clone(): Pat.Const =
     Pat.Const(attrs.cloneList(), constToken, block.clone())
 
 public fun Pat.Lit.clone(): Pat.Lit =
-    Pat.Lit(attrs.cloneList(), expr.clone())
+    Pat.Lit(attrs.cloneList(), lit.clone())
 
 public fun Pat.Macro.clone(): Pat.Macro =
     Pat.Macro(attrs.cloneList(), mac.clone())
@@ -607,10 +607,10 @@ public fun Pat.Path.clone(): Pat.Path =
     Pat.Path(attrs.cloneList(), qself?.clone(), path.clone())
 
 public fun Pat.Range.clone(): Pat.Range =
-    Pat.Range(attrs.cloneList(), start.clone(), limits.clone(), end?.clone())
+    Pat.Range(attrs.cloneList(), start?.clone(), limits.clone(), end?.clone())
 
 public fun Pat.Rest.clone(): Pat.Rest =
-    Pat.Rest(dot2Token, attrs.cloneList())
+    Pat.Rest(attrs.cloneList(), dot2Token)
 
 public fun Pat.TupleStruct.clone(): Pat.TupleStruct =
     Pat.TupleStruct(attrs.cloneList(), qself?.clone(), path.clone(), parenToken, elems.copy({ it.clone() }, { it }))
