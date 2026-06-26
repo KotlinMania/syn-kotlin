@@ -137,9 +137,6 @@ public fun CapturedParam.clone(): CapturedParam =
         is CapturedParam.Ident -> CapturedParam.Ident(ident.clone())
     }
 
-public fun GenericParam.ConstParam.clone(): GenericParam.ConstParam =
-    GenericParam.ConstParam(attrs.cloneList(), constToken, ident.clone(), colonToken, ty.clone(), eqToken, default?.clone())
-
 public fun Constraint.clone(): Constraint =
     Constraint(ident.clone(), generics?.clone() as? PathArguments.AngleBracketed?, colonToken, bounds.copy({ it.clone() }, { it }))
 
@@ -359,9 +356,6 @@ public fun FnArg.clone(): FnArg =
         is FnArg.Typed -> this.clone()
     }
 
-public fun FnArg.Receiver.clone(): FnArg.Receiver =
-    FnArg.Receiver(attrs.cloneList(), this.receiver, andToken, orToken, selfRef, mutability, shorthand)
-
 public fun FnArg.Typed.clone(): FnArg.Typed =
     FnArg.Typed(attrs.cloneList(), pat.clone(), colonToken, ty.clone())
 
@@ -405,15 +399,6 @@ public fun GenericParam.clone(): GenericParam =
         is GenericParam.TypeParam -> GenericParam.TypeParam(this.clone())
         is GenericParam.ConstParam -> GenericParam.ConstParam(this.clone())
     }
-
-public fun GenericParam.LifetimeParam.clone(): GenericParam.LifetimeParam =
-    GenericParam.LifetimeParam(attrs.cloneList(), lifetime.clone(), colonToken, bounds.copy({ it.clone() }, { it }))
-
-public fun GenericParam.TypeParam.clone(): GenericParam.TypeParam =
-    GenericParam.TypeParam(attrs.cloneList(), ident.clone(), colonToken, bounds.copy({ it.clone() }, { it }), eqToken, default?.clone())
-
-public fun GenericParam.ConstParam.clone(): GenericParam.ConstParam =
-    GenericParam.ConstParam(attrs.cloneList(), constToken, ident.clone(), colonToken, ty.clone(), eqToken, default?.clone())
 
 public fun Generics.clone(): Generics =
     Generics(ltToken, params.copy({ it.clone() }, { it }), gtToken, whereClause?.clone())
