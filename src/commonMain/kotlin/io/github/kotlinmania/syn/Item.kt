@@ -57,10 +57,10 @@ public sealed class Item : ToTokens {
 
     internal data class AttrReplacement(
         var item: Item,
-        var oldAttrs: List<Attribute>,
+        var oldAttrs: MutableList<Attribute>,
     )
 
-    internal fun replaceAttrs(new: List<Attribute>): AttrReplacement =
+    internal fun replaceAttrs(new: MutableList<Attribute>): AttrReplacement =
         when (this) {
             is Const -> AttrReplacement(copy(attrs = new), attrs)
             is Enum -> AttrReplacement(copy(attrs = new), attrs)
