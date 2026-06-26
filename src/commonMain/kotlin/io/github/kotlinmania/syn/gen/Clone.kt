@@ -316,7 +316,7 @@ public fun Expr.Unsafe.clone(): Expr.Unsafe =
     Expr.Unsafe(attrs.cloneList(), unsafeToken, block.clone())
 
 public fun Expr.Verbatim.clone(): Expr.Verbatim =
-    Expr.Verbatim(tokens.cloneTokenStream())
+    Expr.Verbatim(tokens.clone())
 
 public fun Expr.While.clone(): Expr.While =
     Expr.While(attrs.cloneList(), label?.clone(), whileToken, cond.clone(), body.clone())
@@ -385,7 +385,7 @@ public fun ForeignItem.Type.clone(): ForeignItem.Type =
     ForeignItem.Type(attrs.cloneList(), vis.clone(), typeToken, ident.clone(), generics.clone(), semiToken)
 
 public fun ForeignItem.Verbatim.clone(): ForeignItem.Verbatim =
-    ForeignItem.Verbatim(attrs.cloneList(), tokens.cloneTokenStream())
+    ForeignItem.Verbatim(attrs.cloneList(), tokens.clone())
 
 public fun GenericArgument.clone(): GenericArgument =
     when (this) {
@@ -438,7 +438,7 @@ public fun ImplItem.Type.clone(): ImplItem.Type =
     ImplItem.Type(attrs.cloneList(), vis.clone(), defaultness, typeToken, ident.clone(), generics.clone(), eqToken, ty.clone(), semiToken)
 
 public fun ImplItem.Verbatim.clone(): ImplItem.Verbatim =
-    ImplItem.Verbatim(attrs.cloneList(), tokens.cloneTokenStream())
+    ImplItem.Verbatim(attrs.cloneList(), tokens.clone())
 
 public fun ImplRestriction.clone(): ImplRestriction = this
 
@@ -514,7 +514,7 @@ public fun Item.Use.clone(): Item.Use =
     Item.Use(attrs.cloneList(), vis.clone(), useToken, tree.clone(), semiToken)
 
 public fun Item.Verbatim.clone(): Item.Verbatim =
-    Item.Verbatim(attrs.cloneList(), tokens.cloneTokenStream())
+    Item.Verbatim(attrs.cloneList(), tokens.clone())
 
 public fun Label.clone(): Label =
     Label(name.clone(), colonToken)
@@ -541,7 +541,7 @@ public fun Lit.clone(): Lit =
     }
 
 public fun Macro.clone(): Macro =
-    Macro(path.clone(), bangToken, delimiter.clone(), tokens.cloneTokenStream())
+    Macro(path.clone(), bangToken, delimiter.clone(), tokens.clone())
 
 public fun MacroDelimiter.clone(): MacroDelimiter =
     when (this) {
@@ -559,7 +559,7 @@ public fun Member.clone(): Member =
 public fun Meta.clone(): Meta =
     when (this) {
         is Meta.Path -> Meta.Path(path.clone())
-        is Meta.List -> Meta.List(path.clone(), parenToken, tokens.cloneTokenStream())
+        is Meta.List -> Meta.List(path.clone(), parenToken, tokens.clone())
         is Meta.NameValue -> Meta.NameValue(path.clone(), eqToken, value.clone())
     }
 
@@ -633,7 +633,7 @@ public fun Pat.Wild.clone(): Pat.Wild =
     Pat.Wild(attrs.cloneList(), underscoreToken)
 
 public fun Pat.Verbatim.clone(): Pat.Verbatim =
-    Pat.Verbatim(attrs.cloneList(), tokens.cloneTokenStream())
+    Pat.Verbatim(attrs.cloneList(), tokens.clone())
 
 public fun PatRest.clone(): PatRest =
     PatRest(dot2Token, attrs.cloneList())
@@ -760,7 +760,7 @@ public fun SynType.Tuple.clone(): SynType.Tuple =
     SynType.Tuple(parenToken, elems.copy({ it.clone() }, { it }))
 
 public fun SynType.Verbatim.clone(): SynType.Verbatim =
-    SynType.Verbatim(tokens.cloneTokenStream())
+    SynType.Verbatim(tokens.clone())
 
 public fun GenericParam.TypeParam.clone(): GenericParam.TypeParam =
     GenericParam.TypeParam(attrs.cloneList(), ident.clone(), colonToken, bounds.copy({ it.clone() }, { it }), eqToken, default?.clone())
@@ -802,6 +802,3 @@ public fun WherePredicate.clone(): WherePredicate =
 
 internal fun <T> MutableList<T>.cloneList(): MutableList<T> =
     mapTo(mutableListOf()) { it }
-
-internal fun TokenStream.cloneTokenStream(): TokenStream =
-    TokenStream.fromTokenTrees(this.toList())

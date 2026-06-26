@@ -231,6 +231,8 @@ public class LitStr private constructor(
     public fun copy(): LitStr =
         LitStr(repr.clone(), cooked)
 
+    public fun clone(): LitStr = copy()
+
     override fun toString(): String = "\"$cooked\""
 
     override fun equals(other: Any?): Boolean =
@@ -279,6 +281,8 @@ public class LitByteStr(
 
     public fun copy(): LitByteStr = LitByteStr(bytes, spanValue, suffix, literal)
 
+    public fun clone(): LitByteStr = copy()
+
     override fun toString(): String = "b\"${bytes.map { it.toInt().toChar() }.joinToString("")}\""
 }
 
@@ -322,6 +326,8 @@ public class LitCStr(
         "$name(token=${token()})"
 
     public fun copy(): LitCStr = LitCStr(bytes.copyOf(), spanValue, suffix, literal)
+
+    public fun clone(): LitCStr = copy()
 
     override fun toString(): String = token().toString()
 
@@ -376,6 +382,8 @@ public class LitByte(
         "$name(token=${token()})"
 
     public fun copy(): LitByte = LitByte(value, suffix, spanValue, literal)
+
+    public fun clone(): LitByte = copy()
 
     override fun toString(): String = Literal.byteCharacter(value).toString() + suffix
 }
@@ -434,6 +442,8 @@ public class LitChar(
 
     public fun copy(): LitChar = LitChar(value, spanValue, suffix, literal)
 
+    public fun clone(): LitChar = copy()
+
     override fun toString(): String = token().toString()
 }
 
@@ -488,6 +498,8 @@ public class LitInt private constructor(
         "$name(token=${repr.token})"
 
     public fun copy(): LitInt = LitInt(repr.clone())
+
+    public fun clone(): LitInt = copy()
 
     override fun toString(): String = repr.token.toString()
 }
@@ -544,6 +556,8 @@ public class LitFloat private constructor(
 
     public fun copy(): LitFloat = LitFloat(repr.clone())
 
+    public fun clone(): LitFloat = copy()
+
     override fun toString(): String = repr.token.toString()
 }
 
@@ -573,6 +587,8 @@ public data class LitBool(
         "$name(value=$value)"
 
     public fun copy(): LitBool = LitBool(value, spanValue)
+
+    public fun clone(): LitBool = copy()
 
     override fun toString(): String = value.toString()
 }

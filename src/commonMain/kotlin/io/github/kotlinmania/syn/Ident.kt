@@ -14,6 +14,8 @@ public typealias Ident = io.github.kotlinmania.procmacro2.Ident
 public fun Ident.copy(): Ident =
     Ident.new(toString(), span())
 
+public fun Ident.clone(): Ident = copy()
+
 public fun from(token: SelfValue): Ident = Ident.new("self", token.span)
 
 public fun from(token: SelfType): Ident = Ident.new("Self", token.span)
