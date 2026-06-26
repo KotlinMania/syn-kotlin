@@ -461,7 +461,7 @@ public fun Item.clone(): Item =
         is Item.Struct -> this.clone()
         is Item.Trait -> this.clone()
         is Item.TraitAlias -> this.clone()
-        is Item.Type -> this.clone()
+        is Item.ItemType -> this.clone()
         is Item.Union -> this.clone()
         is Item.Use -> this.clone()
         is Item.Verbatim -> this.clone()
@@ -506,8 +506,8 @@ public fun Item.Trait.clone(): Item.Trait =
 public fun Item.TraitAlias.clone(): Item.TraitAlias =
     Item.TraitAlias(attrs.cloneList(), vis.clone(), traitToken, ident.clone(), generics.clone(), eqToken, bounds.copy({ it.clone() }, { it }), semiToken)
 
-public fun Item.Type.clone(): Item.Type =
-    Item.Type(attrs.cloneList(), vis.clone(), typeToken, ident.clone(), generics.clone(), eqToken, ty.clone(), semiToken)
+public fun Item.ItemType.clone(): Item.ItemType =
+    Item.ItemType(attrs.cloneList(), vis.clone(), typeToken, ident.clone(), generics.clone(), eqToken, ty.clone(), semiToken)
 
 public fun Item.Union.clone(): Item.Union =
     Item.Union(attrs.cloneList(), vis.clone(), unionToken, ident.clone(), generics.clone(), fields.clone())
@@ -529,17 +529,15 @@ public fun GenericParam.LifetimeParam.clone(): GenericParam.LifetimeParam =
 
 public fun Lit.clone(): Lit =
     when (this) {
-        is Lit.Str -> Lit.Str(value.clone(), suffix?.clone())
-        is Lit.ByteStr -> Lit.ByteStr(value.clone(), suffix?.clone())
-        is Lit.CStr -> Lit.CStr(value.clone(), suffix?.clone())
-        is Lit.Byte -> Lit.Byte(value.clone(), suffix?.clone())
-        is Lit.Char -> Lit.Char(value.clone(), suffix?.clone())
-        is Lit.Int -> Lit.Int(value.clone(), suffix?.clone())
-        is Lit.Float -> Lit.Float(value.clone(), suffix?.clone())
+        is Lit.Str -> Lit.Str(value.clone())
+        is Lit.ByteStr -> Lit.ByteStr(value.clone())
+        is Lit.CStr -> Lit.CStr(value.clone())
+        is Lit.Byte -> Lit.Byte(value.clone())
+        is Lit.Char -> Lit.Char(value.clone())
+        is Lit.Int -> Lit.Int(value.clone())
+        is Lit.Float -> Lit.Float(value.clone())
         is Lit.Bool -> Lit.Bool(value.clone())
-        is Lit.CStrRaw -> Lit.CStrRaw(value, suffix)
-        is Lit.ByteStrRaw -> Lit.ByteStrRaw(value, suffix)
-        is Lit.StrRaw -> Lit.StrRaw(value, suffix)
+        is Lit.Verbatim -> Lit.Verbatim(value)
     }
 
 public fun Macro.clone(): Macro =
