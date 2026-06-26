@@ -880,7 +880,7 @@ public sealed class Expr : ToTokens {
             block.toTokens(tokens)
         }
 
-        override fun deepCopy(): Async = Async(attrs.mapTo(mutableListOf()) { it.deepCopy() }, asyncToken, capture, block)
+        override fun deepCopy(): Async = Async(attrs.mapTo(mutableListOf()) { it.deepCopy() }, asyncToken, capture, block.deepCopy())
     }
 
     /** An await expression: `fut.await`. */
@@ -949,7 +949,7 @@ public sealed class Expr : ToTokens {
             block.toTokens(tokens)
         }
 
-        override fun deepCopy(): BlockExpr = BlockExpr(attrs.mapTo(mutableListOf()) { it.deepCopy() }, label?.deepCopy(), block)
+        override fun deepCopy(): BlockExpr = BlockExpr(attrs.mapTo(mutableListOf()) { it.deepCopy() }, label?.deepCopy(), block.deepCopy())
     }
 
     /** A `break`, with an optional label to break and an optional expression. */
@@ -1061,7 +1061,7 @@ public sealed class Expr : ToTokens {
             block.toTokens(tokens)
         }
 
-        override fun deepCopy(): Const = Const(attrs.mapTo(mutableListOf()) { it.deepCopy() }, constToken, block)
+        override fun deepCopy(): Const = Const(attrs.mapTo(mutableListOf()) { it.deepCopy() }, constToken, block.deepCopy())
     }
 
     /** A `continue`, with an optional label. */
@@ -1116,7 +1116,7 @@ public sealed class Expr : ToTokens {
             body.toTokens(tokens)
         }
 
-        override fun deepCopy(): ForLoop = ForLoop(attrs.mapTo(mutableListOf()) { it.deepCopy() }, label?.deepCopy(), forToken, pat.deepCopy(), inToken, expr.deepCopy(), body)
+        override fun deepCopy(): ForLoop = ForLoop(attrs.mapTo(mutableListOf()) { it.deepCopy() }, label?.deepCopy(), forToken, pat.deepCopy(), inToken, expr.deepCopy(), body.deepCopy())
     }
 
     /** An expression contained within invisible delimiters. */
@@ -1233,7 +1233,7 @@ public sealed class Expr : ToTokens {
             body.toTokens(tokens)
         }
 
-        override fun deepCopy(): Loop = Loop(attrs.mapTo(mutableListOf()) { it.deepCopy() }, label?.deepCopy(), loopToken, body)
+        override fun deepCopy(): Loop = Loop(attrs.mapTo(mutableListOf()) { it.deepCopy() }, label?.deepCopy(), loopToken, body.deepCopy())
     }
 
     /** A macro invocation expression. */
@@ -1471,7 +1471,7 @@ public sealed class Expr : ToTokens {
             block.toTokens(tokens)
         }
 
-        override fun deepCopy(): TryBlock = TryBlock(attrs.mapTo(mutableListOf()) { it.deepCopy() }, tryToken, block)
+        override fun deepCopy(): TryBlock = TryBlock(attrs.mapTo(mutableListOf()) { it.deepCopy() }, tryToken, block.deepCopy())
     }
 
     /** A tuple expression: `(a, b, c, d)`. */
@@ -1522,7 +1522,7 @@ public sealed class Expr : ToTokens {
             block.toTokens(tokens)
         }
 
-        override fun deepCopy(): Unsafe = Unsafe(attrs.mapTo(mutableListOf()) { it.deepCopy() }, unsafeToken, block)
+        override fun deepCopy(): Unsafe = Unsafe(attrs.mapTo(mutableListOf()) { it.deepCopy() }, unsafeToken, block.deepCopy())
     }
 
     /** A while loop: `while expr { ... }`. */
@@ -1541,7 +1541,7 @@ public sealed class Expr : ToTokens {
             body.toTokens(tokens)
         }
 
-        override fun deepCopy(): While = While(attrs.mapTo(mutableListOf()) { it.deepCopy() }, label?.deepCopy(), whileToken, cond.deepCopy(), body)
+        override fun deepCopy(): While = While(attrs.mapTo(mutableListOf()) { it.deepCopy() }, label?.deepCopy(), whileToken, cond.deepCopy(), body.deepCopy())
     }
 
     /** A yield expression: `yield expr`. */

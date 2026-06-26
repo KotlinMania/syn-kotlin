@@ -213,8 +213,10 @@ class VisitMutTest {
         visitor.visitLit(parseStr(LitParse::parse, "c\"hello\"").getOrThrow())
         visitor.visitType(parseStr(SynTypeParseExpr::parse, "<Self as Trait>::Assoc").getOrThrow())
 
-        visitor.assertEvent("lit:cstr")
         visitor.assertEvent("qself")
+        visitor.assertEvent("lit:cstr")
+        visitor.assertEvent("path:Self")
+        visitor.assertEvent("path:Trait::Assoc")
     }
 
     private fun parseItem(source: String): Item =
@@ -386,6 +388,11 @@ class VisitMutTest {
             return super.visitPath(p)
         }
 
+        override fun visitLitCStrMut(l: LitCStr): LitCStr {
+            events += "lit:cstr"
+            return super.visitLitCStrMut(l)
+        }
+
         override fun visitLitCstrMut(l: LitCStr): LitCStr {
             events += "lit:cstr"
             return super.visitLitCstrMut(l)
@@ -396,9 +403,9 @@ class VisitMutTest {
             return super.visitSignature(sig)
         }
 
-        override fun visitQselfMut(qself: QSelf): QSelf {
+        override fun visitQSelfMut(qself: QSelf): QSelf {
             events += "qself"
-            return super.visitQselfMut(qself)
+            return super.visitQSelfMut(qself)
         }
 
         override fun visitTraitItem(item: TraitItem): TraitItem {
@@ -500,7 +507,8 @@ class VisitMutTest {
         }
 
         fun assertEvent(event: String) {
-            assertTrue(events.contains(event), dump())
+            val idx = events.indexOfFirst { it == event }
+            assertTrue(idx >= 0, "looking for '$event' but events=[${events.joinToString(", ")}]")
         }
 
         fun dump(): String =

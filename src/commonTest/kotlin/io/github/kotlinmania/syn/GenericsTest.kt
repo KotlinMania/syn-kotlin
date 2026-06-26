@@ -217,7 +217,7 @@ class GenericsTest {
         val lifetime =
             generics.lifetimes().firstOrNull()?.lifetime
                 ?: Lifetime.new("'a", Span.callSite()).also {
-                    generics.params.pushValue(GenericParam.LifetimeParam(emptyList(), it, null, LifetimeList()))
+                    generics.params.pushValue(GenericParam.LifetimeParam(mutableListOf(), it, null, LifetimeList()))
                 }
 
         assertEquals("'a", lifetime.toString())

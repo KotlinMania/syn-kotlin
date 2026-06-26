@@ -138,125 +138,264 @@ public open class VisitMut {
             }
         }
 
-    public open fun visitExprArrayMut(e: Expr.Array): Expr =
-        e.copy(attrs = visitAttributesMut(e.attrs), elems = e.elems.copy({ visitExprMut(it) }, { it }))
+    public open fun visitExprArrayMut(e: Expr.Array): Expr {
+        e.attrs = visitAttributesMut(e.attrs)
+        e.elems.mapValuesInPlace(::visitExprMut)
+        return e
+    }
 
-    public open fun visitExprAssignMut(e: Expr.Assign): Expr =
-        e.copy(attrs = visitAttributesMut(e.attrs), left = visitExprMut(e.left), right = visitExprMut(e.right))
+    public open fun visitExprAssignMut(e: Expr.Assign): Expr {
+        e.attrs = visitAttributesMut(e.attrs)
+        e.left = visitExprMut(e.left)
+        e.right = visitExprMut(e.right)
+        return e
+    }
 
-    public open fun visitExprAsyncMut(e: Expr.Async): Expr =
-        e.copy(attrs = visitAttributesMut(e.attrs), block = visitBlockMut(e.block))
+    public open fun visitExprAsyncMut(e: Expr.Async): Expr {
+        e.attrs = visitAttributesMut(e.attrs)
+        e.block = visitBlockMut(e.block)
+        return e
+    }
 
-    public open fun visitExprAwaitMut(e: Expr.Await): Expr =
-        e.copy(attrs = visitAttributesMut(e.attrs), base = visitExprMut(e.base))
+    public open fun visitExprAwaitMut(e: Expr.Await): Expr {
+        e.attrs = visitAttributesMut(e.attrs)
+        e.base = visitExprMut(e.base)
+        return e
+    }
 
-    public open fun visitExprBinaryMut(e: Expr.Binary): Expr =
-        e.copy(attrs = visitAttributesMut(e.attrs), left = visitExprMut(e.left), op = visitBinOpMut(e.op), right = visitExprMut(e.right))
+    public open fun visitExprBinaryMut(e: Expr.Binary): Expr {
+        e.attrs = visitAttributesMut(e.attrs)
+        e.left = visitExprMut(e.left)
+        e.op = visitBinOpMut(e.op)
+        e.right = visitExprMut(e.right)
+        return e
+    }
 
-    public open fun visitExprBlockMut(e: Expr.BlockExpr): Expr =
-        e.copy(attrs = visitAttributesMut(e.attrs), label = e.label?.let { visitLabelMut(it) }, block = visitBlockMut(e.block))
+    public open fun visitExprBlockMut(e: Expr.BlockExpr): Expr {
+        e.attrs = visitAttributesMut(e.attrs)
+        e.label = e.label?.let { visitLabelMut(it) }
+        e.block = visitBlockMut(e.block)
+        return e
+    }
 
-    public open fun visitExprBreakMut(e: Expr.Break): Expr =
-        e.copy(attrs = visitAttributesMut(e.attrs), label = e.label?.let { visitLifetimeMut(it) }, expr = e.expr?.let { visitExprMut(it) })
+    public open fun visitExprBreakMut(e: Expr.Break): Expr {
+        e.attrs = visitAttributesMut(e.attrs)
+        e.label = e.label?.let { visitLifetimeMut(it) }
+        e.expr = e.expr?.let { visitExprMut(it) }
+        return e
+    }
 
-    public open fun visitExprCallMut(e: Expr.Call): Expr =
-        e.copy(attrs = visitAttributesMut(e.attrs), func = visitExprMut(e.func), args = e.args.copy({ visitExprMut(it) }, { it }))
+    public open fun visitExprCallMut(e: Expr.Call): Expr {
+        e.attrs = visitAttributesMut(e.attrs)
+        e.func = visitExprMut(e.func)
+        e.args.mapValuesInPlace(::visitExprMut)
+        return e
+    }
 
-    public open fun visitExprCastMut(e: Expr.Cast): Expr =
-        e.copy(attrs = visitAttributesMut(e.attrs), expr = visitExprMut(e.expr), ty = visitTypeMut(e.ty))
+    public open fun visitExprCastMut(e: Expr.Cast): Expr {
+        e.attrs = visitAttributesMut(e.attrs)
+        e.expr = visitExprMut(e.expr)
+        e.ty = visitTypeMut(e.ty)
+        return e
+    }
 
-    public open fun visitExprClosureMut(e: Expr.Closure): Expr =
-        e.copy(attrs = visitAttributesMut(e.attrs), inputs = e.inputs.copy({ visitPatMut(it) }, { it }), output = visitReturnTypeMut(e.output), body = visitExprMut(e.body))
+    public open fun visitExprClosureMut(e: Expr.Closure): Expr {
+        e.attrs = visitAttributesMut(e.attrs)
+        e.inputs.mapValuesInPlace(::visitPatMut)
+        e.output = visitReturnTypeMut(e.output)
+        e.body = visitExprMut(e.body)
+        return e
+    }
 
-    public open fun visitExprConstMut(e: Expr.Const): Expr =
-        e.copy(attrs = visitAttributesMut(e.attrs), block = visitBlockMut(e.block))
+    public open fun visitExprConstMut(e: Expr.Const): Expr {
+        e.attrs = visitAttributesMut(e.attrs)
+        e.block = visitBlockMut(e.block)
+        return e
+    }
 
-    public open fun visitExprContinueMut(e: Expr.Continue): Expr =
-        e.copy(attrs = visitAttributesMut(e.attrs), label = e.label?.let { visitLifetimeMut(it) })
+    public open fun visitExprContinueMut(e: Expr.Continue): Expr {
+        e.attrs = visitAttributesMut(e.attrs)
+        e.label = e.label?.let { visitLifetimeMut(it) }
+        return e
+    }
 
-    public open fun visitExprFieldMut(e: Expr.Field): Expr =
-        e.copy(attrs = visitAttributesMut(e.attrs), base = visitExprMut(e.base), member = visitMemberMut(e.member))
+    public open fun visitExprFieldMut(e: Expr.Field): Expr {
+        e.attrs = visitAttributesMut(e.attrs)
+        e.base = visitExprMut(e.base)
+        e.member = visitMemberMut(e.member)
+        return e
+    }
 
-    public open fun visitExprForLoopMut(e: Expr.ForLoop): Expr =
-        e.copy(attrs = visitAttributesMut(e.attrs), label = e.label?.let { visitLabelMut(it) }, pat = visitPatMut(e.pat), expr = visitExprMut(e.expr), body = visitBlockMut(e.body))
+    public open fun visitExprForLoopMut(e: Expr.ForLoop): Expr {
+        e.attrs = visitAttributesMut(e.attrs)
+        e.label = e.label?.let { visitLabelMut(it) }
+        e.pat = visitPatMut(e.pat)
+        e.expr = visitExprMut(e.expr)
+        e.body = visitBlockMut(e.body)
+        return e
+    }
 
-    public open fun visitExprGroupMut(e: Expr.Group): Expr =
-        e.copy(attrs = visitAttributesMut(e.attrs), expr = visitExprMut(e.expr))
+    public open fun visitExprGroupMut(e: Expr.Group): Expr {
+        e.attrs = visitAttributesMut(e.attrs)
+        e.expr = visitExprMut(e.expr)
+        return e
+    }
 
-    public open fun visitExprIfMut(e: Expr.If): Expr =
-        e.copy(attrs = visitAttributesMut(e.attrs), cond = visitExprMut(e.cond), thenBranch = visitBlockMut(e.thenBranch), elseBranch = e.elseBranch?.let { visitElseExprMut(it) })
+    public open fun visitExprIfMut(e: Expr.If): Expr {
+        e.attrs = visitAttributesMut(e.attrs)
+        e.cond = visitExprMut(e.cond)
+        e.thenBranch = visitBlockMut(e.thenBranch)
+        e.elseBranch = e.elseBranch?.let { visitElseExprMut(it) }
+        return e
+    }
 
-    public open fun visitExprIndexMut(e: Expr.Index): Expr =
-        e.copy(attrs = visitAttributesMut(e.attrs), expr = visitExprMut(e.expr), index = visitExprMut(e.index))
+    public open fun visitExprIndexMut(e: Expr.Index): Expr {
+        e.attrs = visitAttributesMut(e.attrs)
+        e.expr = visitExprMut(e.expr)
+        e.index = visitExprMut(e.index)
+        return e
+    }
 
-    public open fun visitExprInferMut(e: Expr.Infer): Expr =
-        e.copy(attrs = visitAttributesMut(e.attrs))
+    public open fun visitExprInferMut(e: Expr.Infer): Expr {
+        e.attrs = visitAttributesMut(e.attrs)
+        return e
+    }
 
-    public open fun visitExprLetMut(e: Expr.Let): Expr =
-        e.copy(attrs = visitAttributesMut(e.attrs), pat = visitPatMut(e.pat), expr = visitExprMut(e.expr))
+    public open fun visitExprLetMut(e: Expr.Let): Expr {
+        e.attrs = visitAttributesMut(e.attrs)
+        e.pat = visitPatMut(e.pat)
+        e.expr = visitExprMut(e.expr)
+        return e
+    }
 
-    public open fun visitExprLitMut(e: Expr.Lit): Expr =
-        e.copy(attrs = visitAttributesMut(e.attrs), lit = visitLitMut(e.lit))
+    public open fun visitExprLitMut(e: Expr.Lit): Expr {
+        e.attrs = visitAttributesMut(e.attrs)
+        e.lit = visitLitMut(e.lit)
+        return e
+    }
 
-    public open fun visitExprLoopMut(e: Expr.Loop): Expr =
-        e.copy(attrs = visitAttributesMut(e.attrs), label = e.label?.let { visitLabelMut(it) }, body = visitBlockMut(e.body))
+    public open fun visitExprLoopMut(e: Expr.Loop): Expr {
+        e.attrs = visitAttributesMut(e.attrs)
+        e.label = e.label?.let { visitLabelMut(it) }
+        e.body = visitBlockMut(e.body)
+        return e
+    }
 
-    public open fun visitExprMacroMut(e: Expr.Macro): Expr =
-        e.copy(attrs = visitAttributesMut(e.attrs), mac = visitMacroMut(e.mac))
+    public open fun visitExprMacroMut(e: Expr.Macro): Expr {
+        e.attrs = visitAttributesMut(e.attrs)
+        e.mac = visitMacroMut(e.mac)
+        return e
+    }
 
-    public open fun visitExprMatchMut(e: Expr.Match): Expr =
-        e.copy(attrs = visitAttributesMut(e.attrs), expr = visitExprMut(e.expr), arms = e.arms.mapTo(mutableListOf()) { visitArmMut(it) })
+    public open fun visitExprMatchMut(e: Expr.Match): Expr {
+        e.attrs = visitAttributesMut(e.attrs)
+        e.expr = visitExprMut(e.expr)
+        for (i in e.arms.indices) e.arms[i] = visitArmMut(e.arms[i])
+        return e
+    }
 
-    public open fun visitExprMethodCallMut(e: Expr.MethodCall): Expr =
-        e.copy(
-            attrs = visitAttributesMut(e.attrs),
-            receiver = visitExprMut(e.receiver),
-            method = visitIdentMut(e.method),
-            turbofish = e.turbofish?.let { visitAngleBracketedGenericArgumentsMut(it) },
-            args = e.args.copy({ visitExprMut(it) }, { it }),
-        )
+    public open fun visitExprMethodCallMut(e: Expr.MethodCall): Expr {
+        e.attrs = visitAttributesMut(e.attrs)
+        e.receiver = visitExprMut(e.receiver)
+        e.method = visitIdentMut(e.method)
+        e.turbofish = e.turbofish?.let { visitAngleBracketedGenericArgumentsMut(it) }
+        e.args.mapValuesInPlace(::visitExprMut)
+        return e
+    }
 
-    public open fun visitExprParenMut(e: Expr.Paren): Expr =
-        e.copy(attrs = visitAttributesMut(e.attrs), expr = visitExprMut(e.expr))
+    public open fun visitExprParenMut(e: Expr.Paren): Expr {
+        e.attrs = visitAttributesMut(e.attrs)
+        e.expr = visitExprMut(e.expr)
+        return e
+    }
 
-    public open fun visitExprRangeMut(e: Expr.Range): Expr =
-        e.copy(attrs = visitAttributesMut(e.attrs), start = e.start?.let { visitExprMut(it) }, limits = visitRangeLimitsMut(e.limits), end = e.end?.let { visitExprMut(it) })
+    public open fun visitExprRangeMut(e: Expr.Range): Expr {
+        e.attrs = visitAttributesMut(e.attrs)
+        e.start = e.start?.let { visitExprMut(it) }
+        e.limits = visitRangeLimitsMut(e.limits)
+        e.end = e.end?.let { visitExprMut(it) }
+        return e
+    }
 
-    public open fun visitExprRawAddrMut(e: Expr.RawAddr): Expr =
-        e.copy(attrs = visitAttributesMut(e.attrs), mutability = visitPointerMutabilityMut(e.mutability), expr = visitExprMut(e.expr))
+    public open fun visitExprRawAddrMut(e: Expr.RawAddr): Expr {
+        e.attrs = visitAttributesMut(e.attrs)
+        e.mutability = visitPointerMutabilityMut(e.mutability)
+        e.expr = visitExprMut(e.expr)
+        return e
+    }
 
-    public open fun visitExprReferenceMut(e: Expr.Reference): Expr =
-        e.copy(attrs = visitAttributesMut(e.attrs), expr = visitExprMut(e.expr))
+    public open fun visitExprReferenceMut(e: Expr.Reference): Expr {
+        e.attrs = visitAttributesMut(e.attrs)
+        e.expr = visitExprMut(e.expr)
+        return e
+    }
 
-    public open fun visitExprRepeatMut(e: Expr.Repeat): Expr =
-        e.copy(attrs = visitAttributesMut(e.attrs), expr = visitExprMut(e.expr), len = visitExprMut(e.len))
+    public open fun visitExprRepeatMut(e: Expr.Repeat): Expr {
+        e.attrs = visitAttributesMut(e.attrs)
+        e.expr = visitExprMut(e.expr)
+        e.len = visitExprMut(e.len)
+        return e
+    }
 
-    public open fun visitExprReturnMut(e: Expr.Return): Expr =
-        e.copy(attrs = visitAttributesMut(e.attrs), expr = e.expr?.let { visitExprMut(it) })
+    public open fun visitExprReturnMut(e: Expr.Return): Expr {
+        e.attrs = visitAttributesMut(e.attrs)
+        e.expr = e.expr?.let { visitExprMut(it) }
+        return e
+    }
 
-    public open fun visitExprStructMut(e: Expr.Struct): Expr =
-        e.copy(attrs = visitAttributesMut(e.attrs), qself = e.qself?.let { visitQselfMut(it) }, path = visitPathMut(e.path), fields = e.fields.copy({ visitFieldValueMut(it) }, { it }), rest = e.rest?.let { visitExprMut(it) })
+    public open fun visitExprStructMut(e: Expr.Struct): Expr {
+        e.attrs = visitAttributesMut(e.attrs)
+        e.qself = e.qself?.let { visitQSelfMut(it) }
+        e.path = visitPathMut(e.path)
+        e.fields.mapValuesInPlace(::visitFieldValueMut)
+        e.rest = e.rest?.let { visitExprMut(it) }
+        return e
+    }
 
-    public open fun visitExprTryMut(e: Expr.Try): Expr =
-        e.copy(attrs = visitAttributesMut(e.attrs), expr = visitExprMut(e.expr))
+    public open fun visitExprTryMut(e: Expr.Try): Expr {
+        e.attrs = visitAttributesMut(e.attrs)
+        e.expr = visitExprMut(e.expr)
+        return e
+    }
 
-    public open fun visitExprTryBlockMut(e: Expr.TryBlock): Expr =
-        e.copy(attrs = visitAttributesMut(e.attrs), block = visitBlockMut(e.block))
+    public open fun visitExprTryBlockMut(e: Expr.TryBlock): Expr {
+        e.attrs = visitAttributesMut(e.attrs)
+        e.block = visitBlockMut(e.block)
+        return e
+    }
 
-    public open fun visitExprTupleMut(e: Expr.Tuple): Expr =
-        e.copy(attrs = visitAttributesMut(e.attrs), elems = e.elems.copy({ visitExprMut(it) }, { it }))
+    public open fun visitExprTupleMut(e: Expr.Tuple): Expr {
+        e.attrs = visitAttributesMut(e.attrs)
+        e.elems.mapValuesInPlace(::visitExprMut)
+        return e
+    }
 
-    public open fun visitExprUnaryMut(e: Expr.Unary): Expr =
-        e.copy(attrs = visitAttributesMut(e.attrs), op = visitUnOpMut(e.op), expr = visitExprMut(e.expr))
+    public open fun visitExprUnaryMut(e: Expr.Unary): Expr {
+        e.attrs = visitAttributesMut(e.attrs)
+        e.op = visitUnOpMut(e.op)
+        e.expr = visitExprMut(e.expr)
+        return e
+    }
 
-    public open fun visitExprUnsafeMut(e: Expr.Unsafe): Expr =
-        e.copy(attrs = visitAttributesMut(e.attrs), block = visitBlockMut(e.block))
+    public open fun visitExprUnsafeMut(e: Expr.Unsafe): Expr {
+        e.attrs = visitAttributesMut(e.attrs)
+        e.block = visitBlockMut(e.block)
+        return e
+    }
 
-    public open fun visitExprWhileMut(e: Expr.While): Expr =
-        e.copy(attrs = visitAttributesMut(e.attrs), label = e.label?.let { visitLabelMut(it) }, cond = visitExprMut(e.cond), body = visitBlockMut(e.body))
+    public open fun visitExprWhileMut(e: Expr.While): Expr {
+        e.attrs = visitAttributesMut(e.attrs)
+        e.label = e.label?.let { visitLabelMut(it) }
+        e.cond = visitExprMut(e.cond)
+        e.body = visitBlockMut(e.body)
+        return e
+    }
 
-    public open fun visitExprYieldMut(e: Expr.Yield): Expr =
-        e.copy(attrs = visitAttributesMut(e.attrs), expr = e.expr?.let { visitExprMut(it) })
+    public open fun visitExprYieldMut(e: Expr.Yield): Expr {
+        e.attrs = visitAttributesMut(e.attrs)
+        e.expr = e.expr?.let { visitExprMut(it) }
+        return e
+    }
 
     public open fun visitType(t: SynType): SynType =
         when (t) {
@@ -280,22 +419,44 @@ public open class VisitMut {
             }
         }
 
-    public open fun visitPath(p: Path): Path =
-        Path(
-            leadingColon = p.leadingColon,
-            segments = p.segments.copy({ visitPathSegmentMut(it) }, { it }),
-        )
+    public open fun visitPath(p: Path): Path {
+        p.segments.mapValuesInPlace(::visitPathSegmentMut)
+        return p
+    }
 
     public open fun visitPat(p: Pat): Pat =
         when (p) {
-            is Pat.Const -> p.copy(attrs = visitAttributesMut(p.attrs), block = visitBlockMut(p.block))
+            is Pat.Const -> {
+                p.attrs = visitAttributesMut(p.attrs)
+                p.block = visitBlockMut(p.block)
+                p
+            }
             is Pat.Ident -> visitPatIdentMut(p)
-            is Pat.Lit -> p.copy(attrs = visitAttributesMut(p.attrs), lit = visitLitMut(p.lit))
-            is Pat.Macro -> p.copy(attrs = visitAttributesMut(p.attrs), mac = visitMacroMut(p.mac))
+            is Pat.Lit -> {
+                p.attrs = visitAttributesMut(p.attrs)
+                p.lit = visitLitMut(p.lit)
+                p
+            }
+            is Pat.Macro -> {
+                p.attrs = visitAttributesMut(p.attrs)
+                p.mac = visitMacroMut(p.mac)
+                p
+            }
             is Pat.Or -> visitPatOrMut(p)
             is Pat.PatParen -> visitPatParenMut(p)
-            is Pat.Path -> p.copy(attrs = visitAttributesMut(p.attrs), qself = p.qself?.let { visitQselfMut(it) }, path = visitPathMut(p.path))
-            is Pat.Range -> p.copy(attrs = visitAttributesMut(p.attrs), start = p.start?.let { visitExprMut(it) }, limits = visitRangeLimitsMut(p.limits), end = p.end?.let { visitExprMut(it) })
+            is Pat.Path -> {
+                p.attrs = visitAttributesMut(p.attrs)
+                p.qself = p.qself?.let { visitQSelfMut(it) }
+                p.path = visitPathMut(p.path)
+                p
+            }
+            is Pat.Range -> {
+                p.attrs = visitAttributesMut(p.attrs)
+                p.start = p.start?.let { visitExprMut(it) }
+                p.limits = visitRangeLimitsMut(p.limits)
+                p.end = p.end?.let { visitExprMut(it) }
+                p
+            }
             is Pat.Reference -> visitPatReferenceMut(p)
             is Pat.Rest -> visitPatRestMut(p)
             is Pat.Slice -> visitPatSliceMut(p)
@@ -333,23 +494,26 @@ public open class VisitMut {
             }
         }
 
-    public open fun visitFile(f: File): File =
-        f.copy(
-            attrs = visitAttributesMut(f.attrs),
-            items = f.items.mapTo(mutableListOf()) { visitItemMut(it) },
-        )
+    public open fun visitFile(f: File): File {
+        f.attrs = visitAttributesMut(f.attrs)
+        for (i in f.items.indices) f.items[i] = visitItemMut(f.items[i])
+        return f
+    }
 
-    public open fun visitAttribute(a: Attribute): Attribute =
-        a.copy(
-            style = visitAttrStyleMut(a.style),
-            meta = visitMetaMut(a.meta),
-        )
+    public open fun visitAttribute(a: Attribute): Attribute {
+        a.style = visitAttrStyleMut(a.style)
+        a.meta = visitMetaMut(a.meta)
+        return a
+    }
 
     public open fun visitAttrStyle(style: AttrStyle): AttrStyle = style
 
     public open fun visitMeta(m: Meta): Meta =
         when (m) {
-            is Meta.PathMeta -> m.copy(path = visitPathMut(m.path))
+            is Meta.PathMeta -> {
+                m.path = visitPathMut(m.path)
+                m
+            }
             is Meta.List -> visitMetaListMut(m)
             is Meta.NameValue -> visitMetaNameValueMut(m)
         }
@@ -357,30 +521,56 @@ public open class VisitMut {
     public open fun visitMetaList(m: Meta.List): Meta {
         visitMacroDelimiterMut(m.delimiter)
         visitTokenStreamMut(m.tokens)
-        return m.copy(path = visitPathMut(m.path))
+        m.path = visitPathMut(m.path)
+        return m
     }
 
-    public open fun visitMetaNameValue(m: Meta.NameValue): Meta =
-        m.copy(path = visitPathMut(m.path), value = visitExprMut(m.value))
+    public open fun visitMetaNameValue(m: Meta.NameValue): Meta {
+        m.path = visitPathMut(m.path)
+        m.value = visitExprMut(m.value)
+        return m
+    }
 
-    public open fun visitGenerics(g: Generics): Generics =
-        Generics(
-            ltToken = g.ltToken,
-            params = g.params.copy({ visitGenericParamMut(it) }, { it }),
-            gtToken = g.gtToken,
-            whereClause = g.whereClause?.let { visitWhereClauseMut(it) },
-        )
+    public open fun visitGenerics(g: Generics): Generics {
+        g.params.mapValuesInPlace(::visitGenericParamMut)
+        g.whereClause = g.whereClause?.let { visitWhereClauseMut(it) }
+        return g
+    }
 
     public open fun visitLit(l: Lit): Lit =
         when (l) {
-            is Lit.Str -> Lit.Str(visitLitStrMut(l.value))
-            is Lit.ByteStr -> Lit.ByteStr(visitLitByteStrMut(l.value))
-            is Lit.CStr -> Lit.CStr(visitLitCstrMut(l.value))
-            is Lit.Byte -> Lit.Byte(visitLitByteMut(l.value))
-            is Lit.Char -> Lit.Char(visitLitCharMut(l.value))
-            is Lit.Int -> Lit.Int(visitLitIntMut(l.value))
-            is Lit.Float -> Lit.Float(visitLitFloatMut(l.value))
-            is Lit.Bool -> Lit.Bool(visitLitBoolMut(l.value))
+            is Lit.Str -> {
+                l.value = visitLitStrMut(l.value)
+                l
+            }
+            is Lit.ByteStr -> {
+                l.value = visitLitByteStrMut(l.value)
+                l
+            }
+            is Lit.CStr -> {
+                l.value = visitLitCStrMut(l.value)
+                l
+            }
+            is Lit.Byte -> {
+                l.value = visitLitByteMut(l.value)
+                l
+            }
+            is Lit.Char -> {
+                l.value = visitLitCharMut(l.value)
+                l
+            }
+            is Lit.Int -> {
+                l.value = visitLitIntMut(l.value)
+                l
+            }
+            is Lit.Float -> {
+                l.value = visitLitFloatMut(l.value)
+                l
+            }
+            is Lit.Bool -> {
+                l.value = visitLitBoolMut(l.value)
+                l
+            }
             is Lit.Verbatim -> l
         }
 
@@ -419,40 +609,66 @@ public open class VisitMut {
     public open fun visitStmt(s: Stmt): Stmt =
         when (s) {
             is Stmt.Local -> visitLocalMut(s)
-            is Stmt.ItemStmt -> s.copy(item = visitItemMut(s.item))
-            is Stmt.ExprStmt -> s.copy(expr = visitExprMut(s.expr))
+            is Stmt.ItemStmt -> {
+                s.item = visitItemMut(s.item)
+                s
+            }
+            is Stmt.ExprStmt -> {
+                s.expr = visitExprMut(s.expr)
+                s
+            }
             is Stmt.MacroStmt -> visitStmtMacroMut(s)
         }
 
     public open fun visitData(d: Data): Data =
         when (d) {
-            is Data.Struct -> Data.Struct(visitDataStructMut(d.value))
-            is Data.Enum -> Data.Enum(visitDataEnumMut(d.value))
-            is Data.Union -> Data.Union(visitDataUnionMut(d.value))
+            is Data.Struct -> {
+                d.value = visitDataStructMut(d.value)
+                d
+            }
+            is Data.Enum -> {
+                d.value = visitDataEnumMut(d.value)
+                d
+            }
+            is Data.Union -> {
+                d.value = visitDataUnionMut(d.value)
+                d
+            }
         }
 
-    public open fun visitDataEnum(d: DataEnum): DataEnum =
-        d.copy(variants = d.variants.copy({ visitVariantMut(it) }, { it }))
+    public open fun visitDataEnum(d: DataEnum): DataEnum {
+        d.variants.mapValuesInPlace(::visitVariantMut)
+        return d
+    }
 
-    public open fun visitDataStruct(d: DataStruct): DataStruct =
-        d.copy(fields = visitFieldsMut(d.fields))
+    public open fun visitDataStruct(d: DataStruct): DataStruct {
+        d.fields = visitFieldsMut(d.fields)
+        return d
+    }
 
-    public open fun visitDataUnion(d: DataUnion): DataUnion =
-        d.copy(fields = visitFieldsNamedMut(d.fields))
+    public open fun visitDataUnion(d: DataUnion): DataUnion {
+        d.fields = visitFieldsNamedMut(d.fields)
+        return d
+    }
 
-    public open fun visitLabelMut(label: Label): Label =
-        label.copy(name = visitLifetimeMut(label.name))
+    public open fun visitLabelMut(label: Label): Label {
+        label.name = visitLifetimeMut(label.name)
+        return label
+    }
 
-    public open fun visitDeriveInput(di: DeriveInput): DeriveInput =
-        di.copy(
-            attrs = visitAttributesMut(di.attrs),
-            vis = visitVisibilityMut(di.vis),
-            ident = visitIdentMut(di.ident),
-            generics = visitGenericsMut(di.generics),
-            data = visitDataMut(di.data),
-        )
+    public open fun visitDeriveInput(di: DeriveInput): DeriveInput {
+        di.attrs = visitAttributesMut(di.attrs)
+        di.vis = visitVisibilityMut(di.vis)
+        di.ident = visitIdentMut(di.ident)
+        di.generics = visitGenericsMut(di.generics)
+        di.data = visitDataMut(di.data)
+        return di
+    }
 
-    public open fun visitBlock(block: Block): Block = block.copy(stmts = block.stmts.mapTo(mutableListOf()) { visitStmtMut(it) })
+    public open fun visitBlock(block: Block): Block {
+        for (i in block.stmts.indices) block.stmts[i] = visitStmtMut(block.stmts[i])
+        return block
+    }
 
     public open fun visitAttributes(attrs: MutableList<Attribute>): MutableList<Attribute> {
         for (i in attrs.indices) attrs[i] = visitAttributeMut(attrs[i])
@@ -460,17 +676,13 @@ public open class VisitMut {
     }
 
     public open fun visitSignature(sig: Signature): Signature {
-        var result = sig
-        result =
-            result.copy(
-                abi = result.abi?.let { visitAbiMut(it) },
-                ident = visitIdentMut(result.ident),
-                generics = visitGenericsMut(result.generics),
-                inputs = result.inputs.copy({ visitFnArgMut(it) }, { it }),
-                variadic = result.variadic?.let { visitVariadicMut(it) },
-                output = visitReturnTypeMut(result.output),
-            )
-        return result
+        sig.abi = sig.abi?.let { visitAbiMut(it) }
+        sig.ident = visitIdentMut(sig.ident)
+        sig.generics = visitGenericsMut(sig.generics)
+        sig.inputs.mapValuesInPlace(::visitFnArgMut)
+        sig.variadic = sig.variadic?.let { visitVariadicMut(it) }
+        sig.output = visitReturnTypeMut(sig.output)
+        return sig
     }
 
     public open fun visitAbi(a: Abi): Abi = a
@@ -478,13 +690,19 @@ public open class VisitMut {
     public open fun visitReturnType(rt: ReturnType): ReturnType =
         when (rt) {
             is ReturnType.Default -> rt
-            is ReturnType.TypeReturn -> rt.copy(ty = visitTypeMut(rt.ty))
+            is ReturnType.TypeReturn -> {
+                rt.ty = visitTypeMut(rt.ty)
+                rt
+            }
         }
 
     public open fun visitFnArg(arg: FnArg): FnArg =
         when (arg) {
             is FnArg.Receiver -> visitReceiverMut(arg)
-            is FnArg.Typed -> arg.copy(patType = visitPatTypeMut(arg.patType))
+            is FnArg.Typed -> {
+                arg.patType = visitPatTypeMut(arg.patType)
+                arg
+            }
         }
 
     public open fun visitForeignItem(item: ForeignItem): ForeignItem =
@@ -499,165 +717,227 @@ public open class VisitMut {
             }
         }
 
-    public open fun visitForeignItemFn(item: ForeignItem.Fn): ForeignItem.Fn =
-        item.copy(
-            attrs = visitAttributesMut(item.attrs),
-            vis = visitVisibilityMut(item.vis),
-            sig = visitSignatureMut(item.sig),
-        )
-
-    public open fun visitForeignItemMacro(item: ForeignItem.Macro): ForeignItem.Macro =
-        item.copy(attrs = visitAttributesMut(item.attrs), mac = visitMacroMut(item.mac))
-
-    public open fun visitForeignItemStatic(item: ForeignItem.Static): ForeignItem.Static =
-        item.copy(
-            attrs = visitAttributesMut(item.attrs),
-            vis = visitVisibilityMut(item.vis),
-            mutability = visitStaticMutabilityMut(item.mutability),
-            ident = visitIdentMut(item.ident),
-            ty = visitTypeMut(item.ty),
-        )
-
-    public open fun visitForeignItemType(item: ForeignItem.ItemType): ForeignItem.ItemType =
-        item.copy(
-            attrs = visitAttributesMut(item.attrs),
-            vis = visitVisibilityMut(item.vis),
-            ident = visitIdentMut(item.ident),
-            generics = visitGenericsMut(item.generics),
-        )
-
-    public open fun visitReceiver(receiver: FnArg.Receiver): FnArg.Receiver {
-        val reference = receiver.reference
-        return receiver.copy(
-            attrs = visitAttributesMut(receiver.attrs),
-            reference = reference?.copy(lifetime = reference.lifetime?.let { visitLifetimeMut(it) }),
-            `type` = visitTypeMut(receiver.type),
-        )
+    public open fun visitForeignItemFn(item: ForeignItem.Fn): ForeignItem.Fn {
+        item.attrs = visitAttributesMut(item.attrs)
+        item.vis = visitVisibilityMut(item.vis)
+        item.sig = visitSignatureMut(item.sig)
+        return item
     }
 
-    public open fun visitPatType(patType: PatType): PatType = patType.copy(pat = visitPatMut(patType.pat), ty = visitTypeMut(patType.ty))
+    public open fun visitForeignItemMacro(item: ForeignItem.Macro): ForeignItem.Macro {
+        item.attrs = visitAttributesMut(item.attrs)
+        item.mac = visitMacroMut(item.mac)
+        return item
+    }
 
-    public open fun visitPatIdent(patIdent: Pat.Ident): Pat =
-        patIdent.copy(
-            attrs = visitAttributesMut(patIdent.attrs),
-            ident = visitIdentMut(patIdent.ident),
-            subpat = patIdent.subpat?.let { visitPatMut(it) },
-        )
+    public open fun visitForeignItemStatic(item: ForeignItem.Static): ForeignItem.Static {
+        item.attrs = visitAttributesMut(item.attrs)
+        item.vis = visitVisibilityMut(item.vis)
+        item.mutability = visitStaticMutabilityMut(item.mutability)
+        item.ident = visitIdentMut(item.ident)
+        item.ty = visitTypeMut(item.ty)
+        return item
+    }
 
-    public open fun visitPatOrMut(pat: Pat.Or): Pat =
-        pat.copy(attrs = visitAttributesMut(pat.attrs), cases = pat.cases.copy({ visitPatMut(it) }, { it }))
+    public open fun visitForeignItemType(item: ForeignItem.ItemType): ForeignItem.ItemType {
+        item.attrs = visitAttributesMut(item.attrs)
+        item.vis = visitVisibilityMut(item.vis)
+        item.ident = visitIdentMut(item.ident)
+        item.generics = visitGenericsMut(item.generics)
+        return item
+    }
 
-    public open fun visitPatParenMut(pat: Pat.PatParen): Pat =
-        pat.copy(attrs = visitAttributesMut(pat.attrs), pat = visitPatMut(pat.pat))
+    public open fun visitReceiver(receiver: FnArg.Receiver): FnArg.Receiver {
+        receiver.attrs = visitAttributesMut(receiver.attrs)
+        receiver.reference?.let { it.lifetime = it.lifetime?.let { lt -> visitLifetimeMut(lt) } }
+        receiver.type = visitTypeMut(receiver.type)
+        return receiver
+    }
 
-    public open fun visitPatReferenceMut(pat: Pat.Reference): Pat =
-        pat.copy(attrs = visitAttributesMut(pat.attrs), pat = visitPatMut(pat.pat))
+    public open fun visitPatType(patType: PatType): PatType {
+        patType.pat = visitPatMut(patType.pat)
+        patType.ty = visitTypeMut(patType.ty)
+        return patType
+    }
 
-    public open fun visitPatRestMut(pat: Pat.Rest): Pat.Rest =
-        pat.copy(attrs = visitAttributesMut(pat.attrs))
+    public open fun visitPatIdent(patIdent: Pat.Ident): Pat {
+        patIdent.attrs = visitAttributesMut(patIdent.attrs)
+        patIdent.ident = visitIdentMut(patIdent.ident)
+        patIdent.subpat = patIdent.subpat?.let { visitPatMut(it) }
+        return patIdent
+    }
 
-    public open fun visitPatRestMut(rest: PatRest): PatRest =
-        rest.copy(attrs = visitAttributesMut(rest.attrs))
+    public open fun visitPatOrMut(pat: Pat.Or): Pat {
+        pat.attrs = visitAttributesMut(pat.attrs)
+        pat.cases.mapValuesInPlace(::visitPatMut)
+        return pat
+    }
 
-    public open fun visitPatSliceMut(pat: Pat.Slice): Pat =
-        pat.copy(attrs = visitAttributesMut(pat.attrs), elems = pat.elems.copy({ visitPatMut(it) }, { it }))
+    public open fun visitPatParenMut(pat: Pat.PatParen): Pat {
+        pat.attrs = visitAttributesMut(pat.attrs)
+        pat.pat = visitPatMut(pat.pat)
+        return pat
+    }
 
-    public open fun visitPatStructMut(pat: Pat.Struct): Pat =
-        pat.copy(
-            attrs = visitAttributesMut(pat.attrs),
-            qself = pat.qself?.let { visitQselfMut(it) },
-            path = visitPathMut(pat.path),
-            fields = pat.fields.copy({ visitFieldPatMut(it) }, { it }),
-            rest = pat.rest?.let { visitPatRestMut(it) },
-        )
+    public open fun visitPatReferenceMut(pat: Pat.Reference): Pat {
+        pat.attrs = visitAttributesMut(pat.attrs)
+        pat.pat = visitPatMut(pat.pat)
+        return pat
+    }
 
-    public open fun visitPatTupleMut(pat: Pat.Tuple): Pat =
-        pat.copy(attrs = visitAttributesMut(pat.attrs), elems = pat.elems.copy({ visitPatMut(it) }, { it }))
+    public open fun visitPatRestMut(pat: Pat.Rest): Pat.Rest {
+        pat.attrs = visitAttributesMut(pat.attrs)
+        return pat
+    }
 
-    public open fun visitPatTupleStructMut(pat: Pat.TupleStruct): Pat =
-        pat.copy(
-            attrs = visitAttributesMut(pat.attrs),
-            qself = pat.qself?.let { visitQselfMut(it) },
-            path = visitPathMut(pat.path),
-            elems = pat.elems.copy({ visitPatMut(it) }, { it }),
-        )
+    public open fun visitPatRestMut(rest: PatRest): PatRest {
+        rest.attrs = visitAttributesMut(rest.attrs)
+        return rest
+    }
 
-    public open fun visitPatWildMut(pat: Pat.Wild): Pat =
-        pat.copy(attrs = visitAttributesMut(pat.attrs))
+    public open fun visitPatSliceMut(pat: Pat.Slice): Pat {
+        pat.attrs = visitAttributesMut(pat.attrs)
+        pat.elems.mapValuesInPlace(::visitPatMut)
+        return pat
+    }
 
-    public open fun visitPatTypeMut(pat: Pat.TypeAscription): Pat =
-        pat.copy(attrs = visitAttributesMut(pat.attrs), pat = visitPatMut(pat.pat), ty = visitTypeMut(pat.ty))
+    public open fun visitPatStructMut(pat: Pat.Struct): Pat {
+        pat.attrs = visitAttributesMut(pat.attrs)
+        pat.qself = pat.qself?.let { visitQSelfMut(it) }
+        pat.path = visitPathMut(pat.path)
+        pat.fields.mapValuesInPlace(::visitFieldPatMut)
+        pat.rest = pat.rest?.let { visitPatRestMut(it) }
+        return pat
+    }
 
-    public open fun visitTypePath(typePath: SynType.Path): SynType =
-        typePath.copy(qself = typePath.qself?.let { visitQselfMut(it) }, path = visitPathMut(typePath.path))
+    public open fun visitPatTupleMut(pat: Pat.Tuple): Pat {
+        pat.attrs = visitAttributesMut(pat.attrs)
+        pat.elems.mapValuesInPlace(::visitPatMut)
+        return pat
+    }
 
-    public open fun visitTypeReference(ty: SynType.Reference): SynType = ty.copy(lifetime = ty.lifetime?.let { visitLifetimeMut(it) }, elem = visitTypeMut(ty.elem))
+    public open fun visitPatTupleStructMut(pat: Pat.TupleStruct): Pat {
+        pat.attrs = visitAttributesMut(pat.attrs)
+        pat.qself = pat.qself?.let { visitQSelfMut(it) }
+        pat.path = visitPathMut(pat.path)
+        pat.elems.mapValuesInPlace(::visitPatMut)
+        return pat
+    }
 
-    public open fun visitTypeArray(ty: SynType.Array): SynType =
-        ty.copy(elem = visitTypeMut(ty.elem), len = visitExprMut(ty.len))
+    public open fun visitPatWildMut(pat: Pat.Wild): Pat {
+        pat.attrs = visitAttributesMut(pat.attrs)
+        return pat
+    }
 
-    public open fun visitTypeGroup(ty: SynType.Group): SynType =
-        ty.copy(elem = visitTypeMut(ty.elem))
+    public open fun visitPatTypeMut(pat: Pat.TypeAscription): Pat {
+        pat.attrs = visitAttributesMut(pat.attrs)
+        pat.pat = visitPatMut(pat.pat)
+        pat.ty = visitTypeMut(pat.ty)
+        return pat
+    }
 
-    public open fun visitTypeImplTrait(ty: SynType.ImplTrait): SynType = ty.copy(bounds = ty.bounds.copy({ visitTypeParamBoundMut(it) }, { it }))
+    public open fun visitTypePath(typePath: SynType.Path): SynType {
+        typePath.qself = typePath.qself?.let { visitQSelfMut(it) }
+        typePath.path = visitPathMut(typePath.path)
+        return typePath
+    }
+
+    public open fun visitTypeReference(ty: SynType.Reference): SynType {
+        ty.lifetime = ty.lifetime?.let { visitLifetimeMut(it) }
+        ty.elem = visitTypeMut(ty.elem)
+        return ty
+    }
+
+    public open fun visitTypeArray(ty: SynType.Array): SynType {
+        ty.elem = visitTypeMut(ty.elem)
+        ty.len = visitExprMut(ty.len)
+        return ty
+    }
+
+    public open fun visitTypeGroup(ty: SynType.Group): SynType {
+        ty.elem = visitTypeMut(ty.elem)
+        return ty
+    }
+
+    public open fun visitTypeImplTrait(ty: SynType.ImplTrait): SynType {
+        ty.bounds.mapValuesInPlace(::visitTypeParamBoundMut)
+        return ty
+    }
 
     public open fun visitTypeInfer(ty: SynType.Infer): SynType = ty
 
-    public open fun visitTypeMacro(ty: SynType.Macro): SynType = ty.copy(mac = visitMacroMut(ty.mac))
+    public open fun visitTypeMacro(ty: SynType.Macro): SynType {
+        ty.mac = visitMacroMut(ty.mac)
+        return ty
+    }
 
     public open fun visitTypeNever(ty: SynType.Never): SynType = ty
 
-    public open fun visitTypePtr(ty: SynType.Ptr): SynType =
-        ty.copy(mutability = visitPointerMutabilityMut(ty.mutability), elem = visitTypeMut(ty.elem))
+    public open fun visitTypePtr(ty: SynType.Ptr): SynType {
+        ty.mutability = visitPointerMutabilityMut(ty.mutability)
+        ty.elem = visitTypeMut(ty.elem)
+        return ty
+    }
 
     public open fun visitPointerMutability(mutability: PointerMutability): PointerMutability = mutability
 
     public open fun visitPointerMutabilityMut(mutability: io.github.kotlinmania.syn.token.Mut?): io.github.kotlinmania.syn.token.Mut? = mutability
 
-    public open fun visitTypeBareFn(ty: SynType.BareFn): SynType =
-        ty.copy(
-            lifetimes = ty.lifetimes?.let { visitBoundLifetimesMut(it) },
-            abi = ty.abi?.let { visitAbiMut(it) },
-            inputs = ty.inputs.copy({ visitBareFnArgMut(it) }, { it }),
-            variadic = ty.variadic?.let { visitBareVariadicMut(it) },
-            output = visitReturnTypeMut(ty.output),
-        )
+    public open fun visitTypeBareFn(ty: SynType.BareFn): SynType {
+        ty.lifetimes = ty.lifetimes?.let { visitBoundLifetimesMut(it) }
+        ty.abi = ty.abi?.let { visitAbiMut(it) }
+        ty.inputs.mapValuesInPlace(::visitBareFnArgMut)
+        ty.variadic = ty.variadic?.let { visitBareVariadicMut(it) }
+        ty.output = visitReturnTypeMut(ty.output)
+        return ty
+    }
 
     public open fun visitBareFnArg(arg: BareFnArg): BareFnArg {
-        val name = arg.name
-        return arg.copy(
-            attrs = visitAttributesMut(arg.attrs),
-            name = name?.copy(ident = visitIdentMut(name.ident)),
-            ty = visitTypeMut(arg.ty),
-        )
+        arg.attrs = visitAttributesMut(arg.attrs)
+        arg.name?.let { it.ident = visitIdentMut(it.ident) }
+        arg.ty = visitTypeMut(arg.ty)
+        return arg
     }
 
     public open fun visitBareVariadic(variadic: BareVariadic): BareVariadic {
-        val name = variadic.name
-        return variadic.copy(
-            attrs = visitAttributesMut(variadic.attrs),
-            name = name?.copy(ident = visitIdentMut(name.ident)),
-        )
+        variadic.attrs = visitAttributesMut(variadic.attrs)
+        variadic.name?.let { it.ident = visitIdentMut(it.ident) }
+        return variadic
     }
 
-    public open fun visitTypeParen(ty: SynType.Paren): SynType = ty.copy(elem = visitTypeMut(ty.elem))
+    public open fun visitTypeParen(ty: SynType.Paren): SynType {
+        ty.elem = visitTypeMut(ty.elem)
+        return ty
+    }
 
-    public open fun visitTypeSlice(ty: SynType.Slice): SynType = ty.copy(elem = visitTypeMut(ty.elem))
+    public open fun visitTypeSlice(ty: SynType.Slice): SynType {
+        ty.elem = visitTypeMut(ty.elem)
+        return ty
+    }
 
-    public open fun visitTypeTraitObject(ty: SynType.TraitObject): SynType =
-        ty.copy(bounds = ty.bounds.copy({ visitTypeParamBoundMut(it) }, { it }))
+    public open fun visitTypeTraitObject(ty: SynType.TraitObject): SynType {
+        ty.bounds.mapValuesInPlace(::visitTypeParamBoundMut)
+        return ty
+    }
 
-    public open fun visitTypeTuple(ty: SynType.Tuple): SynType = ty.copy(elems = ty.elems.copy({ visitTypeMut(it) }, { it }))
+    public open fun visitTypeTuple(ty: SynType.Tuple): SynType {
+        ty.elems.mapValuesInPlace(::visitTypeMut)
+        return ty
+    }
 
-    public open fun visitExprPath(exprPath: Expr.Path): Expr =
-        exprPath.copy(
-            attrs = visitAttributesMut(exprPath.attrs),
-            qself = exprPath.qself?.let { visitQselfMut(it) },
-            path = visitPathMut(exprPath.path),
-        )
+    public open fun visitExprPath(exprPath: Expr.Path): Expr {
+        exprPath.attrs = visitAttributesMut(exprPath.attrs)
+        exprPath.qself = exprPath.qself?.let { visitQSelfMut(it) }
+        exprPath.path = visitPathMut(exprPath.path)
+        return exprPath
+    }
 
-    public open fun visitMacro(mac: Macro): Macro =
-        mac.copy(path = visitPathMut(mac.path), delimiter = visitMacroDelimiterMut(mac.delimiter), tokens = visitTokenStreamMut(mac.tokens))
+    public open fun visitMacro(mac: Macro): Macro {
+        mac.path = visitPathMut(mac.path)
+        mac.delimiter = visitMacroDelimiterMut(mac.delimiter)
+        mac.tokens = visitTokenStreamMut(mac.tokens)
+        return mac
+    }
 
     public open fun visitPathArguments(pathArgs: PathArguments): PathArguments =
         when (pathArgs) {
@@ -666,50 +946,73 @@ public open class VisitMut {
             is PathArguments.Parenthesized -> visitParenthesizedGenericArgumentsMut(pathArgs)
         }
 
-    public open fun visitAngleBracketedGenericArguments(pathArgs: PathArguments.AngleBracketed): PathArguments.AngleBracketed =
-        pathArgs.copy(args = pathArgs.args.copy({ visitGenericArgumentMut(it) }, { it }))
+    public open fun visitAngleBracketedGenericArguments(pathArgs: PathArguments.AngleBracketed): PathArguments.AngleBracketed {
+        pathArgs.args.mapValuesInPlace(::visitGenericArgumentMut)
+        return pathArgs
+    }
 
-    public open fun visitParenthesizedGenericArguments(pathArgs: PathArguments.Parenthesized): PathArguments.Parenthesized =
-        pathArgs.copy(
-            inputs = pathArgs.inputs.copy({ visitTypeMut(it) }, { it }),
-            output = visitReturnTypeMut(pathArgs.output),
-        )
+    public open fun visitParenthesizedGenericArguments(pathArgs: PathArguments.Parenthesized): PathArguments.Parenthesized {
+        pathArgs.inputs.mapValuesInPlace(::visitTypeMut)
+        pathArgs.output = visitReturnTypeMut(pathArgs.output)
+        return pathArgs
+    }
 
     public open fun visitGenericArgument(genArg: GenericArgument): GenericArgument =
         when (genArg) {
-            is GenericArgument.LifetimeArg -> genArg.copy(lifetime = visitLifetimeMut(genArg.lifetime))
-            is GenericArgument.TypeArg -> genArg.copy(type = visitTypeMut(genArg.type))
-            is GenericArgument.ConstArg -> genArg.copy(expr = visitExprMut(genArg.expr))
-            is GenericArgument.AssocTypeArg -> genArg.copy(assoc = visitAssocTypeMut(genArg.assoc))
-            is GenericArgument.AssocConstArg -> genArg.copy(assoc = visitAssocConstMut(genArg.assoc))
-            is GenericArgument.ConstraintArg -> genArg.copy(constraint = visitConstraintMut(genArg.constraint))
+            is GenericArgument.LifetimeArg -> {
+                genArg.lifetime = visitLifetimeMut(genArg.lifetime)
+                genArg
+            }
+            is GenericArgument.TypeArg -> {
+                genArg.type = visitTypeMut(genArg.type)
+                genArg
+            }
+            is GenericArgument.ConstArg -> {
+                genArg.expr = visitExprMut(genArg.expr)
+                genArg
+            }
+            is GenericArgument.AssocTypeArg -> {
+                genArg.assoc = visitAssocTypeMut(genArg.assoc)
+                genArg
+            }
+            is GenericArgument.AssocConstArg -> {
+                genArg.assoc = visitAssocConstMut(genArg.assoc)
+                genArg
+            }
+            is GenericArgument.ConstraintArg -> {
+                genArg.constraint = visitConstraintMut(genArg.constraint)
+                genArg
+            }
         }
 
-    public open fun visitAssocType(assoc: AssocType): AssocType =
-        assoc.copy(
-            ident = visitIdentMut(assoc.ident),
-            generics = assoc.generics?.let { visitAngleBracketedGenericArgumentsMut(it) },
-            ty = visitTypeMut(assoc.ty),
-        )
+    public open fun visitAssocType(assoc: AssocType): AssocType {
+        assoc.ident = visitIdentMut(assoc.ident)
+        assoc.generics = assoc.generics?.let { visitAngleBracketedGenericArgumentsMut(it) }
+        assoc.ty = visitTypeMut(assoc.ty)
+        return assoc
+    }
 
-    public open fun visitAssocConst(assoc: AssocConst): AssocConst =
-        assoc.copy(
-            ident = visitIdentMut(assoc.ident),
-            generics = assoc.generics?.let { visitAngleBracketedGenericArgumentsMut(it) },
-            value = visitExprMut(assoc.value),
-        )
+    public open fun visitAssocConst(assoc: AssocConst): AssocConst {
+        assoc.ident = visitIdentMut(assoc.ident)
+        assoc.generics = assoc.generics?.let { visitAngleBracketedGenericArgumentsMut(it) }
+        assoc.value = visitExprMut(assoc.value)
+        return assoc
+    }
 
-    public open fun visitConstraint(constraint: Constraint): Constraint =
-        constraint.copy(
-            ident = visitIdentMut(constraint.ident),
-            generics = constraint.generics?.let { visitAngleBracketedGenericArgumentsMut(it) },
-            bounds = constraint.bounds.copy({ visitTypeParamBoundMut(it) }, { it }),
-        )
+    public open fun visitConstraint(constraint: Constraint): Constraint {
+        constraint.ident = visitIdentMut(constraint.ident)
+        constraint.generics = constraint.generics?.let { visitAngleBracketedGenericArgumentsMut(it) }
+        constraint.bounds.mapValuesInPlace(::visitTypeParamBoundMut)
+        return constraint
+    }
 
     public open fun visitTypeParamBound(bound: TypeParamBound): TypeParamBound =
         when (bound) {
             is TypeParamBound.Trait -> visitTraitBoundMut(bound)
-            is TypeParamBound.LifetimeBound -> bound.copy(lifetime = visitLifetimeMut(bound.lifetime))
+            is TypeParamBound.LifetimeBound -> {
+                bound.lifetime = visitLifetimeMut(bound.lifetime)
+                bound
+            }
             is TypeParamBound.PreciseCapture -> visitPreciseCaptureMut(bound)
             is TypeParamBound.Verbatim -> {
                 visitTokenStreamMut(bound.tokens)
@@ -717,12 +1020,12 @@ public open class VisitMut {
             }
         }
 
-    public open fun visitTraitBound(bound: TypeParamBound.Trait): TypeParamBound =
-        bound.copy(
-            modifier = visitTraitBoundModifierMut(bound.modifier),
-            lifetimes = bound.lifetimes?.let { visitBoundLifetimesMut(it) },
-            path = visitPathMut(bound.path),
-        )
+    public open fun visitTraitBound(bound: TypeParamBound.Trait): TypeParamBound {
+        bound.modifier = visitTraitBoundModifierMut(bound.modifier)
+        bound.lifetimes = bound.lifetimes?.let { visitBoundLifetimesMut(it) }
+        bound.path = visitPathMut(bound.path)
+        return bound
+    }
 
     public open fun visitTraitBoundModifier(modifier: TraitBoundModifier): TraitBoundModifier = modifier
 
@@ -730,47 +1033,60 @@ public open class VisitMut {
 
     public open fun visitUnOpMut(op: UnOp): UnOp = op
 
-    public open fun visitBoundLifetimes(boundLifetimes: BoundLifetimes): BoundLifetimes =
-        boundLifetimes.copy(lifetimes = boundLifetimes.lifetimes.copy({ visitGenericParamMut(it) }, { it }))
+    public open fun visitBoundLifetimes(boundLifetimes: BoundLifetimes): BoundLifetimes {
+        boundLifetimes.lifetimes.mapValuesInPlace(::visitGenericParamMut)
+        return boundLifetimes
+    }
 
     public open fun visitCapturedParam(param: CapturedParam): CapturedParam =
         when (param) {
-            is CapturedParam.Lifetime -> param.copy(lifetime = visitLifetimeMut(param.lifetime))
-            is CapturedParam.Ident -> param.copy(ident = visitIdentMut(param.ident))
+            is CapturedParam.Lifetime -> {
+                param.lifetime = visitLifetimeMut(param.lifetime)
+                param
+            }
+            is CapturedParam.Ident -> {
+                param.ident = visitIdentMut(param.ident)
+                param
+            }
         }
 
-    public open fun visitPreciseCaptureMut(param: TypeParamBound.PreciseCapture): TypeParamBound =
-        param.copy(params = param.params.copy({ visitCapturedParamMut(it) }, { it }))
-
-    public open fun visitPathSegment(segment: PathSegment): PathSegment =
-        segment.copy(ident = visitIdentMut(segment.ident), arguments = visitPathArgumentsMut(segment.arguments))
-
-    public open fun visitArm(arm: Arm): Arm {
-        val guard = arm.guard
-        return arm.copy(
-            attrs = visitAttributesMut(arm.attrs),
-            pat = visitPatMut(arm.pat),
-            guard = guard?.copy(expr = visitExprMut(guard.expr)),
-            body = visitExprMut(arm.body),
-        )
+    public open fun visitPreciseCaptureMut(param: TypeParamBound.PreciseCapture): TypeParamBound {
+        param.params.mapValuesInPlace(::visitCapturedParamMut)
+        return param
     }
 
-    public open fun visitElseExpr(elseExpr: ElseExpr): ElseExpr =
-        elseExpr.copy(expr = visitExprMut(elseExpr.expr))
+    public open fun visitPathSegment(segment: PathSegment): PathSegment {
+        segment.ident = visitIdentMut(segment.ident)
+        segment.arguments = visitPathArgumentsMut(segment.arguments)
+        return segment
+    }
 
-    public open fun visitFieldPat(fieldPat: FieldPat): FieldPat =
-        fieldPat.copy(
-            attrs = visitAttributesMut(fieldPat.attrs),
-            member = visitMemberMut(fieldPat.member),
-            pat = visitPatMut(fieldPat.pat),
-        )
+    public open fun visitArm(arm: Arm): Arm {
+        arm.attrs = visitAttributesMut(arm.attrs)
+        arm.pat = visitPatMut(arm.pat)
+        arm.guard?.let { it.expr = visitExprMut(it.expr) }
+        arm.body = visitExprMut(arm.body)
+        return arm
+    }
 
-    public open fun visitFieldValue(fieldValue: FieldValue): FieldValue =
-        fieldValue.copy(
-            attrs = visitAttributesMut(fieldValue.attrs),
-            member = visitMemberMut(fieldValue.member),
-            expr = visitExprMut(fieldValue.expr),
-        )
+    public open fun visitElseExpr(elseExpr: ElseExpr): ElseExpr {
+        elseExpr.expr = visitExprMut(elseExpr.expr)
+        return elseExpr
+    }
+
+    public open fun visitFieldPat(fieldPat: FieldPat): FieldPat {
+        fieldPat.attrs = visitAttributesMut(fieldPat.attrs)
+        fieldPat.member = visitMemberMut(fieldPat.member)
+        fieldPat.pat = visitPatMut(fieldPat.pat)
+        return fieldPat
+    }
+
+    public open fun visitFieldValue(fieldValue: FieldValue): FieldValue {
+        fieldValue.attrs = visitAttributesMut(fieldValue.attrs)
+        fieldValue.member = visitMemberMut(fieldValue.member)
+        fieldValue.expr = visitExprMut(fieldValue.expr)
+        return fieldValue
+    }
 
     public open fun visitGenericParam(param: GenericParam): GenericParam =
         when (param) {
@@ -779,52 +1095,62 @@ public open class VisitMut {
             is GenericParam.ConstParam -> visitConstParamMut(param)
         }
 
-    public open fun visitLifetimeParamMut(param: GenericParam.LifetimeParam): GenericParam.LifetimeParam =
-        param.copy(
-            attrs = visitAttributesMut(param.attrs),
-            lifetime = visitLifetimeMut(param.lifetime),
-            bounds = param.bounds.copy({ visitLifetimeMut(it) }, { it }),
-        )
+    public open fun visitLifetimeParamMut(param: GenericParam.LifetimeParam): GenericParam.LifetimeParam {
+        param.attrs = visitAttributesMut(param.attrs)
+        param.lifetime = visitLifetimeMut(param.lifetime)
+        param.bounds.mapValuesInPlace(::visitLifetimeMut)
+        return param
+    }
 
-    public open fun visitTypeParamMut(param: GenericParam.TypeParam): GenericParam.TypeParam =
-        param.copy(
-            attrs = visitAttributesMut(param.attrs),
-            ident = visitIdentMut(param.ident),
-            bounds = param.bounds.copy({ visitTypeParamBoundMut(it) }, { it }),
-            default = param.default?.let { visitTypeMut(it) },
-        )
+    public open fun visitTypeParamMut(param: GenericParam.TypeParam): GenericParam.TypeParam {
+        param.attrs = visitAttributesMut(param.attrs)
+        param.ident = visitIdentMut(param.ident)
+        param.bounds.mapValuesInPlace(::visitTypeParamBoundMut)
+        param.default = param.default?.let { visitTypeMut(it) }
+        return param
+    }
 
-    public open fun visitConstParamMut(param: GenericParam.ConstParam): GenericParam.ConstParam =
-        param.copy(
-            attrs = visitAttributesMut(param.attrs),
-            ident = visitIdentMut(param.ident),
-            ty = visitTypeMut(param.ty),
-            default = param.default?.let { visitExprMut(it) },
-        )
+    public open fun visitConstParamMut(param: GenericParam.ConstParam): GenericParam.ConstParam {
+        param.attrs = visitAttributesMut(param.attrs)
+        param.ident = visitIdentMut(param.ident)
+        param.ty = visitTypeMut(param.ty)
+        param.default = param.default?.let { visitExprMut(it) }
+        return param
+    }
 
-    public open fun visitField(field: Field): Field =
-        field.copy(
-            attrs = visitAttributesMut(field.attrs),
-            vis = visitVisibilityMut(field.vis),
-            mutability = visitFieldMutabilityMut(field.mutability),
-            ident = field.ident?.let { visitIdentMut(it) },
-            ty = visitTypeMut(field.ty),
-        )
+    public open fun visitField(field: Field): Field {
+        field.attrs = visitAttributesMut(field.attrs)
+        field.vis = visitVisibilityMut(field.vis)
+        field.mutability = visitFieldMutabilityMut(field.mutability)
+        field.ident = field.ident?.let { visitIdentMut(it) }
+        field.ty = visitTypeMut(field.ty)
+        return field
+    }
 
     public open fun visitFieldMutability(fieldMutability: FieldMutability): FieldMutability = fieldMutability
 
     public open fun visitFields(fields: Fields): Fields =
         when (fields) {
-            is Fields.Named -> Fields.Named(visitFieldsNamedMut(fields.fields))
-            is Fields.Unnamed -> Fields.Unnamed(visitFieldsUnnamedMut(fields.fields))
+            is Fields.Named -> {
+                fields.fields = visitFieldsNamedMut(fields.fields)
+                fields
+            }
+            is Fields.Unnamed -> {
+                fields.fields = visitFieldsUnnamedMut(fields.fields)
+                fields
+            }
             Fields.Unit -> fields
         }
 
-    public open fun visitFieldsNamed(fields: FieldsNamed): FieldsNamed =
-        fields.copy(named = fields.named.copy({ visitFieldMut(it) }, { it }))
+    public open fun visitFieldsNamed(fields: FieldsNamed): FieldsNamed {
+        fields.named.mapValuesInPlace(::visitFieldMut)
+        return fields
+    }
 
-    public open fun visitFieldsUnnamed(fields: FieldsUnnamed): FieldsUnnamed =
-        fields.copy(unnamed = fields.unnamed.copy({ visitFieldMut(it) }, { it }))
+    public open fun visitFieldsUnnamed(fields: FieldsUnnamed): FieldsUnnamed {
+        fields.unnamed.mapValuesInPlace(::visitFieldMut)
+        return fields
+    }
 
     public open fun visitImplItem(item: ImplItem): ImplItem =
         when (item) {
@@ -838,166 +1164,169 @@ public open class VisitMut {
             }
         }
 
-    public open fun visitImplItemConst(item: ImplItem.Const): ImplItem =
-        item.copy(
-            attrs = visitAttributesMut(item.attrs),
-            vis = visitVisibilityMut(item.vis),
-            ident = visitIdentMut(item.ident),
-            generics = visitGenericsMut(item.generics),
-            ty = visitTypeMut(item.ty),
-            expr = visitExprMut(item.expr),
-        )
+    public open fun visitImplItemConst(item: ImplItem.Const): ImplItem {
+        item.attrs = visitAttributesMut(item.attrs)
+        item.vis = visitVisibilityMut(item.vis)
+        item.ident = visitIdentMut(item.ident)
+        item.generics = visitGenericsMut(item.generics)
+        item.ty = visitTypeMut(item.ty)
+        item.expr = visitExprMut(item.expr)
+        return item
+    }
 
-    public open fun visitImplItemFn(item: ImplItem.Fn): ImplItem =
-        item.copy(
-            attrs = visitAttributesMut(item.attrs),
-            vis = visitVisibilityMut(item.vis),
-            sig = visitSignatureMut(item.sig),
-            block = visitBlockMut(item.block),
-        )
+    public open fun visitImplItemFn(item: ImplItem.Fn): ImplItem {
+        item.attrs = visitAttributesMut(item.attrs)
+        item.vis = visitVisibilityMut(item.vis)
+        item.sig = visitSignatureMut(item.sig)
+        item.block = visitBlockMut(item.block)
+        return item
+    }
 
-    public open fun visitImplItemMacro(item: ImplItem.Macro): ImplItem =
-        item.copy(attrs = visitAttributesMut(item.attrs), mac = visitMacroMut(item.mac))
+    public open fun visitImplItemMacro(item: ImplItem.Macro): ImplItem {
+        item.attrs = visitAttributesMut(item.attrs)
+        item.mac = visitMacroMut(item.mac)
+        return item
+    }
 
-    public open fun visitImplItemType(item: ImplItem.AssocType): ImplItem =
-        item.copy(
-            attrs = visitAttributesMut(item.attrs),
-            vis = visitVisibilityMut(item.vis),
-            ident = visitIdentMut(item.ident),
-            generics = visitGenericsMut(item.generics),
-            ty = visitTypeMut(item.ty),
-        )
+    public open fun visitImplItemType(item: ImplItem.AssocType): ImplItem {
+        item.attrs = visitAttributesMut(item.attrs)
+        item.vis = visitVisibilityMut(item.vis)
+        item.ident = visitIdentMut(item.ident)
+        item.generics = visitGenericsMut(item.generics)
+        item.ty = visitTypeMut(item.ty)
+        return item
+    }
 
     public open fun visitImplRestriction(restriction: ImplRestriction): ImplRestriction = restriction
 
-    public open fun visitItemConst(item: Item.Const): Item =
-        item.copy(
-            attrs = visitAttributesMut(item.attrs),
-            vis = visitVisibilityMut(item.vis),
-            ident = visitIdentMut(item.ident),
-            ty = visitTypeMut(item.ty),
-            expr = item.expr?.let { visitExprMut(it) },
-        )
+    public open fun visitItemConst(item: Item.Const): Item {
+        item.attrs = visitAttributesMut(item.attrs)
+        item.vis = visitVisibilityMut(item.vis)
+        item.ident = visitIdentMut(item.ident)
+        item.ty = visitTypeMut(item.ty)
+        item.expr = item.expr?.let { visitExprMut(it) }
+        return item
+    }
 
-    public open fun visitItemEnum(item: Item.Enum): Item =
-        item.copy(
-            attrs = visitAttributesMut(item.attrs),
-            vis = visitVisibilityMut(item.vis),
-            ident = visitIdentMut(item.ident),
-            generics = visitGenericsMut(item.generics),
-            variants = item.variants.copy({ visitVariantMut(it) }, { it }),
-        )
+    public open fun visitItemEnum(item: Item.Enum): Item {
+        item.attrs = visitAttributesMut(item.attrs)
+        item.vis = visitVisibilityMut(item.vis)
+        item.ident = visitIdentMut(item.ident)
+        item.generics = visitGenericsMut(item.generics)
+        item.variants.mapValuesInPlace(::visitVariantMut)
+        return item
+    }
 
-    public open fun visitItemExternCrate(item: Item.ExternCrate): Item =
-        item.copy(
-            attrs = visitAttributesMut(item.attrs),
-            vis = visitVisibilityMut(item.vis),
-            ident = visitIdentMut(item.ident),
-            rename = item.rename?.let { it.copy(ident = visitIdentMut(it.ident)) },
-        )
+    public open fun visitItemExternCrate(item: Item.ExternCrate): Item {
+        item.attrs = visitAttributesMut(item.attrs)
+        item.vis = visitVisibilityMut(item.vis)
+        item.ident = visitIdentMut(item.ident)
+        item.rename?.let { it.ident = visitIdentMut(it.ident) }
+        return item
+    }
 
-    public open fun visitItemFn(item: Item.Fn): Item =
-        item.copy(
-            attrs = visitAttributesMut(item.attrs),
-            vis = visitVisibilityMut(item.vis),
-            sig = visitSignatureMut(item.sig),
-            block = item.block?.let { visitBlockMut(it) },
-        )
+    public open fun visitItemFn(item: Item.Fn): Item {
+        item.attrs = visitAttributesMut(item.attrs)
+        item.vis = visitVisibilityMut(item.vis)
+        item.sig = visitSignatureMut(item.sig)
+        item.block = item.block?.let { visitBlockMut(it) }
+        return item
+    }
 
-    public open fun visitItemForeignMod(item: Item.ForeignMod): Item =
-        item.copy(
-            attrs = visitAttributesMut(item.attrs),
-            abi = visitAbiMut(item.abi),
-            items = item.items.mapTo(mutableListOf()) { visitForeignItemMut(it) },
-        )
+    public open fun visitItemForeignMod(item: Item.ForeignMod): Item {
+        item.attrs = visitAttributesMut(item.attrs)
+        item.abi = visitAbiMut(item.abi)
+        for (i in item.items.indices) item.items[i] = visitForeignItemMut(item.items[i])
+        return item
+    }
 
-    public open fun visitItemImpl(item: Item.Impl): Item =
-        item.copy(
-            attrs = visitAttributesMut(item.attrs),
-            generics = visitGenericsMut(item.generics),
-            traitPath = item.traitPath?.let { visitPathTraitMut(it) },
-            selfType = visitTypeMut(item.selfType),
-            items = item.items.mapTo(mutableListOf()) { visitImplItemMut(it) },
-        )
+    public open fun visitItemImpl(item: Item.Impl): Item {
+        item.attrs = visitAttributesMut(item.attrs)
+        item.generics = visitGenericsMut(item.generics)
+        item.traitPath = item.traitPath?.let { visitPathTraitMut(it) }
+        item.selfType = visitTypeMut(item.selfType)
+        for (i in item.items.indices) item.items[i] = visitImplItemMut(item.items[i])
+        return item
+    }
 
-    public open fun visitItemMacro(item: Item.Macro): Item =
-        item.copy(
-            attrs = visitAttributesMut(item.attrs),
-            ident = item.ident?.let { visitIdentMut(it) },
-            mac = visitMacroMut(item.mac),
-        )
+    public open fun visitItemMacro(item: Item.Macro): Item {
+        item.attrs = visitAttributesMut(item.attrs)
+        item.ident = item.ident?.let { visitIdentMut(it) }
+        item.mac = visitMacroMut(item.mac)
+        return item
+    }
 
-    public open fun visitItemMod(item: Item.Mod): Item =
-        item.copy(
-            attrs = visitAttributesMut(item.attrs),
-            vis = visitVisibilityMut(item.vis),
-            ident = visitIdentMut(item.ident),
-            content = item.content?.let { visitModContentMut(it) },
-        )
+    public open fun visitItemMod(item: Item.Mod): Item {
+        item.attrs = visitAttributesMut(item.attrs)
+        item.vis = visitVisibilityMut(item.vis)
+        item.ident = visitIdentMut(item.ident)
+        item.content = item.content?.let { visitModContentMut(it) }
+        return item
+    }
 
-    public open fun visitItemStatic(item: Item.Static): Item =
-        item.copy(
-            attrs = visitAttributesMut(item.attrs),
-            vis = visitVisibilityMut(item.vis),
-            mutability = visitStaticMutabilityMut(item.mutability),
-            ident = visitIdentMut(item.ident),
-            ty = visitTypeMut(item.ty),
-            expr = visitExprMut(item.expr),
-        )
+    public open fun visitItemStatic(item: Item.Static): Item {
+        item.attrs = visitAttributesMut(item.attrs)
+        item.vis = visitVisibilityMut(item.vis)
+        item.mutability = visitStaticMutabilityMut(item.mutability)
+        item.ident = visitIdentMut(item.ident)
+        item.ty = visitTypeMut(item.ty)
+        item.expr = visitExprMut(item.expr)
+        return item
+    }
 
-    public open fun visitItemStruct(item: Item.Struct): Item =
-        item.copy(
-            attrs = visitAttributesMut(item.attrs),
-            vis = visitVisibilityMut(item.vis),
-            ident = visitIdentMut(item.ident),
-            generics = visitGenericsMut(item.generics),
-            fields = visitFieldsMut(item.fields),
-        )
+    public open fun visitItemStruct(item: Item.Struct): Item {
+        item.attrs = visitAttributesMut(item.attrs)
+        item.vis = visitVisibilityMut(item.vis)
+        item.ident = visitIdentMut(item.ident)
+        item.generics = visitGenericsMut(item.generics)
+        item.fields = visitFieldsMut(item.fields)
+        return item
+    }
 
-    public open fun visitItemTrait(item: Item.Trait): Item =
-        item.copy(
-            attrs = visitAttributesMut(item.attrs),
-            vis = visitVisibilityMut(item.vis),
-            restriction = item.restriction?.let { visitImplRestrictionMut(it) },
-            ident = visitIdentMut(item.ident),
-            generics = visitGenericsMut(item.generics),
-            supertraits = item.supertraits.copy({ visitTypeParamBoundMut(it) }, { it }),
-            items = item.items.mapTo(mutableListOf()) { visitTraitItemMut(it) },
-        )
+    public open fun visitItemTrait(item: Item.Trait): Item {
+        item.attrs = visitAttributesMut(item.attrs)
+        item.vis = visitVisibilityMut(item.vis)
+        item.restriction = item.restriction?.let { visitImplRestrictionMut(it) }
+        item.ident = visitIdentMut(item.ident)
+        item.generics = visitGenericsMut(item.generics)
+        item.supertraits.mapValuesInPlace(::visitTypeParamBoundMut)
+        for (i in item.items.indices) item.items[i] = visitTraitItemMut(item.items[i])
+        return item
+    }
 
-    public open fun visitItemTraitAlias(item: Item.TraitAlias): Item =
-        item.copy(
-            attrs = visitAttributesMut(item.attrs),
-            vis = visitVisibilityMut(item.vis),
-            ident = visitIdentMut(item.ident),
-            generics = visitGenericsMut(item.generics),
-            bounds = item.bounds.copy({ visitTypeParamBoundMut(it) }, { it }),
-        )
+    public open fun visitItemTraitAlias(item: Item.TraitAlias): Item {
+        item.attrs = visitAttributesMut(item.attrs)
+        item.vis = visitVisibilityMut(item.vis)
+        item.ident = visitIdentMut(item.ident)
+        item.generics = visitGenericsMut(item.generics)
+        item.bounds.mapValuesInPlace(::visitTypeParamBoundMut)
+        return item
+    }
 
-    public open fun visitItemType(item: Item.ItemType): Item =
-        item.copy(
-            attrs = visitAttributesMut(item.attrs),
-            vis = visitVisibilityMut(item.vis),
-            ident = visitIdentMut(item.ident),
-            generics = visitGenericsMut(item.generics),
-            ty = visitTypeMut(item.ty),
-        )
+    public open fun visitItemType(item: Item.ItemType): Item {
+        item.attrs = visitAttributesMut(item.attrs)
+        item.vis = visitVisibilityMut(item.vis)
+        item.ident = visitIdentMut(item.ident)
+        item.generics = visitGenericsMut(item.generics)
+        item.ty = visitTypeMut(item.ty)
+        return item
+    }
 
-    public open fun visitItemUnion(item: Item.Union): Item =
-        item.copy(
-            attrs = visitAttributesMut(item.attrs),
-            vis = visitVisibilityMut(item.vis),
-            ident = visitIdentMut(item.ident),
-            generics = visitGenericsMut(item.generics),
-            fields = visitFieldsNamedMut(item.fields),
-        )
+    public open fun visitItemUnion(item: Item.Union): Item {
+        item.attrs = visitAttributesMut(item.attrs)
+        item.vis = visitVisibilityMut(item.vis)
+        item.ident = visitIdentMut(item.ident)
+        item.generics = visitGenericsMut(item.generics)
+        item.fields = visitFieldsNamedMut(item.fields)
+        return item
+    }
 
-    public open fun visitItemUse(item: Item.Use): Item =
-        item.copy(
-            attrs = visitAttributesMut(item.attrs),
-            vis = visitVisibilityMut(item.vis),
-            tree = visitUseTreeMut(item.tree),
-        )
+    public open fun visitItemUse(item: Item.Use): Item {
+        item.attrs = visitAttributesMut(item.attrs)
+        item.vis = visitVisibilityMut(item.vis)
+        item.tree = visitUseTreeMut(item.tree)
+        return item
+    }
 
     public open fun visitStaticMutability(mutability: StaticMutability): StaticMutability = mutability
 
@@ -1007,27 +1336,36 @@ public open class VisitMut {
 
     public open fun visitModContent(modContent: ModContent): ModContent =
         when (modContent) {
-            is ModContent.Inline -> modContent.copy(items = modContent.items.map { visitItemMut(it) })
+            is ModContent.Inline -> {
+                modContent.items = modContent.items.map { visitItemMut(it) }
+                modContent
+            }
             is ModContent.Unnamed -> modContent
         }
 
-    public open fun visitLocalMut(local: Stmt.Local): Stmt.Local =
-        local.copy(
-            attrs = visitAttributesMut(local.attrs),
-            pat = visitPatMut(local.pat),
-            init = local.init?.let { visitLocalInitMut(it) },
-        )
+    public open fun visitLocalMut(local: Stmt.Local): Stmt.Local {
+        local.attrs = visitAttributesMut(local.attrs)
+        local.pat = visitPatMut(local.pat)
+        local.init = local.init?.let { visitLocalInitMut(it) }
+        return local
+    }
 
-    public open fun visitLocalInit(init: LocalInit): LocalInit =
-        init.copy(
-            expr = visitExprMut(init.expr),
-            diverge = init.diverge?.let { visitElseExprMut(it) },
-        )
+    public open fun visitLocalInit(init: LocalInit): LocalInit {
+        init.expr = visitExprMut(init.expr)
+        init.diverge = init.diverge?.let { visitElseExprMut(it) }
+        return init
+    }
 
     public open fun visitMember(member: Member): Member =
         when (member) {
-            is Member.Named -> member.copy(ident = visitIdentMut(member.ident))
-            is Member.Unnamed -> member.copy(index = visitIndexMut(member.index))
+            is Member.Named -> {
+                member.ident = visitIdentMut(member.ident)
+                member
+            }
+            is Member.Unnamed -> {
+                member.index = visitIndexMut(member.index)
+                member
+            }
         }
 
     public open fun visitIndexMut(index: Index): Index {
@@ -1035,13 +1373,17 @@ public open class VisitMut {
         return index
     }
 
-    public open fun visitQSelf(qself: QSelf): QSelf =
-        qself.copy(ty = visitTypeMut(qself.ty))
+    public open fun visitQSelf(qself: QSelf): QSelf {
+        qself.ty = visitTypeMut(qself.ty)
+        return qself
+    }
 
     public open fun visitQselfMut(qself: QSelf): QSelf = visitQSelfMut(qself)
 
-    public open fun visitPathTrait(pathTrait: PathTrait): PathTrait =
-        pathTrait.copy(path = visitPathMut(pathTrait.path))
+    public open fun visitPathTrait(pathTrait: PathTrait): PathTrait {
+        pathTrait.path = visitPathMut(pathTrait.path)
+        return pathTrait
+    }
 
     public open fun visitTraitItem(item: TraitItem): TraitItem =
         when (item) {
@@ -1056,35 +1398,34 @@ public open class VisitMut {
         }
 
     public open fun visitTraitItemConst(item: TraitItem.Const): TraitItem {
-        val default = item.default
-        return item.copy(
-            attrs = visitAttributesMut(item.attrs),
-            ident = visitIdentMut(item.ident),
-            generics = visitGenericsMut(item.generics),
-            ty = visitTypeMut(item.ty),
-            default = default?.copy(expr = visitExprMut(default.expr)),
-        )
+        item.attrs = visitAttributesMut(item.attrs)
+        item.ident = visitIdentMut(item.ident)
+        item.generics = visitGenericsMut(item.generics)
+        item.ty = visitTypeMut(item.ty)
+        item.default?.let { it.expr = visitExprMut(it.expr) }
+        return item
     }
 
-    public open fun visitTraitItemFn(item: TraitItem.Fn): TraitItem =
-        item.copy(
-            attrs = visitAttributesMut(item.attrs),
-            sig = visitSignatureMut(item.sig),
-            default = item.default?.let { visitBlockMut(it) },
-        )
+    public open fun visitTraitItemFn(item: TraitItem.Fn): TraitItem {
+        item.attrs = visitAttributesMut(item.attrs)
+        item.sig = visitSignatureMut(item.sig)
+        item.default = item.default?.let { visitBlockMut(it) }
+        return item
+    }
 
-    public open fun visitTraitItemMacro(item: TraitItem.Macro): TraitItem =
-        item.copy(attrs = visitAttributesMut(item.attrs), mac = visitMacroMut(item.mac))
+    public open fun visitTraitItemMacro(item: TraitItem.Macro): TraitItem {
+        item.attrs = visitAttributesMut(item.attrs)
+        item.mac = visitMacroMut(item.mac)
+        return item
+    }
 
     public open fun visitTraitItemType(item: TraitItem.AssocType): TraitItem {
-        val default = item.default
-        return item.copy(
-            attrs = visitAttributesMut(item.attrs),
-            ident = visitIdentMut(item.ident),
-            generics = visitGenericsMut(item.generics),
-            bounds = item.bounds.copy({ visitTypeParamBoundMut(it) }, { it }),
-            default = default?.copy(type = visitTypeMut(default.type)),
-        )
+        item.attrs = visitAttributesMut(item.attrs)
+        item.ident = visitIdentMut(item.ident)
+        item.generics = visitGenericsMut(item.generics)
+        item.bounds.mapValuesInPlace(::visitTypeParamBoundMut)
+        item.default?.let { it.type = visitTypeMut(it.type) }
+        return item
     }
 
     public open fun visitUseTree(useTree: UseTree): UseTree =
@@ -1102,42 +1443,40 @@ public open class VisitMut {
 
     public open fun visitUseGlob(useTree: UseTree.Glob): UseTree = useTree
 
-    public open fun visitUseGroup(useTree: UseTree.Group): UseTree =
-        useTree.copy(items = useTree.items.copy({ visitUseTreeMut(it) }, { it }))
+    public open fun visitUseGroup(useTree: UseTree.Group): UseTree {
+        useTree.items.mapValuesInPlace(::visitUseTreeMut)
+        return useTree
+    }
 
-    public open fun visitUseName(useTree: UseTree.Name): UseTree =
-        useTree.copy(ident = visitIdentMut(useTree.ident))
+    public open fun visitUseName(useTree: UseTree.Name): UseTree {
+        useTree.ident = visitIdentMut(useTree.ident)
+        return useTree
+    }
 
-    public open fun visitUsePath(useTree: UseTree.Path): UseTree =
-        useTree.copy(
-            ident = visitIdentMut(useTree.ident),
-            tree = useTree.tree?.let { visitUseTreeMut(it) },
-        )
+    public open fun visitUsePath(useTree: UseTree.Path): UseTree {
+        useTree.ident = visitIdentMut(useTree.ident)
+        useTree.tree = useTree.tree?.let { visitUseTreeMut(it) }
+        return useTree
+    }
 
     public open fun visitUseRename(useTree: UseTree.Name): UseTree {
-        val rename = useTree.rename
-        return useTree.copy(
-            ident = visitIdentMut(useTree.ident),
-            rename = rename?.copy(ident = visitIdentMut(rename.ident)),
-        )
+        useTree.ident = visitIdentMut(useTree.ident)
+        useTree.rename?.let { it.ident = visitIdentMut(it.ident) }
+        return useTree
     }
 
     public open fun visitVariadic(variadic: Variadic): Variadic {
-        val pat = variadic.pat
-        return variadic.copy(
-            attrs = visitAttributesMut(variadic.attrs),
-            pat = pat?.copy(pat = visitPatMut(pat.pat)),
-        )
+        variadic.attrs = visitAttributesMut(variadic.attrs)
+        variadic.pat?.let { it.pat = visitPatMut(it.pat) }
+        return variadic
     }
 
     public open fun visitVariant(variant: Variant): Variant {
-        val discriminant = variant.discriminant
-        return variant.copy(
-            attrs = visitAttributesMut(variant.attrs),
-            ident = visitIdentMut(variant.ident),
-            fields = visitFieldsMut(variant.fields),
-            discriminant = discriminant?.copy(expr = visitExprMut(discriminant.expr)),
-        )
+        variant.attrs = visitAttributesMut(variant.attrs)
+        variant.ident = visitIdentMut(variant.ident)
+        variant.fields = visitFieldsMut(variant.fields)
+        variant.discriminant?.let { it.expr = visitExprMut(it.expr) }
+        return variant
     }
 
     public open fun visitVisibility(visibility: Visibility): Visibility =
@@ -1147,11 +1486,15 @@ public open class VisitMut {
             Visibility.Inherited -> visibility
         }
 
-    public open fun visitVisRestrictedMut(visibility: Visibility.Restricted): Visibility.Restricted =
-        visibility.copy(path = visitPathMut(visibility.path))
+    public open fun visitVisRestrictedMut(visibility: Visibility.Restricted): Visibility.Restricted {
+        visibility.path = visitPathMut(visibility.path)
+        return visibility
+    }
 
-    public open fun visitWhereClause(whereClause: WhereClause): WhereClause =
-        whereClause.copy(predicates = whereClause.predicates.copy({ visitWherePredicateMut(it) }, { it }))
+    public open fun visitWhereClause(whereClause: WhereClause): WhereClause {
+        whereClause.predicates.mapValuesInPlace(::visitWherePredicateMut)
+        return whereClause
+    }
 
     public open fun visitWherePredicate(wherePredicate: WherePredicate): WherePredicate =
         when (wherePredicate) {
@@ -1159,21 +1502,24 @@ public open class VisitMut {
             is WherePredicate.TypePredicate -> visitPredicateTypeMut(wherePredicate)
         }
 
-    public open fun visitPredicateLifetimeMut(predicate: WherePredicate.LifetimePredicate): WherePredicate.LifetimePredicate =
-        predicate.copy(
-            lifetime = visitLifetimeMut(predicate.lifetime),
-            bounds = predicate.bounds.copy({ visitLifetimeMut(it) }, { it }),
-        )
+    public open fun visitPredicateLifetimeMut(predicate: WherePredicate.LifetimePredicate): WherePredicate.LifetimePredicate {
+        predicate.lifetime = visitLifetimeMut(predicate.lifetime)
+        predicate.bounds.mapValuesInPlace(::visitLifetimeMut)
+        return predicate
+    }
 
-    public open fun visitPredicateTypeMut(predicate: WherePredicate.TypePredicate): WherePredicate.TypePredicate =
-        predicate.copy(
-            lifetimes = predicate.lifetimes?.let { visitBoundLifetimesMut(it) },
-            boundedTy = visitTypeMut(predicate.boundedTy),
-            bounds = predicate.bounds.copy({ visitTypeParamBoundMut(it) }, { it }),
-        )
+    public open fun visitPredicateTypeMut(predicate: WherePredicate.TypePredicate): WherePredicate.TypePredicate {
+        predicate.lifetimes = predicate.lifetimes?.let { visitBoundLifetimesMut(it) }
+        predicate.boundedTy = visitTypeMut(predicate.boundedTy)
+        predicate.bounds.mapValuesInPlace(::visitTypeParamBoundMut)
+        return predicate
+    }
 
-    public open fun visitStmtMacroMut(stmt: Stmt.MacroStmt): Stmt.MacroStmt =
-        stmt.copy(attrs = visitAttributesMut(stmt.attrs), mac = visitMacroMut(stmt.mac))
+    public open fun visitStmtMacroMut(stmt: Stmt.MacroStmt): Stmt.MacroStmt {
+        stmt.attrs = visitAttributesMut(stmt.attrs)
+        stmt.mac = visitMacroMut(stmt.mac)
+        return stmt
+    }
 
     public open fun visitSpanMut(span: Span): Span = span
 

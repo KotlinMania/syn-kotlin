@@ -55,9 +55,10 @@ class ExprTest {
             var expr = e
             while (expr is Expr.Paren) {
                 val parenAttrs = expr.attrs
+                expr.attrs = mutableListOf()
                 expr = expr.expr
                 if (parenAttrs.isNotEmpty() && !discardParenAttrs) {
-                    expr = combineAttrs(expr, parenAttrs)
+                    combineAttrs(expr, parenAttrs)
                 }
             }
             return super.visitExpr(expr)
@@ -80,22 +81,23 @@ class ExprTest {
                 else -> listOf(token)
             }
 
-        private fun combineAttrs(expr: Expr, attrs: List<Attribute>): Expr =
+        private fun combineAttrs(expr: Expr, attrs: MutableList<Attribute>) {
             when (expr) {
                 is Expr.Assign -> {
                     require(expr.attrs.isEmpty())
-                    expr.copy(attrs = attrs)
+                    expr.attrs = attrs
                 }
                 is Expr.Binary -> {
                     require(expr.attrs.isEmpty())
-                    expr.copy(attrs = attrs)
+                    expr.attrs = attrs
                 }
                 is Expr.Cast -> {
                     require(expr.attrs.isEmpty())
-                    expr.copy(attrs = attrs)
+                    expr.attrs = attrs
                 }
                 else -> error("cannot combine parenthesized attributes into ${expr::class.simpleName}")
             }
+        }
 
         companion object {
             fun combineAttrs(): FlattenParens = FlattenParens(discardParenAttrs = false)
@@ -789,7 +791,7 @@ class ExprTest {
         val elems = ExprList()
         val expr =
             Expr.Tuple(
-                emptyList(),
+                mutableListOf(),
                 io.github.kotlinmania.syn.token.Paren
                     .default(),
                 elems,
@@ -801,7 +803,7 @@ class ExprTest {
 
         elems.pushValue(
             Expr.Continue(
-                emptyList(),
+                mutableListOf(),
                 io.github.kotlinmania.syn.token.Continue
                     .default(),
                 null,
@@ -823,7 +825,7 @@ class ExprTest {
 
         elems.pushValue(
             Expr.Continue(
-                emptyList(),
+                mutableListOf(),
                 io.github.kotlinmania.syn.token.Continue
                     .default(),
                 null,
@@ -991,7 +993,7 @@ class ExprTest {
         val parsed =
             runCatching { parseTokens(emitted) }
                 .getOrElse { error("failed to parse: $emitted\n$original\n$it") }
-        val asIfPrinted = AsIfPrinted().visitExprMut(original)
+        val asIfPrinted = AsIfPrinted.visitExprMut(original)
         val normalized = FlattenParens.combineAttrs().visitExpr(parsed)
         assertEquals(asIfPrinted, normalized, "before: $emitted\nafter: ${tokens(normalized)}")
 
@@ -1013,33 +1015,33 @@ class ExprTest {
 
         iterExprPermutations(nextDepth) { expr ->
             iterExprPermutations(0) { simple ->
-                emit(Expr.Assign(emptyList(), simple.deepCopy(), Eq.default(), expr.deepCopy()))
-                emit(Expr.Assign(emptyList(), expr.deepCopy(), Eq.default(), simple.deepCopy()))
+                emit(Expr.Assign(mutableListOf(), simple.deepCopy(), Eq.default(), expr.deepCopy()))
+                emit(Expr.Assign(mutableListOf(), expr.deepCopy(), Eq.default(), simple.deepCopy()))
             }
         }
 
         iterExprPermutations(nextDepth) { expr ->
             iterExprPermutations(0) { simple ->
                 for (op in listOf(BinOp.Add(Plus.default()), BinOp.Lt(Lt.default()), BinOp.ShlAssign(ShlEq.default()))) {
-                    emit(Expr.Binary(emptyList(), simple.deepCopy(), op, expr.deepCopy()))
-                    emit(Expr.Binary(emptyList(), expr.deepCopy(), op, simple.deepCopy()))
+                    emit(Expr.Binary(mutableListOf(), simple.deepCopy(), op, expr.deepCopy()))
+                    emit(Expr.Binary(mutableListOf(), expr.deepCopy(), op, simple.deepCopy()))
                 }
             }
         }
 
-        emit(Expr.BlockExpr(emptyList(), null, emptyBlock()))
-        emit(Expr.Break(emptyList(), Break.default(), null, null))
+        emit(Expr.BlockExpr(mutableListOf(), null, emptyBlock()))
+        emit(Expr.Break(mutableListOf(), Break.default(), null, null))
 
         iterExprPermutations(nextDepth) { expr ->
-            emit(Expr.Break(emptyList(), Break.default(), null, expr.deepCopy()))
+            emit(Expr.Break(mutableListOf(), Break.default(), null, expr.deepCopy()))
         }
 
         iterExprPermutations(nextDepth) { expr ->
-            emit(Expr.Call(emptyList(), expr.deepCopy(), Paren.default(), ExprList()))
+            emit(Expr.Call(mutableListOf(), expr.deepCopy(), Paren.default(), ExprList()))
         }
 
         iterExprPermutations(nextDepth) { expr ->
-            emit(Expr.Cast(emptyList(), expr.deepCopy(), As.default(), typePath("T")))
+            emit(Expr.Cast(mutableListOf(), expr.deepCopy(), As.default(), typePath("T")))
         }
 
         iterExprPermutations(nextDepth) { expr ->
@@ -1059,52 +1061,52 @@ class ExprTest {
         }
 
         iterExprPermutations(nextDepth) { expr ->
-            emit(Expr.Field(emptyList(), expr.deepCopy(), Dot.default(), Member.Named(Ident.new("field", Span.callSite()))))
+            emit(Expr.Field(mutableListOf(), expr.deepCopy(), Dot.default(), Member.Named(Ident.new("field", Span.callSite()))))
         }
 
         iterExprPermutations(nextDepth) { expr ->
-            emit(Expr.If(emptyList(), If.default(), expr.deepCopy(), emptyBlock(), null))
+            emit(Expr.If(mutableListOf(), If.default(), expr.deepCopy(), emptyBlock(), null))
         }
 
         iterExprPermutations(nextDepth) { expr ->
-            emit(Expr.Let(emptyList(), Let.default(), wildPat(), Eq.default(), expr.deepCopy()))
+            emit(Expr.Let(mutableListOf(), Let.default(), wildPat(), Eq.default(), expr.deepCopy()))
         }
 
-        emit(Expr.Range(emptyList(), null, RangeLimits.HalfOpen(DotDot.default()), null))
+        emit(Expr.Range(mutableListOf(), null, RangeLimits.HalfOpen(DotDot.default()), null))
 
         iterExprPermutations(nextDepth) { expr ->
-            emit(Expr.Range(emptyList(), null, RangeLimits.HalfOpen(DotDot.default()), expr.deepCopy()))
-            emit(Expr.Range(emptyList(), expr.deepCopy(), RangeLimits.HalfOpen(DotDot.default()), null))
-        }
-
-        iterExprPermutations(nextDepth) { expr ->
-            emit(Expr.Reference(emptyList(), And.default(), null, expr.deepCopy()))
-        }
-
-        emit(Expr.Return(emptyList(), Return.default(), null))
-
-        iterExprPermutations(nextDepth) { expr ->
-            emit(Expr.Return(emptyList(), Return.default(), expr.deepCopy()))
+            emit(Expr.Range(mutableListOf(), null, RangeLimits.HalfOpen(DotDot.default()), expr.deepCopy()))
+            emit(Expr.Range(mutableListOf(), expr.deepCopy(), RangeLimits.HalfOpen(DotDot.default()), null))
         }
 
         iterExprPermutations(nextDepth) { expr ->
-            emit(Expr.Try(emptyList(), expr.deepCopy(), Question.default()))
+            emit(Expr.Reference(mutableListOf(), And.default(), null, expr.deepCopy()))
+        }
+
+        emit(Expr.Return(mutableListOf(), Return.default(), null))
+
+        iterExprPermutations(nextDepth) { expr ->
+            emit(Expr.Return(mutableListOf(), Return.default(), expr.deepCopy()))
         }
 
         iterExprPermutations(nextDepth) { expr ->
-            emit(Expr.Unary(emptyList(), UnOp.Deref(Star.default()), expr.deepCopy()))
+            emit(Expr.Try(mutableListOf(), expr.deepCopy(), Question.default()))
+        }
+
+        iterExprPermutations(nextDepth) { expr ->
+            emit(Expr.Unary(mutableListOf(), UnOp.Deref(Star.default()), expr.deepCopy()))
         }
     }
 
     private fun pathExpr(ident: String): Expr =
-        Expr.Path(emptyList(), null, Path.from(Ident.new(ident, Span.callSite())))
+        Expr.Path(mutableListOf(), null, Path.from(Ident.new(ident, Span.callSite())))
 
     private fun typePath(ident: String): SynType =
         SynType.Path(null, Path.from(Ident.new(ident, Span.callSite())))
 
     private fun emptyBlock(): Block =
-        Block(Brace.default(), emptyList())
+        Block(Brace.default(), mutableListOf())
 
     private fun wildPat(): Pat =
-        Pat.Wild(emptyList(), Underscore.default())
+        Pat.Wild(mutableListOf(), Underscore.default())
 }
