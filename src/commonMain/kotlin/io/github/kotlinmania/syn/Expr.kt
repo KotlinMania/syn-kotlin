@@ -1724,7 +1724,7 @@ public fun exprAttrs(input: ParseStream): SynResult<List<Attribute>> = exprAttrs
 public fun unaryExpr(input: ParseStream, allowStruct: Boolean): SynResult<Expr> =
     unaryExprImpl(input, allowStruct)
 
-public fun trailerExpr(input: ParseStream, allowStruct: Boolean, attrs: List<Attribute> = emptyList()): SynResult<Expr> =
+public fun trailerExpr(input: ParseStream, allowStruct: Boolean, attrs: List<Attribute> = mutableListOf()): SynResult<Expr> =
     trailerExprImpl(input, allowStruct, attrs)
 
 public fun trailerHelper(input: ParseStream, e: Expr, allowStruct: Boolean): SynResult<Expr> =
