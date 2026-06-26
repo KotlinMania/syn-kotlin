@@ -77,10 +77,10 @@ public fun Arm.clone(): Arm =
     Arm(attrs.cloneList(), pat.clone(), guard?.let { it.clone() }, fatArrowToken, body.clone(), comma)
 
 public fun AssocConst.clone(): AssocConst =
-    AssocConst(ident.clone(), generics?.clone() as? PathArguments.AngleBracketed?, eqToken, value.clone())
+    AssocConst(ident.clone(), generics?.clone(), eqToken, value.clone())
 
 public fun AssocType.clone(): AssocType =
-    AssocType(ident.clone(), generics?.clone() as? PathArguments.AngleBracketed?, eqToken, ty.clone())
+    AssocType(ident.clone(), generics?.clone(), eqToken, ty.clone())
 
 public fun AttrStyle.clone(): AttrStyle = this
 
@@ -138,7 +138,7 @@ public fun CapturedParam.clone(): CapturedParam =
     }
 
 public fun Constraint.clone(): Constraint =
-    Constraint(ident.clone(), generics?.clone() as? PathArguments.AngleBracketed?, colonToken, bounds.copy({ it.clone() }, { it }))
+    Constraint(ident.clone(), generics?.clone(), colonToken, bounds.copy({ it.clone() }, { it }))
 
 public fun Data.clone(): Data =
     when (this) {
@@ -273,7 +273,7 @@ public fun Expr.Match.clone(): Expr.Match =
     Expr.Match(attrs.cloneList(), matchToken, expr.clone(), braceToken, arms.cloneList())
 
 public fun Expr.MethodCall.clone(): Expr.MethodCall =
-    Expr.MethodCall(attrs.cloneList(), receiver.clone(), dotToken, method.clone(), turbofish?.clone() as? PathArguments.AngleBracketed?, parenToken, args.copy({ it.clone() }, { it }))
+    Expr.MethodCall(attrs.cloneList(), receiver.clone(), dotToken, method.clone(), turbofish?.clone(), parenToken, args.copy({ it.clone() }, { it }))
 
 public fun Expr.Paren.clone(): Expr.Paren =
     Expr.Paren(attrs.cloneList(), parenToken, expr.clone())
@@ -407,7 +407,7 @@ public fun ImplItem.clone(): ImplItem =
     when (this) {
         is ImplItem.Const -> this.clone()
         is ImplItem.Fn -> this.clone()
-        is ImplItem.ItemType -> this.clone()
+        is ImplItem.AssocType -> this.clone()
         is ImplItem.Macro -> this.clone()
         is ImplItem.Verbatim -> this.clone()
     }
@@ -421,8 +421,8 @@ public fun ImplItem.Fn.clone(): ImplItem.Fn =
 public fun ImplItem.Macro.clone(): ImplItem.Macro =
     ImplItem.Macro(attrs.cloneList(), mac.clone(), semiToken)
 
-public fun ImplItem.ItemType.clone(): ImplItem.ItemType =
-    ImplItem.ItemType(attrs.cloneList(), vis.clone(), defaultness, typeToken, ident.clone(), generics.clone(), eqToken, ty.clone(), semiToken)
+public fun ImplItem.AssocType.clone(): ImplItem.AssocType =
+    ImplItem.AssocType(attrs.cloneList(), vis.clone(), defaultness, typeToken, ident.clone(), generics.clone(), eqToken, ty.clone(), semiToken)
 
 public fun ImplItem.Verbatim.clone(): ImplItem.Verbatim =
     ImplItem.Verbatim(tokens.clone())
