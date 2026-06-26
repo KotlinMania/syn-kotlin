@@ -77,10 +77,10 @@ public fun Arm.clone(): Arm =
     Arm(attrs.cloneList(), pat.clone(), guard?.let { it.clone() }, fatArrowToken, body.clone(), comma)
 
 public fun AssocConst.clone(): AssocConst =
-    AssocConst(ident.clone(), generics?.let { it.clone() }, eqToken, value.clone())
+    AssocConst(Ident.new(ident.toString(), ident.span()), generics?.let { it.clone() }, eqToken, value.clone())
 
 public fun AssocType.clone(): AssocType =
-    AssocType(ident.clone(), generics?.let { it.clone() }, eqToken, ty.clone())
+    AssocType(Ident.new(ident.toString(), ident.span()), generics?.let { it.clone() }, eqToken, ty.clone())
 
 public fun AttrStyle.clone(): AttrStyle = this
 
@@ -134,11 +134,11 @@ public fun BoundLifetimes.clone(): BoundLifetimes =
 public fun CapturedParam.clone(): CapturedParam =
     when (this) {
         is CapturedParam.Lifetime -> CapturedParam.Lifetime(lifetime.clone())
-        is CapturedParam.Ident -> CapturedParam.Ident(ident.clone())
+        is CapturedParam.Ident -> CapturedParam.Ident(Ident.new(ident.toString(), ident.span()))
     }
 
 public fun Constraint.clone(): Constraint =
-    Constraint(ident.clone(), generics?.let { it.clone() }, colonToken, bounds.copy({ it.clone() }, { it }))
+    Constraint(Ident.new(ident.toString(), ident.span()), generics?.let { it.clone() }, colonToken, bounds.copy({ it.clone() }, { it }))
 
 public fun Data.clone(): Data =
     when (this) {
@@ -157,7 +157,7 @@ public fun DataUnion.clone(): DataUnion =
     DataUnion(unionToken, fields.clone())
 
 public fun DeriveInput.clone(): DeriveInput =
-    DeriveInput(attrs.cloneList(), vis.clone(), ident.clone(), generics.clone(), data.clone())
+    DeriveInput(attrs.cloneList(), vis.clone(), Ident.new(ident.toString(), ident.span()), generics.clone(), data.clone())
 
 public fun Expr.clone(): Expr =
     when (this) {
@@ -324,7 +324,7 @@ public fun Expr.Yield.clone(): Expr.Yield =
     Expr.Yield(attrs.cloneList(), yieldToken, expr?.clone())
 
 public fun Field.clone(): Field =
-    Field(attrs.cloneList(), vis.clone(), mutability.clone(), ident?.clone(), colonToken, ty.clone())
+    Field(attrs.cloneList(), vis.clone(), mutability.clone(), ident?.let { Ident.new(it.toString(), it.span()) }, colonToken, ty.clone())
 
 public fun FieldMutability.clone(): FieldMutability = this
 
@@ -375,10 +375,10 @@ public fun ForeignItem.Macro.clone(): ForeignItem.Macro =
     ForeignItem.Macro(attrs.cloneList(), mac.clone(), semiToken)
 
 public fun ForeignItem.Static.clone(): ForeignItem.Static =
-    ForeignItem.Static(attrs.cloneList(), vis.clone(), staticToken, mutability, ident.clone(), colonToken, ty.clone(), semiToken)
+    ForeignItem.Static(attrs.cloneList(), vis.clone(), staticToken, mutability, Ident.new(ident.toString(), ident.span()), colonToken, ty.clone(), semiToken)
 
 public fun ForeignItem.ItemType.clone(): ForeignItem.ItemType =
-    ForeignItem.ItemType(attrs.cloneList(), vis.clone(), typeToken, ident.clone(), generics.clone(), semiToken)
+    ForeignItem.ItemType(attrs.cloneList(), vis.clone(), typeToken, Ident.new(ident.toString(), ident.span()), generics.clone(), semiToken)
 
 public fun ForeignItem.Verbatim.clone(): ForeignItem.Verbatim =
     ForeignItem.Verbatim(tokens.clone())
@@ -413,7 +413,7 @@ public fun ImplItem.clone(): ImplItem =
     }
 
 public fun ImplItem.Const.clone(): ImplItem.Const =
-    ImplItem.Const(attrs.cloneList(), vis.clone(), defaultness, constToken, ident.clone(), generics.clone(), colonToken, ty.clone(), eqToken, expr.clone(), semiToken)
+    ImplItem.Const(attrs.cloneList(), vis.clone(), defaultness, constToken, Ident.new(ident.toString(), ident.span()), generics.clone(), colonToken, ty.clone(), eqToken, expr.clone(), semiToken)
 
 public fun ImplItem.Fn.clone(): ImplItem.Fn =
     ImplItem.Fn(attrs.cloneList(), vis.clone(), defaultness, sig.clone(), block.clone())
@@ -422,7 +422,7 @@ public fun ImplItem.Macro.clone(): ImplItem.Macro =
     ImplItem.Macro(attrs.cloneList(), mac.clone(), semiToken)
 
 public fun ImplItem.AssocType.clone(): ImplItem.AssocType =
-    ImplItem.AssocType(attrs.cloneList(), vis.clone(), defaultness, typeToken, ident.clone(), generics.clone(), eqToken, ty.clone(), semiToken)
+    ImplItem.AssocType(attrs.cloneList(), vis.clone(), defaultness, typeToken, Ident.new(ident.toString(), ident.span()), generics.clone(), eqToken, ty.clone(), semiToken)
 
 public fun ImplItem.Verbatim.clone(): ImplItem.Verbatim =
     ImplItem.Verbatim(tokens.clone())
@@ -453,13 +453,13 @@ public fun Item.clone(): Item =
     }
 
 public fun Item.Const.clone(): Item.Const =
-    Item.Const(attrs.cloneList(), vis.clone(), constToken, ident.clone(), colonToken, ty.clone(), eqToken, expr?.clone(), semiToken)
+    Item.Const(attrs.cloneList(), vis.clone(), constToken, Ident.new(ident.toString(), ident.span()), colonToken, ty.clone(), eqToken, expr?.clone(), semiToken)
 
 public fun Item.Enum.clone(): Item.Enum =
-    Item.Enum(attrs.cloneList(), vis.clone(), enumToken, ident.clone(), generics.clone(), braceToken, variants.copy({ it.clone() }, { it }))
+    Item.Enum(attrs.cloneList(), vis.clone(), enumToken, Ident.new(ident.toString(), ident.span()), generics.clone(), braceToken, variants.copy({ it.clone() }, { it }))
 
 public fun Item.ExternCrate.clone(): Item.ExternCrate =
-    Item.ExternCrate(attrs.cloneList(), vis.clone(), externToken, crateToken, ident.clone(), rename?.clone(), semiToken)
+    Item.ExternCrate(attrs.cloneList(), vis.clone(), externToken, crateToken, Ident.new(ident.toString(), ident.span()), rename?.clone(), semiToken)
 
 public fun Item.Fn.clone(): Item.Fn =
     Item.Fn(attrs.cloneList(), vis.clone(), sig.clone(), block)
@@ -471,28 +471,28 @@ public fun Item.Impl.clone(): Item.Impl =
     Item.Impl(attrs.cloneList(), defaultness, unsafety, implToken, generics.clone(), traitPath?.clone(), selfType.clone(), braceToken, items.cloneList())
 
 public fun Item.Macro.clone(): Item.Macro =
-    Item.Macro(attrs.cloneList(), ident?.clone(), mac.clone(), semiToken)
+    Item.Macro(attrs.cloneList(), ident?.let { Ident.new(it.toString(), it.span()) }, mac.clone(), semiToken)
 
 public fun Item.Mod.clone(): Item.Mod =
-    Item.Mod(attrs.cloneList(), vis.clone(), unsafety, modToken, ident.clone(), content?.clone())
+    Item.Mod(attrs.cloneList(), vis.clone(), unsafety, modToken, Ident.new(ident.toString(), ident.span()), content?.clone())
 
 public fun Item.Static.clone(): Item.Static =
-    Item.Static(attrs.cloneList(), vis.clone(), staticToken, mutability.clone(), ident.clone(), colonToken, ty.clone(), eqToken, expr.clone(), semiToken)
+    Item.Static(attrs.cloneList(), vis.clone(), staticToken, mutability.clone(), Ident.new(ident.toString(), ident.span()), colonToken, ty.clone(), eqToken, expr.clone(), semiToken)
 
 public fun Item.Struct.clone(): Item.Struct =
-    Item.Struct(attrs.cloneList(), vis.clone(), structToken, ident.clone(), generics.clone(), fields.clone(), semiToken)
+    Item.Struct(attrs.cloneList(), vis.clone(), structToken, Ident.new(ident.toString(), ident.span()), generics.clone(), fields.clone(), semiToken)
 
 public fun Item.Trait.clone(): Item.Trait =
-    Item.Trait(attrs.cloneList(), vis.clone(), unsafety, autoToken, restriction, traitToken, ident.clone(), generics.clone(), colonToken, supertraits.copy({ it.clone() }, { it }), braceToken, items.copy({ it.clone() }, { it }))
+    Item.Trait(attrs.cloneList(), vis.clone(), unsafety, autoToken, restriction, traitToken, Ident.new(ident.toString(), ident.span()), generics.clone(), colonToken, supertraits.copy({ it.clone() }, { it }), braceToken, items.copy({ it.clone() }, { it }))
 
 public fun Item.TraitAlias.clone(): Item.TraitAlias =
-    Item.TraitAlias(attrs.cloneList(), vis.clone(), traitToken, ident.clone(), generics.clone(), eqToken, bounds.copy({ it.clone() }, { it }), semiToken)
+    Item.TraitAlias(attrs.cloneList(), vis.clone(), traitToken, Ident.new(ident.toString(), ident.span()), generics.clone(), eqToken, bounds.copy({ it.clone() }, { it }), semiToken)
 
 public fun Item.ItemType.clone(): Item.ItemType =
-    Item.ItemType(attrs.cloneList(), vis.clone(), typeToken, ident.clone(), generics.clone(), eqToken, ty.clone(), semiToken)
+    Item.ItemType(attrs.cloneList(), vis.clone(), typeToken, Ident.new(ident.toString(), ident.span()), generics.clone(), eqToken, ty.clone(), semiToken)
 
 public fun Item.Union.clone(): Item.Union =
-    Item.Union(attrs.cloneList(), vis.clone(), unionToken, ident.clone(), generics.clone(), fields.clone())
+    Item.Union(attrs.cloneList(), vis.clone(), unionToken, Ident.new(ident.toString(), ident.span()), generics.clone(), fields.clone())
 
 public fun Item.Use.clone(): Item.Use =
     Item.Use(attrs.cloneList(), vis.clone(), useToken, leadingColon, tree.clone(), semiToken)
@@ -534,7 +534,7 @@ public fun MacroDelimiter.clone(): MacroDelimiter =
 
 public fun Member.clone(): Member =
     when (this) {
-        is Member.Named -> Member.Named(ident.clone())
+        is Member.Named -> Member.Named(Ident.new(ident.toString(), ident.span()))
         is Member.Unnamed -> Member.Unnamed(index.clone())
     }
 
@@ -567,7 +567,7 @@ public fun Pat.clone(): Pat =
     }
 
 public fun Pat.Ident.clone(): Pat.Ident =
-    Pat.Ident(attrs.cloneList(), ident.clone(), atToken, subpat?.clone())
+    Pat.Ident(attrs.cloneList(), Ident.new(ident.toString(), ident.span()), atToken, subpat?.clone())
 
 public fun Pat.Tuple.clone(): Pat.Tuple =
     Pat.Tuple(attrs.cloneList(), parenToken, elems.copy({ it.clone() }, { it }))
@@ -637,7 +637,7 @@ public fun PathArguments.Parenthesized.clone(): PathArguments.Parenthesized =
     PathArguments.Parenthesized(parenToken, inputs.copy({ it.clone() }, { it }), output.clone())
 
 public fun PathSegment.clone(): PathSegment =
-    PathSegment(ident.clone(), arguments.clone())
+    PathSegment(Ident.new(ident.toString(), ident.span()), arguments.clone())
 
 public fun PointerMutability.clone(): PointerMutability =
     when (this) {
@@ -661,7 +661,7 @@ public fun ReturnType.clone(): ReturnType =
     }
 
 public fun Signature.clone(): Signature =
-    Signature(constness, asyncness, unsafety, abi?.clone(), fnToken, ident.clone(), generics.clone(), parenToken, inputs.copy({ it.clone() }, { it }), variadic?.clone(), output.clone())
+    Signature(constness, asyncness, unsafety, abi?.clone(), fnToken, Ident.new(ident.toString(), ident.span()), generics.clone(), parenToken, inputs.copy({ it.clone() }, { it }), variadic?.clone(), output.clone())
 
 public fun Stmt.clone(): Stmt =
     when (this) {
@@ -693,13 +693,13 @@ public fun TraitItem.clone(): TraitItem =
     }
 
 public fun TraitItem.Const.clone(): TraitItem.Const =
-    TraitItem.Const(attrs.cloneList(), constToken, ident.clone(), generics.clone(), colonToken, ty.clone(), default, semiToken)
+    TraitItem.Const(attrs.cloneList(), constToken, Ident.new(ident.toString(), ident.span()), generics.clone(), colonToken, ty.clone(), default, semiToken)
 
 public fun TraitItem.Fn.clone(): TraitItem.Fn =
     TraitItem.Fn(attrs.cloneList(), sig.clone(), default, semiToken)
 
 public fun TraitItem.AssocType.clone(): TraitItem.AssocType =
-    TraitItem.AssocType(attrs.cloneList(), typeToken, ident.clone(), generics.clone(), colonToken, bounds.copy({ it.clone() }, { it }), default, semiToken)
+    TraitItem.AssocType(attrs.cloneList(), typeToken, Ident.new(ident.toString(), ident.span()), generics.clone(), colonToken, bounds.copy({ it.clone() }, { it }), default, semiToken)
 
 public fun TraitItem.Macro.clone(): TraitItem.Macro =
     TraitItem.Macro(attrs.cloneList(), mac.clone(), semiToken)
@@ -769,7 +769,7 @@ public fun SynType.Verbatim.clone(): SynType.Verbatim =
     SynType.Verbatim(tokens.clone())
 
 public fun GenericParam.TypeParam.clone(): GenericParam.TypeParam =
-    GenericParam.TypeParam(attrs.cloneList(), ident.clone(), colonToken, bounds.copy({ it.clone() }, { it }), eqToken, default?.clone())
+    GenericParam.TypeParam(attrs.cloneList(), Ident.new(ident.toString(), ident.span()), colonToken, bounds.copy({ it.clone() }, { it }), eqToken, default?.clone())
 
 public fun TypeParamBound.clone(): TypeParamBound =
     when (this) {
@@ -788,7 +788,7 @@ public fun UnOp.clone(): UnOp =
     }
 
 public fun Variant.clone(): Variant =
-    Variant(attrs.cloneList(), ident.clone(), fields.clone(), discriminant?.let { it.copy(expr = it.expr.clone()) })
+    Variant(attrs.cloneList(), Ident.new(ident.toString(), ident.span()), fields.clone(), discriminant?.let { it.copy(expr = it.expr.clone()) })
 
 public fun Visibility.clone(): Visibility =
     when (this) {
