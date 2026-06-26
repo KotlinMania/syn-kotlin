@@ -64,7 +64,7 @@ public sealed class Data : ToTokens {
     public data class Struct(
         var value: DataStruct,
     ) : Data() {
-        public val fields: Fieldsget() = value.fields
+        public val fields: Fields get() = value.fields
 
         override fun toTokens(tokens: TokenStream) {
             value.toTokens(tokens)
@@ -74,7 +74,7 @@ public sealed class Data : ToTokens {
     public data class Enum(
         var value: DataEnum,
     ) : Data() {
-        public val variants: VariantListget() = value.variants
+        public val variants: VariantList get() = value.variants
 
         override fun toTokens(tokens: TokenStream) {
             value.toTokens(tokens)
@@ -84,7 +84,7 @@ public sealed class Data : ToTokens {
     public data class Union(
         var value: DataUnion,
     ) : Data() {
-        public val fields: FieldsNamedget() = value.fields
+        public val fields: FieldsNamed get() = value.fields
 
         override fun toTokens(tokens: TokenStream) {
             value.toTokens(tokens)

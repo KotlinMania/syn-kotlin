@@ -172,22 +172,22 @@ public sealed class Item : ToTokens {
             block,
         )
 
-        public var fnToken: io.github.kotlinmania.syn.token.Fn
+        public val fnToken: io.github.kotlinmania.syn.token.Fn
             get() = sig.fnToken
 
-        public var ident: Ident
+        public val ident: Ident
             get() = sig.ident
 
-        public var generics: Generics
+        public val generics: Generics
             get() = sig.generics
 
-        public var parenToken: Paren
+        public val parenToken: Paren
             get() = sig.parenToken
 
-        public var inputs: FnArgList
+        public val inputs: FnArgList
             get() = sig.inputs
 
-        public var output: ReturnType
+        public val output: ReturnType
             get() = sig.output
 
         override fun toTokens(tokens: TokenStream) {

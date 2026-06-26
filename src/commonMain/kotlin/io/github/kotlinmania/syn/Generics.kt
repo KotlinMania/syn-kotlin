@@ -124,7 +124,7 @@ public data class SplitForImpl(
     public var typeGenerics: TypeGenerics,
     public var whereClause: WhereClause?,
 ) {
-    public var turbofish: Turbofish
+    public val turbofish: Turbofish
         get() = typeGenerics.asTurbofish()
 }
 
@@ -203,13 +203,13 @@ public class ConstParamsMut(
 public data class ImplGenerics(
     public var generics: Generics,
 ) : ToTokens {
-    public var ltToken: Lt?
+    public val ltToken: Lt?
         get() = generics.ltToken
 
-    public var params: GenericParamList
+    public val params: GenericParamList
         get() = generics.implGenerics().params
 
-    public var gtToken: Gt?
+    public val gtToken: Gt?
         get() = generics.gtToken
 
     override fun toTokens(tokens: TokenStream) {
@@ -220,13 +220,13 @@ public data class ImplGenerics(
 public data class TypeGenerics(
     public var generics: Generics,
 ) : ToTokens {
-    public var ltToken: Lt?
+    public val ltToken: Lt?
         get() = generics.ltToken
 
-    public var params: GenericParamList
+    public val params: GenericParamList
         get() = generics.typeGenerics().params
 
-    public var gtToken: Gt?
+    public val gtToken: Gt?
         get() = generics.gtToken
 
     public fun asTurbofish(): Turbofish =
@@ -243,13 +243,13 @@ public data class TypeGenerics(
 public data class Turbofish(
     public var generics: Generics,
 ) : ToTokens {
-    public var ltToken: Lt?
+    public val ltToken: Lt?
         get() = generics.ltToken
 
-    public var params: GenericArgumentList
+    public val params: GenericArgumentList
         get() = generics.turbofishArguments()
 
-    public var gtToken: Gt?
+    public val gtToken: Gt?
         get() = generics.gtToken
 
     override fun toTokens(tokens: TokenStream) {

@@ -473,7 +473,7 @@ public class LitInt private constructor(
         }
     }
 
-    public var digits: String
+    public val digits: String
         get() = repr.digits
 
     public fun base10Digits(): String = repr.digits
@@ -530,7 +530,7 @@ public class LitFloat private constructor(
         }
     }
 
-    public var digits: String
+    public val digits: String
         get() = repr.digits
 
     public fun base10Digits(): String = repr.digits

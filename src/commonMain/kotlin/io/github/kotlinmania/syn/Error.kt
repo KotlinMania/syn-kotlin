@@ -42,11 +42,11 @@ public sealed class SynResult<out T> {
     ) : SynResult<T>()
 
     /** `true` when this is a [Success]. */
-    public var isSuccess: Boolean
+    public val isSuccess: Boolean
         get() = this is Success
 
     /** `true` when this is a [Failure]. */
-    public var isFailure: Boolean
+    public val isFailure: Boolean
         get() = this is Failure
 
     /**
