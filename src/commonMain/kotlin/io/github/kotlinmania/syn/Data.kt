@@ -34,7 +34,7 @@ public sealed class Fields :
     public typealias IntoIter = Iterator<Field>
 
     public data class Named(
-        val fields: FieldsNamed,
+        var fields: FieldsNamed,
     ) : Fields() {
         override fun toTokens(tokens: TokenStream) {
             fields.toTokens(tokens)
@@ -42,7 +42,7 @@ public sealed class Fields :
     }
 
     public data class Unnamed(
-        val fields: FieldsUnnamed,
+        var fields: FieldsUnnamed,
     ) : Fields() {
         override fun toTokens(tokens: TokenStream) {
             fields.toTokens(tokens)
@@ -95,9 +95,9 @@ public class Members internal constructor(
 
     override fun next(): Member {
         if (!hasNext()) throw NoSuchElementException()
-        val field = fields[position]
+        var field = fields[position]
         position += 1
-        val member =
+        var member =
             field.ident?.let(Member::Named)
                 ?: Member.Unnamed(Index(index, field.tySpan()))
         index += 1u
@@ -122,8 +122,8 @@ public data class FieldsNamed(
 
 public object FieldsNamedParse {
     fun parse(input: ParseStream): SynResult<FieldsNamed> {
-        val braces = braced(input).getOrElse { return SynResult.failure(it) }
-        val named = parseNamedFieldList(braces.content).getOrElse { return SynResult.failure(it) }
+        var braces = braced(input).getOrElse { return SynResult.failure(it) }
+        var named = parseNamedFieldList(braces.content).getOrElse { return SynResult.failure(it) }
         braces.content.finishChildBuffer()
         return SynResult.success(FieldsNamed(braces.token, named))
     }
@@ -143,8 +143,8 @@ public data class FieldsUnnamed(
 
 public object FieldsUnnamedParse {
     fun parse(input: ParseStream): SynResult<FieldsUnnamed> {
-        val parens = parenthesized(input).getOrElse { return SynResult.failure(it) }
-        val unnamed = parseUnnamedFieldList(parens.content).getOrElse { return SynResult.failure(it) }
+        var parens = parenthesized(input).getOrElse { return SynResult.failure(it) }
+        var unnamed = parseUnnamedFieldList(parens.content).getOrElse { return SynResult.failure(it) }
         parens.content.finishChildBuffer()
         return SynResult.success(FieldsUnnamed(parens.token, unnamed))
     }
@@ -215,16 +215,16 @@ private fun Field.tySpan(): io.github.kotlinmania.procmacro2.Span =
 
 public object VariantParse {
     fun parse(input: ParseStream): SynResult<Variant> {
-        val attrs = parseOuterAttributes(input).getOrElse { return SynResult.failure(it) }
+        var attrs = parseOuterAttributes(input).getOrElse { return SynResult.failure(it) }
         VisibilityParse.parse(input).getOrElse { return SynResult.failure(it) }
-        val ident = IdentParse.parse(input).getOrElse { return SynResult.failure(it) }
-        val fields =
+        var ident = IdentParse.parse(input).getOrElse { return SynResult.failure(it) }
+        var fields =
             when {
                 input.peek(BracePeek) -> Fields.Named(FieldsNamedParse.parse(input).getOrElse { return SynResult.failure(it) })
                 input.peek(ParenPeek) -> Fields.Unnamed(FieldsUnnamedParse.parse(input).getOrElse { return SynResult.failure(it) })
                 else -> Fields.Unit
             }
-        val discriminant =
+        var discriminant =
             if (input.peek(EqPeek)) {
                 val eq = EqParse.parse(input).getOrElse { return SynResult.failure(it) }
                 val expr = parseExprFull(input).getOrElse { return SynResult.failure(it) }

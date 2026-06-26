@@ -58,39 +58,39 @@ public sealed class Lit : ToTokens {
     }
 
     public data class Str(
-        val value: LitStr,
+        var value: LitStr,
     ) : Lit()
 
     public data class ByteStr(
-        val value: LitByteStr,
+        var value: LitByteStr,
     ) : Lit()
 
     public data class CStr(
-        val value: LitCStr,
+        var value: LitCStr,
     ) : Lit()
 
     public data class Byte(
-        val value: LitByte,
+        var value: LitByte,
     ) : Lit()
 
     public data class Char(
-        val value: LitChar,
+        var value: LitChar,
     ) : Lit()
 
     public data class Int(
-        val value: LitInt,
+        var value: LitInt,
     ) : Lit()
 
     public data class Float(
-        val value: LitFloat,
+        var value: LitFloat,
     ) : Lit()
 
     public data class Bool(
-        val value: LitBool,
+        var value: LitBool,
     ) : Lit()
 
     public data class Verbatim(
-        val value: Literal,
+        var value: Literal,
     ) : Lit()
 
     public fun span(): Span =
@@ -138,26 +138,26 @@ public sealed class Lit : ToTokens {
 }
 
 private data class LitRepr(
-    val token: Literal,
-    val suffix: String,
+    var token: Literal,
+    var suffix: String,
 ) {
     fun clone(): LitRepr =
         LitRepr(cloneLiteral(token), suffix)
 }
 
 private data class LitIntRepr(
-    val token: Literal,
-    val digits: String,
-    val suffix: String,
+    var token: Literal,
+    var digits: String,
+    var suffix: String,
 ) {
     fun clone(): LitIntRepr =
         LitIntRepr(cloneLiteral(token), digits, suffix)
 }
 
 private data class LitFloatRepr(
-    val token: Literal,
-    val digits: String,
-    val suffix: String,
+    var token: Literal,
+    var digits: String,
+    var suffix: String,
 ) {
     fun clone(): LitFloatRepr =
         LitFloatRepr(cloneLiteral(token), digits, suffix)
@@ -192,15 +192,15 @@ public class LitStr private constructor(
         parseWith(parser)
 
     public fun <T> parseWith(parser: (ParseStream) -> SynResult<T>): SynResult<T> {
-        val span = span()
-        val tokenStream =
+        var span = span()
+        var tokenStream =
             TokenStream.fromString(value()).fold(
                 onSuccess = { it },
                 onFailure = { return SynResult.failure(SynError.new(span, it.message ?: it.toString())) },
             )
-        val result = parseScoped(parser, span, respanTokenStream(tokenStream, span))
+        var result = parseScoped(parser, span, respanTokenStream(tokenStream, span))
         if (result.isFailure) return result
-        val litSuffix = suffix()
+        var litSuffix = suffix()
         return if (litSuffix.isNotEmpty()) {
             SynResult.failure(SynError.new(span, "unexpected suffix `$litSuffix` on string literal"))
         } else {
@@ -267,7 +267,7 @@ public class LitByteStr(
         suffix
 
     public fun token(): Literal {
-        val token = literal ?: Literal.byteString(bytes.map { it.toByte() }.toByteArray())
+        var token = literal ?: Literal.byteString(bytes.map { it.toByte() }.toByteArray())
         token.setSpan(spanValue)
         return token
     }
@@ -313,7 +313,7 @@ public class LitCStr(
         suffix
 
     public fun token(): Literal {
-        val token = literal ?: Literal.cString(bytes)
+        var token = literal ?: Literal.cString(bytes)
         token.setSpan(spanValue)
         return token
     }
@@ -364,7 +364,7 @@ public class LitByte(
         suffix
 
     public fun token(): Literal {
-        val token =
+        var token =
             literal
                 ?: run {
                     val base = Literal.byteCharacter(value).toString()
@@ -422,7 +422,7 @@ public class LitChar(
         suffix
 
     public fun token(): Literal {
-        val token =
+        var token =
             literal
                 ?: if (value <= Char.MAX_VALUE.code) {
                     Literal.character(value.toChar())
@@ -616,46 +616,46 @@ private fun respanTokenTree(token: TokenTree, span: Span): TokenTree =
     }
 
 private data class StringLiteralParts(
-    val value: String,
-    val suffix: String,
-    val style: StrStyle,
+    var value: String,
+    var suffix: String,
+    var style: StrStyle,
 )
 
 private data class ByteStringLiteralParts(
-    val value: List<UByte>,
-    val suffix: String,
+    var value: List<UByte>,
+    var suffix: String,
 )
 
 private data class CStringLiteralParts(
-    val value: ByteArray,
-    val suffix: String,
+    var value: ByteArray,
+    var suffix: String,
 )
 
 private data class CharLiteralParts(
-    val value: Int,
-    val suffix: String,
+    var value: Int,
+    var suffix: String,
 )
 
 private data class ByteLiteralParts(
-    val value: UByte,
-    val suffix: String,
+    var value: UByte,
+    var suffix: String,
 )
 
 private data class DigitsLiteralParts(
-    val digits: String,
-    val suffix: String,
+    var digits: String,
+    var suffix: String,
 )
 
 private fun byte(s: String, index: Int): Int =
     s.getOrNull(index)?.code ?: 0
 
 private fun nextChr(s: String, index: Int): Pair<Int, Int>? {
-    val first = s.getOrNull(index) ?: return null
+    var first = s.getOrNull(index) ?: return null
     if (first in '\ud800'..'\udbff') {
-        val second = s.getOrNull(index + 1) ?: return null
+        var second = s.getOrNull(index + 1) ?: return null
         if (second !in '\udc00'..'\udfff') return null
-        val high = first.code - 0xd800
-        val low = second.code - 0xdc00
+        var high = first.code - 0xd800
+        var low = second.code - 0xdc00
         return ((high shl 10) + low + 0x10000) to index + 2
     }
     if (first in '\udc00'..'\udfff') return null
@@ -672,9 +672,9 @@ private fun parseLitStr(s: String): StringLiteralParts? =
 private fun parseLitStrCooked(s: String): StringLiteralParts? {
     if (byte(s, 0) != '"'.code) return null
     var index = 1
-    val content = StringBuilder()
+    var content = StringBuilder()
     outer@ while (true) {
-        val ch = s.getOrNull(index) ?: return null
+        var ch = s.getOrNull(index) ?: return null
         when (ch) {
             '"' -> break
             '\\' -> {
@@ -736,9 +736,9 @@ private fun parseLitStrRaw(s: String): StringLiteralParts? {
     }
     if (s.getOrNull(1 + pounds) != '"') return null
 
-    val close = s.lastIndexOf('"')
+    var close = s.lastIndexOf('"')
     if (close <= 1 + pounds) return null
-    val hashesEnd = close + 1 + pounds
+    var hashesEnd = close + 1 + pounds
     if (hashesEnd > s.length) return null
     for (index in close + 1 until hashesEnd) {
         if (s[index] != '#') return null
@@ -762,9 +762,9 @@ private fun parseLitByteStr(s: String): ByteStringLiteralParts? {
 private fun parseLitByteStrCooked(s: String): ByteStringLiteralParts? {
     if (!s.startsWith("b\"")) return null
     var index = 2
-    val content = mutableListOf<UByte>()
+    var content = mutableListOf<UByte>()
     outer@ while (true) {
-        val ch = s.getOrNull(index) ?: return null
+        var ch = s.getOrNull(index) ?: return null
         when (ch) {
             '"' -> break
             '\\' -> {
@@ -814,8 +814,8 @@ private fun parseLitByteStrCooked(s: String): ByteStringLiteralParts? {
 
 private fun parseLitByteStrRaw(s: String): ByteStringLiteralParts? {
     if (!s.startsWith("br")) return null
-    val parsed = parseLitStrRaw(s.substring(1)) ?: return null
-    val bytes =
+    var parsed = parseLitStrRaw(s.substring(1)) ?: return null
+    var bytes =
         parsed.value.map { ch ->
             if (ch.code > 0x7f) return null
             ch.code.toUByte()
@@ -835,9 +835,9 @@ private fun parseLitCStr(s: String): CStringLiteralParts? {
 private fun parseLitCStrCooked(s: String): CStringLiteralParts? {
     if (!s.startsWith("c\"")) return null
     var index = 2
-    val content = mutableListOf<Byte>()
+    var content = mutableListOf<Byte>()
     outer@ while (true) {
-        val ch = s.getOrNull(index) ?: return null
+        var ch = s.getOrNull(index) ?: return null
         when (ch) {
             '"' -> break
             '\\' -> {
@@ -893,20 +893,20 @@ private fun parseLitCStrCooked(s: String): CStringLiteralParts? {
 
 private fun parseLitCStrRaw(s: String): CStringLiteralParts? {
     if (!s.startsWith("cr")) return null
-    val parsed = parseLitStrRaw(s.substring(1)) ?: return null
+    var parsed = parseLitStrRaw(s.substring(1)) ?: return null
     if (parsed.value.any { it == '\u0000' }) return null
     return CStringLiteralParts(parsed.value.encodeToByteArray(), parsed.suffix)
 }
 
 private fun parseLitByte(text: String, span: Span): LitByte? {
-    val parsed = parseLitByteParts(text) ?: return null
+    var parsed = parseLitByteParts(text) ?: return null
     return LitByte(parsed.value, parsed.suffix, span, Literal.fromStrUnchecked(text).also { it.setSpan(span) })
 }
 
 private fun parseLitByteParts(s: String): ByteLiteralParts? {
     if (!s.startsWith("b'")) return null
     var index = 2
-    val value =
+    var value =
         when (val ch = s.getOrNull(index) ?: return null) {
             '\\' -> {
                 index += 1
@@ -942,7 +942,7 @@ private fun parseLitByteParts(s: String): ByteLiteralParts? {
 private fun parseLitChar(s: String): CharLiteralParts? {
     if (byte(s, 0) != '\''.code) return null
     var index = 1
-    val value =
+    var value =
         when (val ch = s.getOrNull(index) ?: return null) {
             '\\' -> {
                 index += 1
@@ -981,8 +981,8 @@ private fun parseLitChar(s: String): CharLiteralParts? {
 }
 
 private fun backslashX(s: String, index: Int): Pair<Int, Int>? {
-    val first = s.getOrNull(index)?.digitToIntOrNull(16) ?: return null
-    val second = s.getOrNull(index + 1)?.digitToIntOrNull(16) ?: return null
+    var first = s.getOrNull(index)?.digitToIntOrNull(16) ?: return null
+    var second = s.getOrNull(index + 1)?.digitToIntOrNull(16) ?: return null
     return first * 0x10 + second to index + 2
 }
 
@@ -992,8 +992,8 @@ private fun backslashU(s: String, index: Int): Pair<Int, Int>? {
     var digits = 0
     var cursor = index + 1
     while (cursor < s.length) {
-        val ch = s[cursor]
-        val digit =
+        var ch = s[cursor]
+        var digit =
             when {
                 ch in '0'..'9' -> ch.code - '0'.code
                 ch in 'a'..'f' -> 10 + ch.code - 'a'.code
@@ -1018,11 +1018,11 @@ private fun backslashU(s: String, index: Int): Pair<Int, Int>? {
 
 private fun parseLitInt(s: String): DigitsLiteralParts? {
     var index = 0
-    val negative = byte(s, 0) == '-'.code
+    var negative = byte(s, 0) == '-'.code
     if (negative) {
         index += 1
     }
-    val base =
+    var base =
         when {
             byte(s, index) == '0'.code && byte(s, index + 1) == 'x'.code -> {
                 index += 2
@@ -1040,11 +1040,11 @@ private fun parseLitInt(s: String): DigitsLiteralParts? {
             else -> return null
         }
 
-    val value = BigInt.new()
+    var value = BigInt.new()
     var hasDigit = false
     loop@ while (index < s.length) {
-        val ch = s[index]
-        val digit =
+        var ch = s[index]
+        var digit =
             when {
                 ch in '0'..'9' -> ch.code - '0'.code
                 ch in 'a'..'f' && base > 10 -> ch.code - 'a'.code + 10
@@ -1086,9 +1086,9 @@ private fun parseLitInt(s: String): DigitsLiteralParts? {
         index += 1
     }
     if (!hasDigit) return null
-    val suffix = s.substring(index)
+    var suffix = s.substring(index)
     if (suffix.isNotEmpty() && !xidOk(suffix)) return null
-    val digits =
+    var digits =
         buildString {
             if (negative) append('-')
             append(value.toString())
@@ -1098,8 +1098,8 @@ private fun parseLitInt(s: String): DigitsLiteralParts? {
 
 private fun parseLitFloat(input: String): DigitsLiteralParts? {
     if (input.isEmpty()) return null
-    val chars = input.toMutableList()
-    val start = if (chars.first() == '-') 1 else 0
+    var chars = input.toMutableList()
+    var start = if (chars.first() == '-') 1 else 0
     if (chars.getOrNull(start) !in '0'..'9') return null
 
     var read = start
@@ -1152,9 +1152,9 @@ private fun parseLitFloat(input: String): DigitsLiteralParts? {
         write += 1
     }
     if (hasE && !hasExponent) return null
-    val suffix = input.substring(read)
+    var suffix = input.substring(read)
     if (suffix.isNotEmpty() && !xidOk(suffix)) return null
-    val digits = chars.take(write).joinToString("")
+    var digits = chars.take(write).joinToString("")
     return DigitsLiteralParts(digits, suffix)
 }
 
@@ -1162,17 +1162,17 @@ private fun litFromLiteral(literal: Literal): Lit =
     Lit.new(literal)
 
 private fun parseNegativeLit(neg: Punct, cursor: Cursor): Pair<Lit, Cursor>? {
-    val (literal, rest) = cursor.literal() ?: return null
+    var (literal, rest) = cursor.literal() ?: return null
     var span = neg.span()
     span = span.join(literal.span()) ?: span
-    val repr = "-$literal"
+    var repr = "-$literal"
     parseLitInt(repr)?.let {
-        val token = Literal.fromStrUnchecked(repr)
+        var token = Literal.fromStrUnchecked(repr)
         token.setSpan(span)
         return Lit.Int(LitInt.from(token)) to rest
     }
     parseLitFloat(repr)?.let {
-        val token = Literal.fromStrUnchecked(repr)
+        var token = Literal.fromStrUnchecked(repr)
         token.setSpan(span)
         return Lit.Float(LitFloat.from(token)) to rest
     }
@@ -1180,12 +1180,12 @@ private fun parseNegativeLit(neg: Punct, cursor: Cursor): Pair<Lit, Cursor>? {
 }
 
 private fun <T> peekImpl(cursor: Cursor, parser: (ParseStream) -> SynResult<T>): Boolean {
-    val buffer = newParseBuffer(Span.callSite(), cursor, UnexpectedRef(Unexpected.None))
+    var buffer = newParseBuffer(Span.callSite(), cursor, UnexpectedRef(Unexpected.None))
     return parser(buffer).isSuccess
 }
 
 private fun MutableList<Byte>.addUtf8(codePoint: Int) {
-    val string = codePointToString(codePoint)
+    var string = codePointToString(codePoint)
     for (byte in string.encodeToByteArray()) {
         add(byte)
     }
@@ -1199,9 +1199,9 @@ private fun codePointToString(codePoint: Int): String {
     if (codePoint <= Char.MAX_VALUE.code) {
         return codePoint.toChar().toString()
     }
-    val shifted = codePoint - 0x10000
-    val high = (0xd800 + (shifted shr 10)).toChar()
-    val low = (0xdc00 + (shifted and 0x3ff)).toChar()
+    var shifted = codePoint - 0x10000
+    var high = (0xd800 + (shifted shr 10)).toChar()
+    var low = (0xdc00 + (shifted and 0x3ff)).toChar()
     return charArrayOf(high, low).concatToString()
 }
 
@@ -1232,7 +1232,7 @@ public object LitParse {
 
 public object LitStrParse {
     public fun parse(input: ParseStream): SynResult<LitStr> {
-        val result = LitParse.parse(input)
+        var result = LitParse.parse(input)
         if (result is SynResult.Success && result.value is Lit.Str) {
             return SynResult.success(result.value.value)
         }
@@ -1242,7 +1242,7 @@ public object LitStrParse {
 
 public object LitIntParse {
     public fun parse(input: ParseStream): SynResult<LitInt> {
-        val result = LitParse.parse(input)
+        var result = LitParse.parse(input)
         if (result is SynResult.Success && result.value is Lit.Int) {
             return SynResult.success(result.value.value)
         }
@@ -1252,7 +1252,7 @@ public object LitIntParse {
 
 public object LitFloatParse {
     public fun parse(input: ParseStream): SynResult<LitFloat> {
-        val result = LitParse.parse(input)
+        var result = LitParse.parse(input)
         if (result is SynResult.Success && result.value is Lit.Float) {
             return SynResult.success(result.value.value)
         }

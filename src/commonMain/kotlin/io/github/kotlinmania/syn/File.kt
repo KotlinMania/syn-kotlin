@@ -24,8 +24,8 @@ public data class File(
 
 public object FileParse {
     fun parse(input: ParseStream): SynResult<File> {
-        val attrs = parseInnerAttributes(input).getOrElse { return SynResult.failure(it) }
-        val items = mutableListOf<Item>()
+        var attrs = parseInnerAttributes(input).getOrElse { return SynResult.failure(it) }
+        var items = mutableListOf<Item>()
         while (!input.isEmpty()) {
             items.add(ItemParse.parse(input).getOrElse { return SynResult.failure(it) })
         }
@@ -35,14 +35,14 @@ public object FileParse {
 
 public fun parseFile(content: String): SynResult<File> {
     var source = content
-    val bom = "\uFEFF"
+    var bom = "\uFEFF"
     if (source.startsWith(bom)) {
         source = source.substring(bom.length)
     }
 
     var shebang: String? = null
     if (source.startsWith("#!")) {
-        val rest = source.length - skipWhitespace(source.substring(2)).length
+        var rest = source.length - skipWhitespace(source.substring(2)).length
         if (rest < source.length && source[rest] == '[') {
             source = "#!" + source.substring(rest)
         } else {

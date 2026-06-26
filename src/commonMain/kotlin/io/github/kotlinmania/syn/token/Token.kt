@@ -26,7 +26,7 @@ sealed interface Sealed
 sealed interface Token : Sealed
 
 data class WithSpan(
-    val span: Span,
+    var span: Span,
 )
 
 sealed interface CustomToken : Token {
@@ -36,11 +36,11 @@ sealed interface CustomToken : Token {
 }
 
 sealed interface SingleSpanToken : Token {
-    val span: Span
+    var span: Span
 }
 
 sealed interface MultiSpanToken : Token {
-    val spans: List<Span>
+    var spans: List<Span>
 }
 
 sealed class KeywordToken(
@@ -72,7 +72,7 @@ sealed class PunctuationToken(
         require(spans.size == text.length) { "expected ${text.length} span(s)" }
     }
 
-    val span: Span
+    var span: Span
         get() = spans.first()
 
     override fun toTokens(tokens: TokenStream) {
@@ -132,7 +132,7 @@ class Group(
     }
 
     fun surround(tokens: TokenStream, f: (TokenStream) -> Unit) {
-        val inner = TokenStream.new()
+        var inner = TokenStream.new()
         f(inner)
         printingDelim(Delimiter.None, span, tokens, inner)
     }
@@ -164,11 +164,11 @@ public fun group(span: Span): Group =
     Group.from(span)
 
 sealed class DelimiterToken(
-    val span: DelimSpan,
+    var span: DelimSpan,
     private val delimiter: Delimiter,
 ) : Token {
     fun surround(tokens: TokenStream, f: (TokenStream) -> Unit) {
-        val inner = TokenStream.new()
+        var inner = TokenStream.new()
         f(inner)
         printingDelim(delimiter, span.join(), tokens, inner)
     }
@@ -1637,7 +1637,7 @@ class Tilde private constructor(
 private fun printingPunct(s: String, spans: List<Span>, tokens: TokenStream) {
     require(s.length == spans.size)
 
-    val chars = s.toList()
+    var chars = s.toList()
     for (index in 0 until chars.lastIndex) {
         tokens.append(Punct(chars[index], Spacing.Joint, spans[index]))
     }
@@ -1654,7 +1654,7 @@ private fun printingDelim(
     tokens: TokenStream,
     inner: TokenStream,
 ) {
-    val group = ProcMacroGroup(delim, inner)
+    var group = ProcMacroGroup(delim, inner)
     group.setSpan(span)
     tokens.append(group)
 }

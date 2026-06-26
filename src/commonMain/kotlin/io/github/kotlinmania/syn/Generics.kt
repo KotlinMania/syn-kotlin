@@ -261,7 +261,7 @@ public data class Turbofish(
 
 private inline fun <reified T : GenericParam> Iterator<GenericParam>.nextParamOfType(): T? {
     while (hasNext()) {
-        val value = next()
+        var value = next()
         if (value is T) return value
     }
     return null
@@ -287,14 +287,14 @@ internal fun chooseGenericsOverQpath(input: ParseStream): Boolean =
         )
 
 internal fun chooseGenericsOverQpathAfterKeyword(input: ParseStream): Boolean {
-    val fork = input.fork()
+    var fork = input.fork()
     identParseAny(fork).getOrElse { return false }
     return chooseGenericsOverQpath(fork)
 }
 
 private object GenericsDisambiguationLtPeek : Peek {
     override fun peek(cursor: Cursor): Boolean {
-        val (punct, _) = cursor.punct() ?: return false
+        var (punct, _) = cursor.punct() ?: return false
         return punct.asChar() == '<'
     }
 
@@ -303,7 +303,7 @@ private object GenericsDisambiguationLtPeek : Peek {
 
 private object GenericsDisambiguationGtPeek : Peek {
     override fun peek(cursor: Cursor): Boolean {
-        val (punct, _) = cursor.punct() ?: return false
+        var (punct, _) = cursor.punct() ?: return false
         return punct.asChar() == '>'
     }
 
@@ -311,7 +311,7 @@ private object GenericsDisambiguationGtPeek : Peek {
 }
 
 private fun Generics.implGenerics(): Generics {
-    val implGenerics = Generics(ltToken, GenericParamList(), gtToken)
+    var implGenerics = Generics(ltToken, GenericParamList(), gtToken)
     for ((value, _) in params.pairsList()) {
         when (value) {
             is GenericParam.LifetimeParam ->
@@ -336,7 +336,7 @@ private fun Generics.implGenerics(): Generics {
 }
 
 private fun Generics.typeGenerics(): Generics {
-    val typeGenerics = Generics(ltToken, GenericParamList(), gtToken)
+    var typeGenerics = Generics(ltToken, GenericParamList(), gtToken)
     for ((value, _) in params.pairsList()) {
         when (value) {
             is GenericParam.LifetimeParam ->
@@ -372,7 +372,7 @@ private fun Generics.typeGenerics(): Generics {
 }
 
 private fun Generics.turbofishArguments(): GenericArgumentList {
-    val args = GenericArgumentList()
+    var args = GenericArgumentList()
     for ((value, _) in params.pairsList()) {
         if (value is GenericParam.LifetimeParam) {
             args.push(GenericArgument.LifetimeArg(value.lifetime.deepCopy())) { Comma(Span.callSite()) }
@@ -826,10 +826,10 @@ public sealed class TypeParamBound : ToTokens {
     }
 
     public data class Trait(
-        val parenToken: io.github.kotlinmania.syn.token.Paren?,
-        val modifier: TraitBoundModifier,
-        val lifetimes: BoundLifetimes?,
-        val path: Path,
+        var parenToken: io.github.kotlinmania.syn.token.Paren?,
+        var modifier: TraitBoundModifier,
+        var lifetimes: BoundLifetimes?,
+        var path: Path,
     ) : TypeParamBound() {
         public companion object {
             public fun parse(input: ParseStream): SynResult<Trait> {
@@ -913,7 +913,7 @@ public sealed class TypeParamBound : ToTokens {
     }
 
     public data class LifetimeBound(
-        val lifetime: Lifetime,
+        var lifetime: Lifetime,
     ) : TypeParamBound() {
         override fun toTokens(tokens: TokenStream) {
             lifetime.toTokens(tokens)
@@ -923,10 +923,10 @@ public sealed class TypeParamBound : ToTokens {
     }
 
     public data class PreciseCapture(
-        val useToken: io.github.kotlinmania.syn.token.Use,
-        val ltToken: Lt,
-        val params: CapturedParamList,
-        val gtToken: Gt,
+        var useToken: io.github.kotlinmania.syn.token.Use,
+        var ltToken: Lt,
+        var params: CapturedParamList,
+        var gtToken: Gt,
     ) : TypeParamBound() {
         public companion object {
             public fun parse(input: ParseStream): SynResult<PreciseCapture> {
@@ -974,7 +974,7 @@ public sealed class TypeParamBound : ToTokens {
     }
 
     public data class Verbatim(
-        val tokens: TokenStream,
+        var tokens: TokenStream,
     ) : TypeParamBound() {
         override fun toTokens(tokens: TokenStream) {
             tokens.extendTokenStreams(listOf(this.tokens))
@@ -1003,7 +1003,7 @@ public sealed class TraitBoundModifier : ToTokens {
     }
 
     public data class Maybe(
-        val token: io.github.kotlinmania.syn.token.Question,
+        var token: io.github.kotlinmania.syn.token.Question,
     ) : TraitBoundModifier() {
         override fun toTokens(tokens: TokenStream) {
             token.toTokens(tokens)
@@ -1014,10 +1014,10 @@ public sealed class TraitBoundModifier : ToTokens {
 }
 
 public data class BoundLifetimes(
-    val forToken: io.github.kotlinmania.syn.token.For,
-    val ltToken: Lt,
-    val lifetimes: GenericParamList,
-    val gtToken: Gt,
+    var forToken: io.github.kotlinmania.syn.token.For,
+    var ltToken: Lt,
+    var lifetimes: GenericParamList,
+    var gtToken: Gt,
 ) : ToTokens {
     public companion object {
         public fun default(): BoundLifetimes =
@@ -1084,7 +1084,7 @@ public sealed class CapturedParam : ToTokens {
     }
 
     public data class Lifetime(
-        val lifetime: io.github.kotlinmania.syn.Lifetime,
+        var lifetime: io.github.kotlinmania.syn.Lifetime,
     ) : CapturedParam() {
         override fun toTokens(tokens: TokenStream) {
             lifetime.toTokens(tokens)
@@ -1094,7 +1094,7 @@ public sealed class CapturedParam : ToTokens {
     }
 
     public data class Ident(
-        val ident: io.github.kotlinmania.procmacro2.Ident,
+        var ident: io.github.kotlinmania.procmacro2.Ident,
     ) : CapturedParam() {
         override fun toTokens(tokens: TokenStream) {
             ident.toTokens(tokens)

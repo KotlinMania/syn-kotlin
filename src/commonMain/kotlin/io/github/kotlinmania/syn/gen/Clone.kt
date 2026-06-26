@@ -249,7 +249,7 @@ public fun Expr.Group.clone(): Expr.Group =
     Expr.Group(attrs.cloneList(), groupToken, expr.clone())
 
 public fun Expr.If.clone(): Expr.If =
-    Expr.If(attrs.cloneList(), ifToken, cond.clone(), thenBranch.clone(), elseBranch?.let { (it.first.clone() to it.second.clone()) })
+    Expr.If(attrs.cloneList(), ifToken, cond.clone(), thenBranch.clone(), elseBranch?.clone())
 
 public fun Expr.Index.clone(): Expr.Index =
     Expr.Index(attrs.cloneList(), expr.clone(), bracketToken, index.clone())
@@ -336,8 +336,8 @@ public fun FieldValue.clone(): FieldValue =
 
 public fun Fields.clone(): Fields =
     when (this) {
-        is Fields.Named -> Fields.Named(this.clone())
-        is Fields.Unnamed -> Fields.Unnamed(this.clone())
+        is Fields.Named -> Fields.Named(fields.clone())
+        is Fields.Unnamed -> Fields.Unnamed(fields.clone())
         is Fields.Unit -> Fields.Unit
     }
 
@@ -395,9 +395,9 @@ public fun GenericArgument.clone(): GenericArgument =
 
 public fun GenericParam.clone(): GenericParam =
     when (this) {
-        is GenericParam.LifetimeParam -> GenericParam.LifetimeParam(this.clone())
-        is GenericParam.TypeParam -> GenericParam.TypeParam(this.clone())
-        is GenericParam.ConstParam -> GenericParam.ConstParam(this.clone())
+        is GenericParam.LifetimeParam -> this.clone()
+        is GenericParam.TypeParam -> this.clone()
+        is GenericParam.ConstParam -> this.clone()
     }
 
 public fun Generics.clone(): Generics =

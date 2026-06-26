@@ -62,8 +62,8 @@ public abstract class CustomPunctuation : ToTokens {
  * @return A pair of [Peek] and concrete parser for this punctuation.
  */
 public fun customPunctuation(chars: String): Pair<Peek, CustomPunctuationParse> {
-    val peek = CustomPunctuationPeek(chars)
-    val parse = CustomPunctuationParse(chars)
+    var peek = CustomPunctuationPeek(chars)
+    var parse = CustomPunctuationParse(chars)
     return peek to parse
 }
 

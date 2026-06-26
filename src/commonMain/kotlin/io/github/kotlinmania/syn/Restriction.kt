@@ -11,7 +11,7 @@ import io.github.kotlinmania.syn.token.Pub
 /** Visibility of an item: `pub`, `pub(restricted)`, or inherited (private). */
 public sealed class Visibility : ToTokens {
     public data class Public(
-        val pubToken: Pub,
+        var pubToken: Pub,
     ) : Visibility() {
         override fun toTokens(tokens: TokenStream) {
             pubToken.toTokens(tokens)
@@ -19,10 +19,10 @@ public sealed class Visibility : ToTokens {
     }
 
     public data class Restricted(
-        val pubToken: Pub,
-        val parenToken: Paren,
-        val inToken: In?,
-        val path: Path,
+        var pubToken: Pub,
+        var parenToken: Paren,
+        var inToken: In?,
+        var path: Path,
     ) : Visibility() {
         override fun toTokens(tokens: TokenStream) {
             pubToken.toTokens(tokens)
@@ -52,7 +52,7 @@ public sealed class FieldMutability : ToTokens {
     }
 
     public data class Mut(
-        val token: io.github.kotlinmania.syn.token.Mut,
+        var token: io.github.kotlinmania.syn.token.Mut,
     ) : FieldMutability() {
         override fun toTokens(tokens: TokenStream) {
             token.toTokens(tokens)
@@ -63,8 +63,8 @@ public sealed class FieldMutability : ToTokens {
 /** Strongly-typed parser for visibility. */
 public object VisibilityParse {
     fun parse(input: ParseStream): SynResult<Visibility> {
-        val emptyGroup = input.fork()
-        val group = parseGroup(emptyGroup)
+        var emptyGroup = input.fork()
+        var group = parseGroup(emptyGroup)
         if (group.isSuccess && group.getOrThrow().content.isEmpty()) {
             input.advanceTo(emptyGroup)
             return SynResult.success(Visibility.Inherited)
@@ -74,7 +74,7 @@ public object VisibilityParse {
             return SynResult.success(Visibility.Inherited)
         }
 
-        val pubToken = PubParse.parse(input).getOrThrow()
+        var pubToken = PubParse.parse(input).getOrThrow()
 
         if (input.peek(ParenPeek)) {
             val ahead = input.fork()
@@ -111,7 +111,7 @@ public object VisibilityParse {
 
 public object PubPeek : Peek {
     override fun peek(cursor: Cursor): Boolean {
-        val (ident, _) = cursor.ident() ?: return false
+        var (ident, _) = cursor.ident() ?: return false
         return ident.toString() == "pub"
     }
 
@@ -131,7 +131,7 @@ internal fun parsePub(input: ParseStream): SynResult<Pub> = PubParse.parse(input
 
 public object InPeek : Peek {
     override fun peek(cursor: Cursor): Boolean {
-        val (ident, _) = cursor.ident() ?: return false
+        var (ident, _) = cursor.ident() ?: return false
         return ident.toString() == "in"
     }
 

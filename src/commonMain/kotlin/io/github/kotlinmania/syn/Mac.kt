@@ -57,13 +57,13 @@ public val MacroDelimiter.isBrace: Boolean
 
 /** Surrounds the given content with this delimiter. */
 public fun MacroDelimiter.surround(tokens: TokenStream, content: TokenStream) {
-    val (delim, span) =
+    var (delim, span) =
         when (this) {
             is MacroDelimiter.Paren -> Delimiter.Parenthesis to token.span
             is MacroDelimiter.Brace -> Delimiter.Brace to token.span
             is MacroDelimiter.Bracket -> Delimiter.Bracket to token.span
         }
-    val group = Group(delim, content)
+    var group = Group(delim, content)
     group.setSpan(span.join())
     tokens.append(TokenTree.Group(group))
 }
@@ -78,7 +78,7 @@ public fun <T> Macro.parseBody(parser: (ParseStream) -> SynResult<T>): SynResult
 
 /** Parse the tokens within the macro invocation's delimiters using the given parser. */
 public fun <T> Macro.parseBodyWith(parser: (ParseStream) -> SynResult<T>): SynResult<T> {
-    val scope =
+    var scope =
         when (delimiter) {
             is MacroDelimiter.Paren -> delimiter.token.span.close()
             is MacroDelimiter.Brace -> delimiter.token.span.close()
@@ -90,7 +90,7 @@ public fun <T> Macro.parseBodyWith(parser: (ParseStream) -> SynResult<T>): SynRe
 /** Parses a delimiter from the input stream. */
 public fun parseDelimiter(input: ParseStream): SynResult<Pair<MacroDelimiter, TokenStream>> =
     input.step { cursor ->
-        val (tt, rest) =
+        var (tt, rest) =
             cursor.tokenTree()
                 ?: return@step SynResult.failure(cursor.error("expected delimiter"))
         if (tt is TokenTree.Group) {

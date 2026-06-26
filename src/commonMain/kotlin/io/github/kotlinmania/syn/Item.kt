@@ -56,8 +56,8 @@ public sealed class Item : ToTokens {
     }
 
     internal data class AttrReplacement(
-        val item: Item,
-        val oldAttrs: List<Attribute>,
+        var item: Item,
+        var oldAttrs: List<Attribute>,
     )
 
     internal fun replaceAttrs(new: List<Attribute>): AttrReplacement =
@@ -531,7 +531,7 @@ public sealed class FnArg : ToTokens {
 /** Module content: either an inline block or just a semicolon. */
 public sealed class ModContent : ToTokens {
     public data class Unnamed(
-        val semiToken: Semi,
+        var semiToken: Semi,
     ) : ModContent() {
         override fun toTokens(tokens: TokenStream) {
             semiToken.toTokens(tokens)
@@ -539,8 +539,8 @@ public sealed class ModContent : ToTokens {
     }
 
     public data class Inline(
-        val braceToken: Brace,
-        val items: List<Item>,
+        var braceToken: Brace,
+        var items: List<Item>,
     ) : ModContent() {
         override fun toTokens(tokens: TokenStream) {
             braceToken.surround(tokens) { inner ->
@@ -553,9 +553,9 @@ public sealed class ModContent : ToTokens {
 /** A use tree in a use declaration. */
 public sealed class UseTree : ToTokens {
     public data class Path(
-        val ident: Ident,
-        val colon2Token: io.github.kotlinmania.syn.token.PathSep?,
-        val tree: UseTree?,
+        var ident: Ident,
+        var colon2Token: io.github.kotlinmania.syn.token.PathSep?,
+        var tree: UseTree?,
     ) : UseTree() {
         override fun toTokens(tokens: TokenStream) {
             ident.toTokens(tokens)
@@ -565,8 +565,8 @@ public sealed class UseTree : ToTokens {
     }
 
     public data class Name(
-        val ident: Ident,
-        val rename: AsIdent?,
+        var ident: Ident,
+        var rename: AsIdent?,
     ) : UseTree() {
         override fun toTokens(tokens: TokenStream) {
             ident.toTokens(tokens)
@@ -575,8 +575,8 @@ public sealed class UseTree : ToTokens {
     }
 
     public data class Group(
-        val braceToken: Brace,
-        val items: UseTreeList,
+        var braceToken: Brace,
+        var items: UseTreeList,
     ) : UseTree() {
         override fun toTokens(tokens: TokenStream) {
             braceToken.surround(tokens) { inner ->
@@ -586,7 +586,7 @@ public sealed class UseTree : ToTokens {
     }
 
     public data class Glob(
-        val starToken: io.github.kotlinmania.syn.token.Star,
+        var starToken: io.github.kotlinmania.syn.token.Star,
     ) : UseTree() {
         override fun toTokens(tokens: TokenStream) {
             starToken.toTokens(tokens)
@@ -646,7 +646,7 @@ public data class Signature(
 
     /** A method's receiver, such as a reference receiver or an explicit receiver type. */
     public fun receiver(): FnArg.Receiver? {
-        val first = inputs.first() ?: return null
+        var first = inputs.first() ?: return null
         return first as? FnArg.Receiver
     }
 }
