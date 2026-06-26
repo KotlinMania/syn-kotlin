@@ -9,6 +9,7 @@ import io.github.kotlinmania.syn.AttrStyle
 import io.github.kotlinmania.syn.Attribute
 import io.github.kotlinmania.syn.BareFnArg
 import io.github.kotlinmania.syn.BareVariadic
+import io.github.kotlinmania.syn.BareVariadic
 import io.github.kotlinmania.syn.BinOp
 import io.github.kotlinmania.syn.Block
 import io.github.kotlinmania.syn.BoundLifetimes
@@ -46,22 +47,26 @@ import io.github.kotlinmania.syn.Macro
 import io.github.kotlinmania.syn.MacroDelimiter
 import io.github.kotlinmania.syn.Member
 import io.github.kotlinmania.syn.Meta
+import io.github.kotlinmania.syn.ModContent
 import io.github.kotlinmania.syn.Pat
 import io.github.kotlinmania.syn.PatRest
 import io.github.kotlinmania.syn.PatType
 import io.github.kotlinmania.syn.Path
 import io.github.kotlinmania.syn.PathArguments
 import io.github.kotlinmania.syn.PathSegment
+import io.github.kotlinmania.syn.PathTrait
 import io.github.kotlinmania.syn.PointerMutability
 import io.github.kotlinmania.syn.QSelf
 import io.github.kotlinmania.syn.RangeLimits
 import io.github.kotlinmania.syn.ReturnType
 import io.github.kotlinmania.syn.Signature
+import io.github.kotlinmania.syn.StaticMutability
 import io.github.kotlinmania.syn.Stmt
 import io.github.kotlinmania.syn.SynType
 import io.github.kotlinmania.syn.TraitItem
 import io.github.kotlinmania.syn.TypeParamBound
 import io.github.kotlinmania.syn.UnOp
+import io.github.kotlinmania.syn.UseTree
 import io.github.kotlinmania.syn.Variant
 import io.github.kotlinmania.syn.Visibility
 import io.github.kotlinmania.syn.WhereClause
@@ -336,7 +341,7 @@ public fun FieldPat.clone(): FieldPat =
     FieldPat(member.clone(), colonToken, pat.clone(), attrs.cloneList())
 
 public fun FieldValue.clone(): FieldValue =
-    FieldValue(attrs.cloneList(), member.clone(), colonToken?.clone(), expr.clone())
+    FieldValue(attrs.cloneList(), member.clone(), colonToken, expr.clone())
 
 public fun Fields.clone(): Fields =
     when (this) {
@@ -814,3 +819,29 @@ internal fun <T> MutableList<T>.cloneList(): MutableList<T> =
 
 public fun TokenStream.clone(): TokenStream =
     TokenStream.fromTokenTrees(this.toList())
+
+public fun PathTrait.clone(): PathTrait =
+    PathTrait(polarity, path.clone(), forToken)
+
+public fun ModContent.clone(): ModContent =
+    when (this) {
+        is ModContent.Unnamed -> ModContent.Unnamed(semiToken)
+        is ModContent.Inline -> ModContent.Inline(braceToken, items.map { it.clone() })
+    }
+
+public fun UseTree.clone(): UseTree =
+    when (this) {
+        is UseTree.Path -> UseTree.Path(Ident.new(ident.toString(), ident.span()), colon2Token, tree?.clone())
+        is UseTree.Name -> UseTree.Name(Ident.new(ident.toString(), ident.span()), rename?.clone())
+        is UseTree.Group -> UseTree.Group(braceToken, items.copy({ it.clone() }, { it }))
+        is UseTree.Glob -> UseTree.Glob(starToken)
+    }
+
+public fun StaticMutability.clone(): StaticMutability =
+    when (this) {
+        is StaticMutability.Mut -> this
+        is StaticMutability.None -> StaticMutability.None
+    }
+
+public fun BareVariadic.clone(): BareVariadic =
+    BareVariadic(attrs.cloneList(), name?.clone(), dots, comma)
