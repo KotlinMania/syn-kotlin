@@ -93,7 +93,7 @@ public sealed class Pat : ToTokens {
         public var atToken: io.github.kotlinmania.syn.token.At?,
         public var subpat: Pat?,
     ) : Pat() {
-        override fun deepCopy(): Pat = copy(attrs = attrs.map { it.deepCopy() })
+        override fun deepCopy(): Pat = copy(attrs = attrs.mapTo(mutableListOf()) { it.deepCopy() })
 
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
@@ -112,7 +112,7 @@ public sealed class Pat : ToTokens {
         public var attrs: MutableList<Attribute> = mutableListOf(),
     ) : Pat() {
         override fun deepCopy(): Pat =
-            copy(attrs = attrs.map { it.deepCopy() }, elems = elems.copy({ it.deepCopy() }, { it }))
+            copy(attrs = attrs.mapTo(mutableListOf()) { it.deepCopy() }, elems = elems.copy({ it.deepCopy() }, { it }))
 
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
@@ -134,7 +134,7 @@ public sealed class Pat : ToTokens {
         public var attrs: MutableList<Attribute> = mutableListOf(),
     ) : Pat() {
         override fun deepCopy(): Pat =
-            copy(attrs = attrs.map { it.deepCopy() }, cases = cases.copy({ it.deepCopy() }, { it }))
+            copy(attrs = attrs.mapTo(mutableListOf()) { it.deepCopy() }, cases = cases.copy({ it.deepCopy() }, { it }))
 
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
@@ -153,7 +153,7 @@ public sealed class Pat : ToTokens {
         public var attrs: MutableList<Attribute> = mutableListOf(),
     ) : Pat() {
         override fun deepCopy(): Pat =
-            copy(attrs = attrs.map { it.deepCopy() }, pat = pat.deepCopy())
+            copy(attrs = attrs.mapTo(mutableListOf()) { it.deepCopy() }, pat = pat.deepCopy())
 
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
@@ -169,7 +169,7 @@ public sealed class Pat : ToTokens {
         public var attrs: MutableList<Attribute> = mutableListOf(),
     ) : Pat() {
         override fun deepCopy(): Pat =
-            copy(attrs = attrs.map { it.deepCopy() }, andToken = andToken, mutability = mutability, pat = pat.deepCopy())
+            copy(attrs = attrs.mapTo(mutableListOf()) { it.deepCopy() }, andToken = andToken, mutability = mutability, pat = pat.deepCopy())
 
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
@@ -191,7 +191,7 @@ public sealed class Pat : ToTokens {
     ) : Pat() {
         override fun deepCopy(): Pat =
             copy(
-                attrs = attrs.map { it.deepCopy() },
+                attrs = attrs.mapTo(mutableListOf()) { it.deepCopy() },
                 qself = qself,
                 path = path.deepCopy(),
                 fields = fields.copy({ it.deepCopy() }, { it }),
@@ -228,7 +228,7 @@ public sealed class Pat : ToTokens {
         public var attrs: MutableList<Attribute> = mutableListOf(),
     ) : Pat() {
         override fun deepCopy(): Pat =
-            copy(attrs = attrs.map { it.deepCopy() }, elems = elems.copy({ it.deepCopy() }, { it }))
+            copy(attrs = attrs.mapTo(mutableListOf()) { it.deepCopy() }, elems = elems.copy({ it.deepCopy() }, { it }))
 
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
@@ -245,7 +245,7 @@ public sealed class Pat : ToTokens {
         public var colonToken: Colon,
         public var ty: SynType,
     ) : Pat() {
-        override fun deepCopy(): Pat = copy(attrs = attrs.map { it.deepCopy() }, pat = pat.deepCopy(), ty = ty.deepCopy())
+        override fun deepCopy(): Pat = copy(attrs = attrs.mapTo(mutableListOf()) { it.deepCopy() }, pat = pat.deepCopy(), ty = ty.deepCopy())
 
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
@@ -261,7 +261,7 @@ public sealed class Pat : ToTokens {
         public var constToken: io.github.kotlinmania.syn.token.Const,
         public var block: Block,
     ) : Pat() {
-        override fun deepCopy(): Pat = copy(attrs = attrs.map { it.deepCopy() }, block = block.deepCopy())
+        override fun deepCopy(): Pat = copy(attrs = attrs.mapTo(mutableListOf()) { it.deepCopy() }, block = block.deepCopy())
 
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
@@ -275,7 +275,7 @@ public sealed class Pat : ToTokens {
         public var attrs: MutableList<Attribute>,
         public var lit: io.github.kotlinmania.syn.Lit,
     ) : Pat() {
-        override fun deepCopy(): Pat = copy(attrs = attrs.map { it.deepCopy() }, lit = lit)
+        override fun deepCopy(): Pat = copy(attrs = attrs.mapTo(mutableListOf()) { it.deepCopy() }, lit = lit)
 
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
@@ -288,7 +288,7 @@ public sealed class Pat : ToTokens {
         public var attrs: MutableList<Attribute>,
         public var mac: io.github.kotlinmania.syn.Macro,
     ) : Pat() {
-        override fun deepCopy(): Pat = copy(attrs = attrs.map { it.deepCopy() }, mac = mac.deepCopy())
+        override fun deepCopy(): Pat = copy(attrs = attrs.mapTo(mutableListOf()) { it.deepCopy() }, mac = mac.deepCopy())
 
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
@@ -302,7 +302,7 @@ public sealed class Pat : ToTokens {
         public var qself: QSelf?,
         public var path: io.github.kotlinmania.syn.Path,
     ) : Pat() {
-        override fun deepCopy(): Pat = copy(attrs = attrs.map { it.deepCopy() }, qself = qself, path = path.deepCopy())
+        override fun deepCopy(): Pat = copy(attrs = attrs.mapTo(mutableListOf()) { it.deepCopy() }, qself = qself, path = path.deepCopy())
 
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
@@ -323,7 +323,7 @@ public sealed class Pat : ToTokens {
         public var limits: RangeLimits,
         public var end: Expr?,
     ) : Pat() {
-        override fun deepCopy(): Pat = copy(attrs = attrs.map { it.deepCopy() }, start = start?.deepCopy(), end = end?.deepCopy())
+        override fun deepCopy(): Pat = copy(attrs = attrs.mapTo(mutableListOf()) { it.deepCopy() }, start = start?.deepCopy(), end = end?.deepCopy())
 
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
@@ -338,7 +338,7 @@ public sealed class Pat : ToTokens {
         public var attrs: MutableList<Attribute>,
         public var dot2Token: io.github.kotlinmania.syn.token.DotDot,
     ) : Pat() {
-        override fun deepCopy(): Pat = copy(attrs = attrs.map { it.deepCopy() })
+        override fun deepCopy(): Pat = copy(attrs = attrs.mapTo(mutableListOf()) { it.deepCopy() })
 
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
@@ -354,7 +354,7 @@ public sealed class Pat : ToTokens {
         public var parenToken: io.github.kotlinmania.syn.token.Paren,
         public var elems: PatList,
     ) : Pat() {
-        override fun deepCopy(): Pat = copy(attrs = attrs.map { it.deepCopy() }, qself = qself, path = path.deepCopy(), elems = elems.copy({ it.deepCopy() }, { it }))
+        override fun deepCopy(): Pat = copy(attrs = attrs.mapTo(mutableListOf()) { it.deepCopy() }, qself = qself, path = path.deepCopy(), elems = elems.copy({ it.deepCopy() }, { it }))
 
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
@@ -374,7 +374,7 @@ public sealed class Pat : ToTokens {
         public var attrs: MutableList<Attribute>,
         public var underscoreToken: Underscore,
     ) : Pat() {
-        override fun deepCopy(): Pat = copy(attrs = attrs.map { it.deepCopy() })
+        override fun deepCopy(): Pat = copy(attrs = attrs.mapTo(mutableListOf()) { it.deepCopy() })
 
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
@@ -411,7 +411,7 @@ public data class FieldPat(
     }
 
     public fun deepCopy(): FieldPat =
-        FieldPat(member, colonToken, pat.deepCopy(), attrs.map { it.deepCopy() })
+        FieldPat(member, colonToken, pat.deepCopy(), attrs.mapTo(mutableListOf()) { it.deepCopy() })
 }
 
 /** The rest pattern in a data-object pattern. */
@@ -425,7 +425,7 @@ public data class PatRest(
     }
 
     public fun deepCopy(): PatRest =
-        PatRest(dot2Token, attrs.map { it.deepCopy() })
+        PatRest(dot2Token, attrs.mapTo(mutableListOf()) { it.deepCopy() })
 }
 
 /** A type ascription pattern. */
@@ -451,7 +451,7 @@ public data class PatType(
         ty.toTokens(tokens)
     }
 
-    public fun deepCopy(): PatType = PatType(attrs.map { it.deepCopy() }, pat.deepCopy(), colonToken, ty.deepCopy())
+    public fun deepCopy(): PatType = PatType(attrs.mapTo(mutableListOf()) { it.deepCopy() }, pat.deepCopy(), colonToken, ty.deepCopy())
 }
 
 private fun multiPatImpl(

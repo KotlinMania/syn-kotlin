@@ -309,7 +309,7 @@ public data class BareFnArg(
     }
 
     public fun deepCopy(): BareFnArg =
-        BareFnArg(attrs.map { it.deepCopy() }, name, ty.deepCopy())
+        BareFnArg(attrs.mapTo(mutableListOf()) { it.deepCopy() }, name, ty.deepCopy())
 }
 
 /** The variadic argument of a function pointer. */
@@ -327,7 +327,7 @@ public data class BareVariadic(
         comma?.toTokens(tokens)
     }
 
-    public fun deepCopy(): BareVariadic = BareVariadic(attrs.map { it.deepCopy() }, name, dots, comma)
+    public fun deepCopy(): BareVariadic = BareVariadic(attrs.mapTo(mutableListOf()) { it.deepCopy() }, name, dots, comma)
 }
 
 public sealed class ReturnType : ToTokens {

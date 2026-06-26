@@ -103,7 +103,7 @@ internal fun parseInnerAttributes(input: ParseStream): SynResult<List<Attribute>
             parseInner(input, attrs).getOrElse { return SynResult.failure(it) }
         }.let { SynResult.success(it) }
 
-internal fun parseOuterAttributes(input: ParseStream): SynResult<List<Attribute>> {
+internal fun parseOuterAttributes(input: ParseStream): SynResult<MutableList<Attribute>> {
     val attrs = mutableListOf<Attribute>()
     while (input.peek(PoundPeek)) {
         attrs.add(singleParseOuter(input).getOrElse { return SynResult.failure(it) })

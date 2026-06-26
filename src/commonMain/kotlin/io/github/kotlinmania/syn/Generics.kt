@@ -483,7 +483,7 @@ public sealed class GenericParam : ToTokens {
         }
 
         override fun deepCopy(): LifetimeParam =
-            LifetimeParam(attrs.map { it.deepCopy() }, lifetime.deepCopy(), colonToken, bounds.copy({ it.deepCopy() }, { it }))
+            LifetimeParam(attrs.mapTo(mutableListOf()) { it.deepCopy() }, lifetime.deepCopy(), colonToken, bounds.copy({ it.deepCopy() }, { it }))
     }
 
     public data class TypeParam(
@@ -550,7 +550,7 @@ public sealed class GenericParam : ToTokens {
         }
 
         override fun deepCopy(): TypeParam =
-            TypeParam(attrs.map { it.deepCopy() }, ident.copy(), colonToken, bounds.copy({ it.deepCopy() }, { it }), eqToken, default?.deepCopy())
+            TypeParam(attrs.mapTo(mutableListOf()) { it.deepCopy() }, ident.copy(), colonToken, bounds.copy({ it.deepCopy() }, { it }), eqToken, default?.deepCopy())
     }
 
     public data class ConstParam(
@@ -597,7 +597,7 @@ public sealed class GenericParam : ToTokens {
         }
 
         override fun deepCopy(): ConstParam =
-            ConstParam(attrs.map { it.deepCopy() }, constToken, ident.copy(), colonToken, ty.deepCopy(), eqToken, default?.deepCopy())
+            ConstParam(attrs.mapTo(mutableListOf()) { it.deepCopy() }, constToken, ident.copy(), colonToken, ty.deepCopy(), eqToken, default?.deepCopy())
     }
 }
 

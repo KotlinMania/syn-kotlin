@@ -20,7 +20,7 @@ public data class Block(
         }
     }
 
-    public fun deepCopy(): Block = Block(braceToken, stmts.map { it.deepCopy() })
+    public fun deepCopy(): Block = Block(braceToken, stmts.mapTo(mutableListOf()) { it.deepCopy() })
 }
 
 /**
@@ -45,7 +45,7 @@ public sealed class Stmt : ToTokens {
             semiToken.toTokens(tokens)
         }
 
-        override fun deepCopy(): Local = Local(attrs.map { it.deepCopy() }, letToken, pat.deepCopy(), init?.deepCopy(), semiToken)
+        override fun deepCopy(): Local = Local(attrs.mapTo(mutableListOf()) { it.deepCopy() }, letToken, pat.deepCopy(), init?.deepCopy(), semiToken)
     }
 
     /** An item definition. */
@@ -84,7 +84,7 @@ public sealed class Stmt : ToTokens {
             semiToken?.toTokens(tokens)
         }
 
-        override fun deepCopy(): MacroStmt = MacroStmt(attrs.map { it.deepCopy() }, mac.deepCopy(), semiToken)
+        override fun deepCopy(): MacroStmt = MacroStmt(attrs.mapTo(mutableListOf()) { it.deepCopy() }, mac.deepCopy(), semiToken)
     }
 }
 

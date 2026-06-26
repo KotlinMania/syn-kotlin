@@ -263,23 +263,27 @@ private fun Expr.toTokensAsRangeStart(tokens: TokenStream) {
     }
 }
 
-private fun Expr.needsParensAsConditionJumpValue(): Boolean =
-    this is Expr.Assign ||
-        this is Expr.Binary ||
-        this is Expr.BlockExpr &&
-        attrs.isEmpty() &&
-        label == null ||
-        this is Expr.Break &&
-        (expr !is Expr.BlockExpr || expr.attrs.isNotEmpty() || expr.label != null) ||
-        canConsumeTrailingBraceAsStruct() ||
-        this is Expr.Let ||
-        this is Expr.Path ||
-        this is Expr.Range &&
-        (end == null || end.canConsumeTrailingBraceAsStruct()) ||
-        this is Expr.Return &&
-        expr == null ||
-        this is Expr.Yield &&
-        expr == null
+private fun Expr.needsParensAsConditionJumpValue(): Boolean {
+    if (canConsumeTrailingBraceAsStruct()) return true
+    return when (this) {
+        is Expr.Assign -> true
+        is Expr.Binary -> true
+        is Expr.BlockExpr -> attrs.isEmpty() && label == null
+        is Expr.Break -> {
+            val e = expr
+            e !is Expr.BlockExpr || e.attrs.isNotEmpty() || label != null
+        }
+        is Expr.Let -> true
+        is Expr.Path -> true
+        is Expr.Range -> {
+            val e = end
+            e == null || e.canConsumeTrailingBraceAsStruct()
+        }
+        is Expr.Return -> expr == null
+        is Expr.Yield -> expr == null
+        else -> false
+    }
+}
 
 private fun Expr.canConsumeTrailingBraceAsStruct(): Boolean =
     when (this) {
@@ -341,13 +345,14 @@ private fun Expr.Break.toTokensAsCondition(tokens: TokenStream) {
     for (attr in attrs) attr.toTokens(tokens)
     breakToken.toTokens(tokens)
     label?.toTokens(tokens)
-    if (expr != null) {
-        if (label == null && exprLeadingLabel(expr)) {
+    val e = expr
+    if (e != null) {
+        if (label == null && exprLeadingLabel(e)) {
             io.github.kotlinmania.syn.token.Paren.default().surround(tokens) { inner ->
-                expr.toTokens(inner)
+                e.toTokens(inner)
             }
         } else {
-            expr.toTokensAsConditionBreakValue(tokens)
+            e.toTokensAsConditionBreakValue(tokens)
         }
     }
 }
@@ -356,13 +361,14 @@ private fun Expr.Break.toTokensAsConditionTail(tokens: TokenStream) {
     for (attr in attrs) attr.toTokens(tokens)
     breakToken.toTokens(tokens)
     label?.toTokens(tokens)
-    if (expr != null) {
-        if (label == null && exprLeadingLabel(expr)) {
+    val e = expr
+    if (e != null) {
+        if (label == null && exprLeadingLabel(e)) {
             io.github.kotlinmania.syn.token.Paren.default().surround(tokens) { inner ->
-                expr.toTokens(inner)
+                e.toTokens(inner)
             }
         } else {
-            expr.toTokensAsConditionTail(tokens)
+            e.toTokensAsConditionTail(tokens)
         }
     }
 }
@@ -642,21 +648,22 @@ private fun Expr.Binary.toTokensAsRangeStart(tokens: TokenStream) {
         left.toTokensWithParens(tokens, precedence, ExprPosition.LeftOperand)
     }
     op.toTokens(tokens)
-    if (right.isValueLessJump()) {
+    val r = right
+    if (r.isValueLessJump()) {
         io.github.kotlinmania.syn.token.Paren.default().surround(tokens) { inner ->
-            right.toTokens(inner)
+            r.toTokens(inner)
         }
-    } else if (right is Expr.Binary &&
-        right.attrs.isEmpty() &&
-        !right.needsParens(precedence, ExprPosition.RightOperand)
+    } else if (r is Expr.Binary &&
+        r.attrs.isEmpty() &&
+        !r.needsParens(precedence, ExprPosition.RightOperand)
     ) {
-        right.toTokensAsRangeStart(tokens)
-    } else if (right.rightEdgeNeedsGroupBeforeRange()) {
+        r.toTokensAsRangeStart(tokens)
+    } else if (r.rightEdgeNeedsGroupBeforeRange()) {
         io.github.kotlinmania.syn.token.Paren.default().surround(tokens) { inner ->
-            right.toTokens(inner)
+            r.toTokens(inner)
         }
     } else {
-        right.toTokensWithParens(tokens, precedence, ExprPosition.RightOperand)
+        r.toTokensWithParens(tokens, precedence, ExprPosition.RightOperand)
     }
 }
 
@@ -830,7 +837,7 @@ public sealed class Expr : ToTokens {
             }
         }
 
-        override fun deepCopy(): Array = Array(attrs.map { it.deepCopy() }, bracketToken, elems.copy({ it.deepCopy() }, { it }))
+        override fun deepCopy(): Array = Array(attrs.mapTo(mutableListOf()) { it.deepCopy() }, bracketToken, elems.copy({ it.deepCopy() }, { it }))
     }
 
     /** An assignment expression: `a = compute()`. */
@@ -856,7 +863,7 @@ public sealed class Expr : ToTokens {
             }
         }
 
-        override fun deepCopy(): Assign = Assign(attrs.map { it.deepCopy() }, left.deepCopy(), eqToken, right.deepCopy())
+        override fun deepCopy(): Assign = Assign(attrs.mapTo(mutableListOf()) { it.deepCopy() }, left.deepCopy(), eqToken, right.deepCopy())
     }
 
     /** An async block: `async { ... }`. */
@@ -873,7 +880,7 @@ public sealed class Expr : ToTokens {
             block.toTokens(tokens)
         }
 
-        override fun deepCopy(): Async = Async(attrs.map { it.deepCopy() }, asyncToken, capture, block)
+        override fun deepCopy(): Async = Async(attrs.mapTo(mutableListOf()) { it.deepCopy() }, asyncToken, capture, block)
     }
 
     /** An await expression: `fut.await`. */
@@ -890,7 +897,7 @@ public sealed class Expr : ToTokens {
             awaitToken.toTokens(tokens)
         }
 
-        override fun deepCopy(): Await = Await(attrs.map { it.deepCopy() }, base.deepCopy(), dotToken, awaitToken)
+        override fun deepCopy(): Await = Await(attrs.mapTo(mutableListOf()) { it.deepCopy() }, base.deepCopy(), dotToken, awaitToken)
     }
 
     /** A binary operation: `a + b`, `a += b`. */
@@ -927,7 +934,7 @@ public sealed class Expr : ToTokens {
             }
         }
 
-        override fun deepCopy(): Binary = Binary(attrs.map { it.deepCopy() }, left.deepCopy(), op, right.deepCopy())
+        override fun deepCopy(): Binary = Binary(attrs.mapTo(mutableListOf()) { it.deepCopy() }, left.deepCopy(), op, right.deepCopy())
     }
 
     /** A blocked scope: `{ ... }`. */
@@ -942,7 +949,7 @@ public sealed class Expr : ToTokens {
             block.toTokens(tokens)
         }
 
-        override fun deepCopy(): BlockExpr = BlockExpr(attrs.map { it.deepCopy() }, label?.deepCopy(), block)
+        override fun deepCopy(): BlockExpr = BlockExpr(attrs.mapTo(mutableListOf()) { it.deepCopy() }, label?.deepCopy(), block)
     }
 
     /** A `break`, with an optional label to break and an optional expression. */
@@ -956,18 +963,19 @@ public sealed class Expr : ToTokens {
             for (attr in attrs) attr.toTokens(tokens)
             breakToken.toTokens(tokens)
             label?.toTokens(tokens)
-            if (expr != null) {
-                if ((label == null && exprLeadingLabel(expr)) || (expr is Break && expr.expr == null)) {
+            val e = expr
+            if (e != null) {
+                if ((label == null && exprLeadingLabel(e)) || (e is Break && e.expr == null)) {
                     io.github.kotlinmania.syn.token.Paren.default().surround(tokens) { inner ->
-                        expr.toTokens(inner)
+                        e.toTokens(inner)
                     }
                 } else {
-                    expr.toTokens(tokens)
+                    e.toTokens(tokens)
                 }
             }
         }
 
-        override fun deepCopy(): Break = Break(attrs.map { it.deepCopy() }, breakToken, label?.deepCopy(), expr?.deepCopy())
+        override fun deepCopy(): Break = Break(attrs.mapTo(mutableListOf()) { it.deepCopy() }, breakToken, label?.deepCopy(), expr?.deepCopy())
     }
 
     /** A function call expression: `invoke(a, b)`. */
@@ -985,7 +993,7 @@ public sealed class Expr : ToTokens {
             }
         }
 
-        override fun deepCopy(): Call = Call(attrs.map { it.deepCopy() }, func.deepCopy(), parenToken, args.copy({ it.deepCopy() }, { it }))
+        override fun deepCopy(): Call = Call(attrs.mapTo(mutableListOf()) { it.deepCopy() }, func.deepCopy(), parenToken, args.copy({ it.deepCopy() }, { it }))
     }
 
     /** A cast expression: `foo as f64`. */
@@ -1011,7 +1019,7 @@ public sealed class Expr : ToTokens {
             }
         }
 
-        override fun deepCopy(): Cast = Cast(attrs.map { it.deepCopy() }, expr.deepCopy(), asToken, ty.deepCopy())
+        override fun deepCopy(): Cast = Cast(attrs.mapTo(mutableListOf()) { it.deepCopy() }, expr.deepCopy(), asToken, ty.deepCopy())
     }
 
     /** A closure expression: `|a, b| a + b`. */
@@ -1038,7 +1046,7 @@ public sealed class Expr : ToTokens {
             body.toTokens(tokens)
         }
 
-        override fun deepCopy(): Closure = Closure(attrs.map { it.deepCopy() }, constness, asyncness, capture, or1Token, inputs.copy({ it.deepCopy() }, { it }), or2Token, output.deepCopy(), body.deepCopy())
+        override fun deepCopy(): Closure = Closure(attrs.mapTo(mutableListOf()) { it.deepCopy() }, constness, asyncness, capture, or1Token, inputs.copy({ it.deepCopy() }, { it }), or2Token, output.deepCopy(), body.deepCopy())
     }
 
     /** A const block: `const { ... }`. */
@@ -1053,7 +1061,7 @@ public sealed class Expr : ToTokens {
             block.toTokens(tokens)
         }
 
-        override fun deepCopy(): Const = Const(attrs.map { it.deepCopy() }, constToken, block)
+        override fun deepCopy(): Const = Const(attrs.mapTo(mutableListOf()) { it.deepCopy() }, constToken, block)
     }
 
     /** A `continue`, with an optional label. */
@@ -1068,7 +1076,7 @@ public sealed class Expr : ToTokens {
             label?.toTokens(tokens)
         }
 
-        override fun deepCopy(): Continue = Continue(attrs.map { it.deepCopy() }, continueToken, label?.deepCopy())
+        override fun deepCopy(): Continue = Continue(attrs.mapTo(mutableListOf()) { it.deepCopy() }, continueToken, label?.deepCopy())
     }
 
     /** Access of a named field of a data class (`obj.k`) or indexed element of a tuple-like compound (`obj.0`). */
@@ -1085,7 +1093,7 @@ public sealed class Expr : ToTokens {
             member.toTokens(tokens)
         }
 
-        override fun deepCopy(): Field = Field(attrs.map { it.deepCopy() }, base.deepCopy(), dotToken, member)
+        override fun deepCopy(): Field = Field(attrs.mapTo(mutableListOf()) { it.deepCopy() }, base.deepCopy(), dotToken, member)
     }
 
     /** A for loop: `for pat in expr { ... }`. */
@@ -1108,7 +1116,7 @@ public sealed class Expr : ToTokens {
             body.toTokens(tokens)
         }
 
-        override fun deepCopy(): ForLoop = ForLoop(attrs.map { it.deepCopy() }, label?.deepCopy(), forToken, pat.deepCopy(), inToken, expr.deepCopy(), body)
+        override fun deepCopy(): ForLoop = ForLoop(attrs.mapTo(mutableListOf()) { it.deepCopy() }, label?.deepCopy(), forToken, pat.deepCopy(), inToken, expr.deepCopy(), body)
     }
 
     /** An expression contained within invisible delimiters. */
@@ -1122,7 +1130,7 @@ public sealed class Expr : ToTokens {
             groupToken.surround(tokens) { inner -> expr.toTokens(inner) }
         }
 
-        override fun deepCopy(): Group = Group(attrs.map { it.deepCopy() }, groupToken, expr.deepCopy())
+        override fun deepCopy(): Group = Group(attrs.mapTo(mutableListOf()) { it.deepCopy() }, groupToken, expr.deepCopy())
     }
 
     /** An `if` expression with an optional `else` block. */
@@ -1141,7 +1149,7 @@ public sealed class Expr : ToTokens {
             elseBranch?.toTokens(tokens)
         }
 
-        override fun deepCopy(): If = If(attrs.map { it.deepCopy() }, ifToken, cond.deepCopy(), thenBranch, elseBranch?.let { it.copy(expr = it.expr.deepCopy()) })
+        override fun deepCopy(): If = If(attrs.mapTo(mutableListOf()) { it.deepCopy() }, ifToken, cond.deepCopy(), thenBranch, elseBranch?.let { it.copy(expr = it.expr.deepCopy()) })
     }
 
     /** A square bracketed indexing expression: `vector[2]`. */
@@ -1157,7 +1165,7 @@ public sealed class Expr : ToTokens {
             bracketToken.surround(tokens) { inner -> index.toTokens(inner) }
         }
 
-        override fun deepCopy(): Index = Index(attrs.map { it.deepCopy() }, expr.deepCopy(), bracketToken, index.deepCopy())
+        override fun deepCopy(): Index = Index(attrs.mapTo(mutableListOf()) { it.deepCopy() }, expr.deepCopy(), bracketToken, index.deepCopy())
     }
 
     /** The inferred value of a const generic argument, denoted `_`. */
@@ -1170,7 +1178,7 @@ public sealed class Expr : ToTokens {
             underscoreToken.toTokens(tokens)
         }
 
-        override fun deepCopy(): Infer = Infer(attrs.map { it.deepCopy() }, underscoreToken)
+        override fun deepCopy(): Infer = Infer(attrs.mapTo(mutableListOf()) { it.deepCopy() }, underscoreToken)
     }
 
     /** A pattern guard that tests whether a pattern matches a value. */
@@ -1195,7 +1203,7 @@ public sealed class Expr : ToTokens {
             }
         }
 
-        override fun deepCopy(): Let = Let(attrs.map { it.deepCopy() }, letToken, pat.deepCopy(), eqToken, expr.deepCopy())
+        override fun deepCopy(): Let = Let(attrs.mapTo(mutableListOf()) { it.deepCopy() }, letToken, pat.deepCopy(), eqToken, expr.deepCopy())
     }
 
     /** A literal in place of an expression: `1`, `"foo"`. */
@@ -1208,7 +1216,7 @@ public sealed class Expr : ToTokens {
             lit.toTokens(tokens)
         }
 
-        override fun deepCopy(): Lit = Lit(attrs.map { it.deepCopy() }, lit)
+        override fun deepCopy(): Lit = Lit(attrs.mapTo(mutableListOf()) { it.deepCopy() }, lit)
     }
 
     /** Conditionless loop: `loop { ... }`. */
@@ -1225,7 +1233,7 @@ public sealed class Expr : ToTokens {
             body.toTokens(tokens)
         }
 
-        override fun deepCopy(): Loop = Loop(attrs.map { it.deepCopy() }, label?.deepCopy(), loopToken, body)
+        override fun deepCopy(): Loop = Loop(attrs.mapTo(mutableListOf()) { it.deepCopy() }, label?.deepCopy(), loopToken, body)
     }
 
     /** A macro invocation expression. */
@@ -1238,7 +1246,7 @@ public sealed class Expr : ToTokens {
             mac.toTokens(tokens)
         }
 
-        override fun deepCopy(): Macro = Macro(attrs.map { it.deepCopy() }, mac.deepCopy())
+        override fun deepCopy(): Macro = Macro(attrs.mapTo(mutableListOf()) { it.deepCopy() }, mac.deepCopy())
     }
 
     /** A `match` expression. */
@@ -1258,7 +1266,7 @@ public sealed class Expr : ToTokens {
             }
         }
 
-        override fun deepCopy(): Match = Match(attrs.map { it.deepCopy() }, matchToken, expr.deepCopy(), braceToken, arms.map { it.deepCopy() })
+        override fun deepCopy(): Match = Match(attrs.mapTo(mutableListOf()) { it.deepCopy() }, matchToken, expr.deepCopy(), braceToken, arms.map { it.deepCopy() })
     }
 
     /** A method call expression with optional turbofish and arguments. */
@@ -1282,7 +1290,7 @@ public sealed class Expr : ToTokens {
             }
         }
 
-        override fun deepCopy(): MethodCall = MethodCall(attrs.map { it.deepCopy() }, receiver.deepCopy(), dotToken, method.copy(), turbofish?.deepCopy() as? PathArguments.AngleBracketed?, parenToken, args.copy({ it.deepCopy() }, { it }))
+        override fun deepCopy(): MethodCall = MethodCall(attrs.mapTo(mutableListOf()) { it.deepCopy() }, receiver.deepCopy(), dotToken, method.copy(), turbofish?.deepCopy() as? PathArguments.AngleBracketed?, parenToken, args.copy({ it.deepCopy() }, { it }))
     }
 
     /** A parenthesized expression: `(a + b)`. */
@@ -1296,7 +1304,7 @@ public sealed class Expr : ToTokens {
             parenToken.surround(tokens) { inner -> expr.toTokens(inner) }
         }
 
-        override fun deepCopy(): Paren = Paren(attrs.map { it.deepCopy() }, parenToken, expr.deepCopy())
+        override fun deepCopy(): Paren = Paren(attrs.mapTo(mutableListOf()) { it.deepCopy() }, parenToken, expr.deepCopy())
     }
 
     /** A path expression possibly containing generic parameters. */
@@ -1316,7 +1324,7 @@ public sealed class Expr : ToTokens {
             path.toTokens(tokens)
         }
 
-        override fun deepCopy(): Path = Path(attrs.map { it.deepCopy() }, qself, path.deepCopy())
+        override fun deepCopy(): Path = Path(attrs.mapTo(mutableListOf()) { it.deepCopy() }, qself, path.deepCopy())
     }
 
     /** A range expression: `1..2`, `1..`, `..2`, `1..=2`, `..=2`. */
@@ -1333,7 +1341,7 @@ public sealed class Expr : ToTokens {
             end?.toTokensWithParens(tokens, Precedence.Range, ExprPosition.RightOperand)
         }
 
-        override fun deepCopy(): Range = Range(attrs.map { it.deepCopy() }, start?.deepCopy(), limits, end?.deepCopy())
+        override fun deepCopy(): Range = Range(attrs.mapTo(mutableListOf()) { it.deepCopy() }, start?.deepCopy(), limits, end?.deepCopy())
     }
 
     /** Address-of operation: `&raw const place` or `&raw mut place`. */
@@ -1352,7 +1360,7 @@ public sealed class Expr : ToTokens {
             expr.toTokensWithParens(tokens, Precedence.Prefix, ExprPosition.PrefixOperand)
         }
 
-        override fun deepCopy(): RawAddr = RawAddr(attrs.map { it.deepCopy() }, andToken, raw, mutability, expr.deepCopy())
+        override fun deepCopy(): RawAddr = RawAddr(attrs.mapTo(mutableListOf()) { it.deepCopy() }, andToken, raw, mutability, expr.deepCopy())
     }
 
     /** A referencing operation. */
@@ -1369,7 +1377,7 @@ public sealed class Expr : ToTokens {
             expr.toTokensWithParens(tokens, Precedence.Prefix, ExprPosition.PrefixOperand)
         }
 
-        override fun deepCopy(): Reference = Reference(attrs.map { it.deepCopy() }, andToken, mutability, expr.deepCopy())
+        override fun deepCopy(): Reference = Reference(attrs.mapTo(mutableListOf()) { it.deepCopy() }, andToken, mutability, expr.deepCopy())
     }
 
     /** An array literal constructed from one repeated element: `[0u8; N]`. */
@@ -1389,7 +1397,7 @@ public sealed class Expr : ToTokens {
             }
         }
 
-        override fun deepCopy(): Repeat = Repeat(attrs.map { it.deepCopy() }, bracketToken, expr.deepCopy(), semiToken, len.deepCopy())
+        override fun deepCopy(): Repeat = Repeat(attrs.mapTo(mutableListOf()) { it.deepCopy() }, bracketToken, expr.deepCopy(), semiToken, len.deepCopy())
     }
 
     /** A `return`, with an optional value to be returned. */
@@ -1404,7 +1412,7 @@ public sealed class Expr : ToTokens {
             expr?.toTokens(tokens)
         }
 
-        override fun deepCopy(): Return = Return(attrs.map { it.deepCopy() }, returnToken, expr?.deepCopy())
+        override fun deepCopy(): Return = Return(attrs.mapTo(mutableListOf()) { it.deepCopy() }, returnToken, expr?.deepCopy())
     }
 
     /** A data-object initialization expression. */
@@ -1433,7 +1441,7 @@ public sealed class Expr : ToTokens {
             }
         }
 
-        override fun deepCopy(): Struct = Struct(attrs.map { it.deepCopy() }, qself, path.deepCopy(), braceToken, fields.copy({ it.deepCopy() }, { it }), dot2Token, rest?.deepCopy())
+        override fun deepCopy(): Struct = Struct(attrs.mapTo(mutableListOf()) { it.deepCopy() }, qself, path.deepCopy(), braceToken, fields.copy({ it.deepCopy() }, { it }), dot2Token, rest?.deepCopy())
     }
 
     /** A try-expression: `expr?`. */
@@ -1448,7 +1456,7 @@ public sealed class Expr : ToTokens {
             questionToken.toTokens(tokens)
         }
 
-        override fun deepCopy(): Try = Try(attrs.map { it.deepCopy() }, expr.deepCopy(), questionToken)
+        override fun deepCopy(): Try = Try(attrs.mapTo(mutableListOf()) { it.deepCopy() }, expr.deepCopy(), questionToken)
     }
 
     /** A try block: `try { ... }`. */
@@ -1463,7 +1471,7 @@ public sealed class Expr : ToTokens {
             block.toTokens(tokens)
         }
 
-        override fun deepCopy(): TryBlock = TryBlock(attrs.map { it.deepCopy() }, tryToken, block)
+        override fun deepCopy(): TryBlock = TryBlock(attrs.mapTo(mutableListOf()) { it.deepCopy() }, tryToken, block)
     }
 
     /** A tuple expression: `(a, b, c, d)`. */
@@ -1484,7 +1492,7 @@ public sealed class Expr : ToTokens {
             }
         }
 
-        override fun deepCopy(): Tuple = Tuple(attrs.map { it.deepCopy() }, parenToken, elems.copy({ it.deepCopy() }, { it }))
+        override fun deepCopy(): Tuple = Tuple(attrs.mapTo(mutableListOf()) { it.deepCopy() }, parenToken, elems.copy({ it.deepCopy() }, { it }))
     }
 
     /** A unary prefix operation: negation or dereference. */
@@ -1499,7 +1507,7 @@ public sealed class Expr : ToTokens {
             expr.toTokensWithParens(tokens, Precedence.Prefix, ExprPosition.PrefixOperand)
         }
 
-        override fun deepCopy(): Unary = Unary(attrs.map { it.deepCopy() }, op, expr.deepCopy())
+        override fun deepCopy(): Unary = Unary(attrs.mapTo(mutableListOf()) { it.deepCopy() }, op, expr.deepCopy())
     }
 
     /** A block expression that permits operations violating memory safety invariants. */
@@ -1514,7 +1522,7 @@ public sealed class Expr : ToTokens {
             block.toTokens(tokens)
         }
 
-        override fun deepCopy(): Unsafe = Unsafe(attrs.map { it.deepCopy() }, unsafeToken, block)
+        override fun deepCopy(): Unsafe = Unsafe(attrs.mapTo(mutableListOf()) { it.deepCopy() }, unsafeToken, block)
     }
 
     /** A while loop: `while expr { ... }`. */
@@ -1533,7 +1541,7 @@ public sealed class Expr : ToTokens {
             body.toTokens(tokens)
         }
 
-        override fun deepCopy(): While = While(attrs.map { it.deepCopy() }, label?.deepCopy(), whileToken, cond.deepCopy(), body)
+        override fun deepCopy(): While = While(attrs.mapTo(mutableListOf()) { it.deepCopy() }, label?.deepCopy(), whileToken, cond.deepCopy(), body)
     }
 
     /** A yield expression: `yield expr`. */
@@ -1548,7 +1556,7 @@ public sealed class Expr : ToTokens {
             expr?.toTokens(tokens)
         }
 
-        override fun deepCopy(): Yield = Yield(attrs.map { it.deepCopy() }, yieldToken, expr?.deepCopy())
+        override fun deepCopy(): Yield = Yield(attrs.mapTo(mutableListOf()) { it.deepCopy() }, yieldToken, expr?.deepCopy())
     }
 
     /** Tokens in expression position not interpreted by Syn. */
@@ -1618,7 +1626,7 @@ public data class FieldValue(
         expr.toTokens(tokens)
     }
 
-    public fun deepCopy(): FieldValue = FieldValue(attrs.map { it.deepCopy() }, member, colonToken, expr.deepCopy())
+    public fun deepCopy(): FieldValue = FieldValue(attrs.mapTo(mutableListOf()) { it.deepCopy() }, member, colonToken, expr.deepCopy())
 }
 
 /** A label on a `for`, `while`, or `loop`. */
@@ -1652,7 +1660,7 @@ public data class Arm(
         comma?.toTokens(tokens)
     }
 
-    public fun deepCopy(): Arm = Arm(attrs.map { it.deepCopy() }, pat.deepCopy(), guard?.let { it.copy(expr = it.expr.deepCopy()) }, fatArrowToken, body.deepCopy(), comma)
+    public fun deepCopy(): Arm = Arm(attrs.mapTo(mutableListOf()) { it.deepCopy() }, pat.deepCopy(), guard?.let { it.copy(expr = it.expr.deepCopy()) }, fatArrowToken, body.deepCopy(), comma)
 }
 
 /** Limit types of a range, inclusive or exclusive. */
