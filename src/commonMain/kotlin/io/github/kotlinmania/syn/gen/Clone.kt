@@ -9,7 +9,6 @@ import io.github.kotlinmania.syn.AttrStyle
 import io.github.kotlinmania.syn.Attribute
 import io.github.kotlinmania.syn.BareFnArg
 import io.github.kotlinmania.syn.BareVariadic
-import io.github.kotlinmania.syn.BareVariadic
 import io.github.kotlinmania.syn.BinOp
 import io.github.kotlinmania.syn.Block
 import io.github.kotlinmania.syn.BoundLifetimes
@@ -67,6 +66,7 @@ import io.github.kotlinmania.syn.TraitItem
 import io.github.kotlinmania.syn.TypeParamBound
 import io.github.kotlinmania.syn.UnOp
 import io.github.kotlinmania.syn.UseTree
+import io.github.kotlinmania.syn.Variadic
 import io.github.kotlinmania.syn.Variant
 import io.github.kotlinmania.syn.Visibility
 import io.github.kotlinmania.syn.WhereClause
@@ -98,9 +98,6 @@ public fun Attribute.clone(): Attribute =
 
 public fun BareFnArg.clone(): BareFnArg =
     BareFnArg(attrs.cloneList(), name?.clone(), ty.clone())
-
-public fun BareVariadic.clone(): BareVariadic =
-    BareVariadic(attrs.cloneList(), name?.clone(), dots, comma)
 
 public fun BinOp.clone(): BinOp =
     when (this) {
@@ -845,3 +842,6 @@ public fun StaticMutability.clone(): StaticMutability =
 
 public fun BareVariadic.clone(): BareVariadic =
     BareVariadic(attrs.cloneList(), name?.clone(), dots, comma)
+
+public fun Variadic.clone(): Variadic =
+    Variadic(attrs.cloneList(), pat?.clone(), dots, comma)
