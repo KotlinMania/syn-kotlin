@@ -661,7 +661,7 @@ public fun FnArg.Receiver.clone(): FnArg.Receiver =
 public fun ReturnType.clone(): ReturnType =
     when (this) {
         is ReturnType.Default -> ReturnType.Default
-        is ReturnType.Type -> ReturnType.Type(arrowToken, ty.clone())
+        is ReturnType.TypeReturn -> ReturnType.TypeReturn(arrowToken, ty.clone())
     }
 
 public fun Signature.clone(): Signature =
@@ -679,10 +679,10 @@ public fun Stmt.Local.clone(): Stmt.Local =
     Stmt.Local(attrs.cloneList(), letToken, pat.clone(), init?.clone(), semiToken)
 
 public fun Stmt.ItemStmt.clone(): Stmt.ItemStmt =
-    Stmt.ItemStmt(item.clone(), semiToken)
+    Stmt.ItemStmt(item.clone())
 
 public fun Stmt.ExprStmt.clone(): Stmt.ExprStmt =
-    Stmt.ExprStmt(attrs.cloneList(), expr.clone(), semiToken)
+    Stmt.ExprStmt(expr.clone(), semiToken)
 
 public fun Stmt.MacroStmt.clone(): Stmt.MacroStmt =
     Stmt.MacroStmt(attrs.cloneList(), mac.clone(), semiToken)
@@ -777,12 +777,11 @@ public fun GenericParam.TypeParam.clone(): GenericParam.TypeParam =
 
 public fun TypeParamBound.clone(): TypeParamBound =
     when (this) {
-        is TypeParamBound.Trait -> this.clone()
-        is TypeParamBound.Lifetime -> TypeParamBound.Lifetime(lifetime.clone())
+        is TypeParamBound.Trait -> TypeParamBound.Trait(parenToken, modifier, lifetimes?.clone(), path.clone())
+        is TypeParamBound.LifetimeBound -> TypeParamBound.LifetimeBound(lifetime.clone())
+        is TypeParamBound.PreciseCapture -> TypeParamBound.PreciseCapture(useToken, ltToken, params.copy({ it.clone() }, { it }), gtToken)
+        is TypeParamBound.Verbatim -> TypeParamBound.Verbatim(tokens.clone())
     }
-
-public fun TypeParamBound.Trait.clone(): TypeParamBound.Trait =
-    TypeParamBound.Trait(path.clone(), parenToken)
 
 public fun UnOp.clone(): UnOp =
     when (this) {
