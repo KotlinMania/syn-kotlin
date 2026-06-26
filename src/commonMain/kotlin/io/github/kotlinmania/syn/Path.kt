@@ -623,11 +623,11 @@ internal fun constArgument(input: ParseStream): SynResult<Expr> {
     var lookahead = input.lookahead1()
     if (input.peek(LitPeek)) {
         var lit = LitParse.parse(input).getOrElse { return SynResult.failure(it) }
-        return SynResult.success(Expr.Lit(emptyList(), lit))
+        return SynResult.success(Expr.Lit(mutableListOf(), lit))
     }
     if (input.peek(IdentPeek)) {
         var ident = IdentParse.parse(input).getOrElse { return SynResult.failure(it) }
-        return SynResult.success(Expr.Path(emptyList(), null, Path.from(ident)))
+        return SynResult.success(Expr.Path(mutableListOf(), null, Path.from(ident)))
     }
     if (input.peek(BracePeek)) {
         return parseExprFull(input)

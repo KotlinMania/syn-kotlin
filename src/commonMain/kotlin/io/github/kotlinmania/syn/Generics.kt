@@ -342,7 +342,7 @@ private fun Generics.typeGenerics(): Generics {
             is GenericParam.LifetimeParam ->
                 typeGenerics.params.push(
                     GenericParam.LifetimeParam(
-                        emptyList(),
+                        mutableListOf(),
                         value.lifetime.deepCopy(),
                         null,
                         LifetimeList(),
@@ -351,7 +351,7 @@ private fun Generics.typeGenerics(): Generics {
             is GenericParam.TypeParam ->
                 typeGenerics.params.push(
                     GenericParam.TypeParam(
-                        emptyList(),
+                        mutableListOf(),
                         value.ident.copy(),
                         null,
                         TypeParamBoundList(),
@@ -384,7 +384,7 @@ private fun Generics.turbofishArguments(): GenericArgumentList {
             is GenericParam.TypeParam ->
                 args.push(GenericArgument.TypeArg(SynType.Path(null, Path.from(value.ident.copy())))) { Comma(Span.callSite()) }
             is GenericParam.ConstParam ->
-                args.push(GenericArgument.ConstArg(Expr.Path(emptyList(), null, Path.from(value.ident.copy())))) { Comma(Span.callSite()) }
+                args.push(GenericArgument.ConstArg(Expr.Path(mutableListOf(), null, Path.from(value.ident.copy())))) { Comma(Span.callSite()) }
         }
     }
     return args
@@ -451,7 +451,7 @@ public sealed class GenericParam : ToTokens {
     ) : GenericParam() {
         public companion object {
             public fun new(lifetime: Lifetime): LifetimeParam =
-                LifetimeParam(emptyList(), lifetime, null, LifetimeList())
+                LifetimeParam(mutableListOf(), lifetime, null, LifetimeList())
 
             public fun parse(input: ParseStream): SynResult<LifetimeParam> {
                 val attrs = parseOuterAttributes(input).getOrElse { return SynResult.failure(it) }
@@ -496,7 +496,7 @@ public sealed class GenericParam : ToTokens {
     ) : GenericParam() {
         public companion object {
             public fun from(ident: Ident): TypeParam =
-                TypeParam(emptyList(), ident, null, TypeParamBoundList(), null, null)
+                TypeParam(mutableListOf(), ident, null, TypeParamBoundList(), null, null)
 
             public fun parse(input: ParseStream): SynResult<TypeParam> {
                 val attrs = parseOuterAttributes(input).getOrElse { return SynResult.failure(it) }

@@ -440,7 +440,7 @@ public data class PatType(
             val pat = Pat.parseSingle(input).getOrElse { return SynResult.failure(it) }
             val colonToken = ColonParse.parse(input).getOrElse { return SynResult.failure(it) }
             val ty = parseTypeFull(input).getOrElse { return SynResult.failure(it) }
-            return SynResult.success(PatType(emptyList(), pat, colonToken, ty))
+            return SynResult.success(PatType(mutableListOf(), pat, colonToken, ty))
         }
     }
 
@@ -494,11 +494,11 @@ private fun patPathOrMacroOrStructOrRange(input: ParseStream): SynResult<Pat> {
     if (input.peek(DotDotPeek) || input.peek(DotDotEqPeek) || input.peek(DotDotDotPeek)) {
         return patRange(input, qself, path)
     }
-    return SynResult.success(Pat.Path(emptyList(), qself, path))
+    return SynResult.success(Pat.Path(mutableListOf(), qself, path))
 }
 
 private fun patWild(input: ParseStream): SynResult<Pat.Wild> =
-    SynResult.success(Pat.Wild(emptyList(), UnderscoreParse.parse(input).getOrElse { return SynResult.failure(it) }))
+    SynResult.success(Pat.Wild(mutableListOf(), UnderscoreParse.parse(input).getOrElse { return SynResult.failure(it) }))
 
 private fun patBox(begin: ParseStream, input: ParseStream): SynResult<Pat> {
     BoxParse.parse(input).getOrElse { return SynResult.failure(it) }
@@ -528,7 +528,7 @@ private fun patIdent(input: ParseStream): SynResult<Pat.Ident> {
         } else {
             null
         }
-    return SynResult.success(Pat.Ident(emptyList(), byRef, mutability, ident, atToken, subpat))
+    return SynResult.success(Pat.Ident(mutableListOf(), byRef, mutability, ident, atToken, subpat))
 }
 
 private fun patTupleStruct(
@@ -544,7 +544,7 @@ private fun patTupleStruct(
         elems.pushPunct(CommaParse.parse(parens.content).getOrElse { return SynResult.failure(it) })
     }
     parens.content.finishChildBuffer()
-    return SynResult.success(Pat.TupleStruct(emptyList(), qself, path, parens.token, elems))
+    return SynResult.success(Pat.TupleStruct(mutableListOf(), qself, path, parens.token, elems))
 }
 
 private fun patStruct(
@@ -571,7 +571,7 @@ private fun patStruct(
         fields.pushPunct(CommaParse.parse(braces.content).getOrElse { return SynResult.failure(it) })
     }
     braces.content.finishChildBuffer()
-    return SynResult.success(Pat.Struct(qself, path, braces.token, fields, rest, null, emptyList()))
+    return SynResult.success(Pat.Struct(qself, path, braces.token, fields, rest, null, mutableListOf()))
 }
 
 private fun fieldPat(input: ParseStream): SynResult<FieldPat> {
@@ -601,7 +601,7 @@ private fun fieldPat(input: ParseStream): SynResult<FieldPat> {
         if (boxed != null) {
             Pat.Verbatim(between(begin, input))
         } else {
-            Pat.Ident(emptyList(), byRef, mutability, ident, null, null)
+            Pat.Ident(mutableListOf(), byRef, mutability, ident, null, null)
         }
     return SynResult.success(FieldPat(Member.Named(ident), null, pat))
 }
@@ -619,7 +619,7 @@ private fun patRange(
     return SynResult.success(
         Pat.Range(
             attrs = mutableListOf(),
-            start = Expr.Path(emptyList(), qself, path),
+            start = Expr.Path(mutableListOf(), qself, path),
             limits = limits,
             end = end?.intoExpr(),
         ),
@@ -630,10 +630,10 @@ private fun patRangeHalfOpen(input: ParseStream): SynResult<Pat> {
     var limits = parsePatRangeLimitsObsolete(input).getOrElse { return SynResult.failure(it) }
     var end = patRangeBound(input).getOrElse { return SynResult.failure(it) }
     if (end != null) {
-        return SynResult.success(Pat.Range(emptyList(), null, limits, end.intoExpr()))
+        return SynResult.success(Pat.Range(mutableListOf(), null, limits, end.intoExpr()))
     }
     return when (limits) {
-        is RangeLimits.HalfOpen -> SynResult.success(Pat.Rest(emptyList(), limits.token))
+        is RangeLimits.HalfOpen -> SynResult.success(Pat.Rest(mutableListOf(), limits.token))
         is RangeLimits.Closed -> SynResult.failure(input.error("expected range upper bound"))
     }
 }
@@ -647,7 +647,7 @@ private fun patParenOrTuple(input: ParseStream): SynResult<Pat> {
         if (content.isEmpty()) {
             if (elems.isEmpty() && value !is Pat.Rest) {
                 content.finishChildBuffer()
-                return SynResult.success(Pat.PatParen(parens.token, value, emptyList()))
+                return SynResult.success(Pat.PatParen(parens.token, value, mutableListOf()))
             }
             elems.pushValue(value)
             break
@@ -656,7 +656,7 @@ private fun patParenOrTuple(input: ParseStream): SynResult<Pat> {
         elems.pushPunct(CommaParse.parse(content).getOrElse { return SynResult.failure(it) })
     }
     content.finishChildBuffer()
-    return SynResult.success(Pat.Tuple(parens.token, elems, emptyList()))
+    return SynResult.success(Pat.Tuple(parens.token, elems, mutableListOf()))
 }
 
 private fun patReference(input: ParseStream): SynResult<Pat.Reference> {
@@ -664,7 +664,7 @@ private fun patReference(input: ParseStream): SynResult<Pat.Reference> {
     var mutability =
         MutParse.parse(input).getOrNull()?.let { FieldMutability.Mut(it) } ?: FieldMutability.None
     var pat = Pat.parseSingle(input).getOrElse { return SynResult.failure(it) }
-    return SynResult.success(Pat.Reference(andToken, mutability, pat, emptyList()))
+    return SynResult.success(Pat.Reference(andToken, mutability, pat, mutableListOf()))
 }
 
 private fun patLitOrRange(input: ParseStream): SynResult<Pat> {
@@ -677,7 +677,7 @@ private fun patLitOrRange(input: ParseStream): SynResult<Pat> {
         if (limits is RangeLimits.Closed && end == null) {
             return SynResult.failure(input.error("expected range upper bound"))
         }
-        return SynResult.success(Pat.Range(emptyList(), start.intoExpr(), limits, end?.intoExpr()))
+        return SynResult.success(Pat.Range(mutableListOf(), start.intoExpr(), limits, end?.intoExpr()))
     }
     return SynResult.success(start.intoPat())
 }
@@ -727,7 +727,7 @@ private fun patRangeBound(input: ParseStream): SynResult<PatRangeBound?> {
     var lookahead = input.lookahead1()
     if (input.peek(LitPeek) || input.peek(MinusPeek)) {
         var lit = LitParse.parse(input).getOrElse { return SynResult.failure(it) }
-        return SynResult.success(PatRangeBound.Lit(Expr.Lit(emptyList(), lit)))
+        return SynResult.success(PatRangeBound.Lit(Expr.Lit(mutableListOf(), lit)))
     }
     if (
         input.peek(IdentPeek) ||
@@ -739,7 +739,7 @@ private fun patRangeBound(input: ParseStream): SynResult<PatRangeBound?> {
         input.peek(CratePeek)
     ) {
         var (qself, path) = qpath(input, exprStyle = true).getOrElse { return SynResult.failure(it) }
-        return SynResult.success(PatRangeBound.Path(Expr.Path(emptyList(), qself, path)))
+        return SynResult.success(PatRangeBound.Path(Expr.Path(mutableListOf(), qself, path)))
     }
     if (input.peek(ConstPeek)) {
         return parsePatConstExpr(input).map { PatRangeBound.Const(it) }
@@ -767,7 +767,7 @@ private fun patSlice(input: ParseStream): SynResult<Pat.Slice> {
         elems.pushPunct(CommaParse.parse(brackets.content).getOrElse { return SynResult.failure(it) })
     }
     brackets.content.finishChildBuffer()
-    return SynResult.success(Pat.Slice(brackets.token, elems, emptyList()))
+    return SynResult.success(Pat.Slice(brackets.token, elems, mutableListOf()))
 }
 
 private fun patConst(input: ParseStream): SynResult<TokenStream> {
@@ -785,7 +785,7 @@ private fun parsePatConstExpr(input: ParseStream): SynResult<Expr.Const> {
     var braces = braced(input).getOrElse { return SynResult.failure(it) }
     var stmts = parseWithin(braces.content).getOrElse { return SynResult.failure(it) }
     braces.content.finishChildBuffer()
-    return SynResult.success(Expr.Const(emptyList(), constToken, Block(braces.token, stmts)))
+    return SynResult.success(Expr.Const(mutableListOf(), constToken, Block(braces.token, stmts)))
 }
 
 private fun parsePatRangeLimitsObsolete(input: ParseStream): SynResult<RangeLimits> {

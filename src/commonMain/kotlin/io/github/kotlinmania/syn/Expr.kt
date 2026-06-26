@@ -2035,7 +2035,7 @@ public fun restOfPathOrMacroOrStruct(
         var (delimiter, tokens) = delimResult.getOrThrow()
         return SynResult.success(
             Expr.Macro(
-                emptyList(),
+                mutableListOf(),
                 Macro(path, bangResult.getOrThrow(), delimiter, tokens),
             ),
         )
@@ -2045,7 +2045,7 @@ public fun restOfPathOrMacroOrStruct(
         if (structResult.isFailure) return structResult
         return SynResult.success(structResult.getOrThrow())
     }
-    return SynResult.success(Expr.Path(emptyList(), qself, path))
+    return SynResult.success(Expr.Path(mutableListOf(), qself, path))
 }
 
 public fun exprStructHelper(
@@ -2073,7 +2073,7 @@ public fun exprStructHelper(
             content.finishChildBuffer()
             return SynResult.success(
                 Expr.Struct(
-                    emptyList(),
+                    mutableListOf(),
                     qself,
                     path,
                     bracesVal.token,
@@ -2093,7 +2093,7 @@ public fun exprStructHelper(
     }
     content.finishChildBuffer()
     return SynResult.success(
-        Expr.Struct(emptyList(), qself, path, bracesVal.token, fields, null, null),
+        Expr.Struct(mutableListOf(), qself, path, bracesVal.token, fields, null, null),
     )
 }
 
@@ -2110,7 +2110,7 @@ public fun exprLet(input: ParseStream, allowStruct: Boolean): SynResult<Expr.Let
     if (exprResult.isFailure) return SynResult.failure((exprResult as SynResult.Failure).error)
     return SynResult.success(
         Expr.Let(
-            emptyList(),
+            mutableListOf(),
             letResult.getOrThrow(),
             patResult.getOrThrow(),
             eqResult.getOrThrow(),
@@ -2181,7 +2181,7 @@ public fun exprClosure(input: ParseStream, allowStruct: Boolean): SynResult<Expr
     }
     return SynResult.success(
         Expr.Closure(
-            emptyList(),
+            mutableListOf(),
             constness,
             asyncness,
             capture,
@@ -2203,7 +2203,7 @@ public fun closureArg(input: ParseStream): SynResult<Pat> {
         if (colonResult.isFailure) return SynResult.failure((colonResult as SynResult.Failure).error)
         var tyResult = parseTypeFull(input)
         if (tyResult.isFailure) return SynResult.failure((tyResult as SynResult.Failure).error)
-        return SynResult.success(Pat.TypeAscription(emptyList(), pat, colonResult.getOrThrow(), tyResult.getOrThrow()))
+        return SynResult.success(Pat.TypeAscription(mutableListOf(), pat, colonResult.getOrThrow(), tyResult.getOrThrow()))
     }
     return SynResult.success(pat)
 }
@@ -2229,7 +2229,7 @@ public fun exprBreak(input: ParseStream, allowStruct: Boolean): SynResult<Expr.B
             null
         }
     return SynResult.success(
-        Expr.Break(emptyList(), breakResult.getOrThrow(), label, expr),
+        Expr.Break(mutableListOf(), breakResult.getOrThrow(), label, expr),
     )
 }
 
@@ -2240,7 +2240,7 @@ public fun exprRange(input: ParseStream, allowStruct: Boolean): SynResult<Expr.R
     var endResult = parseRangeEnd(input, limits, allowStruct)
     if (endResult.isFailure) return SynResult.failure((endResult as SynResult.Failure).error)
     return SynResult.success(
-        Expr.Range(emptyList(), null, limits, endResult.getOrThrow()),
+        Expr.Range(mutableListOf(), null, limits, endResult.getOrThrow()),
     )
 }
 
@@ -2361,7 +2361,7 @@ public fun multiIndex(e: Expr, dotToken: io.github.kotlinmania.syn.token.Dot, fl
         var base = currentExpr
         currentExpr =
             Expr.Field(
-                emptyList(),
+                mutableListOf(),
                 base,
                 currentDot,
                 Member.Unnamed(index),

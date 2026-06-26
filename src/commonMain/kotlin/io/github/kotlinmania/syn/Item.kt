@@ -77,7 +77,7 @@ public sealed class Item : ToTokens {
             is TraitAlias -> AttrReplacement(copy(attrs = new), attrs)
             is Union -> AttrReplacement(copy(attrs = new), attrs)
             is Use -> AttrReplacement(copy(attrs = new), attrs)
-            is Verbatim -> AttrReplacement(this, emptyList())
+            is Verbatim -> AttrReplacement(this, mutableListOf())
         }
 
     /** A constant item: `const MAX: UShort = 65535`. */

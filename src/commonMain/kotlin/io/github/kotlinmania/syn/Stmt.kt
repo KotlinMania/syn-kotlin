@@ -134,7 +134,7 @@ internal fun stmtLocal(input: ParseStream): SynResult<Stmt.Local> {
     if (input.peek(ColonPeek)) {
         var colonToken = ColonParse.parse(input).getOrElse { return SynResult.failure(it) }
         var ty = parseTypeFull(input).getOrElse { return SynResult.failure(it) }
-        pat = Pat.TypeAscription(emptyList(), pat, colonToken, ty)
+        pat = Pat.TypeAscription(mutableListOf(), pat, colonToken, ty)
     }
     var init: LocalInit? = null
     if (input.peek(EqPeek)) {
@@ -143,7 +143,7 @@ internal fun stmtLocal(input: ParseStream): SynResult<Stmt.Local> {
         init = LocalInit(eq, expr, null)
     }
     var semi = SemiParse.parse(input).getOrThrow()
-    return SynResult.success(Stmt.Local(emptyList(), letToken, pat, init, semi))
+    return SynResult.success(Stmt.Local(mutableListOf(), letToken, pat, init, semi))
 }
 
 internal fun stmtExpr(input: ParseStream): SynResult<Stmt.ExprStmt> {
@@ -163,7 +163,7 @@ internal fun stmtMac(input: ParseStream): SynResult<Stmt.MacroStmt> {
     var (delim, tokens) = delimResult.getOrThrow()
     var mac = Macro(pathResult.getOrThrow(), bangResult.getOrThrow(), delim, tokens)
     var semi = if (input.peek(SemiPeek)) SemiParse.parse(input).getOrThrow() else null
-    return SynResult.success(Stmt.MacroStmt(emptyList(), mac, semi))
+    return SynResult.success(Stmt.MacroStmt(mutableListOf(), mac, semi))
 }
 
 public fun parseWithin(input: ParseStream): SynResult<List<Stmt>> {
