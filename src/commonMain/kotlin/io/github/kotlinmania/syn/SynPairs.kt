@@ -19,6 +19,8 @@ public data class EqExpr(
         eqToken.toTokens(tokens)
         expr.toTokens(tokens)
     }
+
+    public fun clone(): EqExpr = EqExpr(eqToken, expr.clone())
 }
 
 public data class EqSynType(
@@ -29,6 +31,8 @@ public data class EqSynType(
         eqToken.toTokens(tokens)
         type.toTokens(tokens)
     }
+
+    public fun clone(): EqSynType = EqSynType(eqToken, type.clone())
 }
 
 public data class ElseExpr(
@@ -39,6 +43,8 @@ public data class ElseExpr(
         elseToken.toTokens(tokens)
         expr.toTokens(tokens)
     }
+
+    public fun clone(): ElseExpr = ElseExpr(elseToken, expr.clone())
 }
 
 public data class IfExpr(
@@ -49,6 +55,8 @@ public data class IfExpr(
         ifToken.toTokens(tokens)
         expr.toTokens(tokens)
     }
+
+    public fun clone(): IfExpr = IfExpr(ifToken, expr.clone())
 }
 
 public data class AndLifetime(
@@ -59,6 +67,8 @@ public data class AndLifetime(
         andToken.toTokens(tokens)
         lifetime?.toTokens(tokens)
     }
+
+    public fun clone(): AndLifetime = AndLifetime(andToken, lifetime?.clone())
 }
 
 public data class AsIdent(
@@ -69,6 +79,8 @@ public data class AsIdent(
         asToken.toTokens(tokens)
         ident.toTokens(tokens)
     }
+
+    public fun clone(): AsIdent = AsIdent(asToken, ident.clone())
 }
 
 public data class IdentColon(
@@ -79,6 +91,8 @@ public data class IdentColon(
         ident.toTokens(tokens)
         colonToken.toTokens(tokens)
     }
+
+    public fun clone(): IdentColon = IdentColon(ident.clone(), colonToken)
 }
 
 public data class PatColon(
@@ -89,4 +103,6 @@ public data class PatColon(
         pat.toTokens(tokens)
         colonToken.toTokens(tokens)
     }
+
+    public fun clone(): PatColon = PatColon(pat.clone(), colonToken)
 }

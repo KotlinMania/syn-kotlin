@@ -357,7 +357,7 @@ public fun FnArg.clone(): FnArg =
     }
 
 public fun FnArg.Typed.clone(): FnArg.Typed =
-    FnArg.Typed(attrs.cloneList(), pat.clone(), colonToken, ty.clone())
+    FnArg.Typed(patType.clone())
 
 public fun ForeignItem.clone(): ForeignItem =
     when (this) {
@@ -655,7 +655,7 @@ public fun RangeLimits.clone(): RangeLimits =
     }
 
 public fun FnArg.Receiver.clone(): FnArg.Receiver =
-    FnArg.Receiver(attrs.cloneList(), this.receiver, andToken, orToken, selfRef, mutability, shorthand)
+    FnArg.Receiver(attrs.cloneList(), reference?.clone(), mutability, selfToken, colonToken, type.clone())
 
 public fun ReturnType.clone(): ReturnType =
     when (this) {
