@@ -453,40 +453,37 @@ public fun Item.clone(): Item =
     }
 
 public fun Item.Const.clone(): Item.Const =
-    Item.Const(attrs.cloneList(), vis.clone(), constToken, ident.clone(), colonToken, ty.clone(), eqToken, expr.clone(), semiToken)
+    Item.Const(attrs.cloneList(), vis.clone(), constToken, ident.clone(), colonToken, ty.clone(), eqToken, expr?.clone(), semiToken)
 
 public fun Item.Enum.clone(): Item.Enum =
-    Item.Enum(attrs.cloneList(), vis.clone(), enumToken, ident.clone(), generics.clone(), braceToken, variants.copy({ it.clone() }, { it }), semiToken)
+    Item.Enum(attrs.cloneList(), vis.clone(), enumToken, ident.clone(), generics.clone(), braceToken, variants.copy({ it.clone() }, { it }))
 
 public fun Item.ExternCrate.clone(): Item.ExternCrate =
-    Item.ExternCrate(attrs.cloneList(), vis.clone(), externCrateToken, ident.clone(), asToken, rename?.clone(), semiToken)
+    Item.ExternCrate(attrs.cloneList(), vis.clone(), externToken, crateToken, ident.clone(), rename?.clone(), semiToken)
 
 public fun Item.Fn.clone(): Item.Fn =
-    Item.Fn(attrs.cloneList(), vis.clone(), defaultness, sig.clone(), block)
+    Item.Fn(attrs.cloneList(), vis.clone(), sig.clone(), block)
 
 public fun Item.ForeignMod.clone(): Item.ForeignMod =
-    Item.ForeignMod(attrs.cloneList(), vis.clone(), abi.clone(), braceToken, items.cloneList())
+    Item.ForeignMod(attrs.cloneList(), unsafety, abi.clone(), braceToken, items.cloneList())
 
 public fun Item.Impl.clone(): Item.Impl =
-    Item.Impl(attrs.cloneList(), defaultness, implToken, generics.clone(), trait?.clone(), forToken, selfTy.clone(), items.copy({ it.clone() }, { it }), braceToken)
+    Item.Impl(attrs.cloneList(), defaultness, unsafety, implToken, generics.clone(), traitPath?.clone(), selfType.clone(), braceToken, items.cloneList())
 
 public fun Item.Macro.clone(): Item.Macro =
-    Item.Macro(attrs.cloneList(), mac.clone(), ident?.clone(), semiToken)
+    Item.Macro(attrs.cloneList(), ident?.clone(), mac.clone(), semiToken)
 
 public fun Item.Mod.clone(): Item.Mod =
-    when (this) {
-        is Item.Mod.Loaded -> Item.Mod.Loaded(attrs.cloneList(), vis.clone(), modToken, ident.clone(), content)
-        is Item.Mod.Unloaded -> Item.Mod.Unloaded(attrs.cloneList(), vis.clone(), modToken, ident.clone(), semiToken)
-    }
+    Item.Mod(attrs.cloneList(), vis.clone(), unsafety, modToken, ident.clone(), content?.clone())
 
 public fun Item.Static.clone(): Item.Static =
-    Item.Static(attrs.cloneList(), vis.clone(), staticToken, mutability, ident.clone(), colonToken, ty.clone(), eqToken, expr.clone(), semiToken)
+    Item.Static(attrs.cloneList(), vis.clone(), staticToken, mutability.clone(), ident.clone(), colonToken, ty.clone(), eqToken, expr.clone(), semiToken)
 
 public fun Item.Struct.clone(): Item.Struct =
     Item.Struct(attrs.cloneList(), vis.clone(), structToken, ident.clone(), generics.clone(), fields.clone(), semiToken)
 
 public fun Item.Trait.clone(): Item.Trait =
-    Item.Trait(attrs.cloneList(), vis.clone(), traitToken, ident.clone(), generics.clone(), colonToken, supertraits.copy({ it.clone() }, { it }), braceToken, items.copy({ it.clone() }, { it }))
+    Item.Trait(attrs.cloneList(), vis.clone(), unsafety, autoToken, restriction, traitToken, ident.clone(), generics.clone(), colonToken, supertraits.copy({ it.clone() }, { it }), braceToken, items.copy({ it.clone() }, { it }))
 
 public fun Item.TraitAlias.clone(): Item.TraitAlias =
     Item.TraitAlias(attrs.cloneList(), vis.clone(), traitToken, ident.clone(), generics.clone(), eqToken, bounds.copy({ it.clone() }, { it }), semiToken)
@@ -498,7 +495,7 @@ public fun Item.Union.clone(): Item.Union =
     Item.Union(attrs.cloneList(), vis.clone(), unionToken, ident.clone(), generics.clone(), fields.clone())
 
 public fun Item.Use.clone(): Item.Use =
-    Item.Use(attrs.cloneList(), vis.clone(), useToken, tree.clone(), semiToken)
+    Item.Use(attrs.cloneList(), vis.clone(), useToken, leadingColon, tree.clone(), semiToken)
 
 public fun Item.Verbatim.clone(): Item.Verbatim =
     Item.Verbatim(tokens.clone())
@@ -675,7 +672,7 @@ public fun Stmt.clone(): Stmt =
     }
 
 public fun Stmt.Local.clone(): Stmt.Local =
-    Stmt.Local(attrs.cloneList(), letToken, pat.clone(), init?.let { (it.first.clone() to it.second.clone()) }, semiToken)
+    Stmt.Local(attrs.cloneList(), letToken, pat.clone(), init?.clone(), semiToken)
 
 public fun Stmt.ItemStmt.clone(): Stmt.ItemStmt =
     Stmt.ItemStmt(item.clone(), semiToken)

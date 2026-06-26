@@ -103,6 +103,8 @@ public data class LocalInit(
         diverge?.toTokens(tokens)
     }
 
+    public fun clone(): LocalInit = LocalInit(eqToken, expr.clone(), diverge?.clone())
+
     public fun deepCopy(): LocalInit = LocalInit(eqToken, expr.deepCopy(), diverge?.let { it.copy(expr = it.expr.deepCopy()) })
 }
 
