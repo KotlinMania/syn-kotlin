@@ -156,7 +156,7 @@ public sealed class Item : ToTokens {
         public var block: Block?,
     ) : Item() {
         public constructor(
-            attrs: List<Attribute>,
+            attrs: MutableList<Attribute>,
             vis: Visibility,
             fnToken: io.github.kotlinmania.syn.token.Fn,
             ident: Ident,

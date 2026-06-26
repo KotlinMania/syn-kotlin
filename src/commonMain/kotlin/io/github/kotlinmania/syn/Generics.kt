@@ -458,7 +458,7 @@ public sealed class GenericParam : ToTokens {
                 return parseWithAttrs(attrs, input)
             }
 
-            internal fun parseWithAttrs(attrs: List<Attribute>, input: ParseStream): SynResult<LifetimeParam> {
+            internal fun parseWithAttrs(attrs: MutableList<Attribute>, input: ParseStream): SynResult<LifetimeParam> {
                 val lifetime = LifetimeParse.parse(input).getOrElse { return SynResult.failure(it) }
                 val colonToken = ColonParse.parse(input).getOrNull()
                 val bounds = LifetimeList()
@@ -503,7 +503,7 @@ public sealed class GenericParam : ToTokens {
                 return parseWithAttrs(attrs, input)
             }
 
-            internal fun parseWithAttrs(attrs: List<Attribute>, input: ParseStream): SynResult<TypeParam> {
+            internal fun parseWithAttrs(attrs: MutableList<Attribute>, input: ParseStream): SynResult<TypeParam> {
                 val ident = IdentParse.parse(input).getOrElse { return SynResult.failure(it) }
                 val colonToken = ColonParse.parse(input).getOrNull()
                 val bounds = TypeParamBoundList()
@@ -568,7 +568,7 @@ public sealed class GenericParam : ToTokens {
                 return parseWithAttrs(attrs, input)
             }
 
-            internal fun parseWithAttrs(attrs: List<Attribute>, input: ParseStream): SynResult<ConstParam> {
+            internal fun parseWithAttrs(attrs: MutableList<Attribute>, input: ParseStream): SynResult<ConstParam> {
                 val constToken = ConstParse.parse(input).getOrElse { return SynResult.failure(it) }
                 val ident = IdentParse.parse(input).getOrElse { return SynResult.failure(it) }
                 val colonToken = ColonParse.parse(input).getOrElse { return SynResult.failure(it) }

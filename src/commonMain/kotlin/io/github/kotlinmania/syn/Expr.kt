@@ -1724,7 +1724,7 @@ public fun exprAttrs(input: ParseStream): SynResult<List<Attribute>> = exprAttrs
 public fun unaryExpr(input: ParseStream, allowStruct: Boolean): SynResult<Expr> =
     unaryExprImpl(input, allowStruct)
 
-public fun trailerExpr(input: ParseStream, allowStruct: Boolean, attrs: List<Attribute> = mutableListOf()): SynResult<Expr> =
+public fun trailerExpr(input: ParseStream, allowStruct: Boolean, attrs: MutableList<Attribute> = mutableListOf()): SynResult<Expr> =
     trailerExprImpl(input, allowStruct, attrs)
 
 public fun trailerHelper(input: ParseStream, e: Expr, allowStruct: Boolean): SynResult<Expr> =
@@ -1895,7 +1895,7 @@ public fun printExprYield(e: Expr.Yield, tokens: TokenStream) {
     e.toTokens(tokens)
 }
 
-public fun outerAttrsToTokens(attrs: List<Attribute>, tokens: TokenStream) {
+public fun outerAttrsToTokens(attrs: MutableList<Attribute>, tokens: TokenStream) {
     for (attr in attrs) {
         if (attr.style is AttrStyle.Outer) {
             attr.toTokens(tokens)
@@ -1903,7 +1903,7 @@ public fun outerAttrsToTokens(attrs: List<Attribute>, tokens: TokenStream) {
     }
 }
 
-public fun innerAttrsToTokens(attrs: List<Attribute>, tokens: TokenStream) {
+public fun innerAttrsToTokens(attrs: MutableList<Attribute>, tokens: TokenStream) {
     for (attr in attrs) {
         if (attr.style is AttrStyle.Inner) {
             attr.toTokens(tokens)
@@ -2119,7 +2119,7 @@ public fun exprLet(input: ParseStream, allowStruct: Boolean): SynResult<Expr.Let
     )
 }
 
-public fun exprUnary(input: ParseStream, attrs: List<Attribute>, allowStruct: Boolean): SynResult<Expr.Unary> {
+public fun exprUnary(input: ParseStream, attrs: MutableList<Attribute>, allowStruct: Boolean): SynResult<Expr.Unary> {
     var opResult = UnOpParse.parse(input)
     if (opResult.isFailure) return SynResult.failure((opResult as SynResult.Failure).error)
     var innerResult = unaryExprImpl(input, allowStruct)

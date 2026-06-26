@@ -371,7 +371,7 @@ internal fun parseBareFnArg(
 
 internal fun parseBareFnArg(
     input: ParseStream,
-    attrs: List<Attribute>,
+    attrs: MutableList<Attribute>,
     allowSelf: Boolean,
 ): SynResult<BareFnArg> {
     var begin = input.fork()
@@ -425,7 +425,7 @@ internal fun parseBareFnArg(
 
 internal fun parseBareVariadic(
     input: ParseStream,
-    attrs: List<Attribute>,
+    attrs: MutableList<Attribute>,
 ): SynResult<BareVariadic> {
     var name =
         if (input.peek(IdentPeek) || input.peek(UnderscorePeek)) {

@@ -17,7 +17,7 @@ internal object ItemParse {
 
 private fun parseRestOfItem(
     begin: ParseStream,
-    attrs: List<Attribute>,
+    attrs: MutableList<Attribute>,
     input: ParseStream,
 ): SynResult<Item> {
     val visResult = VisibilityParse.parse(input)
@@ -230,7 +230,7 @@ internal object StaticMutabilityParse {
 }
 
 private fun parseItemExternCrate(
-    attrs: List<Attribute>,
+    attrs: MutableList<Attribute>,
     vis: Visibility,
     input: ParseStream,
 ): SynResult<Item> {
@@ -260,7 +260,7 @@ private fun parseItemExternCrate(
 }
 
 private fun parseItemForeignMod(
-    attrs: List<Attribute>,
+    attrs: MutableList<Attribute>,
     input: ParseStream,
 ): SynResult<Item> {
     val itemAttrs = attrs.toMutableList()
@@ -327,7 +327,7 @@ internal fun parseForeignItem(input: ParseStream): SynResult<ForeignItem> {
 
 private fun parseForeignItemType(
     begin: ParseStream,
-    attrs: List<Attribute>,
+    attrs: MutableList<Attribute>,
     vis: Visibility,
     input: ParseStream,
 ): SynResult<ForeignItem> {
@@ -350,7 +350,7 @@ private fun parseForeignItemType(
 }
 
 private fun parseForeignItemMacro(
-    attrs: List<Attribute>,
+    attrs: MutableList<Attribute>,
     input: ParseStream,
 ): SynResult<ForeignItem> {
     val mac = Macro.parse(input).getOrElse { return SynResult.failure(it) }
@@ -365,7 +365,7 @@ private fun parseForeignItemMacro(
 
 private fun parseItemType(
     begin: ParseStream,
-    attrs: List<Attribute>,
+    attrs: MutableList<Attribute>,
     vis: Visibility,
     input: ParseStream,
 ): SynResult<Item> {
@@ -397,7 +397,7 @@ private fun parseItemType(
 
 private fun parseItemUse(
     begin: ParseStream,
-    attrs: List<Attribute>,
+    attrs: MutableList<Attribute>,
     vis: Visibility,
     input: ParseStream,
     allowCrateRootInPath: Boolean,
@@ -418,7 +418,7 @@ private fun parseItemUse(
 
 private fun parseRestOfTrait(
     input: ParseStream,
-    attrs: List<Attribute>,
+    attrs: MutableList<Attribute>,
     vis: Visibility,
     unsafety: io.github.kotlinmania.syn.token.Unsafe?,
     autoToken: io.github.kotlinmania.syn.token.Auto?,
@@ -453,7 +453,7 @@ private fun parseRestOfTrait(
 }
 
 private data class TraitAliasStart(
-    val attrs: List<Attribute>,
+    val attrs: MutableList<Attribute>,
     val vis: Visibility,
     val traitToken: io.github.kotlinmania.syn.token.Trait,
     val ident: Ident,
@@ -462,7 +462,7 @@ private data class TraitAliasStart(
 
 private fun parseTraitOrTraitAlias(
     input: ParseStream,
-    attrs: List<Attribute>,
+    attrs: MutableList<Attribute>,
     vis: Visibility,
 ): SynResult<Item> {
     val start = parseStartOfTraitAlias(input, attrs, vis).getOrElse { return SynResult.failure(it) }
@@ -494,7 +494,7 @@ private fun parseTraitOrTraitAlias(
 
 private fun parseStartOfTraitAlias(
     input: ParseStream,
-    attrs: List<Attribute>,
+    attrs: MutableList<Attribute>,
     vis: Visibility,
 ): SynResult<TraitAliasStart> {
     val traitToken = TraitParse.parse(input).getOrElse { return SynResult.failure(it) }
@@ -505,7 +505,7 @@ private fun parseStartOfTraitAlias(
 
 private fun parseRestOfTraitAlias(
     input: ParseStream,
-    attrs: List<Attribute>,
+    attrs: MutableList<Attribute>,
     vis: Visibility,
     traitToken: io.github.kotlinmania.syn.token.Trait,
     ident: Ident,
@@ -544,7 +544,7 @@ private fun parseVerbatimItem(
     return SynResult.success(Item.Verbatim(tokens))
 }
 
-private fun parseItemMacro(input: ParseStream, attrs: List<Attribute>): SynResult<Item> {
+private fun parseItemMacro(input: ParseStream, attrs: MutableList<Attribute>): SynResult<Item> {
     val path = parseModStylePath(input).getOrElse { return SynResult.failure(it) }
     val bangToken = NotParse.parse(input).getOrElse { return SynResult.failure(it) }
     val ident = IdentParse.parse(input).getOrNull()
@@ -589,7 +589,7 @@ private fun parseMacro2(
 
 private fun parseImpl(
     begin: ParseStream,
-    attrs: List<Attribute>,
+    attrs: MutableList<Attribute>,
     vis: Visibility,
     input: ParseStream,
     allowVerbatimImpl: Boolean,
@@ -928,7 +928,7 @@ private fun parseBlock(input: ParseStream): SynResult<Block> {
 
 private fun parseRestOfFn(
     input: ParseStream,
-    attrs: List<Attribute>,
+    attrs: MutableList<Attribute>,
     vis: Visibility,
     sig: Signature,
 ): SynResult<Item.Fn> {
@@ -957,7 +957,7 @@ internal fun parseFnArg(input: ParseStream): SynResult<FnArg> {
 
 private fun parseFnArgOrVariadic(
     input: ParseStream,
-    attrs: List<Attribute>,
+    attrs: MutableList<Attribute>,
     allowVariadic: Boolean,
 ): SynResult<FnArgOrVariadic> {
     val ahead = input.fork()
