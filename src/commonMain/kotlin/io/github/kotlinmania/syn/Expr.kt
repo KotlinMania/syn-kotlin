@@ -1266,7 +1266,7 @@ public sealed class Expr : ToTokens {
             }
         }
 
-        override fun deepCopy(): Match = Match(attrs.mapTo(mutableListOf()) { it.deepCopy() }, matchToken, expr.deepCopy(), braceToken, arms.map { it.deepCopy() })
+        override fun deepCopy(): Match = Match(attrs.mapTo(mutableListOf()) { it.deepCopy() }, matchToken, expr.deepCopy(), braceToken, arms.mapTo(mutableListOf()) { it.deepCopy() })
     }
 
     /** A method call expression with optional turbofish and arguments. */
@@ -1757,7 +1757,7 @@ public fun parseMember(input: ParseStream): SynResult<Member> = parseMemberImpl(
 
 public fun continueParsingEarly(expr: Expr): Boolean = continueParsingEarlyImpl(expr)
 
-public fun Expr.replaceAttrs(attrs: List<Attribute>): Expr =
+public fun Expr.replaceAttrs(attrs: MutableList<Attribute>): Expr =
     when (this) {
         is Expr.Binary -> copy(attrs = attrs)
         is Expr.Assign -> copy(attrs = attrs)

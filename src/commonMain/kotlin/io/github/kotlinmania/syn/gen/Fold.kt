@@ -314,12 +314,12 @@ public open class Fold {
             data = foldData(di.data),
         )
 
-    public open fun foldBlock(block: Block): Block = block.copy(stmts = block.stmts.map { foldStmt(it) })
+    public open fun foldBlock(block: Block): Block = block.copy(stmts = block.stmts.mapTo(mutableListOf()) { foldStmt(it) })
 
-    public open fun foldAttributes(attrs: List<Attribute>): List<Attribute> = attrs.map { foldAttribute(it) }
+    public open fun foldAttributes(attrs: MutableList<Attribute>): MutableList<Attribute> = attrs.mapTo(mutableListOf()) { foldAttribute(it) }
 
     public open fun foldFile(file: File): File =
-        file.copy(attrs = foldAttributes(file.attrs), items = file.items.map { foldItem(it) })
+        file.copy(attrs = foldAttributes(file.attrs), items = file.items.mapTo(mutableListOf()) { foldItem(it) })
 
     public open fun foldSignature(sig: Signature): Signature {
         var result = sig
@@ -627,7 +627,7 @@ public open class Fold {
         expr.copy(
             attrs = foldAttributes(expr.attrs),
             expr = foldExpr(expr.expr),
-            arms = expr.arms.map { foldArm(it) },
+            arms = expr.arms.mapTo(mutableListOf()) { foldArm(it) },
         )
 
     public open fun foldExprMethodCall(expr: Expr.MethodCall): Expr.MethodCall =
@@ -1070,7 +1070,7 @@ public open class Fold {
         item.copy(
             attrs = foldAttributes(item.attrs),
             abi = foldAbi(item.abi),
-            items = item.items.map { foldForeignItem(it) },
+            items = item.items.mapTo(mutableListOf()) { foldForeignItem(it) },
         )
 
     public open fun foldItemImpl(item: Item.Impl): Item.Impl =
@@ -1079,7 +1079,7 @@ public open class Fold {
             generics = foldGenerics(item.generics),
             traitPath = item.traitPath?.let { foldPathTrait(it) },
             selfType = foldType(item.selfType),
-            items = item.items.map { foldImplItem(it) },
+            items = item.items.mapTo(mutableListOf()) { foldImplItem(it) },
         )
 
     public open fun foldItemMacro(item: Item.Macro): Item.Macro =
@@ -1124,7 +1124,7 @@ public open class Fold {
             generics = foldGenerics(item.generics),
             restriction = item.restriction?.let { foldImplRestriction(it) },
             supertraits = item.supertraits.copy({ foldTypeParamBound(it) }, { it }),
-            items = item.items.map { foldTraitItem(it) },
+            items = item.items.mapTo(mutableListOf()) { foldTraitItem(it) },
         )
 
     public open fun foldItemTraitAlias(item: Item.TraitAlias): Item.TraitAlias =
@@ -1167,7 +1167,7 @@ public open class Fold {
 
     public open fun foldModContent(modContent: ModContent): ModContent =
         when (modContent) {
-            is ModContent.Inline -> modContent.copy(items = modContent.items.map { foldItem(it) })
+            is ModContent.Inline -> modContent.copy(items = modContent.items.mapTo(mutableListOf()) { foldItem(it) })
             is ModContent.Unnamed -> modContent
         }
 

@@ -88,7 +88,7 @@ internal fun parseExprBinaryImpl(
             input.advanceTo(ahead)
             val rhsResult = parseBinopRhsImpl(input, allowStruct, precedence)
             if (rhsResult.isFailure) return rhsResult
-            current = Expr.Binary(emptyList(), current, op, rhsResult.getOrThrow())
+            current = Expr.Binary(mutableListOf(), current, op, rhsResult.getOrThrow())
         } else if (Precedence.Assign.ordinal >= base.ordinal &&
             input.peek(EqPeek) &&
             !input.peek(FatArrowPeek) &&
@@ -98,7 +98,7 @@ internal fun parseExprBinaryImpl(
             if (eqResult.isFailure) return eqResult.asFailure()
             val rhsResult = parseBinopRhsImpl(input, allowStruct, Precedence.Assign)
             if (rhsResult.isFailure) return rhsResult
-            current = Expr.Assign(emptyList(), current, eqResult.getOrThrow(), rhsResult.getOrThrow())
+            current = Expr.Assign(mutableListOf(), current, eqResult.getOrThrow(), rhsResult.getOrThrow())
         } else if (Precedence.Range.ordinal >= base.ordinal &&
             (input.peek(DotDotPeek) || input.peek(DotDotEqPeek))
         ) {
@@ -106,7 +106,7 @@ internal fun parseExprBinaryImpl(
             if (limitsResult.isFailure) return limitsResult.asFailure()
             val endResult = parseRangeEnd(input, limitsResult.getOrThrow(), allowStruct)
             if (endResult.isFailure) return endResult.asFailure()
-            current = Expr.Range(emptyList(), current, limitsResult.getOrThrow(), endResult.getOrThrow())
+            current = Expr.Range(mutableListOf(), current, limitsResult.getOrThrow(), endResult.getOrThrow())
         } else if (Precedence.Cast.ordinal >= base.ordinal && input.peek(AsPeek)) {
             val asResult = AsParse.parse(input)
             if (asResult.isFailure) return asResult.asFailure()
@@ -114,7 +114,7 @@ internal fun parseExprBinaryImpl(
             if (tyResult.isFailure) return tyResult.asFailure()
             val castCheck = checkCastImpl(input)
             if (castCheck.isFailure) return castCheck.asFailure()
-            current = Expr.Cast(emptyList(), current, asResult.getOrThrow(), tyResult.getOrThrow())
+            current = Expr.Cast(mutableListOf(), current, asResult.getOrThrow(), tyResult.getOrThrow())
         } else {
             break
         }
@@ -223,7 +223,7 @@ internal fun unaryExprImpl(input: ParseStream, allowStruct: Boolean): SynResult<
     return trailerExprImpl(input, allowStruct, attrs)
 }
 
-internal fun trailerExprImpl(input: ParseStream, allowStruct: Boolean, attrs: List<Attribute> = emptyList()): SynResult<Expr> {
+internal fun trailerExprImpl(input: ParseStream, allowStruct: Boolean, attrs: List<Attribute> = mutableListOf()): SynResult<Expr> {
     val atomResult = atomExprImpl(input, allowStruct)
     if (atomResult.isFailure) return atomResult
     val trailed = trailerHelperImpl(input, atomResult.getOrThrow(), allowStruct)
@@ -300,7 +300,7 @@ internal fun trailerHelperImpl(input: ParseStream, e: Expr, allowStruct: Boolean
                 args.pushPunct(commaResult.getOrThrow())
             }
             content.finishChildBuffer()
-            current = Expr.Call(emptyList(), current, paren, args)
+            current = Expr.Call(mutableListOf(), current, paren, args)
         } else if (input.peek(DotPeek) && !input.peek2(DotDotPeek) && current !is Expr.Range) {
             val dotResult = DotParse.parse(input)
             if (dotResult.isFailure) return dotResult.asFailure()
@@ -318,7 +318,7 @@ internal fun trailerHelperImpl(input: ParseStream, e: Expr, allowStruct: Boolean
             if (input.peek(AwaitPeek)) {
                 val awaitResult = AwaitParse.parse(input)
                 if (awaitResult.isFailure) return awaitResult.asFailure()
-                current = Expr.Await(emptyList(), current, dotToken, awaitResult.getOrThrow())
+                current = Expr.Await(mutableListOf(), current, dotToken, awaitResult.getOrThrow())
                 continue
             }
             val memberResult = parseMemberImpl(input)
@@ -341,10 +341,10 @@ internal fun trailerHelperImpl(input: ParseStream, e: Expr, allowStruct: Boolean
                     args.pushPunct(commaResult.getOrThrow())
                 }
                 content.finishChildBuffer()
-                current = Expr.MethodCall(emptyList(), current, dotToken, member.ident, null, paren, args)
+                current = Expr.MethodCall(mutableListOf(), current, dotToken, member.ident, null, paren, args)
                 continue
             }
-            current = Expr.Field(emptyList(), current, dotToken, member)
+            current = Expr.Field(mutableListOf(), current, dotToken, member)
         } else if (input.peek(BracketPeek)) {
             val brackets = bracketed(input)
             if (brackets.isFailure) return brackets.asFailure()
@@ -354,11 +354,11 @@ internal fun trailerHelperImpl(input: ParseStream, e: Expr, allowStruct: Boolean
             val indexResult = parseExprFull(content)
             if (indexResult.isFailure) return indexResult
             content.finishChildBuffer()
-            current = Expr.Index(emptyList(), current, bracket, indexResult.getOrThrow())
+            current = Expr.Index(mutableListOf(), current, bracket, indexResult.getOrThrow())
         } else if (input.peek(QuestionPeek) && current !is Expr.Range) {
             val qResult = QuestionParse.parse(input)
             if (qResult.isFailure) return qResult.asFailure()
-            current = Expr.Try(emptyList(), current, qResult.getOrThrow())
+            current = Expr.Try(mutableListOf(), current, qResult.getOrThrow())
         } else {
             break
         }
@@ -412,7 +412,7 @@ internal fun multiIndexImpl(
         val partEnd = offset + part.length
         val partSpan = floatToken.subspan(offset untilIntRange partEnd) ?: floatSpan
         val index = parseIndexPart(part, partSpan).getOrElse { return SynResult.failure(it) }
-        current = Expr.Field(emptyList(), current, nextDot, Member.Unnamed(index))
+        current = Expr.Field(mutableListOf(), current, nextDot, Member.Unnamed(index))
         nextDot =
             io.github.kotlinmania.syn.token.Dot
                 .from(floatToken.subspan(partEnd..partEnd) ?: floatSpan)
@@ -449,7 +449,7 @@ internal fun atomExprImpl(input: ParseStream, allowStruct: Boolean): SynResult<E
     }
     if (input.peek(LitPeek)) {
         val lit = LitParse.parse(input)
-        if (lit.isSuccess) return SynResult.success(Expr.Lit(emptyList(), lit.getOrThrow()))
+        if (lit.isSuccess) return SynResult.success(Expr.Lit(mutableListOf(), lit.getOrThrow()))
         return lit.asFailure()
     }
     if (input.peek(IfPeek)) return parseExprIf(input)
@@ -476,7 +476,7 @@ internal fun atomExprImpl(input: ParseStream, allowStruct: Boolean): SynResult<E
                 SynResult.success(null)
             }
         if (expr.isFailure) return expr.asFailure()
-        return SynResult.success(Expr.Return(emptyList(), retToken.getOrThrow(), expr.getOrThrow()))
+        return SynResult.success(Expr.Return(mutableListOf(), retToken.getOrThrow(), expr.getOrThrow()))
     }
     if (input.peek(LetPeek)) return parseExprLetImpl(input, allowStruct)
     if (input.peek(BreakPeek)) {
@@ -491,14 +491,14 @@ internal fun atomExprImpl(input: ParseStream, allowStruct: Boolean): SynResult<E
                 SynResult.success(null)
             }
         if (expr.isFailure) return expr.asFailure()
-        return SynResult.success(Expr.Break(emptyList(), brkToken.getOrThrow(), label, expr.getOrThrow()))
+        return SynResult.success(Expr.Break(mutableListOf(), brkToken.getOrThrow(), label, expr.getOrThrow()))
     }
     if (input.peek(ContinuePeek)) {
         val contToken = ContinueParse.parse(input)
         if (contToken.isFailure) return contToken.asFailure()
         val labelResult = LifetimeParse.parse(input)
         val label = if (labelResult.isSuccess) labelResult.getOrThrow() else null
-        return SynResult.success(Expr.Continue(emptyList(), contToken.getOrThrow(), label))
+        return SynResult.success(Expr.Continue(mutableListOf(), contToken.getOrThrow(), label))
     }
     if (input.peek(DotDotPeek) || input.peek(DotDotEqPeek)) {
         return parseExprRange(input, null, allowStruct)
@@ -567,7 +567,7 @@ internal fun parseExprLetImpl(input: ParseStream, allowStruct: Boolean): SynResu
     if (input.peek(ColonPeek)) {
         val colonToken = ColonParse.parse(input).getOrElse { return SynResult.failure(it) }
         val ty = parseTypeFull(input).getOrElse { return SynResult.failure(it) }
-        pat = Pat.TypeAscription(emptyList(), pat, colonToken, ty)
+        pat = Pat.TypeAscription(mutableListOf(), pat, colonToken, ty)
     }
     val eqToken = EqParse.parse(input)
     if (eqToken.isFailure) return eqToken.asFailure()
@@ -575,7 +575,7 @@ internal fun parseExprLetImpl(input: ParseStream, allowStruct: Boolean): SynResu
     if (lhs.isFailure) return lhs.asFailure()
     val expr = parseExprBinaryImpl(input, lhs.getOrThrow(), allowStruct, Precedence.Compare)
     if (expr.isFailure) return expr.asFailure()
-    return SynResult.success(Expr.Let(emptyList(), letToken.getOrThrow(), pat, eqToken.getOrThrow(), expr.getOrThrow()))
+    return SynResult.success(Expr.Let(mutableListOf(), letToken.getOrThrow(), pat, eqToken.getOrThrow(), expr.getOrThrow()))
 }
 
 private fun peekExprGroup(input: ParseStream, allowStruct: Boolean): Boolean {
@@ -590,7 +590,7 @@ internal fun parseExprGroupImpl(input: ParseStream): SynResult<Expr> {
     val group = parseGroup(input).getOrElse { return SynResult.failure(it) }
     val expr = parseExprFull(group.content).getOrElse { return SynResult.failure(it) }
     group.content.finishChildBuffer()
-    return SynResult.success(Expr.Group(emptyList(), group.token, expr))
+    return SynResult.success(Expr.Group(mutableListOf(), group.token, expr))
 }
 
 private fun parseLabeledLoopOrWhile(input: ParseStream): SynResult<Expr> {
@@ -627,7 +627,7 @@ internal fun pathOrMacroOrStructImpl(input: ParseStream, allowStruct: Boolean): 
         val delimPair = delimResult.getOrThrow()
         return SynResult.success(
             Expr.Macro(
-                emptyList(),
+                mutableListOf(),
                 Macro(path, bangResult.getOrThrow(), delimPair.first, delimPair.second),
             ),
         )
@@ -649,16 +649,16 @@ internal fun pathOrMacroOrStructImpl(input: ParseStream, allowStruct: Boolean): 
             fields.pushPunct(commaResult.getOrThrow())
         }
         content.finishChildBuffer()
-        return SynResult.success(Expr.Struct(emptyList(), qself, path, brace, fields, null, null))
+        return SynResult.success(Expr.Struct(mutableListOf(), qself, path, brace, fields, null, null))
     }
-    return SynResult.success(Expr.Path(emptyList(), qself, path))
+    return SynResult.success(Expr.Path(mutableListOf(), qself, path))
 }
 
 internal fun parseFieldValueImpl(input: ParseStream): SynResult<FieldValue> {
     val identResult = IdentParse.parse(input)
     if (identResult.isFailure) {
         return identResult.map {
-            FieldValue(emptyList(), Member.Named(it), null, Expr.Path(emptyList(), null, Path.from(it)))
+            FieldValue(mutableListOf(), Member.Named(it), null, Expr.Path(mutableListOf(), null, Path.from(it)))
         }
     }
     val ident = identResult.getOrThrow()
@@ -666,21 +666,21 @@ internal fun parseFieldValueImpl(input: ParseStream): SynResult<FieldValue> {
         val colonResult = ColonParse.parse(input)
         if (colonResult.isFailure) {
             return colonResult.map {
-                FieldValue(emptyList(), Member.Named(ident), it, Expr.Path(emptyList(), null, Path.from(ident)))
+                FieldValue(mutableListOf(), Member.Named(ident), it, Expr.Path(mutableListOf(), null, Path.from(ident)))
             }
         }
         val exprResult = parseExprFull(input)
         if (exprResult.isFailure) {
             return exprResult.map {
-                FieldValue(emptyList(), Member.Named(ident), colonResult.getOrThrow(), it)
+                FieldValue(mutableListOf(), Member.Named(ident), colonResult.getOrThrow(), it)
             }
         }
         return SynResult.success(
-            FieldValue(emptyList(), Member.Named(ident), colonResult.getOrThrow(), exprResult.getOrThrow()),
+            FieldValue(mutableListOf(), Member.Named(ident), colonResult.getOrThrow(), exprResult.getOrThrow()),
         )
     }
     return SynResult.success(
-        FieldValue(emptyList(), Member.Named(ident), null, Expr.Path(emptyList(), null, Path.from(ident))),
+        FieldValue(mutableListOf(), Member.Named(ident), null, Expr.Path(mutableListOf(), null, Path.from(ident))),
     )
 }
 
@@ -692,13 +692,13 @@ internal fun parenOrTupleImpl(input: ParseStream): SynResult<Expr> {
     val content = parensVal.content
     if (content.isEmpty()) {
         content.finishChildBuffer()
-        return SynResult.success(Expr.Tuple(emptyList(), paren, ExprList()))
+        return SynResult.success(Expr.Tuple(mutableListOf(), paren, ExprList()))
     }
     val first = parseExprFull(content)
     if (first.isFailure) return first
     if (content.isEmpty()) {
         content.finishChildBuffer()
-        return SynResult.success(Expr.Paren(emptyList(), paren, first.getOrThrow()))
+        return SynResult.success(Expr.Paren(mutableListOf(), paren, first.getOrThrow()))
     }
     val elems = ExprList()
     elems.pushValue(first.getOrThrow())
@@ -712,7 +712,7 @@ internal fun parenOrTupleImpl(input: ParseStream): SynResult<Expr> {
         elems.pushValue(valResult.getOrThrow())
     }
     content.finishChildBuffer()
-    return SynResult.success(Expr.Tuple(emptyList(), paren, elems))
+    return SynResult.success(Expr.Tuple(mutableListOf(), paren, elems))
 }
 
 internal fun arrayOrRepeatImpl(input: ParseStream): SynResult<Expr> {
@@ -723,7 +723,7 @@ internal fun arrayOrRepeatImpl(input: ParseStream): SynResult<Expr> {
     val content = bracketsVal.content
     if (content.isEmpty()) {
         content.finishChildBuffer()
-        return SynResult.success(Expr.Array(emptyList(), bracket, ExprList()))
+        return SynResult.success(Expr.Array(mutableListOf(), bracket, ExprList()))
     }
     val first = parseExprFull(content)
     if (first.isFailure) return first
@@ -740,7 +740,7 @@ internal fun arrayOrRepeatImpl(input: ParseStream): SynResult<Expr> {
             elems.pushValue(valResult.getOrThrow())
         }
         content.finishChildBuffer()
-        return SynResult.success(Expr.Array(emptyList(), bracket, elems))
+        return SynResult.success(Expr.Array(mutableListOf(), bracket, elems))
     }
     if (content.peek(SemiPeek)) {
         val semiResult = SemiParse.parse(content)
@@ -748,7 +748,7 @@ internal fun arrayOrRepeatImpl(input: ParseStream): SynResult<Expr> {
         val lenResult = parseExprFull(content)
         if (lenResult.isFailure) return lenResult
         content.finishChildBuffer()
-        return SynResult.success(Expr.Repeat(emptyList(), bracket, first.getOrThrow(), semiResult.getOrThrow(), lenResult.getOrThrow()))
+        return SynResult.success(Expr.Repeat(mutableListOf(), bracket, first.getOrThrow(), semiResult.getOrThrow(), lenResult.getOrThrow()))
     }
     content.finishChildBuffer()
     return SynResult.failure(content.error("expected `,` or `;`"))
@@ -760,7 +760,7 @@ private fun parseExprRange(input: ParseStream, start: Expr?, allowStruct: Boolea
     val limits = limitsResult.getOrThrow()
     val endResult = parseRangeEnd(input, limits, allowStruct)
     if (endResult.isFailure) return endResult.asFailure()
-    return SynResult.success(Expr.Range(emptyList(), start, limits, endResult.getOrThrow()))
+    return SynResult.success(Expr.Range(mutableListOf(), start, limits, endResult.getOrThrow()))
 }
 
 private fun parseRangeLimits(input: ParseStream): SynResult<RangeLimits> =
@@ -813,10 +813,10 @@ private fun parseExprIf(input: ParseStream): SynResult<Expr> {
                 eStmts.add(s.getOrThrow())
             }
             eContent.finishChildBuffer()
-            elseBranch = ElseExpr(elseToken, Expr.BlockExpr(emptyList(), null, Block(eBrace, eStmts)))
+            elseBranch = ElseExpr(elseToken, Expr.BlockExpr(mutableListOf(), null, Block(eBrace, eStmts)))
         }
     }
-    return SynResult.success(Expr.If(emptyList(), ifToken, cond.getOrThrow(), thenBranch, elseBranch))
+    return SynResult.success(Expr.If(mutableListOf(), ifToken, cond.getOrThrow(), thenBranch, elseBranch))
 }
 
 internal fun parseExprWhile(input: ParseStream, label: Label? = null): SynResult<Expr> {
@@ -835,7 +835,7 @@ internal fun parseExprWhile(input: ParseStream, label: Label? = null): SynResult
         stmts.add(s.getOrThrow())
     }
     content.finishChildBuffer()
-    return SynResult.success(Expr.While(emptyList(), label, whileToken, cond.getOrThrow(), Block(brace, stmts)))
+    return SynResult.success(Expr.While(mutableListOf(), label, whileToken, cond.getOrThrow(), Block(brace, stmts)))
 }
 
 internal fun parseExprLoop(input: ParseStream, label: Label? = null): SynResult<Expr> {
@@ -852,7 +852,7 @@ internal fun parseExprLoop(input: ParseStream, label: Label? = null): SynResult<
         stmts.add(s.getOrThrow())
     }
     content.finishChildBuffer()
-    return SynResult.success(Expr.Loop(emptyList(), label, loopToken, Block(brace, stmts)))
+    return SynResult.success(Expr.Loop(mutableListOf(), label, loopToken, Block(brace, stmts)))
 }
 
 private fun parseExprMatch(input: ParseStream): SynResult<Expr> {
@@ -871,30 +871,30 @@ private fun parseExprMatch(input: ParseStream): SynResult<Expr> {
         arms.add(armResult.getOrThrow())
     }
     content.finishChildBuffer()
-    return SynResult.success(Expr.Match(emptyList(), matchToken, scrutinee.getOrThrow(), brace, arms))
+    return SynResult.success(Expr.Match(mutableListOf(), matchToken, scrutinee.getOrThrow(), brace, arms))
 }
 
 private fun parseMatchArm(input: ParseStream): SynResult<Arm> {
     val patResult = parsePatFull(input)
     if (patResult.isFailure) {
-        return patResult.map { Arm(emptyList(), it, null, fatArrowSentinel(input), inferSentinel(input), null) }
+        return patResult.map { Arm(mutableListOf(), it, null, fatArrowSentinel(input), inferSentinel(input), null) }
     }
     val fatArrowResult = FatArrowParse.parse(input)
     if (fatArrowResult.isFailure) {
         return fatArrowResult.map {
-            Arm(emptyList(), patResult.getOrThrow(), null, it, inferSentinel(input), null)
+            Arm(mutableListOf(), patResult.getOrThrow(), null, it, inferSentinel(input), null)
         }
     }
     val bodyResult = parseExprFull(input)
     if (bodyResult.isFailure) {
         return bodyResult.map {
-            Arm(emptyList(), patResult.getOrThrow(), null, fatArrowResult.getOrThrow(), it, null)
+            Arm(mutableListOf(), patResult.getOrThrow(), null, fatArrowResult.getOrThrow(), it, null)
         }
     }
     val commaResult = CommaParse.parse(input)
     val comma = if (commaResult.isSuccess) commaResult.getOrThrow() else null
     return SynResult.success(
-        Arm(emptyList(), patResult.getOrThrow(), null, fatArrowResult.getOrThrow(), bodyResult.getOrThrow(), comma),
+        Arm(mutableListOf(), patResult.getOrThrow(), null, fatArrowResult.getOrThrow(), bodyResult.getOrThrow(), comma),
     )
 }
 
@@ -904,7 +904,7 @@ private fun fatArrowSentinel(input: ParseStream): io.github.kotlinmania.syn.toke
 
 private fun inferSentinel(input: ParseStream): Expr =
     Expr.Infer(
-        emptyList(),
+        mutableListOf(),
         io.github.kotlinmania.syn.token.Underscore
             .from(input.span()),
     )
@@ -931,7 +931,7 @@ private fun parseExprAsync(input: ParseStream): SynResult<Expr> {
         stmts.add(s.getOrThrow())
     }
     content.finishChildBuffer()
-    return SynResult.success(Expr.Async(emptyList(), asyncToken, capture, Block(brace, stmts)))
+    return SynResult.success(Expr.Async(mutableListOf(), asyncToken, capture, Block(brace, stmts)))
 }
 
 private fun parseExprUnsafe(input: ParseStream): SynResult<Expr> {
@@ -948,7 +948,7 @@ private fun parseExprUnsafe(input: ParseStream): SynResult<Expr> {
         stmts.add(s.getOrThrow())
     }
     content.finishChildBuffer()
-    return SynResult.success(Expr.Unsafe(emptyList(), unsafeToken, Block(brace, stmts)))
+    return SynResult.success(Expr.Unsafe(mutableListOf(), unsafeToken, Block(brace, stmts)))
 }
 
 private fun parseExprConst(input: ParseStream): SynResult<Expr> {
@@ -965,7 +965,7 @@ private fun parseExprConst(input: ParseStream): SynResult<Expr> {
         stmts.add(s.getOrThrow())
     }
     content.finishChildBuffer()
-    return SynResult.success(Expr.Const(emptyList(), constToken, Block(brace, stmts)))
+    return SynResult.success(Expr.Const(mutableListOf(), constToken, Block(brace, stmts)))
 }
 
 internal fun parseExprBlock(input: ParseStream): SynResult<Expr> {
@@ -981,7 +981,7 @@ internal fun parseExprBlock(input: ParseStream): SynResult<Expr> {
         stmts.add(s.getOrThrow())
     }
     content.finishChildBuffer()
-    return SynResult.success(Expr.BlockExpr(emptyList(), null, Block(brace, stmts)))
+    return SynResult.success(Expr.BlockExpr(mutableListOf(), null, Block(brace, stmts)))
 }
 
 private fun parseExprClosure(input: ParseStream, allowStruct: Boolean): SynResult<Expr> {
@@ -1014,11 +1014,11 @@ private fun parseExprClosure(input: ParseStream, allowStruct: Boolean): SynResul
         output = ReturnType.TypeReturn(arrowResult.getOrThrow(), tyResult.getOrThrow())
         val bodyResult = parseExprBlock(input)
         if (bodyResult.isFailure) return bodyResult
-        return SynResult.success(Expr.Closure(emptyList(), constness, asyncness, capture, or1Result.getOrThrow(), inputs, or2Result.getOrThrow(), output, bodyResult.getOrThrow()))
+        return SynResult.success(Expr.Closure(mutableListOf(), constness, asyncness, capture, or1Result.getOrThrow(), inputs, or2Result.getOrThrow(), output, bodyResult.getOrThrow()))
     }
     val bodyResult = ambiguousExprImpl(input, allowStruct)
     if (bodyResult.isFailure) return bodyResult
-    return SynResult.success(Expr.Closure(emptyList(), constness, asyncness, capture, or1Result.getOrThrow(), inputs, or2Result.getOrThrow(), output, bodyResult.getOrThrow()))
+    return SynResult.success(Expr.Closure(mutableListOf(), constness, asyncness, capture, or1Result.getOrThrow(), inputs, or2Result.getOrThrow(), output, bodyResult.getOrThrow()))
 }
 
 private fun parseClosureOr(input: ParseStream): SynResult<io.github.kotlinmania.syn.token.Or> =
@@ -1042,7 +1042,7 @@ internal fun parseStmtFull(input: ParseStream): SynResult<Stmt> {
         if (input.peek(ColonPeek)) {
             val colonToken = ColonParse.parse(input).getOrElse { return SynResult.failure(it) }
             val ty = parseTypeFull(input).getOrElse { return SynResult.failure(it) }
-            pat = Pat.TypeAscription(emptyList(), pat, colonToken, ty)
+            pat = Pat.TypeAscription(mutableListOf(), pat, colonToken, ty)
         }
         val init: LocalInit? =
             if (input.peek(EqPeek)) {
@@ -1066,7 +1066,7 @@ internal fun parseStmtFull(input: ParseStream): SynResult<Stmt> {
                 null
             }
         val semi = SemiParse.parse(input).getOrThrow()
-        return SynResult.success(Stmt.Local(emptyList(), letToken, pat, init, semi))
+        return SynResult.success(Stmt.Local(mutableListOf(), letToken, pat, init, semi))
     }
     if (peekItemStatement(input)) {
         val item = ItemParse.parse(input)
@@ -1134,7 +1134,7 @@ internal object PatParseImpl {
 internal fun parsePatSingle(input: ParseStream): SynResult<Pat> {
     if (input.peek(UnderscorePeek)) {
         val underscore = UnderscoreParse.parse(input).getOrThrow()
-        return SynResult.success(Pat.Wild(emptyList(), underscore))
+        return SynResult.success(Pat.Wild(mutableListOf(), underscore))
     }
     if ((input.peek(DotDotPeek) || input.peek(DotDotEqPeek)) && !input.peek(DotDotDotPeek)) {
         return parsePatRangeHalfOpen(input)
@@ -1204,7 +1204,7 @@ private fun parsePatPathOrMacroOrStructOrRange(input: ParseStream): SynResult<Pa
     if (input.peek(NotPeek) && !input.peek(NePeek)) {
         val bangToken = NotParse.parse(input).getOrElse { return SynResult.failure(it) }
         val delimiter = parseDelimiter(input).getOrElse { return SynResult.failure(it) }
-        return SynResult.success(Pat.Macro(emptyList(), Macro(path, bangToken, delimiter.first, delimiter.second)))
+        return SynResult.success(Pat.Macro(mutableListOf(), Macro(path, bangToken, delimiter.first, delimiter.second)))
     }
     if (input.peek(BracePeek)) {
         return parsePatStruct(input, path).let { result ->
@@ -1217,13 +1217,13 @@ private fun parsePatPathOrMacroOrStructOrRange(input: ParseStream): SynResult<Pa
         }
     }
     if (input.peek(DotDotPeek) || input.peek(DotDotEqPeek) || input.peek(DotDotDotPeek)) {
-        return parsePatRange(input, Expr.Path(emptyList(), null, path))
+        return parsePatRange(input, Expr.Path(mutableListOf(), null, path))
     }
     val ident = path.getIdent()
     if (ident != null) {
-        return SynResult.success(Pat.Ident(emptyList(), null, FieldMutability.None, ident, null, null))
+        return SynResult.success(Pat.Ident(mutableListOf(), null, FieldMutability.None, ident, null, null))
     }
-    return SynResult.success(Pat.Path(emptyList(), null, path))
+    return SynResult.success(Pat.Path(mutableListOf(), null, path))
 }
 
 private fun parsePatIdent(input: ParseStream): SynResult<Pat.Ident> {
@@ -1243,7 +1243,7 @@ private fun parsePatIdent(input: ParseStream): SynResult<Pat.Ident> {
         } else {
             null
         }
-    return SynResult.success(Pat.Ident(emptyList(), byRef, mutability, ident, atToken, subpat))
+    return SynResult.success(Pat.Ident(mutableListOf(), byRef, mutability, ident, atToken, subpat))
 }
 
 private fun parsePatTupleStruct(
@@ -1258,7 +1258,7 @@ private fun parsePatTupleStruct(
         elems.pushPunct(CommaParse.parse(parens.content).getOrElse { return SynResult.failure(it) })
     }
     parens.content.finishChildBuffer()
-    return SynResult.success(Pat.TupleStruct(emptyList(), null, path, parens.token, elems))
+    return SynResult.success(Pat.TupleStruct(mutableListOf(), null, path, parens.token, elems))
 }
 
 private fun parsePatStruct(
@@ -1297,7 +1297,7 @@ private fun parseFieldPat(input: ParseStream): SynResult<FieldPat> {
             is Member.Named -> member.ident
             is Member.Unnamed -> return SynResult.failure(input.error("expected named field"))
         }
-    val pat = Pat.Ident(emptyList(), byRef, mutability, ident, null, null)
+    val pat = Pat.Ident(mutableListOf(), byRef, mutability, ident, null, null)
     return SynResult.success(FieldPat(Member.Named(ident), null, pat))
 }
 
@@ -1310,17 +1310,17 @@ private fun parsePatRange(
     if (limits is RangeLimits.Closed && end == null) {
         return SynResult.failure(input.error("expected range upper bound"))
     }
-    return SynResult.success(Pat.Range(emptyList(), start, limits, end))
+    return SynResult.success(Pat.Range(mutableListOf(), start, limits, end))
 }
 
 private fun parsePatRangeHalfOpen(input: ParseStream): SynResult<Pat> {
     val limits = parsePatRangeLimitsObsolete(input).getOrElse { return SynResult.failure(it) }
     val end = parsePatRangeBound(input).getOrElse { return SynResult.failure(it) }
     if (end != null) {
-        return SynResult.success(Pat.Range(emptyList(), null, limits, end))
+        return SynResult.success(Pat.Range(mutableListOf(), null, limits, end))
     }
     return when (limits) {
-        is RangeLimits.HalfOpen -> SynResult.success(Pat.Rest(emptyList(), limits.token))
+        is RangeLimits.HalfOpen -> SynResult.success(Pat.Rest(mutableListOf(), limits.token))
         is RangeLimits.Closed -> SynResult.failure(input.error("expected range upper bound"))
     }
 }
@@ -1335,7 +1335,7 @@ private fun parsePatLitOrRange(input: ParseStream): SynResult<Pat> {
         if (limits is RangeLimits.Closed && end == null) {
             return SynResult.failure(input.error("expected range upper bound"))
         }
-        return SynResult.success(Pat.Range(emptyList(), start, limits, end))
+        return SynResult.success(Pat.Range(mutableListOf(), start, limits, end))
     }
     return when (start) {
         is Expr.Const -> SynResult.success(Pat.Const(start.attrs, start.constToken, start.block))
@@ -1371,7 +1371,7 @@ private fun parsePatRangeBound(input: ParseStream): SynResult<Expr?> {
     }
     if (input.peek(LitPeek)) {
         val lit = LitParse.parse(input).getOrElse { return SynResult.failure(it) }
-        return SynResult.success(Expr.Lit(emptyList(), lit))
+        return SynResult.success(Expr.Lit(mutableListOf(), lit))
     }
     if (input.peek(ConstPeek) && input.peek2(BracePeek)) {
         return parseExprConst(input).let { result ->
@@ -1386,7 +1386,7 @@ private fun parsePatRangeBound(input: ParseStream): SynResult<Expr?> {
         input.peek(CratePeek)
     ) {
         val path = parseModStylePath(input).getOrElse { return SynResult.failure(it) }
-        return SynResult.success(Expr.Path(emptyList(), null, path))
+        return SynResult.success(Expr.Path(mutableListOf(), null, path))
     }
     return SynResult.failure(input.error("expected range bound"))
 }

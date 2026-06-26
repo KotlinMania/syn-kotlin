@@ -977,7 +977,7 @@ private fun parseFnArgOrVariadic(
                 FnArg.Typed(
                     PatType(
                         attrs,
-                        Pat.Wild(emptyList(), Underscore.from(span)),
+                        Pat.Wild(mutableListOf(), Underscore.from(span)),
                         Colon.from(span),
                         tyResult.getOrThrow(),
                     ),
@@ -1049,7 +1049,7 @@ private fun parseReceiver(input: ParseStream): SynResult<FnArg.Receiver> {
                 selfTy
             }
         }
-    return SynResult.success(FnArg.Receiver(emptyList(), reference, mutability, selfToken, colonToken, ty))
+    return SynResult.success(FnArg.Receiver(mutableListOf(), reference, mutability, selfToken, colonToken, ty))
 }
 
 private fun parseReceiverAnd(input: ParseStream): SynResult<io.github.kotlinmania.syn.token.And> =
@@ -1307,11 +1307,11 @@ internal fun parseTraitItem(input: ParseStream): SynResult<TraitItem> {
         if (input.peek(BracePeek)) {
             val defaultResult = parseBlock(input)
             if (defaultResult.isFailure) return asFailure(defaultResult)
-            return SynResult.success(TraitItem.Fn(emptyList(), sigResult.getOrThrow(), defaultResult.getOrThrow(), null))
+            return SynResult.success(TraitItem.Fn(mutableListOf(), sigResult.getOrThrow(), defaultResult.getOrThrow(), null))
         }
         val semiResult = SemiParse.parse(input)
         if (semiResult.isFailure) return asFailure(semiResult)
-        return SynResult.success(TraitItem.Fn(emptyList(), sigResult.getOrThrow(), null, semiResult.getOrThrow()))
+        return SynResult.success(TraitItem.Fn(mutableListOf(), sigResult.getOrThrow(), null, semiResult.getOrThrow()))
     }
     if (input.peek(ConstPeek)) {
         val constToken = ConstParse.parse(input).getOrThrow()
@@ -1327,7 +1327,7 @@ internal fun parseTraitItem(input: ParseStream): SynResult<TraitItem> {
             }
         }
         val semi = SemiParse.parse(input).getOrThrow()
-        return SynResult.success(TraitItem.Const(emptyList(), constToken, ident, Generics(), colon, ty, default, semi))
+        return SynResult.success(TraitItem.Const(mutableListOf(), constToken, ident, Generics(), colon, ty, default, semi))
     }
     if (peekFlexibleItemType(input, TypeDefaultness.Disallowed)) {
         val begin = input.fork()
@@ -1360,7 +1360,7 @@ internal fun parseImplItem(input: ParseStream): SynResult<ImplItem> {
         val eq = EqParse.parse(input).getOrThrow()
         val expr = parseExprFull(input).getOrThrow()
         val semi = SemiParse.parse(input).getOrThrow()
-        return SynResult.success(ImplItem.Const(emptyList(), Visibility.Inherited, null, constToken, ident, Generics(), colon, ty, eq, expr, semi))
+        return SynResult.success(ImplItem.Const(mutableListOf(), Visibility.Inherited, null, constToken, ident, Generics(), colon, ty, eq, expr, semi))
     }
     if (peekFlexibleItemType(input, TypeDefaultness.Optional)) {
         val begin = input.fork()
@@ -1391,7 +1391,7 @@ private fun parseTraitItemType(begin: ParseStream, input: ParseStream): SynResul
     }
     return SynResult.success(
         TraitItem.AssocType(
-            emptyList(),
+            mutableListOf(),
             itemType.typeToken,
             itemType.ident,
             itemType.generics,
@@ -1417,7 +1417,7 @@ private fun parseImplItemType(begin: ParseStream, input: ParseStream): SynResult
     }
     return SynResult.success(
         ImplItem.AssocType(
-            emptyList(),
+            mutableListOf(),
             itemType.vis,
             itemType.defaultness,
             itemType.typeToken,
