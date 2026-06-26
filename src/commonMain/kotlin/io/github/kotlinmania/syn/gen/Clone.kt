@@ -40,6 +40,7 @@ import io.github.kotlinmania.syn.GenericParam
 import io.github.kotlinmania.syn.Generics
 import io.github.kotlinmania.syn.Ident
 import io.github.kotlinmania.syn.IdentColon
+import io.github.kotlinmania.syn.IfExpr
 import io.github.kotlinmania.syn.ImplItem
 import io.github.kotlinmania.syn.ImplRestriction
 import io.github.kotlinmania.syn.Index
