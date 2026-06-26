@@ -36,7 +36,7 @@ sealed interface CustomToken : Token {
 }
 
 sealed interface SingleSpanToken : Token {
-    var span: Span
+    val span: Span
 }
 
 sealed interface MultiSpanToken : Token {
@@ -72,7 +72,7 @@ sealed class PunctuationToken(
         require(spans.size == text.length) { "expected ${text.length} span(s)" }
     }
 
-    var span: Span
+    val span: Span
         get() = spans.first()
 
     override fun toTokens(tokens: TokenStream) {

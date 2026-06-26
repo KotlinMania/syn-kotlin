@@ -29,7 +29,7 @@ public object FileParse {
         while (!input.isEmpty()) {
             items.add(ItemParse.parse(input).getOrElse { return SynResult.failure(it) })
         }
-        return SynResult.success(File(null, attrs, items))
+        return SynResult.success(File(null, attrs, items.toMutableList()))
     }
 }
 

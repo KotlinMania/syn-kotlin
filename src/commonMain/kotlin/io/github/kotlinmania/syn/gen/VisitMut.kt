@@ -205,7 +205,7 @@ public open class VisitMut {
         e.copy(attrs = visitAttributesMut(e.attrs), mac = visitMacroMut(e.mac))
 
     public open fun visitExprMatchMut(e: Expr.Match): Expr =
-        e.copy(attrs = visitAttributesMut(e.attrs), expr = visitExprMut(e.expr), arms = e.arms.map { visitArmMut(it) })
+        e.copy(attrs = visitAttributesMut(e.attrs), expr = visitExprMut(e.expr), arms = e.arms.mapTo(mutableListOf()) { visitArmMut(it) })
 
     public open fun visitExprMethodCallMut(e: Expr.MethodCall): Expr =
         e.copy(
@@ -336,7 +336,7 @@ public open class VisitMut {
     public open fun visitFile(f: File): File =
         f.copy(
             attrs = visitAttributesMut(f.attrs),
-            items = f.items.map { visitItemMut(it) },
+            items = f.items.mapTo(mutableListOf()) { visitItemMut(it) },
         )
 
     public open fun visitAttribute(a: Attribute): Attribute =
@@ -908,7 +908,7 @@ public open class VisitMut {
         item.copy(
             attrs = visitAttributesMut(item.attrs),
             abi = visitAbiMut(item.abi),
-            items = item.items.map { visitForeignItemMut(it) },
+            items = item.items.mapTo(mutableListOf()) { visitForeignItemMut(it) },
         )
 
     public open fun visitItemImpl(item: Item.Impl): Item =
@@ -917,7 +917,7 @@ public open class VisitMut {
             generics = visitGenericsMut(item.generics),
             traitPath = item.traitPath?.let { visitPathTraitMut(it) },
             selfType = visitTypeMut(item.selfType),
-            items = item.items.map { visitImplItemMut(it) },
+            items = item.items.mapTo(mutableListOf()) { visitImplItemMut(it) },
         )
 
     public open fun visitItemMacro(item: Item.Macro): Item =
@@ -962,7 +962,7 @@ public open class VisitMut {
             ident = visitIdentMut(item.ident),
             generics = visitGenericsMut(item.generics),
             supertraits = item.supertraits.copy({ visitTypeParamBoundMut(it) }, { it }),
-            items = item.items.map { visitTraitItemMut(it) },
+            items = item.items.mapTo(mutableListOf()) { visitTraitItemMut(it) },
         )
 
     public open fun visitItemTraitAlias(item: Item.TraitAlias): Item =

@@ -820,7 +820,7 @@ private fun parseLitByteStrRaw(s: String): ByteStringLiteralParts? {
             if (ch.code > 0x7f) return null
             ch.code.toUByte()
         }
-    return ByteStringLiteralParts(bytes, parsed.suffix)
+    return ByteStringLiteralParts(bytes.toMutableList(), parsed.suffix)
 }
 
 private fun parseLitCStr(s: String): CStringLiteralParts? {
