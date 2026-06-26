@@ -58,6 +58,8 @@ import io.github.kotlinmania.syn.ReturnType
 import io.github.kotlinmania.syn.Signature
 import io.github.kotlinmania.syn.Stmt
 import io.github.kotlinmania.syn.SynType
+import io.github.kotlinmania.syn.TraitItem
+import io.github.kotlinmania.syn.TypeParamBound
 import io.github.kotlinmania.syn.UnOp
 import io.github.kotlinmania.syn.Variant
 import io.github.kotlinmania.syn.Visibility
@@ -367,7 +369,7 @@ public fun ForeignItem.clone(): ForeignItem =
     when (this) {
         is ForeignItem.Fn -> this.clone()
         is ForeignItem.Static -> this.clone()
-        is ForeignItem.Type -> this.clone()
+        is ForeignItem.ItemType -> this.clone()
         is ForeignItem.Macro -> this.clone()
         is ForeignItem.Verbatim -> this.clone()
     }
@@ -381,11 +383,11 @@ public fun ForeignItem.Macro.clone(): ForeignItem.Macro =
 public fun ForeignItem.Static.clone(): ForeignItem.Static =
     ForeignItem.Static(attrs.cloneList(), vis.clone(), staticToken, mutability, ident.clone(), colonToken, ty.clone(), semiToken)
 
-public fun ForeignItem.Type.clone(): ForeignItem.Type =
-    ForeignItem.Type(attrs.cloneList(), vis.clone(), typeToken, ident.clone(), generics.clone(), semiToken)
+public fun ForeignItem.ItemType.clone(): ForeignItem.ItemType =
+    ForeignItem.ItemType(attrs.cloneList(), vis.clone(), typeToken, ident.clone(), generics.clone(), semiToken)
 
 public fun ForeignItem.Verbatim.clone(): ForeignItem.Verbatim =
-    ForeignItem.Verbatim(attrs.cloneList(), tokens.clone())
+    ForeignItem.Verbatim(tokens.clone())
 
 public fun GenericArgument.clone(): GenericArgument =
     when (this) {
@@ -420,7 +422,7 @@ public fun ImplItem.clone(): ImplItem =
     when (this) {
         is ImplItem.Const -> this.clone()
         is ImplItem.Fn -> this.clone()
-        is ImplItem.Type -> this.clone()
+        is ImplItem.ItemType -> this.clone()
         is ImplItem.Macro -> this.clone()
         is ImplItem.Verbatim -> this.clone()
     }
@@ -434,11 +436,11 @@ public fun ImplItem.Fn.clone(): ImplItem.Fn =
 public fun ImplItem.Macro.clone(): ImplItem.Macro =
     ImplItem.Macro(attrs.cloneList(), mac.clone(), semiToken)
 
-public fun ImplItem.Type.clone(): ImplItem.Type =
-    ImplItem.Type(attrs.cloneList(), vis.clone(), defaultness, typeToken, ident.clone(), generics.clone(), eqToken, ty.clone(), semiToken)
+public fun ImplItem.ItemType.clone(): ImplItem.ItemType =
+    ImplItem.ItemType(attrs.cloneList(), vis.clone(), defaultness, typeToken, ident.clone(), generics.clone(), eqToken, ty.clone(), semiToken)
 
 public fun ImplItem.Verbatim.clone(): ImplItem.Verbatim =
-    ImplItem.Verbatim(attrs.cloneList(), tokens.clone())
+    ImplItem.Verbatim(tokens.clone())
 
 public fun ImplRestriction.clone(): ImplRestriction = this
 
@@ -514,7 +516,7 @@ public fun Item.Use.clone(): Item.Use =
     Item.Use(attrs.cloneList(), vis.clone(), useToken, tree.clone(), semiToken)
 
 public fun Item.Verbatim.clone(): Item.Verbatim =
-    Item.Verbatim(attrs.cloneList(), tokens.clone())
+    Item.Verbatim(tokens.clone())
 
 public fun Label.clone(): Label =
     Label(name.clone(), colonToken)
@@ -633,7 +635,7 @@ public fun Pat.Wild.clone(): Pat.Wild =
     Pat.Wild(attrs.cloneList(), underscoreToken)
 
 public fun Pat.Verbatim.clone(): Pat.Verbatim =
-    Pat.Verbatim(attrs.cloneList(), tokens.clone())
+    Pat.Verbatim(tokens.clone())
 
 public fun PatRest.clone(): PatRest =
     PatRest(dot2Token, attrs.cloneList())
@@ -700,6 +702,30 @@ public fun Stmt.ExprStmt.clone(): Stmt.ExprStmt =
 
 public fun Stmt.MacroStmt.clone(): Stmt.MacroStmt =
     Stmt.MacroStmt(attrs.cloneList(), mac.clone(), semiToken)
+
+public fun TraitItem.clone(): TraitItem =
+    when (this) {
+        is TraitItem.Const -> this.clone()
+        is TraitItem.Fn -> this.clone()
+        is TraitItem.AssocType -> this.clone()
+        is TraitItem.Macro -> this.clone()
+        is TraitItem.Verbatim -> this.clone()
+    }
+
+public fun TraitItem.Const.clone(): TraitItem.Const =
+    TraitItem.Const(attrs.cloneList(), constToken, ident.clone(), generics.clone(), colonToken, ty.clone(), default, semiToken)
+
+public fun TraitItem.Fn.clone(): TraitItem.Fn =
+    TraitItem.Fn(attrs.cloneList(), sig.clone(), default, semiToken)
+
+public fun TraitItem.AssocType.clone(): TraitItem.AssocType =
+    TraitItem.AssocType(attrs.cloneList(), typeToken, ident.clone(), generics.clone(), colonToken, bounds.copy({ it.clone() }, { it }), default, semiToken)
+
+public fun TraitItem.Macro.clone(): TraitItem.Macro =
+    TraitItem.Macro(attrs.cloneList(), mac.clone(), semiToken)
+
+public fun TraitItem.Verbatim.clone(): TraitItem.Verbatim =
+    TraitItem.Verbatim(tokens.clone())
 
 public fun SynType.clone(): SynType =
     when (this) {
