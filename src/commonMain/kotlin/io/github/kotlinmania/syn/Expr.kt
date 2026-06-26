@@ -1640,8 +1640,6 @@ public data class Label(
     }
 
     public fun deepCopy(): Label = Label(name.deepCopy(), colonToken)
-
-    public fun clone(): Label = deepCopy()
 }
 
 /** One arm of a `match` expression. */

@@ -61,8 +61,6 @@ public data class Lifetime(
     override fun hashCode(): Int =
         ident.hashCode()
 
-    public fun clone(): Lifetime = deepCopy()
-
     public fun fmt(): String = toString()
 
     public fun eq(other: Lifetime): Boolean = equals(other)
