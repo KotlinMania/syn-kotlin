@@ -731,10 +731,10 @@ public fun SynType.clone(): SynType =
     }
 
 public fun SynType.Array.clone(): SynType.Array =
-    SynType.Array(bracketToken, elem.clone(), semiToken, len.clone())
+    SynType.Array(elem.clone(), len.clone())
 
 public fun SynType.BareFn.clone(): SynType.BareFn =
-    SynType.BareFn(lifetimes?.clone(), forToken, unsafety, abi?.clone(), fnToken, inputs.copy({ it.clone() }, { it }), variadic?.clone(), output.clone())
+    SynType.BareFn(lifetimes?.clone(), unsafety, abi?.clone(), fnToken, parenToken, inputs.copy({ it.clone() }, { it }), variadic?.clone(), output.clone())
 
 public fun SynType.Group.clone(): SynType.Group =
     SynType.Group(groupToken, elem.clone())
@@ -755,13 +755,13 @@ public fun SynType.Path.clone(): SynType.Path =
     SynType.Path(qself?.clone(), path.clone())
 
 public fun SynType.Ptr.clone(): SynType.Ptr =
-    SynType.Ptr(starToken, mutability.clone())
+    SynType.Ptr(starToken, constToken, mutability, elem.clone())
 
 public fun SynType.Reference.clone(): SynType.Reference =
     SynType.Reference(andToken, lifetime?.clone(), mutability, elem.clone())
 
 public fun SynType.Slice.clone(): SynType.Slice =
-    SynType.Slice(bracketToken, elem.clone())
+    SynType.Slice(elem.clone())
 
 public fun SynType.TraitObject.clone(): SynType.TraitObject =
     SynType.TraitObject(dynToken, bounds.copy({ it.clone() }, { it }))
