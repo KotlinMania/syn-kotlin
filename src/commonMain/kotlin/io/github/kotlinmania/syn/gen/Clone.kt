@@ -487,7 +487,7 @@ public fun Item.Struct.clone(): Item.Struct =
     Item.Struct(attrs.cloneList(), vis.clone(), structToken, Ident.new(ident.toString(), ident.span()), generics.clone(), fields.clone(), semiToken)
 
 public fun Item.Trait.clone(): Item.Trait =
-    Item.Trait(attrs.cloneList(), vis.clone(), unsafety, autoToken, restriction, traitToken, Ident.new(ident.toString(), ident.span()), generics.clone(), colonToken, supertraits.copy({ it.clone() }, { it }), braceToken, items.copy({ it.clone() }, { it }))
+    Item.Trait(attrs.cloneList(), vis.clone(), unsafety, autoToken, restriction, traitToken, Ident.new(ident.toString(), ident.span()), generics.clone(), colonToken, supertraits.copy({ it.clone() }, { it }), braceToken, items.cloneList())
 
 public fun Item.TraitAlias.clone(): Item.TraitAlias =
     Item.TraitAlias(attrs.cloneList(), vis.clone(), traitToken, Ident.new(ident.toString(), ident.span()), generics.clone(), eqToken, bounds.copy({ it.clone() }, { it }), semiToken)
@@ -508,7 +508,7 @@ public fun Label.clone(): Label =
     Label(name.clone(), colonToken)
 
 public fun Lifetime.clone(): Lifetime =
-    Lifetime(toToken(), apostrophe)
+    Lifetime(apostrophe, Ident.new(ident.toString(), ident.span()))
 
 public fun GenericParam.LifetimeParam.clone(): GenericParam.LifetimeParam =
     GenericParam.LifetimeParam(attrs.cloneList(), lifetime.clone(), colonToken, bounds.copy({ it.clone() }, { it }))
@@ -544,8 +544,8 @@ public fun Member.clone(): Member =
 
 public fun Meta.clone(): Meta =
     when (this) {
-        is Meta.Path -> Meta.Path(path.clone())
-        is Meta.List -> Meta.List(path.clone(), parenToken, tokens.clone())
+        is Meta.PathMeta -> Meta.PathMeta(path.clone())
+        is Meta.List -> Meta.List(path.clone(), delimiter, tokens.clone())
         is Meta.NameValue -> Meta.NameValue(path.clone(), eqToken, value.clone())
     }
 
@@ -571,7 +571,7 @@ public fun Pat.clone(): Pat =
     }
 
 public fun Pat.Ident.clone(): Pat.Ident =
-    Pat.Ident(attrs.cloneList(), Ident.new(ident.toString(), ident.span()), atToken, subpat?.clone())
+    Pat.Ident(attrs.cloneList(), byRef, mutability.clone(), Ident.new(ident.toString(), ident.span()), atToken, subpat?.clone())
 
 public fun Pat.Tuple.clone(): Pat.Tuple =
     Pat.Tuple(attrs.cloneList(), parenToken, elems.copy({ it.clone() }, { it }))
@@ -580,7 +580,7 @@ public fun Pat.Or.clone(): Pat.Or =
     Pat.Or(attrs.cloneList(), leadingVert, cases.copy({ it.clone() }, { it }))
 
 public fun Pat.PatParen.clone(): Pat.PatParen =
-    Pat.PatParen(attrs.cloneList(), parenToken, pat.clone())
+    Pat.PatParen(parenToken, pat.clone(), attrs.cloneList())
 
 public fun Pat.Reference.clone(): Pat.Reference =
     Pat.Reference(attrs.cloneList(), andToken, mutability, pat.clone())
