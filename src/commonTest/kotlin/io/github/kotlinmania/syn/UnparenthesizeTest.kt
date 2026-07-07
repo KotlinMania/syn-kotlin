@@ -26,10 +26,12 @@ class UnparenthesizeTest {
 
     private fun test(content: String) {
         val before = parseFile(content).getOrThrow()
-        val flatBefore = FlattenParens.discardAttrs().visitFileMut(before.deepCopy())
+        val flatBefore = before.deepCopy()
+        FlattenParens.discardAttrs().visitFileMut(flatBefore)
         val printed = flatBefore.intoTokenStream()
         val after = parse2(FileParse::parse, printed).getOrThrow()
-        val flatAfter = FlattenParens.discardAttrs().visitFileMut(after.deepCopy())
+        val flatAfter = after.deepCopy()
+        FlattenParens.discardAttrs().visitFileMut(flatAfter)
         AsIfPrinted.visitFileMut(flatBefore)
         val expected = flatBefore
 
@@ -53,14 +55,19 @@ private class FlattenParens(
         return super.visitExpr(expr)
     }
 
-    override fun visitTokenStreamMut(tokens: TokenStream): TokenStream =
-        TokenStream.fromTokenTrees(tokens.flatMap(::flattenTokenTree))
+    fun flattened(tokens: TokenStream): TokenStream =
+        TokenStream.fromTokenTrees(tokens.toList().flatMap(::flattenTokenTree))
+
+    override fun visitTokenStreamMut(tokens: TokenStream) {
+        tokens.replaceFrom(flattened(tokens))
+    }
 
     private fun flattenTokenTree(token: TokenTree): List<TokenTree> =
         when (token) {
             is TokenTree.Group -> {
                 val delimiter = token.value.delimiter()
-                val content = visitTokenStreamMut(token.value.stream())
+                val content = token.value.stream()
+                visitTokenStreamMut(content)
                 if (delimiter == Delimiter.Parenthesis) {
                     content.toList()
                 } else {
@@ -94,12 +101,12 @@ private class FlattenParens(
 }
 
 internal object AsIfPrinted : VisitMut() {
-    override fun visitFile(f: File): File {
+    override fun visitFile(f: File) {
         f.shebang = null
-        return super.visitFile(f)
+        super.visitFile(f)
     }
 
-    override fun visitGenerics(g: Generics): Generics {
+    override fun visitGenerics(g: Generics) {
         if (g.params.isEmpty()) {
             g.ltToken = null
             g.gtToken = null
@@ -107,17 +114,17 @@ internal object AsIfPrinted : VisitMut() {
         if (g.whereClause?.predicates?.isEmpty() == true) {
             g.whereClause = null
         }
-        return super.visitGenerics(g)
+        super.visitGenerics(g)
     }
 
-    override fun visitLifetimeParamMut(param: GenericParam.LifetimeParam): GenericParam.LifetimeParam {
+    override fun visitLifetimeParamMut(param: GenericParam.LifetimeParam) {
         if (param.bounds.isEmpty()) param.colonToken = null
-        return super.visitLifetimeParamMut(param)
+        super.visitLifetimeParamMut(param)
     }
 
-    override fun visitTypeParamMut(param: GenericParam.TypeParam): GenericParam.TypeParam {
+    override fun visitTypeParamMut(param: GenericParam.TypeParam) {
         if (param.bounds.isEmpty()) param.colonToken = null
-        return super.visitTypeParamMut(param)
+        super.visitTypeParamMut(param)
     }
 
     override fun visitStmt(s: Stmt): Stmt {

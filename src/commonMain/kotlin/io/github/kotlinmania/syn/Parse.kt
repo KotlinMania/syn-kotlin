@@ -507,8 +507,10 @@ public fun <T> parse2(parser: (ParseStream) -> SynResult<T>, tokens: TokenStream
  * Parse a string of source code into the chosen syntax tree node. Mirrors
  * `parseStr`.
  */
-public fun <T> parseStr(parser: (ParseStream) -> SynResult<T>, s: String): SynResult<T> =
-    TokenStream.fromString(s).fold(
-        onSuccess = { parse2(parser, it) },
-        onFailure = { SynResult.failure(SynError.from(it as io.github.kotlinmania.procmacro2.LexError)) },
-    )
+public fun <T> parseStr(parser: (ParseStream) -> SynResult<T>, s: String): SynResult<T> {
+    val parseResult = TokenStream.fromString(s)
+    if (parseResult.isFailure()) {
+        return SynResult.failure(SynError.new(Span.callSite(), parseResult.error ?: "cannot parse string"))
+    }
+    return parse2(parser, parseResult.getOrThrow())
+}

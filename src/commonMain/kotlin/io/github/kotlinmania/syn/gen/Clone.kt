@@ -840,9 +840,6 @@ public fun LocalInit.clone(): LocalInit = LocalInit(eqToken, expr.clone(), diver
 internal fun <T> MutableList<T>.cloneList(): MutableList<T> =
     mapTo(mutableListOf()) { it }
 
-public fun TokenStream.clone(): TokenStream =
-    TokenStream.fromTokenTrees(this.toList())
-
 public fun PathTrait.clone(): PathTrait =
     PathTrait(polarity, path.clone(), forToken)
 

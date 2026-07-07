@@ -193,11 +193,11 @@ public class LitStr private constructor(
 
     public fun <T> parseWith(parser: (ParseStream) -> SynResult<T>): SynResult<T> {
         var span = span()
-        var tokenStream =
-            TokenStream.fromString(value()).fold(
-                onSuccess = { it },
-                onFailure = { return SynResult.failure(SynError.new(span, it.message ?: it.toString())) },
-            )
+        val parseResult = TokenStream.fromString(value())
+        if (parseResult.isFailure()) {
+            return SynResult.failure(SynError.new(span, parseResult.error ?: "cannot parse string literal"))
+        }
+        var tokenStream = parseResult.getOrThrow()
         var result = parseScoped(parser, span, respanTokenStream(tokenStream, span))
         if (result.isFailure) return result
         var litSuffix = suffix()

@@ -64,14 +64,19 @@ class ExprTest {
             return super.visitExpr(expr)
         }
 
-        override fun visitTokenStreamMut(tokens: TokenStream): TokenStream =
-            TokenStream.fromTokenTrees(tokens.flatMap(::flattenTokenTree))
+        fun flattened(tokens: TokenStream): TokenStream =
+            TokenStream.fromTokenTrees(tokens.toList().flatMap(::flattenTokenTree))
+
+        override fun visitTokenStreamMut(tokens: TokenStream) {
+            tokens.replaceFrom(flattened(tokens))
+        }
 
         private fun flattenTokenTree(token: TokenTree): List<TokenTree> =
             when (token) {
                 is TokenTree.Group -> {
                     val delimiter = token.value.delimiter()
-                    val content = visitTokenStreamMut(token.value.stream())
+                    val content = token.value.stream()
+                    visitTokenStreamMut(content)
                     if (delimiter == Delimiter.Parenthesis) {
                         content.toList()
                     } else {
@@ -997,13 +1002,13 @@ class ExprTest {
         val normalized = FlattenParens.combineAttrs().visitExpr(parsed)
         assertEquals(asIfPrinted, normalized, "before: $emitted\nafter: ${tokens(normalized)}")
 
-        val tokensNoParen = FlattenParens.combineAttrs().visitTokenStreamMut(emitted)
+        val tokensNoParen = FlattenParens.combineAttrs().flattened(emitted)
         if (emitted.toString() == tokensNoParen.toString()) return
 
         val parsedNoParen = parse2(ExprParse::parse, tokensNoParen).getOrNull() ?: return
         val normalizedNoParen = FlattenParens.combineAttrs().visitExpr(parsedNoParen)
         if (original == normalizedNoParen) {
-            error("redundant parens: $emitted")
+            error("redundant parens: $tokensNoParen")
         }
     }
 
