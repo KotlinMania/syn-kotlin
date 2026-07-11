@@ -471,6 +471,14 @@ kotlin {
         minSdk = providers.gradleProperty("android.minSdk").getOrElse("24").toInt()
         withHostTestBuilder {}.configure {}
         withDeviceTestBuilder { sourceSetTreeName = "test" }
+
+        // proc-macro2-kotlin's AAR bundles org.jetbrains:annotations, which
+        // conflicts with the same annotations jar pulled in transitively by
+        // AGP/Kotlin stdlib. Exclude the bundled copy to avoid duplicate
+        // class errors during checkAndroidDeviceTestDuplicateClasses.
+        packaging {
+            resources.excludes += "org/jetbrains/annotations/**"
+        }
     }
 
     // JVM — jvmTarget derived from the same toolchain property so they can't drift.
