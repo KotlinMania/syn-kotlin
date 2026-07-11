@@ -4,7 +4,6 @@ package io.github.kotlinmania.syn
 import io.github.kotlinmania.procmacro2.Delimiter
 import io.github.kotlinmania.procmacro2.Group
 import io.github.kotlinmania.procmacro2.Ident
-import io.github.kotlinmania.procmacro2.LexError
 import io.github.kotlinmania.procmacro2.Literal
 import io.github.kotlinmania.procmacro2.Punct
 import io.github.kotlinmania.procmacro2.Spacing
@@ -198,9 +197,6 @@ public class SynError private constructor(
             )
         }
 
-        public fun from(err: LexError): SynError =
-            new(err.span(), err)
-
         public fun newAt(start: Span, end: Span, message: Any): SynError =
             SynError(
                 mutableListOf(
@@ -214,7 +210,7 @@ public class SynError private constructor(
 
     /** The source location of the error. */
     public fun span(): Span {
-        val range = messages[0].span.get() as? SpanRange ?: return Span.callSite()
+        var range = messages[0].span.get() as? SpanRange ?: return Span.callSite()
         return range.start.join(range.end) ?: range.start
     }
 
@@ -225,7 +221,7 @@ public class SynError private constructor(
      * method correctly from a procedural-macro handler.
      */
     public fun toCompileError(): TokenStream {
-        val tokens = TokenStream.new()
+        var tokens = TokenStream.new()
         for (msg in messages) {
             msg.toCompileError(tokens)
         }
@@ -313,8 +309,8 @@ public class Iter internal constructor(
 }
 
 private data class ErrorMessage(
-    val span: ThreadBound,
-    val message: String,
+    var span: ThreadBound,
+    var message: String,
 ) {
     fun debugString(): String =
         message.debugStringLiteral()
@@ -323,9 +319,9 @@ private data class ErrorMessage(
         debugString()
 
     fun toCompileError(tokens: TokenStream) {
-        val range = span.get() as? SpanRange
-        val start = range?.start ?: Span.callSite()
-        val end = range?.end ?: Span.callSite()
+        var range = span.get() as? SpanRange
+        var start = range?.start ?: Span.callSite()
+        var end = range?.end ?: Span.callSite()
 
         tokens.append(TokenTree.Punct(Punct(':', Spacing.Joint, start)))
         tokens.append(TokenTree.Punct(Punct(':', Spacing.Alone, start)))
@@ -335,9 +331,9 @@ private data class ErrorMessage(
         tokens.append(TokenTree.Ident(Ident.new("compile_error", start)))
         tokens.append(TokenTree.Punct(Punct('!', Spacing.Alone, start)))
 
-        val string = Literal.string(message)
+        var string = Literal.string(message)
         string.setSpan(end)
-        val group =
+        var group =
             Group(
                 Delimiter.Brace,
                 TokenStream.fromTokenTree(TokenTree.Literal(string)),
@@ -348,15 +344,15 @@ private data class ErrorMessage(
 }
 
 private data class SpanRange(
-    val start: Span,
-    val end: Span,
+    var start: Span,
+    var end: Span,
 )
 
 internal fun newAt(scope: Span, cursor: Cursor, message: Any): SynError =
     if (cursor.eof()) {
         SynError.new(scope, "unexpected end of input, $message")
     } else {
-        val span = openSpanOfGroup(cursor)
+        var span = openSpanOfGroup(cursor)
         SynError.new(span, message)
     }
 

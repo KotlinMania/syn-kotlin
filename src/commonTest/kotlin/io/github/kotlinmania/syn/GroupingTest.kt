@@ -40,7 +40,7 @@ class GroupingTest {
 
         assertEquals("1i32 + 2i32 + 3i32 * 4i32", tokens.toString())
 
-        val expr = assertIs<Expr.Binary>(parse2(ExprParse, tokens).getOrThrow())
+        val expr = assertIs<Expr.Binary>(parse2(ExprParse::parse, tokens).getOrThrow())
         assertIntLiteral("1i32", expr.left)
         assertIs<BinOp.Add>(expr.op)
 

@@ -4,13 +4,13 @@ package io.github.kotlinmania.syn
 /**
  * Support for defining custom keywords that can be used as tokens in parsing.
  *
- * Use [customKeyword] to create a [Peek] and [Parse] pair for any identifier
+ * Use [customKeyword] to create a [Peek] and concrete parser pair for any identifier
  * string that is not already a built-in keyword.
  */
-public fun customKeyword(name: String): Pair<Peek, Parse<Ident>> {
+public fun customKeyword(name: String): Pair<Peek, CustomKeywordParse> {
     val peek = CustomKeywordPeek(name)
     val parse = CustomKeywordParse(name)
-    return Pair<Peek, Parse<Ident>>(peek, parse)
+    return peek to parse
 }
 
 /** Peek implementation for a custom keyword. */
@@ -28,8 +28,8 @@ public class CustomKeywordPeek(
 /** Parse implementation for a custom keyword. */
 public class CustomKeywordParse(
     private val name: String,
-) : Parse<Ident> {
-    override fun parse(input: ParseStream): SynResult<Ident> =
+) {
+    public fun parse(input: ParseStream): SynResult<Ident> =
         input.step { cursor ->
             val (ident, rest) = cursor.ident() ?: return@step SynResult.failure(cursor.error("expected `$name`"))
             if (ident.toString() != name) return@step SynResult.failure(cursor.error("expected `$name`"))

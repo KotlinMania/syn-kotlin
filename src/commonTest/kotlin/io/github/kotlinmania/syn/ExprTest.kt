@@ -6,11 +6,30 @@ import io.github.kotlinmania.procmacro2.Group
 import io.github.kotlinmania.procmacro2.Ident
 import io.github.kotlinmania.procmacro2.Literal
 import io.github.kotlinmania.procmacro2.Punct
-import io.github.kotlinmania.procmacro2.TokenStream
-import io.github.kotlinmania.procmacro2.TokenTree
 import io.github.kotlinmania.procmacro2.Spacing
 import io.github.kotlinmania.procmacro2.Span
+import io.github.kotlinmania.procmacro2.TokenStream
+import io.github.kotlinmania.procmacro2.TokenTree
+import io.github.kotlinmania.quote.intoTokenStream
 import io.github.kotlinmania.syn.gen.VisitMut
+import io.github.kotlinmania.syn.token.And
+import io.github.kotlinmania.syn.token.As
+import io.github.kotlinmania.syn.token.Brace
+import io.github.kotlinmania.syn.token.Break
+import io.github.kotlinmania.syn.token.Dot
+import io.github.kotlinmania.syn.token.DotDot
+import io.github.kotlinmania.syn.token.Eq
+import io.github.kotlinmania.syn.token.If
+import io.github.kotlinmania.syn.token.Let
+import io.github.kotlinmania.syn.token.Lt
+import io.github.kotlinmania.syn.token.Or
+import io.github.kotlinmania.syn.token.Paren
+import io.github.kotlinmania.syn.token.Plus
+import io.github.kotlinmania.syn.token.Question
+import io.github.kotlinmania.syn.token.Return
+import io.github.kotlinmania.syn.token.ShlEq
+import io.github.kotlinmania.syn.token.Star
+import io.github.kotlinmania.syn.token.Underscore
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
@@ -25,14 +44,8 @@ import kotlin.test.assertTrue
  * `syn::parse_str::<Expr>` to parse expression token streams, then
  * assert the structural shape via the `snapshot!` macro (which expands
  * to `insta::assert_debug_snapshot!` against a `Lite` debug wrapper).
- * The `Lite` snapshot helper is not ported; these Kotlin tests assert
- * the resulting [Expr] variant and key fields directly via
- * [parseStr] / [parse2] against [ExprParse].
- *
- * Tests that still require missing visitor or exhaustive generator
- * infrastructure carry an honest one-line comment naming the specific
- * missing semantic, rather than emitting a fake simulation that tests a
- * different invariant.
+ * These Kotlin tests assert the resulting [Expr] variant and key fields
+ * directly via [parseStr] / [parse2] against [ExprParse].
  */
 class ExprTest {
     private class FlattenParens(
@@ -42,45 +55,72 @@ class ExprTest {
             var expr = e
             while (expr is Expr.Paren) {
                 val parenAttrs = expr.attrs
+                expr.attrs = mutableListOf()
                 expr = expr.expr
                 if (parenAttrs.isNotEmpty() && !discardParenAttrs) {
-                    expr = combineAttrs(expr, parenAttrs)
+                    combineAttrs(expr, parenAttrs)
                 }
             }
             return super.visitExpr(expr)
         }
 
-        private fun combineAttrs(expr: Expr, attrs: List<Attribute>): Expr =
+        fun flattened(tokens: TokenStream): TokenStream =
+            TokenStream.fromTokenTrees(tokens.toList().flatMap(::flattenTokenTree))
+
+        override fun visitTokenStreamMut(tokens: TokenStream) {
+            tokens.replaceFrom(flattened(tokens))
+        }
+
+        private fun flattenTokenTree(token: TokenTree): List<TokenTree> =
+            when (token) {
+                is TokenTree.Group -> {
+                    val delimiter = token.value.delimiter()
+                    val content = token.value.stream()
+                    visitTokenStreamMut(content)
+                    if (delimiter == Delimiter.Parenthesis) {
+                        content.toList()
+                    } else {
+                        listOf(TokenTree.Group(Group(delimiter, content)))
+                    }
+                }
+                else -> listOf(token)
+            }
+
+        private fun combineAttrs(expr: Expr, attrs: MutableList<Attribute>) {
             when (expr) {
                 is Expr.Assign -> {
                     require(expr.attrs.isEmpty())
-                    expr.copy(attrs = attrs)
+                    expr.attrs = attrs
                 }
                 is Expr.Binary -> {
                     require(expr.attrs.isEmpty())
-                    expr.copy(attrs = attrs)
+                    expr.attrs = attrs
                 }
                 is Expr.Cast -> {
                     require(expr.attrs.isEmpty())
-                    expr.copy(attrs = attrs)
+                    expr.attrs = attrs
                 }
                 else -> error("cannot combine parenthesized attributes into ${expr::class.simpleName}")
             }
+        }
 
         companion object {
             fun combineAttrs(): FlattenParens = FlattenParens(discardParenAttrs = false)
         }
     }
 
-    private fun parse(s: String): Expr = parseStr(ExprParse, s).getOrThrow()
+    private fun parse(s: String): Expr = parseStr(ExprParse::parse, s).getOrThrow()
 
-    private fun parseTokens(ts: TokenStream): Expr = parse2(ExprParse, ts).getOrThrow()
+    private fun parseTokens(ts: TokenStream): Expr = parse2(ExprParse::parse, ts).getOrThrow()
 
     private fun roundTrip(expr: Expr): Expr {
         val tokens = TokenStream.new()
         expr.toTokens(tokens)
         return parseTokens(tokens)
     }
+
+    private fun tokens(expr: Expr): TokenStream =
+        TokenStream.new().also(expr::toTokens)
 
     private fun assertUnboundedHalfOpenRange(expr: Expr) {
         val range = assertIs<Expr.Range>(expr)
@@ -103,7 +143,13 @@ class ExprTest {
     private fun assertPathExpr(expr: Expr, ident: String) {
         val path = assertIs<Expr.Path>(expr).path
         assertEquals(1, path.segments.len())
-        assertEquals(ident, path.segments.first()?.ident?.toString())
+        assertEquals(
+            ident,
+            path.segments
+                .first()
+                ?.ident
+                ?.toString(),
+        )
     }
 
     private fun assertPathExpr(expr: Expr, vararg segments: String) {
@@ -225,10 +271,22 @@ class ExprTest {
             ),
         )
         val attributedCall = assertIs<Expr.Call>(parseTokens(attributedTokens))
-        assertEquals("outside", attributedCall.attrs.single().path().toString())
+        assertEquals(
+            "outside",
+            attributedCall.attrs
+                .single()
+                .path()
+                .toString(),
+        )
         val attributedGroup = assertIs<Expr.Group>(attributedCall.func)
         val attributedFunc = assertIs<Expr.Path>(attributedGroup.expr)
-        assertEquals("inside", attributedFunc.attrs.single().path().toString())
+        assertEquals(
+            "inside",
+            attributedFunc.attrs
+                .single()
+                .path()
+                .toString(),
+        )
         assertPathExpr(attributedFunc, "f")
     }
 
@@ -259,8 +317,18 @@ class ExprTest {
             )
         val expr = parseTokens(tokens)
         val macro = assertIs<Expr.Macro>(expr)
-        assertEquals(1, macro.mac.path.segments.len())
-        assertEquals("m", macro.mac.path.segments.first()?.ident?.toString())
+        assertEquals(
+            1,
+            macro.mac.path.segments
+                .len(),
+        )
+        assertEquals(
+            "m",
+            macro.mac.path.segments
+                .first()
+                ?.ident
+                ?.toString(),
+        )
         assertIs<MacroDelimiter.Paren>(macro.mac.delimiter)
         assertEquals("", macro.mac.tokens.toString())
     }
@@ -339,7 +407,13 @@ class ExprTest {
         assertIs<Pat.Wild>(attrArm.pat)
         val attrGroup = assertIs<Expr.Group>(attrArm.body)
         val attrTuple = assertIs<Expr.Tuple>(attrGroup.expr)
-        assertEquals("a", attrTuple.attrs.single().path().toString())
+        assertEquals(
+            "a",
+            attrTuple.attrs
+                .single()
+                .path()
+                .toString(),
+        )
 
         val armBody = Group(Delimiter.None, TokenStream.fromString("loop {} + 1").getOrThrow())
         val armTokens = TokenStream.fromString("_ =>").getOrThrow()
@@ -388,8 +462,8 @@ class ExprTest {
     // body position).
     @Test
     fun testPostfixOperatorAfterCast() {
-        assertTrue(parseStr(ExprParse, "|| &x as T[0]").isFailure)
-        assertTrue(parseStr(ExprParse, "|| () as ()()").isFailure)
+        assertTrue(parseStr(ExprParse::parse, "|| &x as T[0]").isFailure)
+        assertTrue(parseStr(ExprParse::parse, "|| () as ()()").isFailure)
     }
 
     // Upstream parses `..`, `..hi`, `lo..`, `lo..hi` as valid, `..=`
@@ -422,7 +496,7 @@ class ExprTest {
         assertPathExpr(openBothStart, "lo")
         assertPathExpr(openBothEnd, "hi")
 
-        assertTrue(parseStr(ExprParse, "..=").isFailure)
+        assertTrue(parseStr(ExprParse::parse, "..=").isFailure)
 
         val closedEnd = assertIs<Expr.Range>(parse("..=hi"))
         assertIs<RangeLimits.Closed>(closedEnd.limits)
@@ -431,7 +505,7 @@ class ExprTest {
         assertTrue(closedEndExpr != null)
         assertPathExpr(closedEndExpr, "hi")
 
-        assertTrue(parseStr(ExprParse, "lo..=").isFailure)
+        assertTrue(parseStr(ExprParse::parse, "lo..=").isFailure)
 
         val closedBoth = assertIs<Expr.Range>(parse("lo..=hi"))
         assertIs<RangeLimits.Closed>(closedBoth.limits)
@@ -442,10 +516,10 @@ class ExprTest {
         assertPathExpr(closedBothStart, "lo")
         assertPathExpr(closedBothEnd, "hi")
 
-        assertTrue(parseStr(ExprParse, "...").isFailure)
-        assertTrue(parseStr(ExprParse, "...hi").isFailure)
-        assertTrue(parseStr(ExprParse, "lo...").isFailure)
-        assertTrue(parseStr(ExprParse, "lo...hi").isFailure)
+        assertTrue(parseStr(ExprParse::parse, "...").isFailure)
+        assertTrue(parseStr(ExprParse::parse, "...hi").isFailure)
+        assertTrue(parseStr(ExprParse::parse, "lo...").isFailure)
+        assertTrue(parseStr(ExprParse::parse, "lo...hi").isFailure)
     }
 
     // Upstream parses `.. ..`, `.. .. ()`, `() .. ..` as nested
@@ -491,8 +565,8 @@ class ExprTest {
         assertIs<BinOp.Add>(r4.op)
         assertIs<Expr.Tuple>(r4.right)
 
-        assertTrue(parseStr(ExprParse, ".. x ..").isFailure)
-        assertTrue(parseStr(ExprParse, "x .. x ..").isFailure)
+        assertTrue(parseStr(ExprParse::parse, ".. x ..").isFailure)
+        assertTrue(parseStr(ExprParse::parse, "x .. x ..").isFailure)
     }
 
     // Upstream asserts `#[allow()] ..` and `#[allow()] .. hi` fail,
@@ -500,8 +574,8 @@ class ExprTest {
     // carries the attribute.
     @Test
     fun testRangeAttrs() {
-        assertTrue(parseStr(ExprParse, "#[allow()] ..").isFailure)
-        assertTrue(parseStr(ExprParse, "#[allow()] .. hi").isFailure)
+        assertTrue(parseStr(ExprParse::parse, "#[allow()] ..").isFailure)
+        assertTrue(parseStr(ExprParse::parse, "#[allow()] .. hi").isFailure)
 
         val range = assertIs<Expr.Range>(parse("#[allow()] lo .. hi"))
         val start = range.start
@@ -522,8 +596,8 @@ class ExprTest {
     // wrapping the return-of-range.
     @Test
     fun testRangesBailout() {
-        assertTrue(parseStr(ExprParse, ".. ?").isFailure)
-        assertTrue(parseStr(ExprParse, ".. .field").isFailure)
+        assertTrue(parseStr(ExprParse::parse, ".. ?").isFailure)
+        assertTrue(parseStr(ExprParse::parse, ".. .field").isFailure)
 
         val returnTry = assertIs<Expr.Try>(parse("return .. ?"))
         val returnExpr = assertIs<Expr.Return>(returnTry.expr)
@@ -582,39 +656,67 @@ class ExprTest {
     // required).
     @Test
     fun testAmbiguousLabel() {
-        val returnStmt = assertIs<Stmt.ExprStmt>(
-            parseStr(StmtParse, "return 'label: loop { break 'label 42; };").getOrThrow(),
-        )
+        val returnStmt =
+            assertIs<Stmt.ExprStmt>(
+                parseStr(StmtParse::parse, "return 'label: loop { break 'label 42; };").getOrThrow(),
+            )
         val returnExpr = assertIs<Expr.Return>(returnStmt.expr)
         val returnLoop = assertIs<Expr.Loop>(returnExpr.expr)
-        assertEquals("label", returnLoop.label?.name?.ident?.toString())
-
-        val parenthesizedBreak = assertIs<Stmt.ExprStmt>(
-            parseStr(StmtParse, "break ('label: loop { break 'label 42; });").getOrThrow(),
+        assertEquals(
+            "label",
+            returnLoop.label
+                ?.name
+                ?.ident
+                ?.toString(),
         )
+
+        val parenthesizedBreak =
+            assertIs<Stmt.ExprStmt>(
+                parseStr(StmtParse::parse, "break ('label: loop { break 'label 42; });").getOrThrow(),
+            )
         val breakExpr = assertIs<Expr.Break>(parenthesizedBreak.expr)
         val paren = assertIs<Expr.Paren>(breakExpr.expr)
         val parenLoop = assertIs<Expr.Loop>(paren.expr)
-        assertEquals("label", parenLoop.label?.name?.ident?.toString())
-
-        val binaryBreak = assertIs<Stmt.ExprStmt>(
-            parseStr(StmtParse, "break 1 + 'label: loop { break 'label 42; };").getOrThrow(),
+        assertEquals(
+            "label",
+            parenLoop.label
+                ?.name
+                ?.ident
+                ?.toString(),
         )
+
+        val binaryBreak =
+            assertIs<Stmt.ExprStmt>(
+                parseStr(StmtParse::parse, "break 1 + 'label: loop { break 'label 42; };").getOrThrow(),
+            )
         val binaryBreakExpr = assertIs<Expr.Break>(binaryBreak.expr)
         val binary = assertIs<Expr.Binary>(binaryBreakExpr.expr)
         assertIs<BinOp.Add>(binary.op)
         val rhsLoop = assertIs<Expr.Loop>(binary.right)
-        assertEquals("label", rhsLoop.label?.name?.ident?.toString())
-
-        val nestedBreak = assertIs<Stmt.ExprStmt>(
-            parseStr(StmtParse, "break 'outer 'inner: loop { break 'inner 42; };").getOrThrow(),
+        assertEquals(
+            "label",
+            rhsLoop.label
+                ?.name
+                ?.ident
+                ?.toString(),
         )
+
+        val nestedBreak =
+            assertIs<Stmt.ExprStmt>(
+                parseStr(StmtParse::parse, "break 'outer 'inner: loop { break 'inner 42; };").getOrThrow(),
+            )
         val nestedBreakExpr = assertIs<Expr.Break>(nestedBreak.expr)
         assertEquals("outer", nestedBreakExpr.label?.ident?.toString())
         val innerLoop = assertIs<Expr.Loop>(nestedBreakExpr.expr)
-        assertEquals("inner", innerLoop.label?.name?.ident?.toString())
+        assertEquals(
+            "inner",
+            innerLoop.label
+                ?.name
+                ?.ident
+                ?.toString(),
+        )
 
-        assertTrue(parseStr(StmtParse, "break 'label: loop { break 'label 42; };").isFailure)
+        assertTrue(parseStr(StmtParse::parse, "break 'label: loop { break 'label 42; };").isFailure)
     }
 
     // Upstream builds a `Delimiter::None` group containing `a::b` and
@@ -647,7 +749,12 @@ class ExprTest {
                 ),
             )
         val structExpr = assertIs<Expr.Struct>(parseTokens(structTokens))
-        assertEquals(listOf("a", "b"), structExpr.path.segments.toList().map { it.ident.toString() })
+        assertEquals(
+            listOf("a", "b"),
+            structExpr.path.segments
+                .toList()
+                .map { it.ident.toString() },
+        )
 
         val pathTokens =
             TokenStream.fromTokenTrees(
@@ -687,25 +794,48 @@ class ExprTest {
     @Test
     fun testTupleComma() {
         val elems = ExprList()
-        val expr = Expr.Tuple(emptyList(), io.github.kotlinmania.syn.token.Paren.default(), elems)
+        val expr =
+            Expr.Tuple(
+                mutableListOf(),
+                io.github.kotlinmania.syn.token.Paren
+                    .default(),
+                elems,
+            )
 
         val empty = roundTrip(expr)
         val emptyTuple = assertIs<Expr.Tuple>(empty)
         assertEquals(0, emptyTuple.elems.len())
 
-        elems.pushValue(Expr.Continue(emptyList(), io.github.kotlinmania.syn.token.Continue.default(), null))
+        elems.pushValue(
+            Expr.Continue(
+                mutableListOf(),
+                io.github.kotlinmania.syn.token.Continue
+                    .default(),
+                null,
+            ),
+        )
         val one = roundTrip(expr)
         val oneTuple = assertIs<Expr.Tuple>(one)
         assertEquals(1, oneTuple.elems.len())
         assertIs<Expr.Continue>(oneTuple.elems.first())
 
-        elems.pushPunct(io.github.kotlinmania.syn.token.Comma.default())
+        elems.pushPunct(
+            io.github.kotlinmania.syn.token.Comma
+                .default(),
+        )
         val oneTrailing = roundTrip(expr)
         val oneTrailingTuple = assertIs<Expr.Tuple>(oneTrailing)
         assertEquals(1, oneTrailingTuple.elems.len())
         assertIs<Expr.Continue>(oneTrailingTuple.elems.first())
 
-        elems.pushValue(Expr.Continue(emptyList(), io.github.kotlinmania.syn.token.Continue.default(), null))
+        elems.pushValue(
+            Expr.Continue(
+                mutableListOf(),
+                io.github.kotlinmania.syn.token.Continue
+                    .default(),
+                null,
+            ),
+        )
         val two = roundTrip(expr)
         val twoTuple = assertIs<Expr.Tuple>(two)
         assertEquals(2, twoTuple.elems.len())
@@ -713,7 +843,10 @@ class ExprTest {
         assertIs<Expr.Continue>(twoElems[0])
         assertIs<Expr.Continue>(twoElems[1])
 
-        elems.pushPunct(io.github.kotlinmania.syn.token.Comma.default())
+        elems.pushPunct(
+            io.github.kotlinmania.syn.token.Comma
+                .default(),
+        )
         val twoTrailing = roundTrip(expr)
         val twoTrailingTuple = assertIs<Expr.Tuple>(twoTrailing)
         assertEquals(2, twoTrailingTuple.elems.len())
@@ -747,7 +880,7 @@ class ExprTest {
         assertIs<Expr.Tuple>(rightInner.right)
 
         // Chained comparison is rejected.
-        val chained = parseStr(ExprParse, "() == () == ()")
+        val chained = parseStr(ExprParse::parse, "() == () == ()")
         assertTrue(chained.isFailure)
         val err = (chained as SynResult.Failure).error
         assertEquals("comparison operators cannot be chained", err.toString())
@@ -768,8 +901,8 @@ class ExprTest {
         assertIs<BinOp.AddAssign>(compound.op)
         assertTupleToTupleRange(compound.right)
 
-        assertTrue(parseStr(ExprParse, "() .. () = ()").isFailure)
-        assertTrue(parseStr(ExprParse, "() .. () += ()").isFailure)
+        assertTrue(parseStr(ExprParse::parse, "() .. () = ()").isFailure)
+        assertTrue(parseStr(ExprParse::parse, "() .. () += ()").isFailure)
     }
 
     // Upstream asserts `a = a < a <` and `a = a .. a ..` and
@@ -779,68 +912,69 @@ class ExprTest {
     // "unexpected token".
     @Test
     fun testChainedComparison() {
-        val cmpErr = parseStr(ExprParse, "a < a < a")
+        val cmpErr = parseStr(ExprParse::parse, "a < a < a")
         assertTrue(cmpErr.isFailure)
         assertEquals("comparison operators cannot be chained", (cmpErr as SynResult.Failure).error.toString())
 
-        assertTrue(parseStr(ExprParse, "a .. a .. a").isFailure)
-        assertTrue(parseStr(ExprParse, "a .. a += a").isFailure)
+        assertTrue(parseStr(ExprParse::parse, "a .. a .. a").isFailure)
+        assertTrue(parseStr(ExprParse::parse, "a .. a += a").isFailure)
     }
 
     @Test
     fun testParseUnparenthesize() {
-        val cases = listOf(
-            "2 * (1 + 1)",
-            "0 + (0 + 0)",
-            "(a = b) = c",
-            "(x as i32) < 0",
-            "1 + (x as i32) < 0",
-            "(1 + 1).abs()",
-            "(lo..hi)[..]",
-            "(a..b)..(c..d)",
-            "(x > ..) > x",
-            "(&mut fut).await",
-            "&mut (x as i32)",
-            "-(x as i32)",
-            "if (S {}) == 1 {}",
-            "{ (m! {}) - 1 }",
-            "match m { _ => ({}) - 1 }",
-            "if let _ = (a && b) && c {}",
-            "if let _ = (S {}) {}",
-            "if (S {}) == 0 && let Some(_) = x {}",
-            "break ('a: loop { break 'a 1 } + 1)",
-            "a + (|| b) + c",
-            "if let _ = ((break) - 1 || true) {}",
-            "if let _ = (break + 1 || true) {}",
-            "if break (break) {}",
-            "if break break {} {}",
-            "if return (..) {}",
-            "if return .. {} {}",
-            "if || (Struct {}) {}",
-            "if || (Struct {}).await {}",
-            "if break || Struct {}.await {}",
-            "if break 'outer 'block: {} {}",
-            "if ..'block: {} {}",
-            "if break ({}).await {}",
-            "(break)()",
-            "(..) = ()",
-            "(..) += ()",
-            "(1 < 2) == (3 < 4)",
-            "{ (let _ = ()) }",
-            "(#[attr] thing).field",
-            "#[attr] (1 + 1)",
-            "#[attr] (x = 1)",
-            "#[attr] (x += 1)",
-            "#[attr] (1 as T)",
-            "(return #[attr] (x + ..)).field",
-            "(self.f)()",
-            "(return)..=return",
-            "1 + (return)..=1 + return",
-            ".. .. .. .. .. .. .. .. .. .. .. .. .. .. .. .. .. .. .. .. .. .. .. .. .. .. .. .. .. .. ..",
-        )
+        val cases =
+            listOf(
+                "2 * (1 + 1)",
+                "0 + (0 + 0)",
+                "(a = b) = c",
+                "(x as i32) < 0",
+                "1 + (x as i32) < 0",
+                "(1 + 1).abs()",
+                "(lo..hi)[..]",
+                "(a..b)..(c..d)",
+                "(x > ..) > x",
+                "(&mut fut).await",
+                "&mut (x as i32)",
+                "-(x as i32)",
+                "if (S {}) == 1 {}",
+                "{ (m! {}) - 1 }",
+                "match m { _ => ({}) - 1 }",
+                "if let _ = (a && b) && c {}",
+                "if let _ = (S {}) {}",
+                "if (S {}) == 0 && let Some(_) = x {}",
+                "break ('a: loop { break 'a 1 } + 1)",
+                "a + (|| b) + c",
+                "if let _ = ((break) - 1 || true) {}",
+                "if let _ = (break + 1 || true) {}",
+                "if break (break) {}",
+                "if break break {} {}",
+                "if return (..) {}",
+                "if return .. {} {}",
+                "if || (Struct {}) {}",
+                "if || (Struct {}).await {}",
+                "if break || Struct {}.await {}",
+                "if break 'outer 'block: {} {}",
+                "if ..'block: {} {}",
+                "if break ({}).await {}",
+                "(break)()",
+                "(..) = ()",
+                "(..) += ()",
+                "(1 < 2) == (3 < 4)",
+                "{ (let _ = ()) }",
+                "(#[attr] thing).field",
+                "#[attr] (1 + 1)",
+                "#[attr] (x = 1)",
+                "#[attr] (x += 1)",
+                "#[attr] (1 as T)",
+                "(return #[attr] (x + ..)).field",
+                "(self.f)()",
+                "(return)..=return",
+                "1 + (return)..=1 + return",
+                ".. .. .. .. .. .. .. .. .. .. .. .. .. .. .. .. .. .. .. .. .. .. .. .. .. .. .. .. .. .. ..",
+            )
 
         for (case in cases) {
-            val original = parseStr(ExprParse, case).getOrElse { error("failed to parse `$case`: $it") }
+            val original = parseStr(ExprParse::parse, case).getOrElse { error("failed to parse `$case`: $it") }
             val flat = FlattenParens.combineAttrs().visitExpr(original.deepCopy())
             val reconstructed =
                 runCatching { roundTrip(flat) }
@@ -849,15 +983,135 @@ class ExprTest {
         }
     }
 
-    // Upstream recursively generates expression permutations, emits
-    // each to a token stream, re-parses, and asserts equality, exiting
-    // non-zero on any failure. The Kotlin `Expr` variants cannot be
-    // directly constructed with the upstream test's default-token
-    // shortcuts, and `ExprParse` does not parse the full expression
-    // grammar; the permutation round-trip cannot be reproduced.
-    // Not ported: `Expr` variants cannot be constructed with the
-    // upstream test's default-token shortcuts, and `ExprParse` does
-    // not parse the full expression grammar; the upstream recursive
-    // permutation round-trip cannot be reproduced without the missing
-    // constructor and parser surface.
+    @Test
+    fun testPermutations() {
+        var checked = 0
+        iterExprPermutations(4) { original ->
+            assertPermutationRoundTrip(original)
+            checked += 1
+        }
+        assertEquals(243_101, checked)
+    }
+
+    private fun assertPermutationRoundTrip(original: Expr) {
+        val emitted = tokens(original)
+        val parsed =
+            runCatching { parseTokens(emitted) }
+                .getOrElse { error("failed to parse: $emitted\n$original\n$it") }
+        val asIfPrinted = AsIfPrinted.visitExprMut(original)
+        val normalized = FlattenParens.combineAttrs().visitExpr(parsed)
+        assertEquals(asIfPrinted, normalized, "before: $emitted\nafter: ${tokens(normalized)}")
+
+        val tokensNoParen = FlattenParens.combineAttrs().flattened(emitted)
+        if (emitted.toString() == tokensNoParen.toString()) return
+
+        val parsedNoParen = parse2(ExprParse::parse, tokensNoParen).getOrNull() ?: return
+        val normalizedNoParen = FlattenParens.combineAttrs().visitExpr(parsedNoParen)
+        if (original == normalizedNoParen) {
+            error("redundant parens: $tokensNoParen")
+        }
+    }
+
+    private fun iterExprPermutations(depth: Int, emit: (Expr) -> Unit) {
+        emit(pathExpr("x"))
+        if (depth == 0) return
+
+        val nextDepth = depth - 1
+
+        iterExprPermutations(nextDepth) { expr ->
+            iterExprPermutations(0) { simple ->
+                emit(Expr.Assign(mutableListOf(), simple.deepCopy(), Eq.default(), expr.deepCopy()))
+                emit(Expr.Assign(mutableListOf(), expr.deepCopy(), Eq.default(), simple.deepCopy()))
+            }
+        }
+
+        iterExprPermutations(nextDepth) { expr ->
+            iterExprPermutations(0) { simple ->
+                for (op in listOf(BinOp.Add(Plus.default()), BinOp.Lt(Lt.default()), BinOp.ShlAssign(ShlEq.default()))) {
+                    emit(Expr.Binary(mutableListOf(), simple.deepCopy(), op, expr.deepCopy()))
+                    emit(Expr.Binary(mutableListOf(), expr.deepCopy(), op, simple.deepCopy()))
+                }
+            }
+        }
+
+        emit(Expr.BlockExpr(mutableListOf(), null, emptyBlock()))
+        emit(Expr.Break(mutableListOf(), Break.default(), null, null))
+
+        iterExprPermutations(nextDepth) { expr ->
+            emit(Expr.Break(mutableListOf(), Break.default(), null, expr.deepCopy()))
+        }
+
+        iterExprPermutations(nextDepth) { expr ->
+            emit(Expr.Call(mutableListOf(), expr.deepCopy(), Paren.default(), ExprList()))
+        }
+
+        iterExprPermutations(nextDepth) { expr ->
+            emit(Expr.Cast(mutableListOf(), expr.deepCopy(), As.default(), typePath("T")))
+        }
+
+        iterExprPermutations(nextDepth) { expr ->
+            emit(
+                Expr.Closure(
+                    attrs = mutableListOf(),
+                    constness = null,
+                    asyncness = null,
+                    capture = null,
+                    or1Token = Or.default(),
+                    inputs = PatList(),
+                    or2Token = Or.default(),
+                    output = ReturnType.Default,
+                    body = expr.deepCopy(),
+                ),
+            )
+        }
+
+        iterExprPermutations(nextDepth) { expr ->
+            emit(Expr.Field(mutableListOf(), expr.deepCopy(), Dot.default(), Member.Named(Ident.new("field", Span.callSite()))))
+        }
+
+        iterExprPermutations(nextDepth) { expr ->
+            emit(Expr.If(mutableListOf(), If.default(), expr.deepCopy(), emptyBlock(), null))
+        }
+
+        iterExprPermutations(nextDepth) { expr ->
+            emit(Expr.Let(mutableListOf(), Let.default(), wildPat(), Eq.default(), expr.deepCopy()))
+        }
+
+        emit(Expr.Range(mutableListOf(), null, RangeLimits.HalfOpen(DotDot.default()), null))
+
+        iterExprPermutations(nextDepth) { expr ->
+            emit(Expr.Range(mutableListOf(), null, RangeLimits.HalfOpen(DotDot.default()), expr.deepCopy()))
+            emit(Expr.Range(mutableListOf(), expr.deepCopy(), RangeLimits.HalfOpen(DotDot.default()), null))
+        }
+
+        iterExprPermutations(nextDepth) { expr ->
+            emit(Expr.Reference(mutableListOf(), And.default(), null, expr.deepCopy()))
+        }
+
+        emit(Expr.Return(mutableListOf(), Return.default(), null))
+
+        iterExprPermutations(nextDepth) { expr ->
+            emit(Expr.Return(mutableListOf(), Return.default(), expr.deepCopy()))
+        }
+
+        iterExprPermutations(nextDepth) { expr ->
+            emit(Expr.Try(mutableListOf(), expr.deepCopy(), Question.default()))
+        }
+
+        iterExprPermutations(nextDepth) { expr ->
+            emit(Expr.Unary(mutableListOf(), UnOp.Deref(Star.default()), expr.deepCopy()))
+        }
+    }
+
+    private fun pathExpr(ident: String): Expr =
+        Expr.Path(mutableListOf(), null, Path.from(Ident.new(ident, Span.callSite())))
+
+    private fun typePath(ident: String): SynType =
+        SynType.Path(null, Path.from(Ident.new(ident, Span.callSite())))
+
+    private fun emptyBlock(): Block =
+        Block(Brace.default(), mutableListOf())
+
+    private fun wildPat(): Pat =
+        Pat.Wild(mutableListOf(), Underscore.default())
 }

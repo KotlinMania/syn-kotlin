@@ -13,7 +13,7 @@ import kotlin.test.assertTrue
 class DebugTest {
     @Test
     fun deriveInputDebugMatchesGeneratedFieldOrder() {
-        val item = parseStr(DeriveInputParse, "#[repr(C)] pub struct S<T> where T: Copy { field: T }").getOrThrow()
+        val item = parseStr(DeriveInputParse::parse, "#[repr(C)] pub struct S<T> where T: Copy { field: T }").getOrThrow()
         val rendered = item.debug()
 
         assertTrue(rendered.startsWith("DeriveInput { "))
@@ -42,7 +42,7 @@ class DebugTest {
         assertEquals("AttrStyle::Inner(Not)", AttrStyle.Inner(Not.default()).debug())
         assertEquals("BinOp::Add(Plus)", BinOp.Add(Plus.default()).debug())
 
-        val data = parseStr(DeriveInputParse, "struct S;").getOrThrow().data
+        val data = parseStr(DeriveInputParse::parse, "struct S;").getOrThrow().data
         assertTrue(data.debug().startsWith("Data::Struct { "))
     }
 

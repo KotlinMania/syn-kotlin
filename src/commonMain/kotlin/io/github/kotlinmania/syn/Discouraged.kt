@@ -39,8 +39,8 @@ internal fun ParseBuffer.advanceToSpeculative(fork: ParseBuffer) {
         "fork was not derived from the advancing parse stream"
     }
 
-    val (selfUnexp, selfSp) = innerUnexpected(this)
-    val (forkUnexp, forkSp) = innerUnexpected(fork)
+    var (selfUnexp, selfSp) = innerUnexpected(this)
+    var (forkUnexp, forkSp) = innerUnexpected(fork)
     if (selfUnexp !== forkUnexp) {
         when {
             // Unexpected set on the fork, but not on this buffer, copy it over.
@@ -71,9 +71,9 @@ internal fun ParseBuffer.advanceToSpeculative(fork: ParseBuffer) {
  * delimiters the same as if they were visible.
  */
 public data class AnyDelimiterResult(
-    public val delimiter: Delimiter,
-    public val span: DelimSpan,
-    public val content: ParseBuffer,
+    public var delimiter: Delimiter,
+    public var span: DelimSpan,
+    public var content: ParseBuffer,
 )
 
 public interface Speculative {
@@ -90,7 +90,7 @@ public interface AnyDelimiter {
  */
 internal fun ParseBuffer.parseAnyDelimiterImpl(): SynResult<AnyDelimiterResult> =
     step { cursor ->
-        val any = cursor.anyGroup()
+        var any = cursor.anyGroup()
         if (any != null) {
             val scope = any.delimSpan.close()
             val nested = advanceStepCursor(cursor, any.inside)

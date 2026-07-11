@@ -18,15 +18,15 @@ import io.github.kotlinmania.syn.token.RArrow
  * preserves the original Kotlin API name.
  */
 public sealed class SynType : ToTokens {
-    public companion object : Parse<SynType> {
-        override fun parse(input: ParseStream): SynResult<SynType> = parseTypeFull(input)
+    public companion object {
+        fun parse(input: ParseStream): SynResult<SynType> = parseTypeFull(input)
 
         public fun withoutPlus(input: ParseStream): SynResult<SynType> = parseTypeWithoutPlus(input)
     }
 
     public data class Array(
-        val elem: SynType,
-        val len: Expr,
+        var elem: SynType,
+        var len: Expr,
     ) : SynType() {
         override fun toTokens(tokens: TokenStream) {
             elem.toTokens(tokens)
@@ -37,14 +37,14 @@ public sealed class SynType : ToTokens {
     }
 
     public data class BareFn(
-        val lifetimes: BoundLifetimes?,
-        val unsafety: io.github.kotlinmania.syn.token.Unsafe?,
-        val abi: Abi?,
-        val fnToken: io.github.kotlinmania.syn.token.Fn,
-        val parenToken: io.github.kotlinmania.syn.token.Paren,
-        val inputs: BareFnArgList,
-        val variadic: BareVariadic?,
-        val output: ReturnType,
+        var lifetimes: BoundLifetimes?,
+        var unsafety: io.github.kotlinmania.syn.token.Unsafe?,
+        var abi: Abi?,
+        var fnToken: io.github.kotlinmania.syn.token.Fn,
+        var parenToken: io.github.kotlinmania.syn.token.Paren,
+        var inputs: BareFnArgList,
+        var variadic: BareVariadic?,
+        var output: ReturnType,
     ) : SynType() {
         override fun toTokens(tokens: TokenStream) {
             lifetimes?.toTokens(tokens)
@@ -53,6 +53,7 @@ public sealed class SynType : ToTokens {
             fnToken.toTokens(tokens)
             parenToken.surround(tokens) { inner ->
                 inputs.toTokens(inner)
+                val variadic = this.variadic
                 if (variadic != null) {
                     if (!inputs.emptyOrTrailing()) {
                         io.github.kotlinmania.syn.token.Comma
@@ -79,8 +80,8 @@ public sealed class SynType : ToTokens {
     }
 
     public data class Group(
-        val groupToken: io.github.kotlinmania.syn.token.Group,
-        val elem: SynType,
+        var groupToken: io.github.kotlinmania.syn.token.Group,
+        var elem: SynType,
     ) : SynType() {
         override fun toTokens(tokens: TokenStream) {
             groupToken.surround(tokens) { inner -> elem.toTokens(inner) }
@@ -90,14 +91,14 @@ public sealed class SynType : ToTokens {
     }
 
     public data class ImplTrait(
-        val implToken: io.github.kotlinmania.syn.token.Impl,
-        val bounds: TypeParamBoundList,
+        var implToken: io.github.kotlinmania.syn.token.Impl,
+        var bounds: TypeParamBoundList,
     ) : SynType() {
-        public companion object : Parse<ImplTrait> {
-            override fun parse(input: ParseStream): SynResult<ImplTrait> =
+        public companion object {
+            fun parse(input: ParseStream): SynResult<ImplTrait> =
                 parseTypeImplTrait(input, allowPlus = true)
 
-            public fun withoutPlus(input: ParseStream): SynResult<ImplTrait> =
+            fun withoutPlus(input: ParseStream): SynResult<ImplTrait> =
                 parseTypeImplTrait(input, allowPlus = false)
         }
 
@@ -110,7 +111,7 @@ public sealed class SynType : ToTokens {
     }
 
     public data class Infer(
-        val underscoreToken: io.github.kotlinmania.syn.token.Underscore,
+        var underscoreToken: io.github.kotlinmania.syn.token.Underscore,
     ) : SynType() {
         override fun toTokens(tokens: TokenStream) {
             underscoreToken.toTokens(tokens)
@@ -120,7 +121,7 @@ public sealed class SynType : ToTokens {
     }
 
     public data class Macro(
-        val mac: io.github.kotlinmania.syn.Macro,
+        var mac: io.github.kotlinmania.syn.Macro,
     ) : SynType() {
         override fun toTokens(tokens: TokenStream) {
             mac.toTokens(tokens)
@@ -130,7 +131,7 @@ public sealed class SynType : ToTokens {
     }
 
     public data class Never(
-        val bangToken: io.github.kotlinmania.syn.token.Not,
+        var bangToken: io.github.kotlinmania.syn.token.Not,
     ) : SynType() {
         override fun toTokens(tokens: TokenStream) {
             bangToken.toTokens(tokens)
@@ -140,8 +141,8 @@ public sealed class SynType : ToTokens {
     }
 
     public data class Paren(
-        val parenToken: io.github.kotlinmania.syn.token.Paren,
-        val elem: SynType,
+        var parenToken: io.github.kotlinmania.syn.token.Paren,
+        var elem: SynType,
     ) : SynType() {
         override fun toTokens(tokens: TokenStream) {
             parenToken.surround(tokens) { inner ->
@@ -153,8 +154,8 @@ public sealed class SynType : ToTokens {
     }
 
     public data class Path(
-        val qself: QSelf?,
-        val path: io.github.kotlinmania.syn.Path,
+        var qself: QSelf?,
+        var path: io.github.kotlinmania.syn.Path,
     ) : SynType() {
         override fun toTokens(tokens: TokenStream) {
             printQpath(tokens, qself, path, PathStyle.AsWritten)
@@ -164,10 +165,10 @@ public sealed class SynType : ToTokens {
     }
 
     public data class Ptr(
-        val starToken: io.github.kotlinmania.syn.token.Star,
-        val constToken: io.github.kotlinmania.syn.token.Const?,
-        val mutability: io.github.kotlinmania.syn.token.Mut?,
-        val elem: SynType,
+        var starToken: io.github.kotlinmania.syn.token.Star,
+        var constToken: io.github.kotlinmania.syn.token.Const?,
+        var mutability: io.github.kotlinmania.syn.token.Mut?,
+        var elem: SynType,
     ) : SynType() {
         override fun toTokens(tokens: TokenStream) {
             starToken.toTokens(tokens)
@@ -179,10 +180,10 @@ public sealed class SynType : ToTokens {
     }
 
     public data class Reference(
-        val andToken: io.github.kotlinmania.syn.token.And,
-        val lifetime: Lifetime?,
-        val mutability: io.github.kotlinmania.syn.token.Mut?,
-        val elem: SynType,
+        var andToken: io.github.kotlinmania.syn.token.And,
+        var lifetime: Lifetime?,
+        var mutability: io.github.kotlinmania.syn.token.Mut?,
+        var elem: SynType,
     ) : SynType() {
         override fun toTokens(tokens: TokenStream) {
             andToken.toTokens(tokens)
@@ -195,7 +196,7 @@ public sealed class SynType : ToTokens {
     }
 
     public data class Slice(
-        val elem: SynType,
+        var elem: SynType,
     ) : SynType() {
         override fun toTokens(tokens: TokenStream) {
             elem.toTokens(tokens)
@@ -205,14 +206,14 @@ public sealed class SynType : ToTokens {
     }
 
     public data class TraitObject(
-        val dynToken: io.github.kotlinmania.syn.token.Dyn?,
-        val bounds: TypeParamBoundList,
+        var dynToken: io.github.kotlinmania.syn.token.Dyn?,
+        var bounds: TypeParamBoundList,
     ) : SynType() {
-        public companion object : Parse<TraitObject> {
-            override fun parse(input: ParseStream): SynResult<TraitObject> =
+        public companion object {
+            fun parse(input: ParseStream): SynResult<TraitObject> =
                 parseTypeTraitObject(input, allowPlus = true)
 
-            public fun withoutPlus(input: ParseStream): SynResult<TraitObject> =
+            fun withoutPlus(input: ParseStream): SynResult<TraitObject> =
                 parseTypeTraitObject(input, allowPlus = false)
 
             internal fun parseBounds(
@@ -264,8 +265,8 @@ public sealed class SynType : ToTokens {
     }
 
     public data class Tuple(
-        val parenToken: io.github.kotlinmania.syn.token.Paren,
-        val elems: SynTypeList,
+        var parenToken: io.github.kotlinmania.syn.token.Paren,
+        var elems: SynTypeList,
     ) : SynType() {
         override fun toTokens(tokens: TokenStream) {
             parenToken.surround(tokens) { inner ->
@@ -277,7 +278,7 @@ public sealed class SynType : ToTokens {
     }
 
     public data class Verbatim(
-        val tokens: TokenStream,
+        var tokens: TokenStream,
     ) : SynType() {
         override fun toTokens(tokens: TokenStream) {
             tokens.extendTokenStreams(listOf(this.tokens))
@@ -290,12 +291,12 @@ public sealed class SynType : ToTokens {
 }
 
 public data class BareFnArg(
-    public val attrs: List<Attribute>,
-    public val name: IdentColon?,
-    public val ty: SynType,
+    public var attrs: MutableList<Attribute>,
+    public var name: IdentColon?,
+    public var ty: SynType,
 ) : ToTokens {
-    public companion object : Parse<BareFnArg> {
-        override fun parse(input: ParseStream): SynResult<BareFnArg> {
+    public companion object {
+        fun parse(input: ParseStream): SynResult<BareFnArg> {
             val allowSelf = false
             return parseBareFnArg(input, allowSelf)
         }
@@ -309,15 +310,15 @@ public data class BareFnArg(
     }
 
     public fun deepCopy(): BareFnArg =
-        BareFnArg(attrs.map { it.deepCopy() }, name, ty.deepCopy())
+        BareFnArg(attrs.mapTo(mutableListOf()) { it.deepCopy() }, name, ty.deepCopy())
 }
 
 /** The variadic argument of a function pointer. */
 public data class BareVariadic(
-    public val attrs: List<Attribute>,
-    public val name: IdentColon?,
-    public val dots: io.github.kotlinmania.syn.token.DotDotDot,
-    public val comma: io.github.kotlinmania.syn.token.Comma?,
+    public var attrs: MutableList<Attribute>,
+    public var name: IdentColon?,
+    public var dots: io.github.kotlinmania.syn.token.DotDotDot,
+    public var comma: io.github.kotlinmania.syn.token.Comma?,
 ) : ToTokens {
     override fun toTokens(tokens: TokenStream) {
         for (attr in attrs) attr.toTokens(tokens)
@@ -327,14 +328,14 @@ public data class BareVariadic(
         comma?.toTokens(tokens)
     }
 
-    public fun deepCopy(): BareVariadic = BareVariadic(attrs.map { it.deepCopy() }, name, dots, comma)
+    public fun deepCopy(): BareVariadic = BareVariadic(attrs.mapTo(mutableListOf()) { it.deepCopy() }, name, dots, comma)
 }
 
 public sealed class ReturnType : ToTokens {
-    public companion object : Parse<ReturnType> {
-        override fun parse(input: ParseStream): SynResult<ReturnType> = parseReturnType(input)
+    public companion object {
+        fun parse(input: ParseStream): SynResult<ReturnType> = parseReturnType(input)
 
-        public fun withoutPlus(input: ParseStream): SynResult<ReturnType> =
+        fun withoutPlus(input: ParseStream): SynResult<ReturnType> =
             parseReturnTypeWithoutPlus(input)
     }
 
@@ -347,8 +348,8 @@ public sealed class ReturnType : ToTokens {
     }
 
     public data class TypeReturn(
-        val arrowToken: RArrow,
-        val ty: SynType,
+        var arrowToken: RArrow,
+        var ty: SynType,
     ) : ReturnType() {
         override fun toTokens(tokens: TokenStream) {
             arrowToken.toTokens(tokens)
@@ -365,51 +366,55 @@ internal fun parseBareFnArg(
     input: ParseStream,
     allowSelf: Boolean,
 ): SynResult<BareFnArg> {
-    val attrs = parseOuterAttributes(input).getOrElse { return SynResult.failure(it) }
+    var attrs = parseOuterAttributes(input).getOrElse { return SynResult.failure(it) }
     return parseBareFnArg(input, attrs, allowSelf)
 }
 
 internal fun parseBareFnArg(
     input: ParseStream,
-    attrs: List<Attribute>,
+    attrs: MutableList<Attribute>,
     allowSelf: Boolean,
 ): SynResult<BareFnArg> {
-    val begin = input.fork()
-    val hasMutSelf = allowSelf && input.peek(MutPeek) && input.peek2(SelfValuePeek)
+    var begin = input.fork()
+    var hasMutSelf = allowSelf && input.peek(MutPeek) && input.peek2(SelfValuePeek)
     if (hasMutSelf) {
-        input.parse(MutParse).getOrElse { return SynResult.failure(it) }
+        MutParse.parse(input).getOrElse { return SynResult.failure(it) }
     }
 
     var hasSelf = false
     var name =
-        if ((input.peek(IdentPeek) || input.peek(UnderscorePeek) || run {
-                hasSelf = allowSelf && input.peek(SelfValuePeek)
-                hasSelf
-            }) &&
+        if ((
+                input.peek(IdentPeek) ||
+                    input.peek(UnderscorePeek) ||
+                    run {
+                        hasSelf = allowSelf && input.peek(SelfValuePeek)
+                        hasSelf
+                    }
+            ) &&
             input.peek2(ColonPeek) &&
             !input.peek2(PathSepPeek)
         ) {
             val ident = parseBareFnName(input).getOrElse { return SynResult.failure(it) }
-            val colon = input.parse(ColonParse).getOrElse { return SynResult.failure(it) }
+            val colon = ColonParse.parse(input).getOrElse { return SynResult.failure(it) }
             IdentColon(ident, colon)
         } else {
             hasSelf = false
             null
         }
 
-    val parsedTy =
+    var parsedTy =
         if (allowSelf && !hasSelf && input.peek(MutPeek) && input.peek2(SelfValuePeek)) {
-            input.parse(MutParse).getOrElse { return SynResult.failure(it) }
-            input.parse(SelfValueParse).getOrElse { return SynResult.failure(it) }
+            MutParse.parse(input).getOrElse { return SynResult.failure(it) }
+            SelfValueParse.parse(input).getOrElse { return SynResult.failure(it) }
             null
         } else if (hasMutSelf && name == null) {
-            input.parse(SelfValueParse).getOrElse { return SynResult.failure(it) }
+            SelfValueParse.parse(input).getOrElse { return SynResult.failure(it) }
             null
         } else {
             parseTypeFull(input).getOrElse { return SynResult.failure(it) }
         }
 
-    val ty =
+    var ty =
         if (parsedTy != null && !hasMutSelf) {
             parsedTy
         } else {
@@ -421,24 +426,24 @@ internal fun parseBareFnArg(
 
 internal fun parseBareVariadic(
     input: ParseStream,
-    attrs: List<Attribute>,
+    attrs: MutableList<Attribute>,
 ): SynResult<BareVariadic> {
-    val name =
+    var name =
         if (input.peek(IdentPeek) || input.peek(UnderscorePeek)) {
             val ident = parseBareFnName(input).getOrElse { return SynResult.failure(it) }
-            val colon = input.parse(ColonParse).getOrElse { return SynResult.failure(it) }
+            val colon = ColonParse.parse(input).getOrElse { return SynResult.failure(it) }
             IdentColon(ident, colon)
         } else {
             null
         }
-    val dots = input.parse(DotDotDotParse).getOrElse { return SynResult.failure(it) }
-    val comma = input.parse(CommaParse).getOrNull()
+    var dots = DotDotDotParse.parse(input).getOrElse { return SynResult.failure(it) }
+    var comma = CommaParse.parse(input).getOrNull()
     return SynResult.success(BareVariadic(attrs, name, dots, comma))
 }
 
 private fun parseBareFnName(input: ParseStream): SynResult<Ident> {
     if (input.peek(UnderscorePeek)) {
-        val underscore = input.parse(UnderscoreParse).getOrElse { return SynResult.failure(it) }
+        var underscore = UnderscoreParse.parse(input).getOrElse { return SynResult.failure(it) }
         return SynResult.success(from(underscore))
     }
     return identParseAny(input)
@@ -446,7 +451,7 @@ private fun parseBareFnName(input: ParseStream): SynResult<Ident> {
 
 public sealed class MacroDelimiter : ToTokens {
     public data class Paren(
-        val token: io.github.kotlinmania.syn.token.Paren,
+        var token: io.github.kotlinmania.syn.token.Paren,
     ) : MacroDelimiter() {
         override fun toTokens(tokens: TokenStream) {
             token.surround(tokens) { }
@@ -454,7 +459,7 @@ public sealed class MacroDelimiter : ToTokens {
     }
 
     public data class Brace(
-        val token: io.github.kotlinmania.syn.token.Brace,
+        var token: io.github.kotlinmania.syn.token.Brace,
     ) : MacroDelimiter() {
         override fun toTokens(tokens: TokenStream) {
             token.surround(tokens) { }
@@ -462,7 +467,7 @@ public sealed class MacroDelimiter : ToTokens {
     }
 
     public data class Bracket(
-        val token: io.github.kotlinmania.syn.token.Bracket,
+        var token: io.github.kotlinmania.syn.token.Bracket,
     ) : MacroDelimiter() {
         override fun toTokens(tokens: TokenStream) {
             token.surround(tokens) { }

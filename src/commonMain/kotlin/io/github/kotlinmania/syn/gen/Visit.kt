@@ -23,13 +23,13 @@ import io.github.kotlinmania.syn.DeriveInput
 import io.github.kotlinmania.syn.ElseExpr
 import io.github.kotlinmania.syn.Expr
 import io.github.kotlinmania.syn.Field
-import io.github.kotlinmania.syn.FieldValue
-import io.github.kotlinmania.syn.FieldPat
 import io.github.kotlinmania.syn.FieldMutability
-import io.github.kotlinmania.syn.File
+import io.github.kotlinmania.syn.FieldPat
+import io.github.kotlinmania.syn.FieldValue
 import io.github.kotlinmania.syn.Fields
 import io.github.kotlinmania.syn.FieldsNamed
 import io.github.kotlinmania.syn.FieldsUnnamed
+import io.github.kotlinmania.syn.File
 import io.github.kotlinmania.syn.FnArg
 import io.github.kotlinmania.syn.ForeignItem
 import io.github.kotlinmania.syn.GenericArgument

@@ -42,7 +42,12 @@ class ItemTest {
         assertTrue(item.generics.params.isEmpty())
         assertIs<ReturnType.Default>(item.output)
         assertTrue(item.inputs.isEmpty())
-        assertTrue(item.block?.stmts.orEmpty().isEmpty())
+        assertTrue(
+            item.block
+                ?.stmts
+                .orEmpty()
+                .isEmpty(),
+        )
     }
 
     @Test
@@ -53,7 +58,7 @@ class ItemTest {
         val withoutParens = assertIs<Item.Verbatim>(parseItem("macro make {}"))
         assertEquals("macro make { }", withoutParens.tokens.toString())
 
-        assertTrue(parseStr(ItemParse, "macro make();").isFailure)
+        assertTrue(parseStr(ItemParse::parse, "macro make();").isFailure)
     }
 
     @Test
@@ -64,7 +69,7 @@ class ItemTest {
         assertTrue(neverImpl.generics.params.isEmpty())
         assertTrue(neverImpl.items.isEmpty())
 
-        val failure = parseStr(ItemParse, "impl !Trait {}")
+        val failure = parseStr(ItemParse::parse, "impl !Trait {}")
         assertTrue(failure.isFailure)
         assertEquals("inherent impls cannot be negative", failure.exceptionOrNull()?.toString())
 
@@ -130,7 +135,12 @@ class ItemTest {
 
         assertIs<Visibility.Public>(item.vis)
         assertEquals("SharableIterator", item.ident.toString())
-        val param = assertIs<GenericParam.TypeParam>(item.generics.params.toList().single())
+        val param =
+            assertIs<GenericParam.TypeParam>(
+                item.generics.params
+                    .toList()
+                    .single(),
+            )
         assertEquals("T", param.ident.toString())
         assertTraitBound(item.bounds.toList()[0], "Iterator")
         assertTraitBound(item.bounds.toList()[1], "Sync")
@@ -253,7 +263,12 @@ class ItemTest {
         val assocType = assertIs<TraitItem.AssocType>(item.items.single())
 
         assertEquals("Bar", assocType.ident.toString())
-        val traitParam = assertIs<GenericParam.TypeParam>(assocType.generics.params.toList().single())
+        val traitParam =
+            assertIs<GenericParam.TypeParam>(
+                assocType.generics.params
+                    .toList()
+                    .single(),
+            )
         assertEquals("T", traitParam.ident.toString())
         assertTypePath(assertNotNull(assocType.default).type, "T")
         assertNotNull(assocType.generics.whereClause)
@@ -269,7 +284,12 @@ class ItemTest {
         assertEquals("Bar", assocType.ident.toString())
         assertIs<Visibility.Inherited>(assocType.vis)
         assertNotNull(assocType.defaultness)
-        val implParam = assertIs<GenericParam.TypeParam>(assocType.generics.params.toList().single())
+        val implParam =
+            assertIs<GenericParam.TypeParam>(
+                assocType.generics.params
+                    .toList()
+                    .single(),
+            )
         assertEquals("T", implParam.ident.toString())
         assertTypePath(assocType.ty, "T")
         assertNotNull(assocType.generics.whereClause)
@@ -281,7 +301,12 @@ class ItemTest {
 
         assertIs<Visibility.Public>(item.vis)
         assertEquals("Alias", item.ident.toString())
-        val param = assertIs<GenericParam.TypeParam>(item.generics.params.toList().single())
+        val param =
+            assertIs<GenericParam.TypeParam>(
+                item.generics.params
+                    .toList()
+                    .single(),
+            )
         assertEquals("T", param.ident.toString())
         assertNotNull(item.generics.whereClause)
         assertTypePath(item.ty, "T")
@@ -425,7 +450,12 @@ class ItemTest {
         val item = assertIs<Item.Impl>(parseItem("impl<T = ()> () {}"))
         assertNull(item.traitPath)
         assertIs<SynType.Tuple>(item.selfType)
-        val typeParam = assertIs<GenericParam.TypeParam>(item.generics.params.toList().single())
+        val typeParam =
+            assertIs<GenericParam.TypeParam>(
+                item.generics.params
+                    .toList()
+                    .single(),
+            )
         assertEquals("T", typeParam.ident.toString())
         assertNotNull(typeParam.eqToken)
         assertIs<SynType.Tuple>(typeParam.default)
@@ -439,17 +469,22 @@ class ItemTest {
         assertEquals(1, implTrait.bounds.size)
         assertTraitBound(implTrait.bounds.toList().single(), "Sized")
         assertTrue(implTrait.bounds.trailingPunct())
-        assertTrue(item.block?.stmts.orEmpty().isEmpty())
+        assertTrue(
+            item.block
+                ?.stmts
+                .orEmpty()
+                .isEmpty(),
+        )
     }
 
     private fun parseItem(source: String): Item =
-        parseStr(ItemParse, source).getOrThrow()
+        parseStr(ItemParse::parse, source).getOrThrow()
 
     private fun parseItem(tokens: TokenStream): Item =
-        parse2(ItemParse, tokens).getOrThrow()
+        parse2(ItemParse::parse, tokens).getOrThrow()
 
     private fun parseDeriveInput(source: String): DeriveInput =
-        parseStr(DeriveInputParse, source).getOrThrow()
+        parseStr(DeriveInputParse::parse, source).getOrThrow()
 
     private fun assertPath(path: Path, vararg segments: String) {
         assertEquals(segments.toList(), path.segments.toList().map { it.ident.toString() })

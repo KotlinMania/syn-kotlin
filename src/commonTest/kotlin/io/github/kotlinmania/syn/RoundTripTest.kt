@@ -7,7 +7,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertIs
 import kotlin.test.assertNull
-import kotlin.test.assertTrue
 
 /**
  * Round-trip parse-then-emit parity tests.
@@ -39,7 +38,13 @@ class RoundTripTest {
         assertEquals("#!/usr/bin/env rustx", file.shebang)
         assertEquals(1, file.attrs.size)
         assertIs<AttrStyle.Inner>(file.attrs.single().style)
-        assertEquals("allow", file.attrs.single().path().toString())
+        assertEquals(
+            "allow",
+            file.attrs
+                .single()
+                .path()
+                .toString(),
+        )
         val item = assertIs<Item.Fn>(file.items.single())
         assertEquals("main", item.ident.toString())
 
@@ -48,7 +53,7 @@ class RoundTripTest {
         assertFalse(emittedString.contains("rustx"))
         assertFalse(emittedString.contains("#!/"))
 
-        val reparsed = parse2(FileParse, emitted).getOrThrow()
+        val reparsed = parse2(FileParse::parse, emitted).getOrThrow()
         assertNull(reparsed.shebang)
         assertEquals(1, reparsed.attrs.size)
         assertIs<AttrStyle.Inner>(reparsed.attrs.single().style)

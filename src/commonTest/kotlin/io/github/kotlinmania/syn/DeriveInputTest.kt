@@ -46,7 +46,14 @@ class DeriveInputTest {
         assertEquals(2, fields.size)
         assertPublicNamedPathField(fields[0], "ident", "Ident")
         assertPublicNamedPathField(fields[1], "attrs", "Vec")
-        val vecArgs = assertIs<PathArguments.AngleBracketed>(assertPathType(fields[1].ty, "Vec").segments.toList().single().arguments)
+        val vecArgs =
+            assertIs<PathArguments.AngleBracketed>(
+                assertPathType(fields[1].ty, "Vec")
+                    .segments
+                    .toList()
+                    .single()
+                    .arguments,
+            )
         val arg = assertIs<GenericArgument.TypeArg>(vecArgs.args.toList().single())
         assertPathType(arg.type, "Attribute")
     }
@@ -112,7 +119,7 @@ class DeriveInputTest {
 
     @Test
     fun testAttrWithNonModStylePath() {
-        assertTrue(parseStr(DeriveInputParse, "#[inert <T>] struct S;").isFailure)
+        assertTrue(parseStr(DeriveInputParse::parse, "#[inert <T>] struct S;").isFailure)
     }
 
     @Test
@@ -221,14 +228,21 @@ class DeriveInputTest {
 
         val unionInput = parse("union U<T> where T: Copy { value: T }")
         assertSingleTypeWhereClause(unionInput.generics, "T", "Copy")
-        assertNamedPathField(assertIs<Data.Union>(unionInput.data).fields.named.toList().single(), "value", "T")
+        assertNamedPathField(
+            assertIs<Data.Union>(unionInput.data)
+                .fields.named
+                .toList()
+                .single(),
+            "value",
+            "T",
+        )
     }
 
     @Test
     fun testMalformedWhereClauseIsRejected() {
-        assertTrue(parseStr(DeriveInputParse, "struct S where <T> { value: T }").isFailure)
-        assertTrue(parseStr(DeriveInputParse, "enum E where <T> { Value }").isFailure)
-        assertTrue(parseStr(DeriveInputParse, "union U where <T> { value: T }").isFailure)
+        assertTrue(parseStr(DeriveInputParse::parse, "struct S where <T> { value: T }").isFailure)
+        assertTrue(parseStr(DeriveInputParse::parse, "enum E where <T> { Value }").isFailure)
+        assertTrue(parseStr(DeriveInputParse::parse, "union U where <T> { value: T }").isFailure)
     }
 
     @Test
@@ -282,7 +296,7 @@ class DeriveInputTest {
     }
 
     private fun parse(source: String): DeriveInput =
-        parseStr(DeriveInputParse, source).getOrThrow()
+        parseStr(DeriveInputParse::parse, source).getOrThrow()
 
     private fun namedFields(fields: Fields): List<Field> =
         assertIs<Fields.Named>(fields).fields.named.toList()

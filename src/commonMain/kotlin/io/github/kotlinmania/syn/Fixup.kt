@@ -6,21 +6,21 @@ package io.github.kotlinmania.syn
  * to make the output parse back to the same tree.
  */
 public data class FixupContext(
-    val previousOperator: Precedence,
-    val nextOperator: Precedence,
-    val stmt: Boolean,
-    val leftmostSubexpressionInStmt: Boolean,
-    val matchArm: Boolean,
-    val leftmostSubexpressionInMatchArm: Boolean,
-    val condition: Boolean,
-    val rightmostSubexpressionInCondition: Boolean,
-    val leftmostSubexpressionInOptionalOperand: Boolean,
-    val nextOperatorCanBeginExpr: Boolean,
-    val nextOperatorCanContinueExpr: Boolean,
-    val nextOperatorCanBeginGenerics: Boolean,
+    var previousOperator: Precedence,
+    var nextOperator: Precedence,
+    var stmt: Boolean,
+    var leftmostSubexpressionInStmt: Boolean,
+    var matchArm: Boolean,
+    var leftmostSubexpressionInMatchArm: Boolean,
+    var condition: Boolean,
+    var rightmostSubexpressionInCondition: Boolean,
+    var leftmostSubexpressionInOptionalOperand: Boolean,
+    var nextOperatorCanBeginExpr: Boolean,
+    var nextOperatorCanContinueExpr: Boolean,
+    var nextOperatorCanBeginGenerics: Boolean,
 ) {
     public companion object {
-        public val NONE: FixupContext =
+        public var NONE: FixupContext =
             FixupContext(
                 previousOperator = Precedence.MIN,
                 nextOperator = Precedence.MIN,
@@ -52,7 +52,7 @@ public data class FixupContext(
         nextOperatorCanBeginGenerics: Boolean,
         precedence: Precedence,
     ): Pair<Precedence, FixupContext> {
-        val fixup =
+        var fixup =
             copy(
                 nextOperator = precedence,
                 stmt = false,
@@ -68,7 +68,7 @@ public data class FixupContext(
     }
 
     public fun leftmostSubexpressionWithDot(expr: Expr): Pair<Precedence, FixupContext> {
-        val fixup =
+        var fixup =
             copy(
                 nextOperator = Precedence.Unambiguous,
                 stmt = stmt || leftmostSubexpressionInStmt,
@@ -98,7 +98,7 @@ public data class FixupContext(
         expr: Expr,
         precedence: Precedence,
     ): Pair<Precedence, FixupContext> {
-        val fixup = rightmostSubexpressionFixup(resetAllowStruct = false, optionalOperand = false, precedence)
+        var fixup = rightmostSubexpressionFixup(resetAllowStruct = false, optionalOperand = false, precedence)
         return fixup.rightmostSubexpressionPrecedence(expr) to fixup
     }
 
@@ -118,8 +118,8 @@ public data class FixupContext(
         )
 
     public fun rightmostSubexpressionPrecedence(expr: Expr): Precedence {
-        val defaultPrec = precedence(expr)
-        val needsScan =
+        var defaultPrec = precedence(expr)
+        var needsScan =
             when (previousOperator) {
                 Precedence.Assign, Precedence.Let, Precedence.Prefix -> defaultPrec < previousOperator
                 else -> defaultPrec <= previousOperator
@@ -142,23 +142,36 @@ public data class FixupContext(
             ((stmt || leftmostSubexpressionInStmt) && expr is Expr.Let) ||
             (leftmostSubexpressionInMatchArm && !Classify.requiresCommaToBeMatchArm(expr)) ||
             (condition && expr is Expr.Struct) ||
-            (rightmostSubexpressionInCondition &&
-                (expr is Expr.Return && expr.expr == null || expr is Expr.Yield && expr.expr == null)) ||
-            (rightmostSubexpressionInCondition &&
-                !condition &&
-                (expr is Expr.Break && expr.expr == null ||
-                    expr is Expr.Path ||
-                    expr is Expr.Range && expr.end == null)) ||
-            (leftmostSubexpressionInOptionalOperand &&
-                expr is Expr.BlockExpr &&
-                expr.attrs.isEmpty() &&
-                expr.label == null)
+            (
+                rightmostSubexpressionInCondition &&
+                    (expr is Expr.Return && expr.expr == null || expr is Expr.Yield && expr.expr == null)
+            ) ||
+            (
+                rightmostSubexpressionInCondition &&
+                    !condition &&
+                    (
+                        expr is Expr.Break &&
+                            expr.expr == null ||
+                            expr is Expr.Path ||
+                            expr is Expr.Range &&
+                            expr.end == null
+                    )
+            ) ||
+            (
+                leftmostSubexpressionInOptionalOperand &&
+                    expr is Expr.BlockExpr &&
+                    expr.attrs.isEmpty() &&
+                    expr.label == null
+            )
 
     public fun precedence(expr: Expr): Precedence {
         if (nextOperatorCanBeginExpr) {
-            if (expr is Expr.Break && expr.expr == null ||
-                expr is Expr.Return && expr.expr == null ||
-                expr is Expr.Yield && expr.expr == null
+            if (expr is Expr.Break &&
+                expr.expr == null ||
+                expr is Expr.Return &&
+                expr.expr == null ||
+                expr is Expr.Yield &&
+                expr.expr == null
             ) {
                 return Precedence.Jump
             }
@@ -221,11 +234,14 @@ private fun scanRight(
     failOffset: Int,
     bailoutOffset: Int,
 ): Scan {
-    val consumeByPrecedence =
-        if ((when (precedence) {
-                Precedence.Assign, Precedence.Compare -> precedence <= fixup.nextOperator
-                else -> precedence < fixup.nextOperator
-            }) || fixup.nextOperator == Precedence.MIN
+    var consumeByPrecedence =
+        if ((
+                when (precedence) {
+                    Precedence.Assign, Precedence.Compare -> precedence <= fixup.nextOperator
+                    else -> precedence < fixup.nextOperator
+                }
+            ) ||
+            fixup.nextOperator == Precedence.MIN
         ) {
             Scan.Consume
         } else {
@@ -281,8 +297,8 @@ private fun scanRightAssign(
     ) {
         return Scan.Consume
     }
-    val rightFixup = fixup.rightmostSubexpressionFixup(false, false, Precedence.Assign)
-    val scan =
+    var rightFixup = fixup.rightmostSubexpressionFixup(false, false, Precedence.Assign)
+    var scan =
         scanRight(
             expr.right,
             rightFixup,
@@ -313,12 +329,12 @@ private fun scanRightBinary(
     ) {
         return Scan.Consume
     }
-    val binopPrec = Precedence.ofBinop(expr.op)
+    var binopPrec = Precedence.ofBinop(expr.op)
     if (binopPrec == Precedence.Compare && fixup.nextOperator == Precedence.Compare) {
         return Scan.Consume
     }
-    val rightFixup = fixup.rightmostSubexpressionFixup(false, false, binopPrec)
-    val scan =
+    var rightFixup = fixup.rightmostSubexpressionFixup(false, false, binopPrec)
+    var scan =
         scanRight(
             expr.right,
             rightFixup,
@@ -331,7 +347,7 @@ private fun scanRightBinary(
         Scan.Bailout -> return consumeByPrecedence
         Scan.Consume -> return Scan.Consume
     }
-    val rightNeedsGroup =
+    var rightNeedsGroup =
         binopPrec != Precedence.Assign &&
             rightFixup.rightmostSubexpressionPrecedence(expr.right) <= binopPrec
     return if (rightNeedsGroup) {
@@ -358,8 +374,8 @@ private fun scanRightPrefix(
     ) {
         return Scan.Consume
     }
-    val rightFixup = fixup.rightmostSubexpressionFixup(false, false, Precedence.Prefix)
-    val scan =
+    var rightFixup = fixup.rightmostSubexpressionFixup(false, false, Precedence.Prefix)
+    var scan =
         scanRight(
             expr,
             rightFixup,
@@ -480,9 +496,12 @@ private fun scanRightClosure(
     expr: Expr.Closure,
     fixup: FixupContext,
     bailoutOffset: Int,
-): Scan =
-    if (expr.output == ReturnType.Default ||
-        expr.body is Expr.BlockExpr && expr.body.attrs.isEmpty() && expr.body.label == null
+): Scan {
+    val body = expr.body
+    return if (expr.output == ReturnType.Default ||
+        body is Expr.BlockExpr &&
+        body.attrs.isEmpty() &&
+        body.label == null
     ) {
         if (bailoutOffset >= 1) {
             Scan.Consume
@@ -496,6 +515,7 @@ private fun scanRightClosure(
     } else {
         Scan.Consume
     }
+}
 
 private fun scanRightLet(
     expr: Expr.Let,
@@ -505,8 +525,8 @@ private fun scanRightLet(
     if (bailoutOffset >= 1) {
         return Scan.Consume
     }
-    val rightFixup = fixup.rightmostSubexpressionFixup(false, false, Precedence.Let)
-    val scan =
+    var rightFixup = fixup.rightmostSubexpressionFixup(false, false, Precedence.Let)
+    var scan =
         scanRight(
             expr.expr,
             rightFixup,

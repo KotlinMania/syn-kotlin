@@ -14,14 +14,14 @@ import kotlin.test.assertTrue
 
 class LitTest {
     private fun lit(s: String): Lit =
-        parseStr(LitParse, s.trim()).getOrThrow()
+        parseStr(LitParse::parse, s.trim()).getOrThrow()
 
     private fun litLiteral(s: String): Lit {
         val tokens =
             TokenStream.fromTokenTrees(
                 listOf(TokenTree.Literal(Literal.fromStrUnchecked(s.trim()))),
             )
-        return parserFromFunction(LitParse::parse).parse2(tokens).getOrThrow()
+        return parse2(LitParse::parse, tokens).getOrThrow()
     }
 
     @Test
@@ -351,7 +351,7 @@ class LitTest {
                 ),
             )
 
-        val parsed = assertIs<Lit.Str>(parserFromFunction(LitParse::parse).parse2(tokens).getOrThrow())
+        val parsed = assertIs<Lit.Str>(parse2(LitParse::parse, tokens).getOrThrow())
         val emitted = TokenStream.new()
         parsed.toTokens(emitted)
         assertEquals("\"hi\"", emitted.toString())
@@ -360,21 +360,21 @@ class LitTest {
     @Test
     fun litPeekAcceptsNegativeLiteral() {
         val parser =
-            parserFromFunction<Lit> { input ->
+            parser@{ input: ParseStream ->
                 assertTrue(input.peek(LitPeek))
-                input.parse(LitParse)
+                LitParse.parse(input)
             }
-        assertIs<Lit.Int>(parser.parseStr("-1").getOrThrow())
+        assertIs<Lit.Int>(parseStr(parser, "-1").getOrThrow())
     }
 
     @Test
     fun testError() {
         // Parsing "..." as a LitStr fails because it is not a valid string literal.
-        val first = parseStr(LitStrParse, "...")
+        val first = parseStr(LitStrParse::parse, "...")
         assertTrue(first.isFailure)
 
         // Parsing "5" as a LitStr fails because the lexer produces an integer.
-        val second = parseStr(LitStrParse, "5")
+        val second = parseStr(LitStrParse::parse, "5")
         assertTrue(second.isFailure)
     }
 
@@ -385,7 +385,7 @@ class LitTest {
         val modStyle = lit.parseWith { input -> Path.parseModStyle(input) }.getOrThrow()
         assertEquals(listOf("a", "b", "c"), modStyle.segments.toList().map { it.ident.toString() })
 
-        val defaultPath = lit.parse(PathParse).getOrThrow()
+        val defaultPath = lit.parseWith(PathParse::parse).getOrThrow()
         assertEquals(listOf("a", "b", "c"), defaultPath.segments.toList().map { it.ident.toString() })
     }
 

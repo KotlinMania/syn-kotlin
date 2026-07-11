@@ -4,58 +4,65 @@ package io.github.kotlinmania.syn
 
 import io.github.kotlinmania.procmacro2.TokenStream
 
-public fun parseQuote(tokenStream: TokenStream, parser: ParseQuote): Any? {
-    val result = parserFromFunction(parser::parse).parse2(tokenStream)
-    return result.getOrElse { err -> error(err.message ?: err.toString()) }
+public fun parseQuoteAttribute(tokenStream: TokenStream): Attribute {
+    val result: SynResult<Attribute> = parse2(AttributeParse::parse, tokenStream)
+    return result.fold(
+        onSuccess = { attribute: Attribute -> attribute },
+        onFailure = { err: SynError -> throw err },
+    )
 }
 
-public interface ParseQuote {
-    public fun parse(input: ParseStream): SynResult<Any?>
+public fun parseQuoteAttributeList(tokenStream: TokenStream): List<Attribute> {
+    val result: SynResult<List<Attribute>> = parse2(::parseQuoteAttributeList, tokenStream)
+    return result.fold(
+        onSuccess = { attributes: List<Attribute> -> attributes },
+        onFailure = { err: SynError -> throw err },
+    )
 }
 
-public fun parseQuoteFromParse(parse: Parse<Any?>): ParseQuote =
-    object : ParseQuote {
-        override fun parse(input: ParseStream): SynResult<Any?> = parse.parse(input)
+private fun parseQuoteAttributeList(input: ParseStream): SynResult<List<Attribute>> {
+    val attrs = mutableListOf<Attribute>()
+    while (!input.isEmpty()) {
+        attrs += AttributeParse.parse(input).getOrElse { return SynResult.failure(it) }
     }
-
-public object AttributeParseQuote : ParseQuote {
-    override fun parse(input: ParseStream): SynResult<Attribute> =
-        AttributeParse.parse(input)
+    return SynResult.success(attrs)
 }
 
-public object AttributeListParseQuote : ParseQuote {
-    override fun parse(input: ParseStream): SynResult<List<Attribute>> {
-        val attrs = mutableListOf<Attribute>()
-        while (!input.isEmpty()) {
-            attrs += AttributeParseQuote.parse(input).getOrElse { return SynResult.failure(it) }
-        }
-        return SynResult.success(attrs)
+public fun parseQuoteField(tokenStream: TokenStream): Field {
+    val result: SynResult<Field> = parse2(::parseQuoteField, tokenStream)
+    return result.fold(
+        onSuccess = { field: Field -> field },
+        onFailure = { err: SynError -> throw err },
+    )
+}
+
+private fun parseQuoteField(input: ParseStream): SynResult<Field> {
+    val ahead = input.fork()
+    parseOuterAttributes(ahead).getOrElse { return SynResult.failure(it) }
+    VisibilityParse.parse(ahead).getOrElse { return SynResult.failure(it) }
+    val isNamed =
+        (ahead.peek(IdentPeek) || ahead.peek(UnderscorePeek)) &&
+            ahead.peek2(ColonPeek) &&
+            !ahead.peek2(PathSepPeek)
+    return if (isNamed) {
+        Field.parseNamed(input)
+    } else {
+        Field.parseUnnamed(input)
     }
 }
 
-public object FieldParseQuote : ParseQuote {
-    override fun parse(input: ParseStream): SynResult<Field> {
-        val ahead = input.fork()
-        parseOuterAttributes(ahead).getOrElse { return SynResult.failure(it) }
-        ahead.parse(VisibilityParse).getOrElse { return SynResult.failure(it) }
-        val isNamed =
-            (ahead.peek(IdentPeek) || ahead.peek(UnderscorePeek)) &&
-                ahead.peek2(ColonPeek) &&
-                !ahead.peek2(PathSepPeek)
-        return if (isNamed) {
-            Field.parseNamed(input)
-        } else {
-            Field.parseUnnamed(input)
-        }
-    }
+public fun parseQuotePat(tokenStream: TokenStream): Pat {
+    val result: SynResult<Pat> = parse2(::parsePatMultiWithLeadingVert, tokenStream)
+    return result.fold(
+        onSuccess = { pat: Pat -> pat },
+        onFailure = { err: SynError -> throw err },
+    )
 }
 
-public object PatParseQuote : ParseQuote {
-    override fun parse(input: ParseStream): SynResult<Pat> =
-        parsePatMultiWithLeadingVert(input)
-}
-
-public object StmtListParseQuote : ParseQuote {
-    override fun parse(input: ParseStream): SynResult<List<Stmt>> =
-        parseWithin(input)
+public fun parseQuoteStmtList(tokenStream: TokenStream): List<Stmt> {
+    val result: SynResult<List<Stmt>> = parse2(::parseWithin, tokenStream)
+    return result.fold(
+        onSuccess = { stmts: List<Stmt> -> stmts },
+        onFailure = { err: SynError -> throw err },
+    )
 }

@@ -8,10 +8,10 @@ import io.github.kotlinmania.quote.toTokens
 
 /** An attribute attached to an item or field. */
 public data class Attribute(
-    public val poundToken: io.github.kotlinmania.syn.token.Pound,
-    public val style: AttrStyle,
-    public val bracketToken: io.github.kotlinmania.syn.token.Bracket,
-    public val meta: Meta,
+    public var poundToken: io.github.kotlinmania.syn.token.Pound,
+    public var style: AttrStyle,
+    public var bracketToken: io.github.kotlinmania.syn.token.Bracket,
+    public var meta: Meta,
 ) : ToTokens {
     public typealias Ret = Iterator<Attribute>
 
@@ -34,37 +34,18 @@ public data class Attribute(
     public fun path(): Path =
         meta.path()
 
-    public fun <T> parseArgs(parser: Parse<T>): SynResult<T> =
-        parseArgsWith(parserFromFunction(parser::parse))
+    public fun <T> parseArgs(parser: (ParseStream) -> SynResult<T>): SynResult<T> =
+        parseArgsWith(parser)
 
-    public fun <T> parseArgsWith(parser: (ParseStream) -> SynResult<T>): SynResult<T> =
-        parseArgsWith(parserFromFunction(parser))
+    public fun <T> parseArgsWith(parser: (ParseStream) -> SynResult<T>): SynResult<T> {
+        var metaList = metaListForArgs().getOrElse { return SynResult.failure(it) }
+        return metaList.parseArgsWith(parser)
+    }
 
-    public fun <T> parseArgsWith(parser: Parser<T>): SynResult<T> =
-        when (val metaValue = meta) {
-            is Meta.PathMeta -> {
-                val first = metaValue.path.segments.first()?.ident?.span() ?: Span.callSite()
-                val last = metaValue.path.segments.last()?.ident?.span() ?: first
-                SynResult.failure(
-                    SynError.new2(
-                        first,
-                        last,
-                        "expected attribute arguments in parentheses: ${DisplayAttrStyle(style)}[${DisplayPath(metaValue.path)}(...)]",
-                    ),
-                )
-            }
-            is Meta.NameValue ->
-                SynResult.failure(
-                    SynError.new(
-                        metaValue.eqToken.span,
-                        "expected parentheses: ${DisplayAttrStyle(style)}[${DisplayPath(metaValue.path)}(...)]",
-                    ),
-                )
-            is Meta.List -> metaValue.parseArgsWith(parser)
-        }
-
-    public fun parseNestedMeta(logic: (ParseNestedMeta) -> SynResult<Unit>): SynResult<Unit> =
-        parseArgsWith(parser(logic))
+    public fun parseNestedMeta(logic: (ParseNestedMeta) -> SynResult<Unit>): SynResult<Unit> {
+        var metaList = metaListForArgs().getOrElse { return SynResult.failure(it) }
+        return metaList.parseNestedMeta(logic)
+    }
 
     public fun deepCopy(): Attribute =
         copy(meta = meta.copy())
@@ -76,18 +57,54 @@ public data class Attribute(
     public fun fmt(): String = toString()
 }
 
-public object AttributeParse : Parse<Attribute> {
-    override fun parse(input: ParseStream): SynResult<Attribute> =
+private fun Attribute.metaListForArgs(): SynResult<Meta.List> =
+    when (val metaValue = meta) {
+        is Meta.PathMeta -> {
+            val first =
+                metaValue.path
+                    .segments
+                    .first()
+                    ?.ident
+                    ?.span()
+                    ?: Span.callSite()
+            val last =
+                metaValue.path
+                    .segments
+                    .last()
+                    ?.ident
+                    ?.span()
+                    ?: first
+            SynResult.failure(
+                SynError.new2(
+                    first,
+                    last,
+                    "expected attribute arguments in parentheses: ${DisplayAttrStyle(style)}[${DisplayPath(metaValue.path)}(...)]",
+                ),
+            )
+        }
+        is Meta.NameValue ->
+            SynResult.failure(
+                SynError.new(
+                    metaValue.eqToken.span,
+                    "expected parentheses: ${DisplayAttrStyle(style)}[${DisplayPath(metaValue.path)}(...)]",
+                ),
+            )
+        is Meta.List -> SynResult.success(metaValue)
+    }
+
+public object AttributeParse {
+    fun parse(input: ParseStream): SynResult<Attribute> =
         parseAttribute(input)
 }
 
-internal fun parseInnerAttributes(input: ParseStream): SynResult<List<Attribute>> =
-    mutableListOf<Attribute>().also { attrs ->
-        parseInner(input, attrs).getOrElse { return SynResult.failure(it) }
-    }.let { SynResult.success(it) }
+internal fun parseInnerAttributes(input: ParseStream): SynResult<MutableList<Attribute>> =
+    mutableListOf<Attribute>()
+        .also { attrs ->
+            parseInner(input, attrs).getOrElse { return SynResult.failure(it) }
+        }.let { SynResult.success(it) }
 
-internal fun parseOuterAttributes(input: ParseStream): SynResult<List<Attribute>> {
-    val attrs = mutableListOf<Attribute>()
+internal fun parseOuterAttributes(input: ParseStream): SynResult<MutableList<Attribute>> {
+    var attrs = mutableListOf<Attribute>()
     while (input.peek(PoundPeek)) {
         attrs.add(singleParseOuter(input).getOrElse { return SynResult.failure(it) })
     }
@@ -105,38 +122,38 @@ internal fun parseInner(
 }
 
 internal fun singleParseInner(input: ParseStream): SynResult<Attribute> {
-    val pound = input.parse(PoundParse).getOrElse { return SynResult.failure(it) }
-    val style = AttrStyle.Inner(input.parse(NotParse).getOrElse { return SynResult.failure(it) })
-    val brackets = bracketed(input).getOrElse { return SynResult.failure(it) }
-    val meta = brackets.content.parse(MetaParse).getOrElse { return SynResult.failure(it) }
+    var pound = PoundParse.parse(input).getOrElse { return SynResult.failure(it) }
+    var style = AttrStyle.Inner(NotParse.parse(input).getOrElse { return SynResult.failure(it) })
+    var brackets = bracketed(input).getOrElse { return SynResult.failure(it) }
+    var meta = MetaParse.parse(brackets.content).getOrElse { return SynResult.failure(it) }
     brackets.content.finishChildBuffer()
-    val check = brackets.content.checkUnexpected()
+    var check = brackets.content.checkUnexpected()
     if (check.isFailure) return SynResult.failure(check.exceptionOrNull()!!)
     return SynResult.success(Attribute(pound, style, brackets.token, meta))
 }
 
 internal fun singleParseOuter(input: ParseStream): SynResult<Attribute> {
-    val pound = input.parse(PoundParse).getOrElse { return SynResult.failure(it) }
-    val brackets = bracketed(input).getOrElse { return SynResult.failure(it) }
-    val meta = brackets.content.parse(MetaParse).getOrElse { return SynResult.failure(it) }
+    var pound = PoundParse.parse(input).getOrElse { return SynResult.failure(it) }
+    var brackets = bracketed(input).getOrElse { return SynResult.failure(it) }
+    var meta = MetaParse.parse(brackets.content).getOrElse { return SynResult.failure(it) }
     brackets.content.finishChildBuffer()
-    val check = brackets.content.checkUnexpected()
+    var check = brackets.content.checkUnexpected()
     if (check.isFailure) return SynResult.failure(check.exceptionOrNull()!!)
     return SynResult.success(Attribute(pound, AttrStyle.Outer, brackets.token, meta))
 }
 
 private fun parseAttribute(input: ParseStream): SynResult<Attribute> {
-    val pound = input.parse(PoundParse).getOrElse { return SynResult.failure(it) }
-    val style: AttrStyle =
+    var pound = PoundParse.parse(input).getOrElse { return SynResult.failure(it) }
+    var style: AttrStyle =
         if (input.peek(NotPeek)) {
-            AttrStyle.Inner(input.parse(NotParse).getOrElse { return SynResult.failure(it) })
+            AttrStyle.Inner(NotParse.parse(input).getOrElse { return SynResult.failure(it) })
         } else {
             AttrStyle.Outer
         }
-    val brackets = bracketed(input).getOrElse { return SynResult.failure(it) }
-    val meta = brackets.content.parse(MetaParse).getOrElse { return SynResult.failure(it) }
+    var brackets = bracketed(input).getOrElse { return SynResult.failure(it) }
+    var meta = MetaParse.parse(brackets.content).getOrElse { return SynResult.failure(it) }
     brackets.content.finishChildBuffer()
-    val check = brackets.content.checkUnexpected()
+    var check = brackets.content.checkUnexpected()
     if (check.isFailure) return SynResult.failure(check.exceptionOrNull()!!)
     return SynResult.success(Attribute(pound, style, brackets.token, meta))
 }
@@ -149,7 +166,7 @@ public sealed class AttrStyle : ToTokens {
     }
 
     public data class Inner(
-        val bangToken: io.github.kotlinmania.syn.token.Not,
+        var bangToken: io.github.kotlinmania.syn.token.Not,
     ) : AttrStyle() {
         override fun toTokens(tokens: TokenStream) {
             bangToken.toTokens(tokens)
@@ -171,7 +188,7 @@ public sealed class Meta : ToTokens {
     }
 
     public data class PathMeta(
-        val path: Path,
+        var path: Path,
     ) : Meta() {
         override fun toTokens(tokens: TokenStream) {
             path.toTokens(tokens)
@@ -179,21 +196,18 @@ public sealed class Meta : ToTokens {
     }
 
     public data class List(
-        val path: Path,
-        val delimiter: MacroDelimiter,
-        val tokens: TokenStream,
+        var path: Path,
+        var delimiter: MacroDelimiter,
+        var tokens: TokenStream,
     ) : Meta() {
-        public fun <T> parseArgs(parser: Parse<T>): SynResult<T> =
-            parseArgsWith(parserFromFunction(parser::parse))
+        public fun <T> parseArgs(parser: (ParseStream) -> SynResult<T>): SynResult<T> =
+            parseArgsWith(parser)
 
         public fun <T> parseArgsWith(parser: (ParseStream) -> SynResult<T>): SynResult<T> =
-            parseArgsWith(parserFromFunction(parser))
-
-        public fun <T> parseArgsWith(parser: Parser<T>): SynResult<T> =
             parseScoped(parser, delimiter.closeSpan(), tokens)
 
         public fun parseNestedMeta(logic: (ParseNestedMeta) -> SynResult<Unit>): SynResult<Unit> =
-            parseArgsWith(parser(logic))
+            parseScoped(parser(logic), delimiter.closeSpan(), tokens)
 
         override fun toTokens(tokens: TokenStream) {
             path.toTokens(tokens)
@@ -202,9 +216,9 @@ public sealed class Meta : ToTokens {
     }
 
     public data class NameValue(
-        val path: Path,
-        val eqToken: io.github.kotlinmania.syn.token.Eq,
-        val value: Expr,
+        var path: Path,
+        var eqToken: io.github.kotlinmania.syn.token.Eq,
+        var value: Expr,
     ) : Meta() {
         override fun toTokens(tokens: TokenStream) {
             path.toTokens(tokens)
@@ -231,8 +245,20 @@ public sealed class Meta : ToTokens {
         when (this) {
             is List -> SynResult.success(this)
             is PathMeta -> {
-                val first = path.segments.first()?.ident?.span() ?: Span.callSite()
-                val last = path.segments.last()?.ident?.span() ?: first
+                val first =
+                    path
+                        .segments
+                        .first()
+                        ?.ident
+                        ?.span()
+                        ?: Span.callSite()
+                val last =
+                    path
+                        .segments
+                        .last()
+                        ?.ident
+                        ?.span()
+                        ?: first
                 SynResult.failure(
                     SynError.new2(
                         first,
@@ -248,8 +274,20 @@ public sealed class Meta : ToTokens {
         when (this) {
             is NameValue -> SynResult.success(this)
             is PathMeta -> {
-                val first = path.segments.first()?.ident?.span() ?: Span.callSite()
-                val last = path.segments.last()?.ident?.span() ?: first
+                val first =
+                    path
+                        .segments
+                        .first()
+                        ?.ident
+                        ?.span()
+                        ?: Span.callSite()
+                val last =
+                    path
+                        .segments
+                        .last()
+                        ?.ident
+                        ?.span()
+                        ?: first
                 SynResult.failure(
                     SynError.new2(
                         first,
@@ -270,32 +308,30 @@ public sealed class Meta : ToTokens {
 }
 
 /** Parser for [Meta]: a path, a path followed by a delimited token stream, or a path followed by `=` and an expression. */
-public object MetaParse : Parse<Meta> {
-    override fun parse(input: ParseStream): SynResult<Meta> {
-        val path = parseOutermostMetaPath(input).getOrElse { return SynResult.failure(it) }
+public object MetaParse {
+    fun parse(input: ParseStream): SynResult<Meta> {
+        var path = parseOutermostMetaPath(input).getOrElse { return SynResult.failure(it) }
         return parseMetaAfterPath(path, input)
     }
 }
 
-/** Parser for [Meta.List]: a path followed by a delimited token stream. */
-public object MetaListParse : Parse<Meta.List> {
-    override fun parse(input: ParseStream): SynResult<Meta.List> {
-        val path = parseOutermostMetaPath(input).getOrElse { return SynResult.failure(it) }
+public object MetaListParse {
+    fun parse(input: ParseStream): SynResult<Meta.List> {
+        var path = parseOutermostMetaPath(input).getOrElse { return SynResult.failure(it) }
         return parseMetaListAfterPath(path, input)
     }
 }
 
-/** Parser for [Meta.NameValue]: a path followed by `=` and an expression. */
-public object MetaNameValueParse : Parse<Meta.NameValue> {
-    override fun parse(input: ParseStream): SynResult<Meta.NameValue> {
-        val path = parseOutermostMetaPath(input).getOrElse { return SynResult.failure(it) }
+public object MetaNameValueParse {
+    fun parse(input: ParseStream): SynResult<Meta.NameValue> {
+        var path = parseOutermostMetaPath(input).getOrElse { return SynResult.failure(it) }
         return parseMetaNameValueAfterPath(path, input)
     }
 }
 
 internal fun parseOutermostMetaPath(input: ParseStream): SynResult<Path> =
     if (input.peek(UnsafePeek)) {
-        val unsafeToken = input.parse(UnsafeParse).getOrElse { return SynResult.failure(it) }
+        var unsafeToken = UnsafeParse.parse(input).getOrElse { return SynResult.failure(it) }
         SynResult.success(Path.from(Ident.new("unsafe", unsafeToken.span)))
     } else {
         Path.parseModStyle(input)
@@ -311,18 +347,18 @@ internal fun parseMetaAfterPath(path: Path, input: ParseStream): SynResult<Meta>
     }
 
 internal fun parseMetaListAfterPath(path: Path, input: ParseStream): SynResult<Meta.List> {
-    val (delimiter, tokens) = parseDelimiter(input).getOrElse { return SynResult.failure(it) }
+    var (delimiter, tokens) = parseDelimiter(input).getOrElse { return SynResult.failure(it) }
     return SynResult.success(Meta.List(path, delimiter, tokens))
 }
 
 internal fun parseMetaNameValueAfterPath(path: Path, input: ParseStream): SynResult<Meta.NameValue> {
-    val eqToken = input.parse(EqParse).getOrElse { return SynResult.failure(it) }
-    val ahead = input.fork()
-    val lit = ahead.parse(LitParse)
-    val value: Expr =
+    var eqToken = EqParse.parse(input).getOrElse { return SynResult.failure(it) }
+    var ahead = input.fork()
+    var lit = LitParse.parse(ahead)
+    var value: Expr =
         if (lit is SynResult.Success && ahead.isEmpty()) {
             input.advanceTo(ahead)
-            Expr.Lit(attrs = emptyList(), lit = lit.value)
+            Expr.Lit(attrs = mutableListOf(), lit = lit.value)
         } else if (input.peek(PoundPeek) && input.peek2(BracketPeek)) {
             return SynResult.failure(input.error("unexpected attribute inside of attribute"))
         } else {

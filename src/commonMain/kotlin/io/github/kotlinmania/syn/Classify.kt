@@ -252,7 +252,7 @@ internal object Classify {
                         is SynType.Tuple,
                         -> return false
                     }
-                }
+            }
         }
 
         var current = expr
@@ -306,7 +306,12 @@ internal object Classify {
     }
 
     private sealed class TypeTail {
-        data class Done(val value: Boolean) : TypeTail()
-        data class More(val type: SynType) : TypeTail()
+        data class Done(
+            val value: Boolean,
+        ) : TypeTail()
+
+        data class More(
+            val type: SynType,
+        ) : TypeTail()
     }
 }

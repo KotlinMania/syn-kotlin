@@ -9,10 +9,8 @@ internal typealias RawPair<T, P> = kotlin.Pair<T, P>
 /**
  * Base class for strongly-typed punctuated sequences.
  *
- * Replaces the generic `Punctuated<T, P>` which Swift Export could not
- * bridge. Each subclass is a concrete named type for a specific element
- * type, preserving strong typing without exposing type parameters to the
- * Swift Export bridge.
+ * Each subclass is a concrete named type for a specific element and
+ * punctuation shape, preserving strong typing across the Swift Export bridge.
  */
 public sealed class SynPunctuated :
     ToTokens,
@@ -124,6 +122,16 @@ public sealed class SynPunctuated :
         }
 
     public fun indexMut(index: Int): ToTokens = index(index)
+
+    internal fun setRaw(index: Int, value: ToTokens) {
+        if (index < inner.size) {
+            inner[index] = inner[index].copy(first = value)
+        } else if (index == inner.size && last != null) {
+            last = value
+        } else {
+            throw IndexOutOfBoundsException("index: $index")
+        }
+    }
 }
 
 public class VariantList : SynPunctuated {
@@ -152,6 +160,14 @@ public class VariantList : SynPunctuated {
     }
 
     public fun pop(): Variant? = popRaw() as? Variant
+
+    public operator fun set(index: Int, value: Variant) {
+        super.setRaw(index, value)
+    }
+
+    public fun mapValuesInPlace(transform: (Variant) -> Variant) {
+        for (i in 0 until size) this[i] = transform(this[i])
+    }
 
     public fun copy(copyValue: (Variant) -> Variant = { it }, copyPunct: (ToTokens) -> ToTokens = { it }): VariantList =
         VariantList(super.inner.mapTo(mutableListOf()) { (v, p) -> copyValue(v as Variant) to copyPunct(p) }, super.last?.let { copyValue(it as Variant) })
@@ -184,6 +200,14 @@ public class FieldList : SynPunctuated {
 
     public fun pop(): Field? = popRaw() as? Field
 
+    public operator fun set(index: Int, value: Field) {
+        super.setRaw(index, value)
+    }
+
+    public fun mapValuesInPlace(transform: (Field) -> Field) {
+        for (i in 0 until size) this[i] = transform(this[i])
+    }
+
     public fun copy(copyValue: (Field) -> Field = { it }, copyPunct: (ToTokens) -> ToTokens = { it }): FieldList =
         FieldList(super.inner.mapTo(mutableListOf()) { (v, p) -> copyValue(v as Field) to copyPunct(p) }, super.last?.let { copyValue(it as Field) })
 }
@@ -214,6 +238,14 @@ public class FnArgList : SynPunctuated {
     }
 
     public fun pop(): FnArg? = popRaw() as? FnArg
+
+    public operator fun set(index: Int, value: FnArg) {
+        super.setRaw(index, value)
+    }
+
+    public fun mapValuesInPlace(transform: (FnArg) -> FnArg) {
+        for (i in 0 until size) this[i] = transform(this[i])
+    }
 
     public fun copy(copyValue: (FnArg) -> FnArg = { it }, copyPunct: (ToTokens) -> ToTokens = { it }): FnArgList =
         FnArgList(super.inner.mapTo(mutableListOf()) { (v, p) -> copyValue(v as FnArg) to copyPunct(p) }, super.last?.let { copyValue(it as FnArg) })
@@ -246,6 +278,14 @@ public class ExprList : SynPunctuated {
 
     public fun pop(): Expr? = popRaw() as? Expr
 
+    public operator fun set(index: Int, value: Expr) {
+        super.setRaw(index, value)
+    }
+
+    public fun mapValuesInPlace(transform: (Expr) -> Expr) {
+        for (i in 0 until size) this[i] = transform(this[i])
+    }
+
     public fun copy(copyValue: (Expr) -> Expr = { it }, copyPunct: (ToTokens) -> ToTokens = { it }): ExprList =
         ExprList(super.inner.mapTo(mutableListOf()) { (v, p) -> copyValue(v as Expr) to copyPunct(p) }, super.last?.let { copyValue(it as Expr) })
 }
@@ -276,6 +316,14 @@ public class PatList : SynPunctuated {
     }
 
     public fun pop(): Pat? = popRaw() as? Pat
+
+    public operator fun set(index: Int, value: Pat) {
+        super.setRaw(index, value)
+    }
+
+    public fun mapValuesInPlace(transform: (Pat) -> Pat) {
+        for (i in 0 until size) this[i] = transform(this[i])
+    }
 
     public fun copy(copyValue: (Pat) -> Pat = { it }, copyPunct: (ToTokens) -> ToTokens = { it }): PatList =
         PatList(super.inner.mapTo(mutableListOf()) { (v, p) -> copyValue(v as Pat) to copyPunct(p) }, super.last?.let { copyValue(it as Pat) })
@@ -308,6 +356,14 @@ public class FieldPatList : SynPunctuated {
 
     public fun pop(): FieldPat? = popRaw() as? FieldPat
 
+    public operator fun set(index: Int, value: FieldPat) {
+        super.setRaw(index, value)
+    }
+
+    public fun mapValuesInPlace(transform: (FieldPat) -> FieldPat) {
+        for (i in 0 until size) this[i] = transform(this[i])
+    }
+
     public fun copy(copyValue: (FieldPat) -> FieldPat = { it }, copyPunct: (ToTokens) -> ToTokens = { it }): FieldPatList =
         FieldPatList(super.inner.mapTo(mutableListOf()) { (v, p) -> copyValue(v as FieldPat) to copyPunct(p) }, super.last?.let { copyValue(it as FieldPat) })
 }
@@ -338,6 +394,14 @@ public class FieldValueList : SynPunctuated {
     }
 
     public fun pop(): FieldValue? = popRaw() as? FieldValue
+
+    public operator fun set(index: Int, value: FieldValue) {
+        super.setRaw(index, value)
+    }
+
+    public fun mapValuesInPlace(transform: (FieldValue) -> FieldValue) {
+        for (i in 0 until size) this[i] = transform(this[i])
+    }
 
     public fun copy(copyValue: (FieldValue) -> FieldValue = { it }, copyPunct: (ToTokens) -> ToTokens = { it }): FieldValueList =
         FieldValueList(super.inner.mapTo(mutableListOf()) { (v, p) -> copyValue(v as FieldValue) to copyPunct(p) }, super.last?.let { copyValue(it as FieldValue) })
@@ -370,6 +434,14 @@ public class GenericParamList : SynPunctuated {
 
     public fun pop(): GenericParam? = popRaw() as? GenericParam
 
+    public operator fun set(index: Int, value: GenericParam) {
+        super.setRaw(index, value)
+    }
+
+    public fun mapValuesInPlace(transform: (GenericParam) -> GenericParam) {
+        for (i in 0 until size) this[i] = transform(this[i])
+    }
+
     public fun copy(copyValue: (GenericParam) -> GenericParam = { it }, copyPunct: (ToTokens) -> ToTokens = { it }): GenericParamList =
         GenericParamList(super.inner.mapTo(mutableListOf()) { (v, p) -> copyValue(v as GenericParam) to copyPunct(p) }, super.last?.let { copyValue(it as GenericParam) })
 }
@@ -400,6 +472,14 @@ public class GenericArgumentList : SynPunctuated {
     }
 
     public fun pop(): GenericArgument? = popRaw() as? GenericArgument
+
+    public operator fun set(index: Int, value: GenericArgument) {
+        super.setRaw(index, value)
+    }
+
+    public fun mapValuesInPlace(transform: (GenericArgument) -> GenericArgument) {
+        for (i in 0 until size) this[i] = transform(this[i])
+    }
 
     public fun copy(copyValue: (GenericArgument) -> GenericArgument = { it }, copyPunct: (ToTokens) -> ToTokens = { it }): GenericArgumentList =
         GenericArgumentList(super.inner.mapTo(mutableListOf()) { (v, p) -> copyValue(v as GenericArgument) to copyPunct(p) }, super.last?.let { copyValue(it as GenericArgument) })
@@ -432,6 +512,14 @@ public class LifetimeList : SynPunctuated {
 
     public fun pop(): Lifetime? = popRaw() as? Lifetime
 
+    public operator fun set(index: Int, value: Lifetime) {
+        super.setRaw(index, value)
+    }
+
+    public fun mapValuesInPlace(transform: (Lifetime) -> Lifetime) {
+        for (i in 0 until size) this[i] = transform(this[i])
+    }
+
     public fun copy(copyValue: (Lifetime) -> Lifetime = { it }, copyPunct: (ToTokens) -> ToTokens = { it }): LifetimeList =
         LifetimeList(super.inner.mapTo(mutableListOf()) { (v, p) -> copyValue(v as Lifetime) to copyPunct(p) }, super.last?.let { copyValue(it as Lifetime) })
 }
@@ -462,6 +550,14 @@ public class TypeParamBoundList : SynPunctuated {
     }
 
     public fun pop(): TypeParamBound? = popRaw() as? TypeParamBound
+
+    public operator fun set(index: Int, value: TypeParamBound) {
+        super.setRaw(index, value)
+    }
+
+    public fun mapValuesInPlace(transform: (TypeParamBound) -> TypeParamBound) {
+        for (i in 0 until size) this[i] = transform(this[i])
+    }
 
     public fun copy(copyValue: (TypeParamBound) -> TypeParamBound = { it }, copyPunct: (ToTokens) -> ToTokens = { it }): TypeParamBoundList =
         TypeParamBoundList(super.inner.mapTo(mutableListOf()) { (v, p) -> copyValue(v as TypeParamBound) to copyPunct(p) }, super.last?.let { copyValue(it as TypeParamBound) })
@@ -494,6 +590,14 @@ public class CapturedParamList : SynPunctuated {
 
     public fun pop(): CapturedParam? = popRaw() as? CapturedParam
 
+    public operator fun set(index: Int, value: CapturedParam) {
+        super.setRaw(index, value)
+    }
+
+    public fun mapValuesInPlace(transform: (CapturedParam) -> CapturedParam) {
+        for (i in 0 until size) this[i] = transform(this[i])
+    }
+
     public fun copy(copyValue: (CapturedParam) -> CapturedParam = { it }, copyPunct: (ToTokens) -> ToTokens = { it }): CapturedParamList =
         CapturedParamList(super.inner.mapTo(mutableListOf()) { (v, p) -> copyValue(v as CapturedParam) to copyPunct(p) }, super.last?.let { copyValue(it as CapturedParam) })
 }
@@ -524,6 +628,14 @@ public class WherePredicateList : SynPunctuated {
     }
 
     public fun pop(): WherePredicate? = popRaw() as? WherePredicate
+
+    public operator fun set(index: Int, value: WherePredicate) {
+        super.setRaw(index, value)
+    }
+
+    public fun mapValuesInPlace(transform: (WherePredicate) -> WherePredicate) {
+        for (i in 0 until size) this[i] = transform(this[i])
+    }
 
     public fun copy(copyValue: (WherePredicate) -> WherePredicate = { it }, copyPunct: (ToTokens) -> ToTokens = { it }): WherePredicateList =
         WherePredicateList(super.inner.mapTo(mutableListOf()) { (v, p) -> copyValue(v as WherePredicate) to copyPunct(p) }, super.last?.let { copyValue(it as WherePredicate) })
@@ -556,6 +668,14 @@ public class PathSegmentList : SynPunctuated {
 
     public fun pop(): PathSegment? = popRaw() as? PathSegment
 
+    public operator fun set(index: Int, value: PathSegment) {
+        super.setRaw(index, value)
+    }
+
+    public fun mapValuesInPlace(transform: (PathSegment) -> PathSegment) {
+        for (i in 0 until size) this[i] = transform(this[i])
+    }
+
     public fun copy(copyValue: (PathSegment) -> PathSegment = { it }, copyPunct: (ToTokens) -> ToTokens = { it }): PathSegmentList =
         PathSegmentList(super.inner.mapTo(mutableListOf()) { (v, p) -> copyValue(v as PathSegment) to copyPunct(p) }, super.last?.let { copyValue(it as PathSegment) })
 }
@@ -586,6 +706,14 @@ public class UseTreeList : SynPunctuated {
     }
 
     public fun pop(): UseTree? = popRaw() as? UseTree
+
+    public operator fun set(index: Int, value: UseTree) {
+        super.setRaw(index, value)
+    }
+
+    public fun mapValuesInPlace(transform: (UseTree) -> UseTree) {
+        for (i in 0 until size) this[i] = transform(this[i])
+    }
 
     public fun copy(copyValue: (UseTree) -> UseTree = { it }, copyPunct: (ToTokens) -> ToTokens = { it }): UseTreeList =
         UseTreeList(super.inner.mapTo(mutableListOf()) { (v, p) -> copyValue(v as UseTree) to copyPunct(p) }, super.last?.let { copyValue(it as UseTree) })
@@ -618,6 +746,14 @@ public class BareFnArgList : SynPunctuated {
 
     public fun pop(): BareFnArg? = popRaw() as? BareFnArg
 
+    public operator fun set(index: Int, value: BareFnArg) {
+        super.setRaw(index, value)
+    }
+
+    public fun mapValuesInPlace(transform: (BareFnArg) -> BareFnArg) {
+        for (i in 0 until size) this[i] = transform(this[i])
+    }
+
     public fun copy(copyValue: (BareFnArg) -> BareFnArg = { it }, copyPunct: (ToTokens) -> ToTokens = { it }): BareFnArgList =
         BareFnArgList(super.inner.mapTo(mutableListOf()) { (v, p) -> copyValue(v as BareFnArg) to copyPunct(p) }, super.last?.let { copyValue(it as BareFnArg) })
 }
@@ -648,6 +784,14 @@ public class SynTypeList : SynPunctuated {
     }
 
     public fun pop(): SynType? = popRaw() as? SynType
+
+    public operator fun set(index: Int, value: SynType) {
+        super.setRaw(index, value)
+    }
+
+    public fun mapValuesInPlace(transform: (SynType) -> SynType) {
+        for (i in 0 until size) this[i] = transform(this[i])
+    }
 
     public fun copy(copyValue: (SynType) -> SynType = { it }, copyPunct: (ToTokens) -> ToTokens = { it }): SynTypeList =
         SynTypeList(super.inner.mapTo(mutableListOf()) { (v, p) -> copyValue(v as SynType) to copyPunct(p) }, super.last?.let { copyValue(it as SynType) })
@@ -965,15 +1109,15 @@ internal class Punctuated private constructor(
 
         public fun parseTerminated(
             input: ParseStream,
-            parser: Parse<ToTokens>,
-            punctParse: Parse<ToTokens>,
+            parser: (ParseStream) -> SynResult<ToTokens>,
+            punctParse: (ParseStream) -> SynResult<ToTokens>,
         ): SynResult<Punctuated> =
-            parseTerminatedWith(input, parser::parse, punctParse)
+            parseTerminatedWith(input, parser, punctParse)
 
         public fun parseTerminatedWith(
             input: ParseStream,
             parser: (ParseStream) -> SynResult<ToTokens>,
-            punctParse: Parse<ToTokens>,
+            punctParse: (ParseStream) -> SynResult<ToTokens>,
         ): SynResult<Punctuated> {
             val punctuated = Punctuated()
             while (true) {
@@ -981,7 +1125,7 @@ internal class Punctuated private constructor(
                 val value = parser(input).getOrElse { return SynResult.failure(it) }
                 punctuated.pushValue(value)
                 if (input.isEmpty()) break
-                val punct = punctParse.parse(input).getOrElse { return SynResult.failure(it) }
+                val punct = punctParse(input).getOrElse { return SynResult.failure(it) }
                 punctuated.pushPunct(punct)
             }
             return SynResult.success(punctuated)
@@ -989,24 +1133,24 @@ internal class Punctuated private constructor(
 
         public fun parseSeparatedNonempty(
             input: ParseStream,
-            parser: Parse<ToTokens>,
+            parser: (ParseStream) -> SynResult<ToTokens>,
             punctPeek: Peek,
-            punctParse: Parse<ToTokens>,
+            punctParse: (ParseStream) -> SynResult<ToTokens>,
         ): SynResult<Punctuated> =
-            parseSeparatedNonemptyWith(input, parser::parse, punctPeek, punctParse)
+            parseSeparatedNonemptyWith(input, parser, punctPeek, punctParse)
 
         public fun parseSeparatedNonemptyWith(
             input: ParseStream,
             parser: (ParseStream) -> SynResult<ToTokens>,
             punctPeek: Peek,
-            punctParse: Parse<ToTokens>,
+            punctParse: (ParseStream) -> SynResult<ToTokens>,
         ): SynResult<Punctuated> {
             val punctuated = Punctuated()
             while (true) {
                 val value = parser(input).getOrElse { return SynResult.failure(it) }
                 punctuated.pushValue(value)
                 if (!input.peek(punctPeek)) break
-                val punct = punctParse.parse(input).getOrElse { return SynResult.failure(it) }
+                val punct = punctParse(input).getOrElse { return SynResult.failure(it) }
                 punctuated.pushPunct(punct)
             }
             return SynResult.success(punctuated)

@@ -11,7 +11,7 @@ class CloneTest {
     fun deriveInputCloneCopiesNestedMutableContainers() {
         val original =
             parseStr(
-                DeriveInputParse,
+                DeriveInputParse::parse,
                 "struct S<T> where T: Copy { field: T }",
             ).getOrThrow()
 

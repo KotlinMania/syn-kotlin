@@ -23,23 +23,23 @@ import io.github.kotlinmania.quote.ToTokens
  *
  * Here is a snippet of parsing code to get a feel for the style of the
  * library. We define data structures for a subset of the syntax including
- * enums (not shown) and data classes, then provide implementations of the [Parse]
+ * enums (not shown) and data classes, then provide typed parser functions
  * to parse these syntax tree data structures from a token stream.
  *
- * Once [Parse] implementations have been defined, they can be called conveniently from a
- * procedural-macro handler through [parseMacroInput] as shown at the bottom of the
- * snippet. If the caller provides syntactically invalid input to the
+ * Once parser functions have been defined, they can be called conveniently from a
+ * procedural-macro handler through [parseMacroInput] or through the token-stream
+ * parsing helpers. If the caller provides syntactically invalid input to the
  * procedural-macro handler, they will receive a helpful compiler error message
  * pointing out the exact token that triggered the failure to parse.
  *
  * ## The `parse*` functions
  *
- * The top-level `parse`, `parse2`, and `parseStr` helpers serve as entry
- * points for parsing syntax tree nodes that can be parsed in an obvious
- * default way. These functions accept any [Parse] implementation, which
- * includes most types in Syn.
+ * The top-level `parse2` and `parseStr` helpers serve as entry points for
+ * parsing syntax tree nodes from a token stream or string. These functions
+ * accept parser functions with the signature `(ParseStream) -> SynResult<T>`,
+ * which includes most types in Syn.
  *
- * ## The [Parser] interface
+ * ## Parser functions
  *
  * Some types can be parsed in several ways depending on context. For example
  * an `Attribute` can be either "outer" like `...` attribute or "inner" like `...` inner attribute
@@ -47,26 +47,13 @@ import io.github.kotlinmania.quote.ToTokens
  * not allow trailing punctuation, and parsing it the wrong way would either
  * reject valid input or accept invalid input.
  *
- * The [Parse] interface is not implemented in these cases because there is no good
+ * A default parser function is not provided in these cases because there is no good
  * behavior to consider the default.
  *
  * In these cases the types provide a choice of parser functions rather than a
- * single [Parse] implementation, and those parser functions can be invoked
- * through the [Parser] interface.
+ * single default parser function, and those parser functions can be invoked
+ * directly or through the top-level `parse*` helpers.
  */
-
-/**
- * Parsing interface implemented by all types that can be parsed in a default
- * way from a token stream.
- *
- * The `Parse` interface has a single `parse` method returning
- * a [SynResult]. [Parse] takes a phantom type parameter
- * and implementations live on companion objects of the parsed type (or on
- * stand-alone parser strategy objects).
- */
-public interface Parse<T> {
-    public fun parse(input: ParseStream): SynResult<T>
-}
 
 /**
  * Input to a Syn parser function.
@@ -92,7 +79,7 @@ public typealias ParseStream = ParseBuffer
  *
  * - The [parseMacroInput] helper if parsing input of a procedural-macro handler;
  * - One of the top-level `parse*` functions; or
- * - A method of the [Parser] interface.
+ * - A concrete parser-specific entry point.
  */
 public class ParseBuffer internal constructor(
     internal val scope: Span,
@@ -103,18 +90,6 @@ public class ParseBuffer internal constructor(
     override fun toString(): String = currentCursor.tokenStream().toString()
 
     public fun fmt(): String = toString()
-
-    /**
-     * Parses a syntax tree node of type [T], advancing the position of our
-     * parse stream past it.
-     */
-    public fun <T> parse(parser: Parse<T>): SynResult<T> = parser.parse(this)
-
-    /**
-     * Calls the given parser function to parse a syntax tree node of type [T]
-     * from this stream.
-     */
-    public fun <T> call(function: (ParseStream) -> SynResult<T>): SynResult<T> = function(this)
 
     /**
      * Looks at the next token in the parse stream to determine whether it
@@ -149,7 +124,7 @@ public class ParseBuffer internal constructor(
     internal fun parseTerminated(
         parser: (ParseStream) -> SynResult<ToTokens>,
         separator: Peek,
-        punctuationParser: Parse<ToTokens>,
+        punctuationParser: (ParseStream) -> SynResult<ToTokens>,
     ): SynResult<Punctuated> {
         separator.peek(currentCursor)
         return Punctuated.parseTerminatedWith(this, parser, punctuationParser)
@@ -196,7 +171,7 @@ public class ParseBuffer internal constructor(
      * Speculatively parses tokens from this parse stream, advancing the
      * position of this stream only if parsing succeeds.
      *
-     * This is a powerful low-level API used for defining the [Parse] implementations of
+     * This is a powerful low-level API used for defining parser functions for
      * the basic built-in token types. It is not something that will be used
      * widely outside of the Syn codebase.
      */
@@ -407,39 +382,19 @@ private fun spanOfUnexpectedIgnoringNones(initial: Cursor): Pair<Span, Delimiter
     return if (cursor.eof()) null else cursor.span() to cursor.scopeDelimiter()
 }
 
-/** Parse implementations for the procmacro2 token types and stdlib containers. */
-
-/**
- * Parser strategy for a boxed result. The `Parse<T>.boxed()` extension keeps callers source-compatible with
- * sites that wrap a parsed node.
- */
-public fun <T : Any> Parse<T>.boxed(): Parse<T> = this
-
-/**
- * Parser strategy for an optional result — emits a `null` rather than
- * an error if the peek target does not match.
- */
-public fun <T : Any> Parse<T>.optional(peek: Peek): Parse<T?> =
-    object : Parse<T?> {
-        override fun parse(input: ParseStream): SynResult<T?> =
-            if (peek.peek(input.cursor())) {
-                this@optional.parse(input).map { it }
-            } else {
-                SynResult.success(null)
-            }
-    }
+/** Parser functions for the procmacro2 token types and stdlib containers. */
 
 /** Parser strategy that consumes the remainder of the stream as a [TokenStream]. */
-public object TokenStreamParse : Parse<TokenStream> {
-    override fun parse(input: ParseStream): SynResult<TokenStream> =
+public object TokenStreamParse {
+    public fun parse(input: ParseStream): SynResult<TokenStream> =
         input.step { cursor ->
             SynResult.success(cursor.tokenStream() to Cursor.empty())
         }
 }
 
 /** Parser strategy for [TokenTree]. */
-public object TokenTreeParse : Parse<TokenTree> {
-    override fun parse(input: ParseStream): SynResult<TokenTree> =
+public object TokenTreeParse {
+    public fun parse(input: ParseStream): SynResult<TokenTree> =
         input.step { cursor ->
             val pair = cursor.tokenTree() ?: return@step SynResult.failure(cursor.error("expected token tree"))
             SynResult.success(pair)
@@ -447,8 +402,8 @@ public object TokenTreeParse : Parse<TokenTree> {
 }
 
 /** Parser strategy for [Group]. */
-public object GroupParse : Parse<Group> {
-    override fun parse(input: ParseStream): SynResult<Group> =
+public object GroupParse {
+    public fun parse(input: ParseStream): SynResult<Group> =
         input.step { cursor ->
             val pair = cursor.raw.anyGroupToken()
             if (pair != null && pair.first.delimiter() != Delimiter.None) {
@@ -460,8 +415,8 @@ public object GroupParse : Parse<Group> {
 }
 
 /** Parser strategy for [Punct]. */
-public object PunctParse : Parse<Punct> {
-    override fun parse(input: ParseStream): SynResult<Punct> =
+public object PunctParse {
+    public fun parse(input: ParseStream): SynResult<Punct> =
         input.step { cursor ->
             val pair = cursor.punct() ?: return@step SynResult.failure(cursor.error("expected punctuation token"))
             SynResult.success(pair)
@@ -469,104 +424,35 @@ public object PunctParse : Parse<Punct> {
 }
 
 /** Parser strategy for [Literal]. */
-public object LiteralParse : Parse<Literal> {
-    override fun parse(input: ParseStream): SynResult<Literal> =
+public object LiteralParse {
+    public fun parse(input: ParseStream): SynResult<Literal> =
         input.step { cursor ->
             val pair = cursor.literal() ?: return@step SynResult.failure(cursor.error("expected literal token"))
             SynResult.success(pair)
         }
 }
 
-/**
- * Parser that can parse tokens into a particular syntax tree node.
- *
- * Refer to the module documentation for details about parsing in Syn.
- */
-public interface Parser<T> {
-
-    /**
-     * Parse a procmacro2 token stream into the chosen syntax tree node.
-     *
-     * This function enforces that the input is fully parsed. If there are any
-     * unparsed tokens at the end of the stream, an error is returned.
-     */
-    public fun parse2(tokens: TokenStream): SynResult<T>
-
-    /**
-     * Parse a string of source code into the chosen syntax tree node.
-     *
-     * This function enforces that the input is fully parsed. If there are any
-     * unparsed tokens at the end of the string, an error is returned.
-     *
-     * # Hygiene
-     *
-     * Every span in the resulting syntax tree will be set to resolve at the
-     * macro call site.
-     */
-    public fun parseStr(s: String): SynResult<T> =
-        TokenStream.fromString(s).fold(
-            onSuccess = { parse2(it) },
-            onFailure = { SynResult.failure(SynError.from(it as io.github.kotlinmania.procmacro2.LexError)) },
-        )
-
-    /**
-     * Not public API. Used by [parseMacroInput] to attach the scope span of
-     * the macro invocation site to error spans.
-     */
-    public fun parseScopedImpl(scope: Span, tokens: TokenStream): SynResult<T> = parse2(tokens)
-}
-
-private fun tokensToParseBuffer(tokens: TokenBuffer): ParseBuffer {
-    val scope = Span.callSite()
-    val cursor = tokens.begin()
+internal fun <T> parseScoped(
+    parser: (ParseStream) -> SynResult<T>,
+    scope: Span,
+    tokens: TokenStream,
+): SynResult<T> {
+    val buf = TokenBuffer.new2(tokens)
+    val cursor = buf.begin()
     val unexpected = UnexpectedRef(Unexpected.None)
-    return newParseBuffer(scope, cursor, unexpected)
-}
-
-/**
- * Adapts a parser closure `(ParseStream) -> SynResult<T>` into a [Parser]
- * implementation. Uses a universal adapter that wraps any parser
- * function — this helper performs the same wrapping explicitly.
- */
-public fun <T> parserFromFunction(function: (ParseStream) -> SynResult<T>): Parser<T> =
-    object : Parser<T> {
-        override fun parse2(tokens: TokenStream): SynResult<T> {
-            val buf = TokenBuffer.new2(tokens)
-            val state = tokensToParseBuffer(buf)
-            val nodeResult = function(state)
-            if (nodeResult.isFailure) return nodeResult
-            val node = nodeResult.getOrThrow()
-            val check = state.checkUnexpected()
-            if (check.isFailure) return SynResult.failure(check.exceptionOrNull()!!)
-            val info = spanOfUnexpectedIgnoringNones(state.cursor())
-            return if (info != null) {
-                SynResult.failure(errUnexpectedToken(info.first, info.second))
-            } else {
-                SynResult.success(node)
-            }
-        }
-
-        override fun parseScopedImpl(scope: Span, tokens: TokenStream): SynResult<T> {
-            val buf = TokenBuffer.new2(tokens)
-            val cursor = buf.begin()
-            val unexpected = UnexpectedRef(Unexpected.None)
-            val state = newParseBuffer(scope, cursor, unexpected)
-            val nodeResult = function(state)
-            if (nodeResult.isFailure) return nodeResult
-            val node = nodeResult.getOrThrow()
-            val check = state.checkUnexpected()
-            if (check.isFailure) return SynResult.failure(check.exceptionOrNull()!!)
-            val info = spanOfUnexpectedIgnoringNones(state.cursor())
-            return if (info != null) {
-                SynResult.failure(errUnexpectedToken(info.first, info.second))
-            } else {
-                SynResult.success(node)
-            }
-        }
+    val state = newParseBuffer(scope, cursor, unexpected)
+    val nodeResult = parser(state)
+    if (nodeResult.isFailure) return nodeResult
+    val node = nodeResult.getOrThrow()
+    val check = state.checkUnexpected()
+    if (check.isFailure) return SynResult.failure(check.exceptionOrNull()!!)
+    val info = spanOfUnexpectedIgnoringNones(state.cursor())
+    return if (info != null) {
+        SynResult.failure(errUnexpectedToken(info.first, info.second))
+    } else {
+        SynResult.success(node)
     }
-
-internal fun <T> parseScoped(parser: Parser<T>, scope: Span, tokens: TokenStream): SynResult<T> =
-    parser.parseScopedImpl(scope, tokens)
+}
 
 private fun errUnexpectedToken(span: Span, delimiter: Delimiter): SynError {
     val msg =
@@ -585,8 +471,8 @@ private fun errUnexpectedToken(span: Span, delimiter: Delimiter): SynError {
  * This is useful for attribute macros that want to ensure they are not
  * provided any attribute args.
  */
-public object Nothing : Parse<Nothing>, ToTokens {
-    override fun parse(input: ParseStream): SynResult<Nothing> = SynResult.success(Nothing)
+public object Nothing : ToTokens {
+    public fun parse(input: ParseStream): SynResult<Nothing> = SynResult.success(Nothing)
 
     override fun toTokens(tokens: TokenStream) {}
 
@@ -614,12 +500,17 @@ public object Nothing : Parse<Nothing>, ToTokens {
  * Parse a [TokenStream] into the chosen syntax tree node, enforcing that the
  * entire stream is consumed. Mirrors `parse2`.
  */
-public fun <T> parse2(parser: Parse<T>, tokens: TokenStream): SynResult<T> =
-    parserFromFunction(parser::parse).parse2(tokens)
+public fun <T> parse2(parser: (ParseStream) -> SynResult<T>, tokens: TokenStream): SynResult<T> =
+    parseScoped(parser, Span.callSite(), tokens)
 
 /**
  * Parse a string of source code into the chosen syntax tree node. Mirrors
  * `parseStr`.
  */
-public fun <T> parseStr(parser: Parse<T>, s: String): SynResult<T> =
-    parserFromFunction(parser::parse).parseStr(s)
+public fun <T> parseStr(parser: (ParseStream) -> SynResult<T>, s: String): SynResult<T> {
+    val parseResult = TokenStream.fromString(s)
+    if (parseResult.isFailure()) {
+        return SynResult.failure(SynError.new(Span.callSite(), parseResult.error ?: "cannot parse string"))
+    }
+    return parse2(parser, parseResult.getOrThrow())
+}

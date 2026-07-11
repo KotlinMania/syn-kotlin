@@ -26,11 +26,14 @@ class UnparenthesizeTest {
 
     private fun test(content: String) {
         val before = parseFile(content).getOrThrow()
-        val flatBefore = FlattenParens.discardAttrs().visitFileMut(before.deepCopy())
+        val flatBefore = before.deepCopy()
+        FlattenParens.discardAttrs().visitFileMut(flatBefore)
         val printed = flatBefore.intoTokenStream()
-        val after = parse2(FileParse, printed).getOrThrow()
-        val flatAfter = FlattenParens.discardAttrs().visitFileMut(after.deepCopy())
-        val expected = AsIfPrinted().visitFileMut(flatBefore)
+        val after = parse2(FileParse::parse, printed).getOrThrow()
+        val flatAfter = after.deepCopy()
+        FlattenParens.discardAttrs().visitFileMut(flatAfter)
+        AsIfPrinted.visitFileMut(flatBefore)
+        val expected = flatBefore
 
         assertEquals(expected.intoTokenStream().toString(), flatAfter.intoTokenStream().toString())
     }
@@ -43,22 +46,28 @@ private class FlattenParens(
         var expr = e
         while (expr is Expr.Paren) {
             val parenAttrs = expr.attrs
+            expr.attrs = mutableListOf()
             expr = expr.expr
             if (parenAttrs.isNotEmpty() && !discardParenAttrs) {
-                expr = combineAttrs(expr, parenAttrs)
+                combineAttrs(expr, parenAttrs)
             }
         }
         return super.visitExpr(expr)
     }
 
-    override fun visitTokenStreamMut(tokens: TokenStream): TokenStream =
-        TokenStream.fromTokenTrees(tokens.flatMap(::flattenTokenTree))
+    fun flattened(tokens: TokenStream): TokenStream =
+        TokenStream.fromTokenTrees(tokens.toList().flatMap(::flattenTokenTree))
+
+    override fun visitTokenStreamMut(tokens: TokenStream) {
+        tokens.replaceFrom(flattened(tokens))
+    }
 
     private fun flattenTokenTree(token: TokenTree): List<TokenTree> =
         when (token) {
             is TokenTree.Group -> {
                 val delimiter = token.value.delimiter()
-                val content = visitTokenStreamMut(token.value.stream())
+                val content = token.value.stream()
+                visitTokenStreamMut(content)
                 if (delimiter == Delimiter.Parenthesis) {
                     content.toList()
                 } else {
@@ -68,66 +77,70 @@ private class FlattenParens(
             else -> listOf(token)
         }
 
-    private fun combineAttrs(expr: Expr, attrs: List<Attribute>): Expr =
+    private fun combineAttrs(expr: Expr, attrs: MutableList<Attribute>) {
         when (expr) {
             is Expr.Assign -> {
                 require(expr.attrs.isEmpty())
-                expr.copy(attrs = attrs)
+                expr.attrs = attrs
             }
             is Expr.Binary -> {
                 require(expr.attrs.isEmpty())
-                expr.copy(attrs = attrs)
+                expr.attrs = attrs
             }
             is Expr.Cast -> {
                 require(expr.attrs.isEmpty())
-                expr.copy(attrs = attrs)
+                expr.attrs = attrs
             }
             else -> error("cannot combine parenthesized attributes into ${expr::class.simpleName}")
         }
+    }
 
     companion object {
         fun discardAttrs(): FlattenParens = FlattenParens(discardParenAttrs = true)
     }
 }
 
-private class AsIfPrinted : VisitMut() {
-    override fun visitFile(f: File): File =
-        super.visitFile(f.copy(shebang = null))
-
-    override fun visitGenerics(g: Generics): Generics {
-        val generics = g.copy()
-        if (generics.params.isEmpty()) {
-            generics.ltToken = null
-            generics.gtToken = null
-        }
-        if (generics.whereClause?.predicates?.isEmpty() == true) {
-            generics.whereClause = null
-        }
-        return super.visitGenerics(generics)
+internal object AsIfPrinted : VisitMut() {
+    override fun visitFile(f: File) {
+        f.shebang = null
+        super.visitFile(f)
     }
 
-    override fun visitLifetimeParamMut(param: GenericParam.LifetimeParam): GenericParam.LifetimeParam {
-        val visited = super.visitLifetimeParamMut(param)
-        return if (visited.bounds.isEmpty()) visited.copy(colonToken = null) else visited
+    override fun visitGenerics(g: Generics) {
+        if (g.params.isEmpty()) {
+            g.ltToken = null
+            g.gtToken = null
+        }
+        if (g.whereClause?.predicates?.isEmpty() == true) {
+            g.whereClause = null
+        }
+        super.visitGenerics(g)
     }
 
-    override fun visitTypeParamMut(param: GenericParam.TypeParam): GenericParam.TypeParam {
-        val visited = super.visitTypeParamMut(param)
-        return if (visited.bounds.isEmpty()) visited.copy(colonToken = null) else visited
+    override fun visitLifetimeParamMut(param: GenericParam.LifetimeParam) {
+        if (param.bounds.isEmpty()) param.colonToken = null
+        super.visitLifetimeParamMut(param)
+    }
+
+    override fun visitTypeParamMut(param: GenericParam.TypeParam) {
+        if (param.bounds.isEmpty()) param.colonToken = null
+        super.visitTypeParamMut(param)
     }
 
     override fun visitStmt(s: Stmt): Stmt {
-        if (s is Stmt.ExprStmt && s.expr is Expr.Macro) {
+        if (s is Stmt.ExprStmt) {
             val expr = s.expr
-            val printsAsMacroStmt =
-                when (expr.mac.delimiter) {
-                    is MacroDelimiter.Brace -> true
-                    is MacroDelimiter.Paren,
-                    is MacroDelimiter.Bracket,
-                    -> s.semiToken != null
+            if (expr is Expr.Macro) {
+                val printsAsMacroStmt =
+                    when (expr.mac.delimiter) {
+                        is MacroDelimiter.Brace -> true
+                        is MacroDelimiter.Paren,
+                        is MacroDelimiter.Bracket,
+                        -> s.semiToken != null
+                    }
+                if (printsAsMacroStmt) {
+                    return super.visitStmt(Stmt.MacroStmt(expr.attrs, expr.mac, s.semiToken))
                 }
-            if (printsAsMacroStmt) {
-                return super.visitStmt(Stmt.MacroStmt(expr.attrs, expr.mac, s.semiToken))
             }
         }
         return super.visitStmt(s)
