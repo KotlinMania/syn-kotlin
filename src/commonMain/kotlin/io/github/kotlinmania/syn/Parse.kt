@@ -503,11 +503,12 @@ public interface Parser<T> {
      * Every span in the resulting syntax tree will be set to resolve at the
      * macro call site.
      */
-    public fun parseStr(s: String): SynResult<T> =
-        TokenStream.fromString(s).fold(
-            onSuccess = { parse2(it) },
-            onFailure = { SynResult.failure(SynError.from(it as io.github.kotlinmania.procmacro2.LexError)) },
-        )
+    public fun parseStr(s: String): SynResult<T> {
+        val parsed = TokenStream.fromString(s)
+        val tokenStream = parsed.value
+            ?: return SynResult.failure(SynError.new(Span.callSite(), parsed.error ?: "cannot parse string into token stream"))
+        return parse2(tokenStream)
+    }
 
     /**
      * Not public API. Used by [parseMacroInput] to attach the scope span of

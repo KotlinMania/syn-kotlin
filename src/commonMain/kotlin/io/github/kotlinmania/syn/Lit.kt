@@ -196,11 +196,9 @@ public class LitStr private constructor(
 
     public fun <T> parseWith(parser: Parser<T>): SynResult<T> {
         val span = span()
-        val tokenStream =
-            TokenStream.fromString(value()).fold(
-                onSuccess = { it },
-                onFailure = { return SynResult.failure(SynError.new(span, it.message ?: it.toString())) },
-            )
+        val parsed = TokenStream.fromString(value())
+        val tokenStream = parsed.value
+            ?: return SynResult.failure(SynError.new(span, parsed.error ?: "cannot parse string into token stream"))
         val result = parseScoped(parser, span, respanTokenStream(tokenStream, span))
         if (result.isFailure) return result
         val litSuffix = suffix()

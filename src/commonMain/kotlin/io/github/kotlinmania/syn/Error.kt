@@ -4,7 +4,6 @@ package io.github.kotlinmania.syn
 import io.github.kotlinmania.procmacro2.Delimiter
 import io.github.kotlinmania.procmacro2.Group
 import io.github.kotlinmania.procmacro2.Ident
-import io.github.kotlinmania.procmacro2.LexError
 import io.github.kotlinmania.procmacro2.Literal
 import io.github.kotlinmania.procmacro2.Punct
 import io.github.kotlinmania.procmacro2.Spacing
@@ -197,9 +196,6 @@ public class SynError private constructor(
                 ),
             )
         }
-
-        public fun from(err: LexError): SynError =
-            new(err.span(), err)
 
         public fun newAt(start: Span, end: Span, message: Any): SynError =
             SynError(
