@@ -175,8 +175,8 @@ public object GroupPeek : Peek {
 }
 
 /** Strongly-typed parse for an opening brace `{`. */
-public object BraceParse : Parse<Brace> {
-    override fun parse(input: ParseStream): SynResult<Brace> =
+public object BraceParse {
+    public fun parse(input: ParseStream): SynResult<Brace> =
         input.step { cursor ->
             val (content, span, rest) =
                 cursor.group(Delimiter.Brace)
@@ -190,8 +190,8 @@ public object BraceParse : Parse<Brace> {
 }
 
 /** Strongly-typed parse for an opening bracket `[`. */
-public object BracketParse : Parse<Bracket> {
-    override fun parse(input: ParseStream): SynResult<Bracket> =
+public object BracketParse {
+    public fun parse(input: ParseStream): SynResult<Bracket> =
         input.step { cursor ->
             val (content, span, rest) =
                 cursor.group(Delimiter.Bracket)
@@ -205,8 +205,8 @@ public object BracketParse : Parse<Bracket> {
 }
 
 /** Strongly-typed parse for an opening parenthesis `(`. */
-public object ParenParse : Parse<Paren> {
-    override fun parse(input: ParseStream): SynResult<Paren> =
+public object ParenParse {
+    public fun parse(input: ParseStream): SynResult<Paren> =
         input.step { cursor ->
             val (content, span, rest) =
                 cursor.group(Delimiter.Parenthesis)

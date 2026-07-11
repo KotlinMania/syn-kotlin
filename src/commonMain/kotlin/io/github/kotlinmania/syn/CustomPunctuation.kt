@@ -12,7 +12,7 @@ import io.github.kotlinmania.quote.append
  * Support for defining custom multi-character punctuation tokens.
  *
  * In the upstream crate this is a declarative macro. In Kotlin, custom
- * punctuation is defined as a data class with companion Peek and Parse
+ * punctuation is defined as a data class with companion Peek and parser
  * implementations that match the character sequence.
  *
  * Example: PathSeparator for the angle-bracket-slash sequence would be
@@ -51,7 +51,7 @@ public abstract class CustomPunctuation : ToTokens {
 }
 
 /**
- * Creates a Peek and Parse pair for a custom multi-character punctuation
+ * Creates a Peek and parser pair for a custom multi-character punctuation
  * sequence.
  *
  * In the upstream crate, a declarative macro defines data classes for
@@ -59,11 +59,11 @@ public abstract class CustomPunctuation : ToTokens {
  * dynamic mechanism to peek and parse arbitrary punctuation sequences.
  *
  * @param chars The character sequence for this punctuation.
- * @return A pair of [Peek] and [Parse] implementations for this punctuation.
+ * @return A pair of [Peek] and concrete parser for this punctuation.
  */
-public fun customPunctuation(chars: String): Pair<Peek, Parse<CustomPunctuation>> {
-    val peek = CustomPunctuationPeek(chars)
-    val parse = CustomPunctuationParse(chars)
+public fun customPunctuation(chars: String): Pair<Peek, CustomPunctuationParse> {
+    var peek = CustomPunctuationPeek(chars)
+    var parse = CustomPunctuationParse(chars)
     return peek to parse
 }
 
@@ -88,10 +88,10 @@ internal class CustomPunctuationPeek(
 }
 
 /** Parse implementation for a custom punctuation sequence. */
-internal class CustomPunctuationParse(
+public class CustomPunctuationParse(
     private val chars: String,
-) : Parse<CustomPunctuation> {
-    override fun parse(input: ParseStream): SynResult<CustomPunctuation> =
+) {
+    public fun parse(input: ParseStream): SynResult<CustomPunctuation> =
         input.step { cursor ->
             val spans = mutableListOf<io.github.kotlinmania.procmacro2.Span>()
             var current = cursor.raw

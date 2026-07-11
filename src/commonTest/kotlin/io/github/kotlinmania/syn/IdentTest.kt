@@ -10,10 +10,11 @@ import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 
 private fun parse(s: String): SynResult<Ident> {
-    val parsed = TokenStream.fromString(s)
-    val tokenStream = parsed.value
-        ?: return SynResult.failure(SynError.new(Span.callSite(), parsed.error ?: "cannot parse string into token stream"))
-    return parse2(IdentParse, tokenStream)
+    val parseResult = TokenStream.fromString(s)
+    if (parseResult.isFailure()) {
+        return SynResult.failure(SynError.new(Span.callSite(), parseResult.error ?: "cannot parse string"))
+    }
+    return parse2(IdentParse::parse, parseResult.getOrThrow())
 }
 
 private fun new(s: String): Ident = Ident.new(s, Span.callSite())

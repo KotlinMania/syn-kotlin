@@ -10,7 +10,7 @@ class VisitTest {
     fun deriveInputVisitRecursesThroughDataAndGenerics() {
         val input =
             parseStr(
-                DeriveInputParse,
+                DeriveInputParse::parse,
                 """
                 #[derive(Clone)]
                 pub(in crate::m) enum Demo<'a, T: for<'b> Into + Clone + 'a, const N: usize>
@@ -149,7 +149,7 @@ class VisitTest {
                 "_",
                 "!",
                 "mac!()",
-            ).map { parseStr(SynTypeParseExpr, it).getOrThrow() }
+            ).map { parseStr(SynTypeParseExpr::parse, it).getOrThrow() }
         val visitor = RecordingVisit()
 
         visitor.visitFile(file)
@@ -173,10 +173,21 @@ class VisitTest {
         val span = Span.callSite()
 
         visitor.visitPat(parsePat("1..=2"))
-        visitor.visitLabel(Label(Lifetime.new("'lbl", span), io.github.kotlinmania.syn.token.Colon.from(span)))
-        visitor.visitUnOp(UnOp.NotOp(io.github.kotlinmania.syn.token.Not.from(span)))
-        visitor.visitLit(parseStr(LitParse, "c\"hello\"").getOrThrow())
-        visitor.visitType(parseStr(SynTypeParseExpr, "<Self as Trait>::Assoc").getOrThrow())
+        visitor.visitLabel(
+            Label(
+                Lifetime.new("'lbl", span),
+                io.github.kotlinmania.syn.token.Colon
+                    .from(span),
+            ),
+        )
+        visitor.visitUnOp(
+            UnOp.NotOp(
+                io.github.kotlinmania.syn.token.Not
+                    .from(span),
+            ),
+        )
+        visitor.visitLit(parseStr(LitParse::parse, "c\"hello\"").getOrThrow())
+        visitor.visitType(parseStr(SynTypeParseExpr::parse, "<Self as Trait>::Assoc").getOrThrow())
 
         visitor.assertEvent("range:closed")
         visitor.assertEvent("label:'lbl")
@@ -186,10 +197,10 @@ class VisitTest {
     }
 
     private fun parseItem(source: String): Item =
-        parseStr(ItemParse, source).getOrThrow()
+        parseStr(ItemParse::parse, source).getOrThrow()
 
     private fun parsePat(source: String): Pat =
-        parserFromFunction(Pat.Companion::parseMulti).parseStr(source).getOrThrow()
+        parseStr(Pat.Companion::parseMulti, source).getOrThrow()
 
     private class RecordingVisit : Visit() {
         val events = mutableListOf<String>()

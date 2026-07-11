@@ -9,7 +9,7 @@ import kotlin.test.assertNull
 
 class ReceiverTest {
     private fun receiver(source: String): FnArg.Receiver {
-        val item = parserFromFunction(::parseTraitItem).parseStr(source).getOrThrow()
+        val item = parseStr(::parseTraitItem, source).getOrThrow()
         val fn = assertIs<TraitItem.Fn>(item)
         return assertIs<FnArg.Receiver>(fn.sig.inputs.first())
     }

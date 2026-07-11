@@ -10,7 +10,7 @@ import kotlin.test.assertTrue
 class ParseTest {
     @Test
     fun nothingParsesOnlyEmptyInputAndPrintsNoTokens() {
-        val parsed = parseStr(Nothing, "").getOrThrow()
+        val parsed = parseStr(Nothing::parse, "").getOrThrow()
         assertEquals(Nothing, parsed)
         assertFalse(parsed.equals(Any()))
         assertEquals(0, parsed.hashCode())
@@ -21,7 +21,7 @@ class ParseTest {
         parsed.toTokens(tokens)
         assertTrue(tokens.isEmpty())
 
-        val extra = parseStr(Nothing, "asdf")
+        val extra = parseStr(Nothing::parse, "asdf")
         assertTrue(extra.isFailure)
         assertEquals("unexpected token", extra.exceptionOrNull()?.toString())
     }

@@ -15,7 +15,7 @@ class GenericsTest {
     fun testSplitForImpl() {
         val input =
             parseStr(
-                DeriveInputParse,
+                DeriveInputParse::parse,
                 "struct S<'a, 'b: 'a, #[may_dangle] T: 'a = ()> where T: Debug;",
             ).getOrThrow()
 
@@ -36,7 +36,13 @@ class GenericsTest {
         assertEquals(listOf("'a"), b.bounds.toList().map { it.toString() })
 
         val t = assertIs<GenericParam.TypeParam>(params[2])
-        assertEquals("may_dangle", t.attrs.single().path().toString())
+        assertEquals(
+            "may_dangle",
+            t.attrs
+                .single()
+                .path()
+                .toString(),
+        )
         assertEquals("T", t.ident.toString())
         assertNotNull(t.colonToken)
         assertEquals("'a", assertIs<TypeParamBound.LifetimeBound>(t.bounds.toList().single()).lifetime.toString())
@@ -66,7 +72,11 @@ class GenericsTest {
         assertNull(typeOnlyT.colonToken)
         assertTrue(typeOnlyT.bounds.isEmpty())
 
-        val turbofishArgs = split.typeGenerics.asTurbofish().params.toList()
+        val turbofishArgs =
+            split.typeGenerics
+                .asTurbofish()
+                .params
+                .toList()
         assertEquals(3, turbofishArgs.size)
         assertEquals("'a", assertIs<GenericArgument.LifetimeArg>(turbofishArgs[0]).lifetime.toString())
         assertEquals("'b", assertIs<GenericArgument.LifetimeArg>(turbofishArgs[1]).lifetime.toString())
@@ -75,35 +85,35 @@ class GenericsTest {
 
     @Test
     fun testTypeParamBound() {
-        val lifetime = assertIs<TypeParamBound.LifetimeBound>(parseStr(TypeParamBoundParse, "'a").getOrThrow())
+        val lifetime = assertIs<TypeParamBound.LifetimeBound>(parseStr(TypeParamBoundParse::parse, "'a").getOrThrow())
         assertEquals("'a", lifetime.lifetime.toString())
 
-        val inferred = assertIs<TypeParamBound.LifetimeBound>(parseStr(TypeParamBoundParse, "'_").getOrThrow())
+        val inferred = assertIs<TypeParamBound.LifetimeBound>(parseStr(TypeParamBoundParse::parse, "'_").getOrThrow())
         assertEquals("'_", inferred.lifetime.toString())
 
-        val debug = assertIs<TypeParamBound.Trait>(parseStr(TypeParamBoundParse, "Debug").getOrThrow())
+        val debug = assertIs<TypeParamBound.Trait>(parseStr(TypeParamBoundParse::parse, "Debug").getOrThrow())
         assertIs<TraitBoundModifier.None>(debug.modifier)
         assertEquals("Debug", debug.path.toString())
 
-        val sized = assertIs<TypeParamBound.Trait>(parseStr(TypeParamBoundParse, "?Sized").getOrThrow())
+        val sized = assertIs<TypeParamBound.Trait>(parseStr(TypeParamBoundParse::parse, "?Sized").getOrThrow())
         assertIs<TraitBoundModifier.Maybe>(sized.modifier)
         assertEquals("Sized", sized.path.toString())
 
-        val bounded = assertIs<TypeParamBound.Trait>(parseStr(TypeParamBoundParse, "for<'a> Trait").getOrThrow())
+        val bounded = assertIs<TypeParamBound.Trait>(parseStr(TypeParamBoundParse::parse, "for<'a> Trait").getOrThrow())
         val boundLifetimes = assertNotNull(bounded.lifetimes)
         val boundParams = boundLifetimes.lifetimes.toList()
         assertEquals(1, boundParams.size)
         assertEquals("'a", assertIs<GenericParam.LifetimeParam>(boundParams.single()).lifetime.toString())
         assertEquals("Trait", bounded.path.toString())
 
-        val forThenMaybe = parseStr(TypeParamBoundParse, "for<> ?Trait")
+        val forThenMaybe = parseStr(TypeParamBoundParse::parse, "for<> ?Trait")
         assertTrue(forThenMaybe.isFailure)
         assertEquals(
             "`for<...>` binder not allowed with `?` trait polarity modifier",
             (forThenMaybe as SynResult.Failure).error.toString(),
         )
 
-        val maybeThenFor = parseStr(TypeParamBoundParse, "?for<> Trait")
+        val maybeThenFor = parseStr(TypeParamBoundParse::parse, "?for<> Trait")
         assertTrue(maybeThenFor.isFailure)
         assertEquals(
             "`for<...>` binder not allowed with `?` trait polarity modifier",
@@ -116,7 +126,7 @@ class GenericsTest {
         val item =
             assertIs<Item.Fn>(
                 parseStr(
-                    ItemParse,
+                    ItemParse::parse,
                     """
                     fn f<G>()
                     where
@@ -128,7 +138,9 @@ class GenericsTest {
             )
 
         assertEquals("f", item.sig.ident.toString())
-        val params = item.sig.generics.params.toList()
+        val params =
+            item.sig.generics.params
+                .toList()
         assertEquals(1, params.size)
         assertEquals("G", assertIs<GenericParam.TypeParam>(params.single()).ident.toString())
 
@@ -139,7 +151,10 @@ class GenericsTest {
         assertEquals(2, bounds.size)
 
         val fnOnce = assertIs<TypeParamBound.Trait>(bounds[0])
-        val fnOnceSegment = fnOnce.path.segments.toList().single()
+        val fnOnceSegment =
+            fnOnce.path.segments
+                .toList()
+                .single()
         assertEquals("FnOnce", fnOnceSegment.ident.toString())
         val args = assertIs<PathArguments.Parenthesized>(fnOnceSegment.arguments)
         assertEquals(0, args.inputs.len())
@@ -152,14 +167,14 @@ class GenericsTest {
 
     @Test
     fun testWhereClauseAtEndOfInput() {
-        val whereClause = parseStr(WhereClauseParse, "where").getOrThrow()
+        val whereClause = parseStr(WhereClauseParse::parse, "where").getOrThrow()
 
         assertEquals(0, whereClause.predicates.len())
     }
 
     @Test
     fun whereClauseRejectsReservedGenericParameters() {
-        val result = parseStr(WhereClauseParse, "where <T>")
+        val result = parseStr(WhereClauseParse::parse, "where <T>")
 
         assertTrue(result.isFailure)
         assertEquals(
@@ -170,7 +185,7 @@ class GenericsTest {
 
     @Test
     fun whereTypePredicatePreservesBoundLifetimes() {
-        val whereClause = parseStr(WhereClauseParse, "where for<'a> Foo: Trait").getOrThrow()
+        val whereClause = parseStr(WhereClauseParse::parse, "where for<'a> Foo: Trait").getOrThrow()
 
         val predicate = assertIs<WherePredicate.TypePredicate>(whereClause.predicates.toList().single())
         val lifetimes = assertNotNull(predicate.lifetimes)
@@ -178,12 +193,19 @@ class GenericsTest {
         assertEquals("'a", lifetime.lifetime.toString())
         assertPathType(predicate.boundedTy, "Foo")
         val bound = assertIs<TypeParamBound.Trait>(predicate.bounds.toList().single())
-        assertEquals("Trait", bound.path.segments.toList().single().ident.toString())
+        assertEquals(
+            "Trait",
+            bound.path.segments
+                .toList()
+                .single()
+                .ident
+                .toString(),
+        )
     }
 
     @Test
     fun whereLifetimePredicateRequiresColon() {
-        val result = parseStr(WhereClauseParse, "where 'a")
+        val result = parseStr(WhereClauseParse::parse, "where 'a")
 
         assertTrue(result.isFailure)
     }
@@ -195,7 +217,7 @@ class GenericsTest {
         val lifetime =
             generics.lifetimes().firstOrNull()?.lifetime
                 ?: Lifetime.new("'a", Span.callSite()).also {
-                    generics.params.pushValue(GenericParam.LifetimeParam(emptyList(), it, null, LifetimeList()))
+                    generics.params.pushValue(GenericParam.LifetimeParam(mutableListOf(), it, null, LifetimeList()))
                 }
 
         assertEquals("'a", lifetime.toString())
@@ -204,7 +226,7 @@ class GenericsTest {
 
     @Test
     fun typeParamWithColonAndNoBounds() {
-        val param = assertIs<GenericParam.TypeParam>(parseStr(GenericParamParse, "T:").getOrThrow())
+        val param = assertIs<GenericParam.TypeParam>(parseStr(GenericParamParse::parse, "T:").getOrThrow())
 
         assertEquals("T", param.ident.toString())
         assertNotNull(param.colonToken)
@@ -213,12 +235,12 @@ class GenericsTest {
 
     @Test
     fun genericParamToTokensPrintsDefaultsAndConstTypes() {
-        val typeParam = assertIs<GenericParam.TypeParam>(parseStr(GenericParamParse, "T: Clone = Vec").getOrThrow())
+        val typeParam = assertIs<GenericParam.TypeParam>(parseStr(GenericParamParse::parse, "T: Clone = Vec").getOrThrow())
         val typeTokens = TokenStream.new()
         typeParam.toTokens(typeTokens)
         assertEquals("T : Clone = Vec", typeTokens.toString())
 
-        val constParam = assertIs<GenericParam.ConstParam>(parseStr(GenericParamParse, "const N: usize = 3").getOrThrow())
+        val constParam = assertIs<GenericParam.ConstParam>(parseStr(GenericParamParse::parse, "const N: usize = 3").getOrThrow())
         val constTokens = TokenStream.new()
         constParam.toTokens(constTokens)
         assertEquals("const N : usize = 3", constTokens.toString())
@@ -226,13 +248,19 @@ class GenericsTest {
 
     @Test
     fun genericsToTokensPrintsLifetimesFirst() {
-        val input = parseStr(DeriveInputParse, "struct S<T, 'a, const N: usize>;").getOrThrow()
+        val input = parseStr(DeriveInputParse::parse, "struct S<T, 'a, const N: usize>;").getOrThrow()
 
         val tokens = TokenStream.new()
         input.generics.toTokens(tokens)
         assertEquals("< 'a , T , const N : usize >", tokens.toString())
 
-        val turbofishArgs = input.generics.splitForImpl().typeGenerics.asTurbofish().params.toList()
+        val turbofishArgs =
+            input.generics
+                .splitForImpl()
+                .typeGenerics
+                .asTurbofish()
+                .params
+                .toList()
         assertEquals("'a", assertIs<GenericArgument.LifetimeArg>(turbofishArgs[0]).lifetime.toString())
         assertPathType(assertIs<GenericArgument.TypeArg>(turbofishArgs[1]).type, "T")
         assertEquals("N", assertIs<Expr.Path>(assertIs<GenericArgument.ConstArg>(turbofishArgs[2]).expr).path.toString())

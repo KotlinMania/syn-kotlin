@@ -1,8 +1,8 @@
 // port-lint: source mac.rs
 package io.github.kotlinmania.syn
 
-import io.github.kotlinmania.procmacro2.Delimiter
 import io.github.kotlinmania.procmacro2.DelimSpan
+import io.github.kotlinmania.procmacro2.Delimiter
 import io.github.kotlinmania.procmacro2.Group
 import io.github.kotlinmania.procmacro2.TokenStream
 import io.github.kotlinmania.procmacro2.TokenTree
@@ -16,15 +16,15 @@ import io.github.kotlinmania.syn.token.Paren
  * A macro invocation consisting of a path, bang token, delimiter, and token stream.
  */
 public data class Macro(
-    public val path: Path,
-    public val bangToken: io.github.kotlinmania.syn.token.Not,
-    public val delimiter: MacroDelimiter,
-    public val tokens: TokenStream,
+    public var path: Path,
+    public var bangToken: io.github.kotlinmania.syn.token.Not,
+    public var delimiter: MacroDelimiter,
+    public var tokens: TokenStream,
 ) : ToTokens {
-    public companion object : Parse<Macro> {
-        override fun parse(input: ParseStream): SynResult<Macro> {
+    public companion object {
+        fun parse(input: ParseStream): SynResult<Macro> {
             val path = Path.parseModStyle(input).getOrElse { return SynResult.failure(it) }
-            val bangToken = input.parse(NotParse).getOrElse { return SynResult.failure(it) }
+            val bangToken = NotParse.parse(input).getOrElse { return SynResult.failure(it) }
             val (delimiter, content) = parseDelimiter(input).getOrElse { return SynResult.failure(it) }
             return SynResult.success(Macro(path, bangToken, delimiter, content))
         }
@@ -57,42 +57,41 @@ public val MacroDelimiter.isBrace: Boolean
 
 /** Surrounds the given content with this delimiter. */
 public fun MacroDelimiter.surround(tokens: TokenStream, content: TokenStream) {
-    val (delim, span) =
+    var (delim, span) =
         when (this) {
             is MacroDelimiter.Paren -> Delimiter.Parenthesis to token.span
             is MacroDelimiter.Brace -> Delimiter.Brace to token.span
             is MacroDelimiter.Bracket -> Delimiter.Bracket to token.span
         }
-    val group = Group(delim, content)
+    var group = Group(delim, content)
     group.setSpan(span.join())
     tokens.append(TokenTree.Group(group))
 }
 
-/**
- * Parse the tokens within the macro invocation's delimiters into a syntax
- * tree node.
- */
-public fun <T> Macro.parseBody(parser: Parse<T>): SynResult<T> =
-    parseBodyWith(parser::parse)
+/** Parse the tokens within the macro invocation's delimiters into an expression. */
+public fun Macro.parseBodyExpr(): SynResult<Expr> =
+    parseBodyWith(ExprParse::parse)
 
-/**
- * Parse the tokens within the macro invocation's delimiters using the
- * given parser function.
- */
+/** Parse the tokens within the macro invocation's delimiters using the given parser. */
+public fun <T> Macro.parseBody(parser: (ParseStream) -> SynResult<T>): SynResult<T> =
+    parseBodyWith(parser)
+
+/** Parse the tokens within the macro invocation's delimiters using the given parser. */
 public fun <T> Macro.parseBodyWith(parser: (ParseStream) -> SynResult<T>): SynResult<T> {
-    val scope =
+    val delimiter = this.delimiter
+    var scope =
         when (delimiter) {
             is MacroDelimiter.Paren -> delimiter.token.span.close()
             is MacroDelimiter.Brace -> delimiter.token.span.close()
             is MacroDelimiter.Bracket -> delimiter.token.span.close()
         }
-    return parseScoped(parserFromFunction(parser), scope, tokens)
+    return parseScoped(parser, scope, tokens)
 }
 
 /** Parses a delimiter from the input stream. */
 public fun parseDelimiter(input: ParseStream): SynResult<Pair<MacroDelimiter, TokenStream>> =
     input.step { cursor ->
-        val (tt, rest) =
+        var (tt, rest) =
             cursor.tokenTree()
                 ?: return@step SynResult.failure(cursor.error("expected delimiter"))
         if (tt is TokenTree.Group) {

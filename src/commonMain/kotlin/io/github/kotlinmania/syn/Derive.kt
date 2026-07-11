@@ -9,11 +9,11 @@ import io.github.kotlinmania.syn.token.Semi
 
 /** Data structure supplied to a derive macro. */
 public data class DeriveInput(
-    public val attrs: List<Attribute>,
-    public val vis: Visibility,
-    public val ident: Ident,
-    public val generics: Generics,
-    public val data: Data,
+    public var attrs: MutableList<Attribute>,
+    public var vis: Visibility,
+    public var ident: Ident,
+    public var generics: Generics,
+    public var data: Data,
 ) : ToTokens {
     override fun toTokens(tokens: TokenStream) {
         for (attr in attrs) attr.toTokens(tokens)
@@ -62,7 +62,7 @@ private fun Generics.withoutWhereClause(): Generics =
 /** The storage of an enum-like, data-class-like, or union data structure. */
 public sealed class Data : ToTokens {
     public data class Struct(
-        val value: DataStruct,
+        var value: DataStruct,
     ) : Data() {
         public val fields: Fields get() = value.fields
 
@@ -72,7 +72,7 @@ public sealed class Data : ToTokens {
     }
 
     public data class Enum(
-        val value: DataEnum,
+        var value: DataEnum,
     ) : Data() {
         public val variants: VariantList get() = value.variants
 
@@ -82,7 +82,7 @@ public sealed class Data : ToTokens {
     }
 
     public data class Union(
-        val value: DataUnion,
+        var value: DataUnion,
     ) : Data() {
         public val fields: FieldsNamed get() = value.fields
 
@@ -94,9 +94,9 @@ public sealed class Data : ToTokens {
 
 /** A data-class-like input to a derive macro. */
 public data class DataStruct(
-    public val structToken: io.github.kotlinmania.syn.token.Struct,
-    public val fields: Fields,
-    public val semiToken: Semi?,
+    public var structToken: io.github.kotlinmania.syn.token.Struct,
+    public var fields: Fields,
+    public var semiToken: Semi?,
 ) : ToTokens {
     override fun toTokens(tokens: TokenStream) {
         structToken.toTokens(tokens)
@@ -107,9 +107,9 @@ public data class DataStruct(
 
 /** An enum input to a derive macro. */
 public data class DataEnum(
-    public val enumToken: io.github.kotlinmania.syn.token.Enum,
-    public val braceToken: Brace,
-    public val variants: VariantList,
+    public var enumToken: io.github.kotlinmania.syn.token.Enum,
+    public var braceToken: Brace,
+    public var variants: VariantList,
 ) : ToTokens {
     override fun toTokens(tokens: TokenStream) {
         enumToken.toTokens(tokens)
@@ -121,8 +121,8 @@ public data class DataEnum(
 
 /** An untagged union input to a derive macro. */
 public data class DataUnion(
-    public val unionToken: io.github.kotlinmania.syn.token.Union,
-    public val fields: FieldsNamed,
+    public var unionToken: io.github.kotlinmania.syn.token.Union,
+    public var fields: FieldsNamed,
 ) : ToTokens {
     override fun toTokens(tokens: TokenStream) {
         unionToken.toTokens(tokens)
@@ -131,20 +131,20 @@ public data class DataUnion(
 }
 
 public fun parseDeriveInput(input: ParseStream): SynResult<DeriveInput> =
-    input.parse(DeriveInputParse)
+    DeriveInputParse.parse(input)
 
-public object DeriveInputParse : Parse<DeriveInput> {
-    override fun parse(input: ParseStream): SynResult<DeriveInput> =
+public object DeriveInputParse {
+    fun parse(input: ParseStream): SynResult<DeriveInput> =
         DeriveInputParseImpl.parse(input)
 }
 
-internal object DeriveInputParseImpl : Parse<DeriveInput> {
-    override fun parse(input: ParseStream): SynResult<DeriveInput> {
-        val attrs = parseOuterAttributes(input).getOrElse { return SynResult.failure(it) }
-        val vis = input.parse(VisibilityParse).getOrNull() ?: Visibility.Inherited
+internal object DeriveInputParseImpl {
+    fun parse(input: ParseStream): SynResult<DeriveInput> {
+        var attrs = parseOuterAttributes(input).getOrElse { return SynResult.failure(it) }
+        var vis = VisibilityParse.parse(input).getOrNull() ?: Visibility.Inherited
         if (input.peek(StructPeek)) {
-            val structToken = input.parse(StructParse).getOrElse { return SynResult.failure(it) }
-            val ident = input.parse(IdentParse).getOrElse { return SynResult.failure(it) }
+            val structToken = StructParse.parse(input).getOrElse { return SynResult.failure(it) }
+            val ident = IdentParse.parse(input).getOrElse { return SynResult.failure(it) }
             val generics = parseGenerics(input).getOrElse { return SynResult.failure(it) }
             val data = dataStruct(input).getOrElse { return SynResult.failure(it) }
             generics.whereClause = data.whereClause
@@ -159,8 +159,8 @@ internal object DeriveInputParseImpl : Parse<DeriveInput> {
             )
         }
         if (input.peek(EnumPeek)) {
-            val enumToken = input.parse(EnumParse).getOrElse { return SynResult.failure(it) }
-            val ident = input.parse(IdentParse).getOrElse { return SynResult.failure(it) }
+            val enumToken = EnumParse.parse(input).getOrElse { return SynResult.failure(it) }
+            val ident = IdentParse.parse(input).getOrElse { return SynResult.failure(it) }
             val generics = parseGenerics(input).getOrElse { return SynResult.failure(it) }
             val data = dataEnum(input).getOrElse { return SynResult.failure(it) }
             generics.whereClause = data.whereClause
@@ -175,8 +175,8 @@ internal object DeriveInputParseImpl : Parse<DeriveInput> {
             )
         }
         if (input.peek(UnionPeek)) {
-            val unionToken = input.parse(UnionParse).getOrElse { return SynResult.failure(it) }
-            val ident = input.parse(IdentParse).getOrElse { return SynResult.failure(it) }
+            val unionToken = UnionParse.parse(input).getOrElse { return SynResult.failure(it) }
+            val ident = IdentParse.parse(input).getOrElse { return SynResult.failure(it) }
             val generics = parseGenerics(input).getOrElse { return SynResult.failure(it) }
             val data = dataUnion(input).getOrElse { return SynResult.failure(it) }
             generics.whereClause = data.whereClause
@@ -195,39 +195,39 @@ internal object DeriveInputParseImpl : Parse<DeriveInput> {
 }
 
 internal data class DataStructParts(
-    val whereClause: WhereClause?,
-    val fields: Fields,
-    val semiToken: io.github.kotlinmania.syn.token.Semi?,
+    var whereClause: WhereClause?,
+    var fields: Fields,
+    var semiToken: io.github.kotlinmania.syn.token.Semi?,
 )
 
 internal data class DataEnumParts(
-    val whereClause: WhereClause?,
-    val braceToken: io.github.kotlinmania.syn.token.Brace,
-    val variants: VariantList,
+    var whereClause: WhereClause?,
+    var braceToken: io.github.kotlinmania.syn.token.Brace,
+    var variants: VariantList,
 )
 
 internal data class DataUnionParts(
-    val whereClause: WhereClause?,
-    val fields: FieldsNamed,
+    var whereClause: WhereClause?,
+    var fields: FieldsNamed,
 )
 
 internal fun dataStruct(input: ParseStream): SynResult<DataStructParts> {
     var whereClause = parseOptionalWhereClause(input).getOrElse { return SynResult.failure(it) }
 
     if (whereClause == null && input.peek(ParenPeek)) {
-        val fields = input.parse(FieldsUnnamedParse).getOrElse { return SynResult.failure(it) }
+        var fields = FieldsUnnamedParse.parse(input).getOrElse { return SynResult.failure(it) }
         whereClause = parseOptionalWhereClause(input).getOrElse { return SynResult.failure(it) }
-        val semi = input.parse(SemiParse).getOrElse { return SynResult.failure(it) }
+        var semi = SemiParse.parse(input).getOrElse { return SynResult.failure(it) }
         return SynResult.success(DataStructParts(whereClause, Fields.Unnamed(fields), semi))
     }
 
     if (input.peek(BracePeek)) {
-        val fields = input.parse(FieldsNamedParse).getOrElse { return SynResult.failure(it) }
+        var fields = FieldsNamedParse.parse(input).getOrElse { return SynResult.failure(it) }
         return SynResult.success(DataStructParts(whereClause, Fields.Named(fields), null))
     }
 
     if (input.peek(SemiPeek)) {
-        val semi = input.parse(SemiParse).getOrElse { return SynResult.failure(it) }
+        var semi = SemiParse.parse(input).getOrElse { return SynResult.failure(it) }
         return SynResult.success(DataStructParts(whereClause, Fields.Unit, semi))
     }
 
@@ -235,16 +235,16 @@ internal fun dataStruct(input: ParseStream): SynResult<DataStructParts> {
 }
 
 internal fun dataEnum(input: ParseStream): SynResult<DataEnumParts> {
-    val whereClause = parseOptionalWhereClause(input).getOrElse { return SynResult.failure(it) }
-    val braces = braced(input).getOrElse { return SynResult.failure(it) }
-    val variants = parseVariantList(braces.content).getOrElse { return SynResult.failure(it) }
+    var whereClause = parseOptionalWhereClause(input).getOrElse { return SynResult.failure(it) }
+    var braces = braced(input).getOrElse { return SynResult.failure(it) }
+    var variants = parseVariantList(braces.content).getOrElse { return SynResult.failure(it) }
     braces.content.finishChildBuffer()
     return SynResult.success(DataEnumParts(whereClause, braces.token, variants))
 }
 
 internal fun dataUnion(input: ParseStream): SynResult<DataUnionParts> {
-    val whereClause = parseOptionalWhereClause(input).getOrElse { return SynResult.failure(it) }
-    val fields = input.parse(FieldsNamedParse).getOrElse { return SynResult.failure(it) }
+    var whereClause = parseOptionalWhereClause(input).getOrElse { return SynResult.failure(it) }
+    var fields = FieldsNamedParse.parse(input).getOrElse { return SynResult.failure(it) }
     return SynResult.success(DataUnionParts(whereClause, fields))
 }
 

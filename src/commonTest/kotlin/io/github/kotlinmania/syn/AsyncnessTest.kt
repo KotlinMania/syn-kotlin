@@ -10,20 +10,28 @@ import kotlin.test.assertTrue
 class AsyncnessTest {
     @Test
     fun testAsyncFn() {
-        val item = parseStr(ItemParse, "async fn process() {}").getOrThrow()
+        val item = parseStr(ItemParse::parse, "async fn process() {}").getOrThrow()
         val fn = assertIs<Item.Fn>(item)
 
         assertIs<Visibility.Inherited>(fn.vis)
         assertNotNull(fn.sig.asyncness)
         assertEquals("process", fn.sig.ident.toString())
-        assertTrue(fn.sig.generics.params.isEmpty())
+        assertTrue(
+            fn.sig.generics.params
+                .isEmpty(),
+        )
         assertIs<ReturnType.Default>(fn.sig.output)
-        assertTrue(fn.block?.stmts.orEmpty().isEmpty())
+        assertTrue(
+            fn.block
+                ?.stmts
+                .orEmpty()
+                .isEmpty(),
+        )
     }
 
     @Test
     fun testAsyncClosure() {
-        val expr = parseStr(ExprParse, "async || {}").getOrThrow()
+        val expr = parseStr(ExprParse::parse, "async || {}").getOrThrow()
         val closure = assertIs<Expr.Closure>(expr)
 
         assertNotNull(closure.asyncness)

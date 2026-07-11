@@ -10,39 +10,39 @@ import io.github.kotlinmania.quote.ToTokens
  * Typically [File] objects are created with [parseFile].
  */
 public data class File(
-    public val shebang: String?,
-    public val attrs: List<Attribute>,
-    public val items: List<Item>,
+    public var shebang: String?,
+    public var attrs: MutableList<Attribute>,
+    public var items: MutableList<Item>,
 ) : ToTokens {
     override fun toTokens(tokens: TokenStream) {
         for (attr in attrs) attr.toTokens(tokens)
         for (item in items) item.toTokens(tokens)
     }
 
-    public fun deepCopy(): File = File(shebang, attrs.map { it.deepCopy() }, items.map { it })
+    public fun deepCopy(): File = File(shebang, attrs.mapTo(mutableListOf()) { it.deepCopy() }, items.toMutableList())
 }
 
-public object FileParse : Parse<File> {
-    override fun parse(input: ParseStream): SynResult<File> {
-        val attrs = parseInnerAttributes(input).getOrElse { return SynResult.failure(it) }
-        val items = mutableListOf<Item>()
+public object FileParse {
+    fun parse(input: ParseStream): SynResult<File> {
+        var attrs = parseInnerAttributes(input).getOrElse { return SynResult.failure(it) }
+        var items = mutableListOf<Item>()
         while (!input.isEmpty()) {
-            items.add(input.parse(ItemParse).getOrElse { return SynResult.failure(it) })
+            items.add(ItemParse.parse(input).getOrElse { return SynResult.failure(it) })
         }
-        return SynResult.success(File(null, attrs, items))
+        return SynResult.success(File(null, attrs, items.toMutableList()))
     }
 }
 
 public fun parseFile(content: String): SynResult<File> {
     var source = content
-    val bom = "\uFEFF"
+    var bom = "\uFEFF"
     if (source.startsWith(bom)) {
         source = source.substring(bom.length)
     }
 
     var shebang: String? = null
     if (source.startsWith("#!")) {
-        val rest = source.length - skipWhitespace(source.substring(2)).length
+        var rest = source.length - skipWhitespace(source.substring(2)).length
         if (rest < source.length && source[rest] == '[') {
             source = "#!" + source.substring(rest)
         } else {
@@ -57,5 +57,5 @@ public fun parseFile(content: String): SynResult<File> {
         }
     }
 
-    return parseStr(FileParse, source).map { it.copy(shebang = shebang) }
+    return parseStr(FileParse::parse, source).map { it.copy(shebang = shebang) }
 }

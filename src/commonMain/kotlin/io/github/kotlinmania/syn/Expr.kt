@@ -21,7 +21,7 @@ private fun Expr.toTokensWithParens(
     parentPrecedence: Precedence,
     position: ExprPosition,
 ) {
-    val needsParens = needsParens(parentPrecedence, position)
+    var needsParens = needsParens(parentPrecedence, position)
     if (needsParens) {
         io.github.kotlinmania.syn.token.Paren.default().surround(tokens) { inner ->
             toTokens(inner)
@@ -45,22 +45,64 @@ internal fun Expr.toTokensAsStmt(tokens: TokenStream) {
 
 private fun Expr.toTokensInCondition(tokens: TokenStream) {
     when (this) {
+        is Expr.Assign -> toTokensAsCondition(tokens)
         is Expr.Await -> toTokensAsCondition(tokens)
+        is Expr.Binary -> toTokensAsCondition(tokens)
         is Expr.Break -> toTokensAsCondition(tokens)
         is Expr.Call -> toTokensAsCondition(tokens)
         is Expr.Closure -> toTokensAsCondition(tokens)
         is Expr.Field -> toTokensAsCondition(tokens)
         is Expr.Index -> toTokensAsCondition(tokens)
         is Expr.MethodCall -> toTokensAsCondition(tokens)
+        is Expr.Let -> toTokensAsCondition(tokens)
+        is Expr.RawAddr -> toTokensAsCondition(tokens)
+        is Expr.Reference -> toTokensAsCondition(tokens)
+        is Expr.Range -> toTokensAsCondition(tokens)
         is Expr.Return -> toTokensAsCondition(tokens)
         is Expr.Try -> toTokensAsCondition(tokens)
+        is Expr.Unary -> toTokensAsCondition(tokens)
         is Expr.Yield -> toTokensAsCondition(tokens)
         else -> toTokens(tokens)
     }
 }
 
+private fun Expr.toTokensAsRightmostCondition(tokens: TokenStream) {
+    if (this is Expr.BlockExpr && attrs.isEmpty() && label == null) {
+        io.github.kotlinmania.syn.token.Paren.default().surround(tokens) { inner ->
+            toTokens(inner)
+        }
+    } else {
+        toTokensWithParens(tokens, Precedence.MIN, ExprPosition.Condition)
+    }
+}
+
+private fun Expr.toTokensAsRightmostConditionOperand(
+    tokens: TokenStream,
+    parentPrecedence: Precedence,
+    position: ExprPosition,
+) {
+    if (needsParens(parentPrecedence, position)) {
+        io.github.kotlinmania.syn.token.Paren.default().surround(tokens) { inner ->
+            toTokens(inner)
+        }
+    } else {
+        toTokensAsRightmostCondition(tokens)
+    }
+}
+
 private fun Expr.toTokensAsConditionPostfixBase(tokens: TokenStream) {
-    if (Precedence.of(this) < Precedence.Unambiguous || this is Expr.Struct) {
+    if (Precedence.of(this) < Precedence.Unambiguous ||
+        this is Expr.Struct ||
+        this is Expr.BlockExpr &&
+        attrs.isEmpty() &&
+        label == null ||
+        this is Expr.Break &&
+        expr == null ||
+        this is Expr.Return &&
+        expr == null ||
+        this is Expr.Yield &&
+        expr == null
+    ) {
         io.github.kotlinmania.syn.token.Paren.default().surround(tokens) { inner ->
             toTokens(inner)
         }
@@ -75,7 +117,7 @@ private fun Expr.toTokensAsConditionJumpValue(tokens: TokenStream) {
             toTokens(inner)
         }
     } else {
-        toTokens(tokens)
+        toTokensAsConditionTail(tokens)
     }
 }
 
@@ -85,7 +127,7 @@ private fun Expr.toTokensAsConditionBreakValue(tokens: TokenStream) {
             toTokens(inner)
         }
     } else {
-        toTokensAsOptionalOperand(tokens)
+        toTokensAsConditionTail(tokens)
     }
 }
 
@@ -93,6 +135,7 @@ private fun Expr.toTokensAsOptionalOperand(tokens: TokenStream) {
     when (this) {
         is Expr.Await -> toTokensAsOptionalOperand(tokens)
         is Expr.Call -> toTokensAsOptionalOperand(tokens)
+        is Expr.Closure -> toTokensAsOptionalOperand(tokens)
         is Expr.Field -> toTokensAsOptionalOperand(tokens)
         is Expr.Index -> toTokensAsOptionalOperand(tokens)
         is Expr.MethodCall -> toTokensAsOptionalOperand(tokens)
@@ -103,13 +146,74 @@ private fun Expr.toTokensAsOptionalOperand(tokens: TokenStream) {
 
 private fun Expr.toTokensAsOptionalOperandPostfixBase(tokens: TokenStream) {
     if (Precedence.of(this) < Precedence.Unambiguous ||
-        this is Expr.BlockExpr && attrs.isEmpty() && label == null
+        this is Expr.BlockExpr &&
+        attrs.isEmpty() &&
+        label == null ||
+        this is Expr.Break &&
+        expr == null ||
+        this is Expr.Return &&
+        expr == null ||
+        this is Expr.Yield &&
+        expr == null
     ) {
         io.github.kotlinmania.syn.token.Paren.default().surround(tokens) { inner ->
             toTokens(inner)
         }
     } else {
         toTokens(tokens)
+    }
+}
+
+private fun Expr.toTokensAsConditionTail(tokens: TokenStream) {
+    if (this is Expr.Break &&
+        expr == null ||
+        this is Expr.Path ||
+        this is Expr.Range &&
+        end == null ||
+        this is Expr.Return &&
+        expr == null ||
+        this is Expr.Yield &&
+        expr == null
+    ) {
+        io.github.kotlinmania.syn.token.Paren.default().surround(tokens) { inner ->
+            toTokens(inner)
+        }
+        return
+    }
+
+    when (this) {
+        is Expr.Assign -> toTokensAsConditionTail(tokens)
+        is Expr.Await -> toTokensAsOptionalOperand(tokens)
+        is Expr.Binary -> toTokensAsConditionTail(tokens)
+        is Expr.Break -> toTokensAsConditionTail(tokens)
+        is Expr.Call -> toTokensAsOptionalOperand(tokens)
+        is Expr.Closure -> toTokensAsConditionTail(tokens)
+        is Expr.Field -> toTokensAsOptionalOperand(tokens)
+        is Expr.Index -> toTokensAsOptionalOperand(tokens)
+        is Expr.Let -> toTokensAsConditionTail(tokens)
+        is Expr.MethodCall -> toTokensAsOptionalOperand(tokens)
+        is Expr.Range -> toTokensAsConditionTail(tokens)
+        is Expr.RawAddr -> toTokensAsConditionTail(tokens)
+        is Expr.Reference -> toTokensAsConditionTail(tokens)
+        is Expr.Return -> toTokensAsConditionTail(tokens)
+        is Expr.Try -> toTokensAsOptionalOperand(tokens)
+        is Expr.Unary -> toTokensAsConditionTail(tokens)
+        is Expr.Yield -> toTokensAsConditionTail(tokens)
+        else -> toTokens(tokens)
+    }
+}
+
+private fun Expr.toTokensAsConditionTailOperand(
+    tokens: TokenStream,
+    parentPrecedence: Precedence,
+    position: ExprPosition,
+) {
+    if (needsParens(parentPrecedence, position)) {
+        io.github.kotlinmania.syn.token.Paren.default().surround(tokens) { inner ->
+            toTokens(inner)
+        }
+    } else {
+        toTokensAsConditionTail(tokens)
     }
 }
 
@@ -144,19 +248,59 @@ private fun Expr.toTokensAsOptionalOperandCallee(tokens: TokenStream) {
 }
 
 private fun Expr.toTokensAsRangeStart(tokens: TokenStream) {
-    if (this is Expr.Binary && attrs.isEmpty()) {
+    if (Precedence.of(this).ordinal <= Precedence.Range.ordinal ||
+        endsWithRange() ||
+        this !is Expr.Binary &&
+        rightEdgeNeedsGroupBeforeRange()
+    ) {
+        io.github.kotlinmania.syn.token.Paren.default().surround(tokens) { inner ->
+            toTokens(inner)
+        }
+    } else if (this is Expr.Binary && attrs.isEmpty()) {
         toTokensAsRangeStart(tokens)
     } else {
         toTokensWithParens(tokens, Precedence.Range, ExprPosition.LeftOperand)
     }
 }
 
-private fun Expr.needsParensAsConditionJumpValue(): Boolean =
-    this is Expr.Break && expr == null ||
-        this is Expr.Path ||
-        this is Expr.Range && end == null ||
-        this is Expr.Return && expr == null ||
-        this is Expr.Yield && expr == null
+private fun Expr.needsParensAsConditionJumpValue(): Boolean {
+    if (canConsumeTrailingBraceAsStruct()) return true
+    return when (this) {
+        is Expr.Assign -> true
+        is Expr.Binary -> true
+        is Expr.BlockExpr -> attrs.isEmpty() && label == null
+        is Expr.Break -> {
+            val e = expr
+            e !is Expr.BlockExpr || e.attrs.isNotEmpty() || label != null
+        }
+        is Expr.Let -> true
+        is Expr.Path -> true
+        is Expr.Range -> {
+            val e = end
+            e == null || e.canConsumeTrailingBraceAsStruct()
+        }
+        is Expr.Return -> expr == null
+        is Expr.Yield -> expr == null
+        else -> false
+    }
+}
+
+private fun Expr.canConsumeTrailingBraceAsStruct(): Boolean =
+    when (this) {
+        is Expr.Assign -> right.canConsumeTrailingBraceAsStruct()
+        is Expr.Binary -> right.canConsumeTrailingBraceAsStruct()
+        is Expr.Break -> expr?.canConsumeTrailingBraceAsStruct() == true
+        is Expr.Cast -> false
+        is Expr.Path -> true
+        is Expr.RawAddr -> expr.canConsumeTrailingBraceAsStruct()
+        is Expr.Reference -> expr.canConsumeTrailingBraceAsStruct()
+        is Expr.Range -> end?.canConsumeTrailingBraceAsStruct() == true
+        is Expr.Return -> expr?.canConsumeTrailingBraceAsStruct() == true
+        is Expr.Try -> expr.canConsumeTrailingBraceAsStruct()
+        is Expr.Unary -> expr.canConsumeTrailingBraceAsStruct()
+        is Expr.Yield -> expr?.canConsumeTrailingBraceAsStruct() == true
+        else -> false
+    }
 
 private fun Expr.Await.toTokensAsCondition(tokens: TokenStream) {
     for (attr in attrs) attr.toTokens(tokens)
@@ -165,18 +309,121 @@ private fun Expr.Await.toTokensAsCondition(tokens: TokenStream) {
     awaitToken.toTokens(tokens)
 }
 
+private fun Expr.Assign.toTokensAsCondition(tokens: TokenStream) {
+    for (attr in attrs) attr.toTokens(tokens)
+    var emit = { target: TokenStream ->
+        left.toTokensWithParens(target, Precedence.Assign, ExprPosition.LeftOperand)
+        eqToken.toTokens(target)
+        right.toTokensAsRightmostConditionOperand(target, Precedence.Assign, ExprPosition.RightOperand)
+    }
+    if (attrs.isNotEmpty()) {
+        io.github.kotlinmania.syn.token.Paren
+            .default()
+            .surround(tokens, emit)
+    } else {
+        emit(tokens)
+    }
+}
+
+private fun Expr.Assign.toTokensAsConditionTail(tokens: TokenStream) {
+    for (attr in attrs) attr.toTokens(tokens)
+    var emit = { target: TokenStream ->
+        left.toTokensWithParens(target, Precedence.Assign, ExprPosition.LeftOperand)
+        eqToken.toTokens(target)
+        right.toTokensAsConditionTailOperand(target, Precedence.Assign, ExprPosition.RightOperand)
+    }
+    if (attrs.isNotEmpty()) {
+        io.github.kotlinmania.syn.token.Paren
+            .default()
+            .surround(tokens, emit)
+    } else {
+        emit(tokens)
+    }
+}
+
 private fun Expr.Break.toTokensAsCondition(tokens: TokenStream) {
     for (attr in attrs) attr.toTokens(tokens)
     breakToken.toTokens(tokens)
     label?.toTokens(tokens)
-    if (expr != null) {
-        if (label == null && exprLeadingLabel(expr)) {
+    var e = expr
+    if (e != null) {
+        if (label == null && exprLeadingLabel(e)) {
             io.github.kotlinmania.syn.token.Paren.default().surround(tokens) { inner ->
-                expr.toTokens(inner)
+                e.toTokens(inner)
             }
         } else {
-            expr.toTokensAsConditionBreakValue(tokens)
+            e.toTokensAsConditionBreakValue(tokens)
         }
+    }
+}
+
+private fun Expr.Break.toTokensAsConditionTail(tokens: TokenStream) {
+    for (attr in attrs) attr.toTokens(tokens)
+    breakToken.toTokens(tokens)
+    label?.toTokens(tokens)
+    var e = expr
+    if (e != null) {
+        if (label == null && exprLeadingLabel(e)) {
+            io.github.kotlinmania.syn.token.Paren.default().surround(tokens) { inner ->
+                e.toTokens(inner)
+            }
+        } else {
+            e.toTokensAsConditionTail(tokens)
+        }
+    }
+}
+
+private fun Expr.Binary.toTokensAsCondition(tokens: TokenStream) {
+    for (attr in attrs) attr.toTokens(tokens)
+    var emit = { target: TokenStream ->
+        var precedence = Precedence.ofBinop(op)
+        if (left.isValueLessJump() && binOpCanBeginExpr(op)) {
+            io.github.kotlinmania.syn.token.Paren.default().surround(target) { inner ->
+                left.toTokens(inner)
+            }
+        } else if (left.endsWithRange()) {
+            io.github.kotlinmania.syn.token.Paren.default().surround(target) { inner ->
+                left.toTokens(inner)
+            }
+        } else {
+            left.toTokensWithParens(target, precedence, ExprPosition.LeftOperand)
+        }
+        op.toTokens(target)
+        right.toTokensAsRightmostConditionOperand(target, precedence, ExprPosition.RightOperand)
+    }
+    if (attrs.isNotEmpty()) {
+        io.github.kotlinmania.syn.token.Paren
+            .default()
+            .surround(tokens, emit)
+    } else {
+        emit(tokens)
+    }
+}
+
+private fun Expr.Binary.toTokensAsConditionTail(tokens: TokenStream) {
+    for (attr in attrs) attr.toTokens(tokens)
+    var emit = { target: TokenStream ->
+        var precedence = Precedence.ofBinop(op)
+        if (left.isValueLessJump() && binOpCanBeginExpr(op)) {
+            io.github.kotlinmania.syn.token.Paren.default().surround(target) { inner ->
+                left.toTokens(inner)
+            }
+        } else if (left.endsWithRange()) {
+            io.github.kotlinmania.syn.token.Paren.default().surround(target) { inner ->
+                left.toTokens(inner)
+            }
+        } else {
+            left.toTokensWithParens(target, precedence, ExprPosition.LeftOperand)
+        }
+        op.toTokens(target)
+        right.toTokensAsConditionTailOperand(target, precedence, ExprPosition.RightOperand)
+    }
+    if (attrs.isNotEmpty()) {
+        io.github.kotlinmania.syn.token.Paren
+            .default()
+            .surround(tokens, emit)
+    } else {
+        emit(tokens)
     }
 }
 
@@ -198,6 +445,22 @@ private fun Expr.Closure.toTokensAsCondition(tokens: TokenStream) {
     or2Token.toTokens(tokens)
     output.toTokens(tokens)
     body.toTokensWithParens(tokens, Precedence.MIN, ExprPosition.Condition)
+}
+
+private fun Expr.Closure.toTokensAsConditionTail(tokens: TokenStream) {
+    for (attr in attrs) attr.toTokens(tokens)
+    constness?.toTokens(tokens)
+    asyncness?.toTokens(tokens)
+    capture?.toTokens(tokens)
+    or1Token.toTokens(tokens)
+    inputs.toTokens(tokens)
+    or2Token.toTokens(tokens)
+    output.toTokens(tokens)
+    body.toTokensAsConditionTail(tokens)
+}
+
+private fun Expr.Closure.toTokensAsOptionalOperand(tokens: TokenStream) {
+    toTokensAsConditionTail(tokens)
 }
 
 private fun Expr.Await.toTokensAsOptionalOperand(tokens: TokenStream) {
@@ -235,6 +498,22 @@ private fun Expr.Index.toTokensAsCondition(tokens: TokenStream) {
     bracketToken.surround(tokens) { inner -> index.toTokens(inner) }
 }
 
+private fun Expr.Let.toTokensAsCondition(tokens: TokenStream) {
+    for (attr in attrs) attr.toTokens(tokens)
+    letToken.toTokens(tokens)
+    pat.toTokens(tokens)
+    eqToken.toTokens(tokens)
+    expr.toTokensAsRightmostConditionOperand(tokens, Precedence.Let, ExprPosition.RightOperand)
+}
+
+private fun Expr.Let.toTokensAsConditionTail(tokens: TokenStream) {
+    for (attr in attrs) attr.toTokens(tokens)
+    letToken.toTokens(tokens)
+    pat.toTokens(tokens)
+    eqToken.toTokens(tokens)
+    expr.toTokensAsConditionTailOperand(tokens, Precedence.Let, ExprPosition.RightOperand)
+}
+
 private fun Expr.Index.toTokensAsOptionalOperand(tokens: TokenStream) {
     for (attr in attrs) attr.toTokens(tokens)
     expr.toTokensAsOptionalOperandPostfixBase(tokens)
@@ -269,6 +548,50 @@ private fun Expr.Return.toTokensAsCondition(tokens: TokenStream) {
     expr?.toTokensAsConditionJumpValue(tokens)
 }
 
+private fun Expr.Range.toTokensAsCondition(tokens: TokenStream) {
+    for (attr in attrs) attr.toTokens(tokens)
+    start?.toTokensAsRangeStart(tokens)
+    limits.toTokens(tokens)
+    end?.toTokensAsRightmostConditionOperand(tokens, Precedence.Range, ExprPosition.RightOperand)
+}
+
+private fun Expr.Range.toTokensAsConditionTail(tokens: TokenStream) {
+    for (attr in attrs) attr.toTokens(tokens)
+    start?.toTokensAsRangeStart(tokens)
+    limits.toTokens(tokens)
+    end?.toTokensAsConditionTailOperand(tokens, Precedence.Range, ExprPosition.RightOperand)
+}
+
+private fun Expr.RawAddr.toTokensAsCondition(tokens: TokenStream) {
+    for (attr in attrs) attr.toTokens(tokens)
+    andToken.toTokens(tokens)
+    raw.toTokens(tokens)
+    mutability.toTokens(tokens)
+    expr.toTokensAsRightmostConditionOperand(tokens, Precedence.Prefix, ExprPosition.PrefixOperand)
+}
+
+private fun Expr.RawAddr.toTokensAsConditionTail(tokens: TokenStream) {
+    for (attr in attrs) attr.toTokens(tokens)
+    andToken.toTokens(tokens)
+    raw.toTokens(tokens)
+    mutability.toTokens(tokens)
+    expr.toTokensAsConditionTailOperand(tokens, Precedence.Prefix, ExprPosition.PrefixOperand)
+}
+
+private fun Expr.Reference.toTokensAsCondition(tokens: TokenStream) {
+    for (attr in attrs) attr.toTokens(tokens)
+    andToken.toTokens(tokens)
+    mutability?.toTokens(tokens)
+    expr.toTokensAsRightmostConditionOperand(tokens, Precedence.Prefix, ExprPosition.PrefixOperand)
+}
+
+private fun Expr.Reference.toTokensAsConditionTail(tokens: TokenStream) {
+    for (attr in attrs) attr.toTokens(tokens)
+    andToken.toTokens(tokens)
+    mutability?.toTokens(tokens)
+    expr.toTokensAsConditionTailOperand(tokens, Precedence.Prefix, ExprPosition.PrefixOperand)
+}
+
 private fun Expr.Try.toTokensAsCondition(tokens: TokenStream) {
     for (attr in attrs) attr.toTokens(tokens)
     expr.toTokensAsConditionPostfixBase(tokens)
@@ -287,9 +610,37 @@ private fun Expr.Yield.toTokensAsCondition(tokens: TokenStream) {
     expr?.toTokensAsConditionJumpValue(tokens)
 }
 
+private fun Expr.Return.toTokensAsConditionTail(tokens: TokenStream) {
+    for (attr in attrs) attr.toTokens(tokens)
+    returnToken.toTokens(tokens)
+    expr?.toTokensAsConditionTail(tokens)
+}
+
+private fun Expr.Yield.toTokensAsConditionTail(tokens: TokenStream) {
+    for (attr in attrs) attr.toTokens(tokens)
+    yieldToken.toTokens(tokens)
+    expr?.toTokensAsConditionTail(tokens)
+}
+
+private fun Expr.Unary.toTokensAsCondition(tokens: TokenStream) {
+    for (attr in attrs) attr.toTokens(tokens)
+    op.toTokens(tokens)
+    expr.toTokensAsRightmostConditionOperand(tokens, Precedence.Prefix, ExprPosition.PrefixOperand)
+}
+
+private fun Expr.Unary.toTokensAsConditionTail(tokens: TokenStream) {
+    for (attr in attrs) attr.toTokens(tokens)
+    op.toTokens(tokens)
+    expr.toTokensAsConditionTailOperand(tokens, Precedence.Prefix, ExprPosition.PrefixOperand)
+}
+
 private fun Expr.Binary.toTokensAsRangeStart(tokens: TokenStream) {
-    val precedence = Precedence.ofBinop(op)
+    var precedence = Precedence.ofBinop(op)
     if (left.isValueLessJump() && binOpCanBeginExpr(op)) {
+        io.github.kotlinmania.syn.token.Paren.default().surround(tokens) { inner ->
+            left.toTokens(inner)
+        }
+    } else if (left.endsWithRange()) {
         io.github.kotlinmania.syn.token.Paren.default().surround(tokens) { inner ->
             left.toTokens(inner)
         }
@@ -297,37 +648,49 @@ private fun Expr.Binary.toTokensAsRangeStart(tokens: TokenStream) {
         left.toTokensWithParens(tokens, precedence, ExprPosition.LeftOperand)
     }
     op.toTokens(tokens)
-    if (right.isValueLessJump()) {
+    var r = right
+    if (r.isValueLessJump()) {
         io.github.kotlinmania.syn.token.Paren.default().surround(tokens) { inner ->
-            right.toTokens(inner)
+            r.toTokens(inner)
+        }
+    } else if (r is Expr.Binary &&
+        r.attrs.isEmpty() &&
+        !r.needsParens(precedence, ExprPosition.RightOperand)
+    ) {
+        r.toTokensAsRangeStart(tokens)
+    } else if (r.rightEdgeNeedsGroupBeforeRange()) {
+        io.github.kotlinmania.syn.token.Paren.default().surround(tokens) { inner ->
+            r.toTokens(inner)
         }
     } else {
-        right.toTokensWithParens(tokens, precedence, ExprPosition.RightOperand)
+        r.toTokensWithParens(tokens, precedence, ExprPosition.RightOperand)
     }
 }
 
 private fun Expr.needsParens(parentPrecedence: Precedence, position: ExprPosition): Boolean {
     if (position == ExprPosition.Condition) {
-        return this is Expr.Struct
+        return this is Expr.Struct ||
+            this is Expr.Return &&
+            expr == null ||
+            this is Expr.Yield &&
+            expr == null
     }
 
     if (position == ExprPosition.PostfixBase) {
         return Precedence.of(this) < Precedence.Unambiguous ||
-            this is Expr.Break && expr == null ||
-            this is Expr.Return && expr == null ||
-            this is Expr.Yield && expr == null
-    }
-
-    if ((position == ExprPosition.LeftOperand || position == ExprPosition.RightOperand) &&
-        parentPrecedence == Precedence.Compare &&
-        this is Expr.Range &&
-        start == null &&
-        end == null
-    ) {
-        return false
+            this is Expr.Break &&
+            expr == null ||
+            this is Expr.Return &&
+            expr == null ||
+            this is Expr.Yield &&
+            expr == null
     }
 
     if (position == ExprPosition.LeftOperand && parentPrecedence == Precedence.Assign && this is Expr.Range) {
+        return true
+    }
+
+    if (position == ExprPosition.LeftOperand && parentPrecedence == Precedence.Assign && this is Expr.Let) {
         return true
     }
 
@@ -335,7 +698,18 @@ private fun Expr.needsParens(parentPrecedence: Precedence, position: ExprPositio
         return true
     }
 
-    if (position == ExprPosition.RightOperand && this is Expr.Range && start == null) {
+    if (position == ExprPosition.RightOperand &&
+        parentPrecedence == Precedence.Compare &&
+        this is Expr.Range &&
+        start == null
+    ) {
+        return false
+    }
+
+    if (position == ExprPosition.RightOperand &&
+        this is Expr.Range &&
+        start == null
+    ) {
         return false
     }
 
@@ -347,16 +721,18 @@ private fun Expr.needsParens(parentPrecedence: Precedence, position: ExprPositio
     }
 
     if ((position == ExprPosition.LeftOperand || position == ExprPosition.RightOperand) &&
-        (this is Expr.Assign ||
-            (this is Expr.BlockExpr && !(parentPrecedence == Precedence.Range && position == ExprPosition.RightOperand)) ||
-            this is Expr.Cast ||
-            this is Expr.Struct ||
-            (this is Expr.Macro && mac.isBrace()))
+        (
+            this is Expr.Assign ||
+                (this is Expr.BlockExpr && !(parentPrecedence == Precedence.Range && position == ExprPosition.RightOperand)) ||
+                this is Expr.Cast ||
+                this is Expr.Struct ||
+                (this is Expr.Macro && mac.isBrace())
+        )
     ) {
         return true
     }
 
-    val childPrecedence = Precedence.of(this)
+    var childPrecedence = Precedence.of(this)
     if (childPrecedence < parentPrecedence) return true
     if (childPrecedence > parentPrecedence) return false
 
@@ -383,14 +759,45 @@ private fun binOpCanBeginExpr(op: BinOp): Boolean =
         is BinOp.BitAnd,
         is BinOp.BitOr,
         is BinOp.Shl,
-        is BinOp.Lt -> true
+        is BinOp.Lt,
+        -> true
         else -> false
     }
 
 private fun Expr.isValueLessJump(): Boolean =
-    this is Expr.Break && expr == null ||
-        this is Expr.Return && expr == null ||
-        this is Expr.Yield && expr == null
+    this is Expr.Break &&
+        expr == null ||
+        this is Expr.Return &&
+        expr == null ||
+        this is Expr.Yield &&
+        expr == null
+
+private fun Expr.endsWithRange(): Boolean =
+    when (this) {
+        is Expr.Assign -> right.endsWithRange()
+        is Expr.Binary -> right.endsWithRange()
+        is Expr.Cast -> expr.endsWithRange()
+        is Expr.Range -> true
+        else -> false
+    }
+
+private fun Expr.rightEdgeNeedsGroupBeforeRange(): Boolean =
+    when (this) {
+        is Expr.Assign -> right.rightEdgeNeedsGroupBeforeRange()
+        is Expr.Binary -> right.isValueLessJump() || right.rightEdgeNeedsGroupBeforeRange()
+        is Expr.Break -> expr?.rightEdgeNeedsGroupBeforeRange() ?: true
+        is Expr.Cast -> expr.rightEdgeNeedsGroupBeforeRange()
+        is Expr.Closure -> body.rightEdgeNeedsGroupBeforeRange()
+        is Expr.Let -> expr.rightEdgeNeedsGroupBeforeRange()
+        is Expr.RawAddr -> expr.rightEdgeNeedsGroupBeforeRange()
+        is Expr.Reference -> expr.rightEdgeNeedsGroupBeforeRange()
+        is Expr.Range -> true
+        is Expr.Return -> expr?.rightEdgeNeedsGroupBeforeRange() ?: true
+        is Expr.Try -> expr.rightEdgeNeedsGroupBeforeRange()
+        is Expr.Unary -> expr.rightEdgeNeedsGroupBeforeRange()
+        is Expr.Yield -> expr?.rightEdgeNeedsGroupBeforeRange() ?: true
+        else -> false
+    }
 
 private fun exprLeadingLabel(expr: Expr): Boolean {
     var current = expr
@@ -419,9 +826,9 @@ private fun exprLeadingLabel(expr: Expr): Boolean {
 public sealed class Expr : ToTokens {
     /** A slice literal expression: `[a, b, c, d]`. */
     public data class Array(
-        public val attrs: List<Attribute>,
-        public val bracketToken: io.github.kotlinmania.syn.token.Bracket,
-        public val elems: ExprList,
+        public var attrs: MutableList<Attribute>,
+        public var bracketToken: io.github.kotlinmania.syn.token.Bracket,
+        public var elems: ExprList,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
@@ -430,15 +837,15 @@ public sealed class Expr : ToTokens {
             }
         }
 
-        override fun deepCopy(): Array = Array(attrs.map { it.deepCopy() }, bracketToken, elems.copy({ it.deepCopy() }, { it }))
+        override fun deepCopy(): Array = Array(attrs.mapTo(mutableListOf()) { it.deepCopy() }, bracketToken, elems.copy({ it.deepCopy() }, { it }))
     }
 
     /** An assignment expression: `a = compute()`. */
     public data class Assign(
-        public val attrs: List<Attribute>,
-        public val left: Expr,
-        public val eqToken: io.github.kotlinmania.syn.token.Eq,
-        public val right: Expr,
+        public var attrs: MutableList<Attribute>,
+        public var left: Expr,
+        public var eqToken: io.github.kotlinmania.syn.token.Eq,
+        public var right: Expr,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
@@ -448,21 +855,23 @@ public sealed class Expr : ToTokens {
                 right.toTokensWithParens(target, Precedence.Assign, ExprPosition.RightOperand)
             }
             if (attrs.isNotEmpty()) {
-                io.github.kotlinmania.syn.token.Paren.default().surround(tokens, emit)
+                io.github.kotlinmania.syn.token.Paren
+                    .default()
+                    .surround(tokens, emit)
             } else {
                 emit(tokens)
             }
         }
 
-        override fun deepCopy(): Assign = Assign(attrs.map { it.deepCopy() }, left.deepCopy(), eqToken, right.deepCopy())
+        override fun deepCopy(): Assign = Assign(attrs.mapTo(mutableListOf()) { it.deepCopy() }, left.deepCopy(), eqToken, right.deepCopy())
     }
 
     /** An async block: `async { ... }`. */
     public data class Async(
-        public val attrs: List<Attribute>,
-        public val asyncToken: io.github.kotlinmania.syn.token.Async,
-        public val capture: io.github.kotlinmania.syn.token.Move?,
-        public val block: Block,
+        public var attrs: MutableList<Attribute>,
+        public var asyncToken: io.github.kotlinmania.syn.token.Async,
+        public var capture: io.github.kotlinmania.syn.token.Move?,
+        public var block: Block,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
@@ -471,15 +880,15 @@ public sealed class Expr : ToTokens {
             block.toTokens(tokens)
         }
 
-        override fun deepCopy(): Async = Async(attrs.map { it.deepCopy() }, asyncToken, capture, block)
+        override fun deepCopy(): Async = Async(attrs.mapTo(mutableListOf()) { it.deepCopy() }, asyncToken, capture, block.deepCopy())
     }
 
     /** An await expression: `fut.await`. */
     public data class Await(
-        public val attrs: List<Attribute>,
-        public val base: Expr,
-        public val dotToken: io.github.kotlinmania.syn.token.Dot,
-        public val awaitToken: io.github.kotlinmania.syn.token.Await,
+        public var attrs: MutableList<Attribute>,
+        public var base: Expr,
+        public var dotToken: io.github.kotlinmania.syn.token.Dot,
+        public var awaitToken: io.github.kotlinmania.syn.token.Await,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
@@ -488,21 +897,25 @@ public sealed class Expr : ToTokens {
             awaitToken.toTokens(tokens)
         }
 
-        override fun deepCopy(): Await = Await(attrs.map { it.deepCopy() }, base.deepCopy(), dotToken, awaitToken)
+        override fun deepCopy(): Await = Await(attrs.mapTo(mutableListOf()) { it.deepCopy() }, base.deepCopy(), dotToken, awaitToken)
     }
 
     /** A binary operation: `a + b`, `a += b`. */
     public data class Binary(
-        public val attrs: List<Attribute>,
-        public val left: Expr,
-        public val op: BinOp,
-        public val right: Expr,
+        public var attrs: MutableList<Attribute>,
+        public var left: Expr,
+        public var op: BinOp,
+        public var right: Expr,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
             val emit = { target: TokenStream ->
                 val precedence = Precedence.ofBinop(op)
                 if (left.isValueLessJump() && binOpCanBeginExpr(op)) {
+                    io.github.kotlinmania.syn.token.Paren.default().surround(target) { inner ->
+                        left.toTokens(inner)
+                    }
+                } else if (left.endsWithRange()) {
                     io.github.kotlinmania.syn.token.Paren.default().surround(target) { inner ->
                         left.toTokens(inner)
                     }
@@ -513,20 +926,22 @@ public sealed class Expr : ToTokens {
                 right.toTokensWithParens(target, precedence, ExprPosition.RightOperand)
             }
             if (attrs.isNotEmpty()) {
-                io.github.kotlinmania.syn.token.Paren.default().surround(tokens, emit)
+                io.github.kotlinmania.syn.token.Paren
+                    .default()
+                    .surround(tokens, emit)
             } else {
                 emit(tokens)
             }
         }
 
-        override fun deepCopy(): Binary = Binary(attrs.map { it.deepCopy() }, left.deepCopy(), op, right.deepCopy())
+        override fun deepCopy(): Binary = Binary(attrs.mapTo(mutableListOf()) { it.deepCopy() }, left.deepCopy(), op, right.deepCopy())
     }
 
     /** A blocked scope: `{ ... }`. */
     public data class BlockExpr(
-        public val attrs: List<Attribute>,
-        public val label: Label?,
-        public val block: Block,
+        public var attrs: MutableList<Attribute>,
+        public var label: Label?,
+        public var block: Block,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
@@ -534,40 +949,41 @@ public sealed class Expr : ToTokens {
             block.toTokens(tokens)
         }
 
-        override fun deepCopy(): BlockExpr = BlockExpr(attrs.map { it.deepCopy() }, label?.deepCopy(), block)
+        override fun deepCopy(): BlockExpr = BlockExpr(attrs.mapTo(mutableListOf()) { it.deepCopy() }, label?.deepCopy(), block.deepCopy())
     }
 
     /** A `break`, with an optional label to break and an optional expression. */
     public data class Break(
-        public val attrs: List<Attribute>,
-        public val breakToken: io.github.kotlinmania.syn.token.Break,
-        public val label: Lifetime?,
-        public val expr: Expr?,
+        public var attrs: MutableList<Attribute>,
+        public var breakToken: io.github.kotlinmania.syn.token.Break,
+        public var label: Lifetime?,
+        public var expr: Expr?,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
             breakToken.toTokens(tokens)
             label?.toTokens(tokens)
-            if (expr != null) {
-                if ((label == null && exprLeadingLabel(expr)) || (expr is Break && expr.expr == null)) {
+            val e = expr
+            if (e != null) {
+                if ((label == null && exprLeadingLabel(e)) || (e is Break && e.expr == null)) {
                     io.github.kotlinmania.syn.token.Paren.default().surround(tokens) { inner ->
-                        expr.toTokens(inner)
+                        e.toTokens(inner)
                     }
                 } else {
-                    expr.toTokens(tokens)
+                    e.toTokens(tokens)
                 }
             }
         }
 
-        override fun deepCopy(): Break = Break(attrs.map { it.deepCopy() }, breakToken, label?.deepCopy(), expr?.deepCopy())
+        override fun deepCopy(): Break = Break(attrs.mapTo(mutableListOf()) { it.deepCopy() }, breakToken, label?.deepCopy(), expr?.deepCopy())
     }
 
     /** A function call expression: `invoke(a, b)`. */
     public data class Call(
-        public val attrs: List<Attribute>,
-        public val func: Expr,
-        public val parenToken: io.github.kotlinmania.syn.token.Paren,
-        public val args: ExprList,
+        public var attrs: MutableList<Attribute>,
+        public var func: Expr,
+        public var parenToken: io.github.kotlinmania.syn.token.Paren,
+        public var args: ExprList,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
@@ -577,15 +993,15 @@ public sealed class Expr : ToTokens {
             }
         }
 
-        override fun deepCopy(): Call = Call(attrs.map { it.deepCopy() }, func.deepCopy(), parenToken, args.copy({ it.deepCopy() }, { it }))
+        override fun deepCopy(): Call = Call(attrs.mapTo(mutableListOf()) { it.deepCopy() }, func.deepCopy(), parenToken, args.copy({ it.deepCopy() }, { it }))
     }
 
     /** A cast expression: `foo as f64`. */
     public data class Cast(
-        public val attrs: List<Attribute>,
-        public val expr: Expr,
-        public val asToken: io.github.kotlinmania.syn.token.As,
-        public val ty: SynType,
+        public var attrs: MutableList<Attribute>,
+        public var expr: Expr,
+        public var asToken: io.github.kotlinmania.syn.token.As,
+        public var ty: SynType,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
@@ -595,26 +1011,28 @@ public sealed class Expr : ToTokens {
                 ty.toTokens(target)
             }
             if (attrs.isNotEmpty()) {
-                io.github.kotlinmania.syn.token.Paren.default().surround(tokens, emit)
+                io.github.kotlinmania.syn.token.Paren
+                    .default()
+                    .surround(tokens, emit)
             } else {
                 emit(tokens)
             }
         }
 
-        override fun deepCopy(): Cast = Cast(attrs.map { it.deepCopy() }, expr.deepCopy(), asToken, ty.deepCopy())
+        override fun deepCopy(): Cast = Cast(attrs.mapTo(mutableListOf()) { it.deepCopy() }, expr.deepCopy(), asToken, ty.deepCopy())
     }
 
     /** A closure expression: `|a, b| a + b`. */
     public data class Closure(
-        public val attrs: List<Attribute>,
-        public val constness: io.github.kotlinmania.syn.token.Const?,
-        public val asyncness: io.github.kotlinmania.syn.token.Async?,
-        public val capture: io.github.kotlinmania.syn.token.Move?,
-        public val or1Token: io.github.kotlinmania.syn.token.Or,
-        public val inputs: PatList,
-        public val or2Token: io.github.kotlinmania.syn.token.Or,
-        public val output: ReturnType,
-        public val body: Expr,
+        public var attrs: MutableList<Attribute>,
+        public var constness: io.github.kotlinmania.syn.token.Const?,
+        public var asyncness: io.github.kotlinmania.syn.token.Async?,
+        public var capture: io.github.kotlinmania.syn.token.Move?,
+        public var or1Token: io.github.kotlinmania.syn.token.Or,
+        public var inputs: PatList,
+        public var or2Token: io.github.kotlinmania.syn.token.Or,
+        public var output: ReturnType,
+        public var body: Expr,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
@@ -628,14 +1046,14 @@ public sealed class Expr : ToTokens {
             body.toTokens(tokens)
         }
 
-        override fun deepCopy(): Closure = Closure(attrs.map { it.deepCopy() }, constness, asyncness, capture, or1Token, inputs.copy({ it.deepCopy() }, { it }), or2Token, output.deepCopy(), body.deepCopy())
+        override fun deepCopy(): Closure = Closure(attrs.mapTo(mutableListOf()) { it.deepCopy() }, constness, asyncness, capture, or1Token, inputs.copy({ it.deepCopy() }, { it }), or2Token, output.deepCopy(), body.deepCopy())
     }
 
     /** A const block: `const { ... }`. */
     public data class Const(
-        public val attrs: List<Attribute>,
-        public val constToken: io.github.kotlinmania.syn.token.Const,
-        public val block: Block,
+        public var attrs: MutableList<Attribute>,
+        public var constToken: io.github.kotlinmania.syn.token.Const,
+        public var block: Block,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
@@ -643,14 +1061,14 @@ public sealed class Expr : ToTokens {
             block.toTokens(tokens)
         }
 
-        override fun deepCopy(): Const = Const(attrs.map { it.deepCopy() }, constToken, block)
+        override fun deepCopy(): Const = Const(attrs.mapTo(mutableListOf()) { it.deepCopy() }, constToken, block.deepCopy())
     }
 
     /** A `continue`, with an optional label. */
     public data class Continue(
-        public val attrs: List<Attribute>,
-        public val continueToken: io.github.kotlinmania.syn.token.Continue,
-        public val label: Lifetime?,
+        public var attrs: MutableList<Attribute>,
+        public var continueToken: io.github.kotlinmania.syn.token.Continue,
+        public var label: Lifetime?,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
@@ -658,15 +1076,15 @@ public sealed class Expr : ToTokens {
             label?.toTokens(tokens)
         }
 
-        override fun deepCopy(): Continue = Continue(attrs.map { it.deepCopy() }, continueToken, label?.deepCopy())
+        override fun deepCopy(): Continue = Continue(attrs.mapTo(mutableListOf()) { it.deepCopy() }, continueToken, label?.deepCopy())
     }
 
     /** Access of a named field of a data class (`obj.k`) or indexed element of a tuple-like compound (`obj.0`). */
     public data class Field(
-        public val attrs: List<Attribute>,
-        public val base: Expr,
-        public val dotToken: io.github.kotlinmania.syn.token.Dot,
-        public val member: Member,
+        public var attrs: MutableList<Attribute>,
+        public var base: Expr,
+        public var dotToken: io.github.kotlinmania.syn.token.Dot,
+        public var member: Member,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
@@ -675,18 +1093,18 @@ public sealed class Expr : ToTokens {
             member.toTokens(tokens)
         }
 
-        override fun deepCopy(): Field = Field(attrs.map { it.deepCopy() }, base.deepCopy(), dotToken, member)
+        override fun deepCopy(): Field = Field(attrs.mapTo(mutableListOf()) { it.deepCopy() }, base.deepCopy(), dotToken, member)
     }
 
     /** A for loop: `for pat in expr { ... }`. */
     public data class ForLoop(
-        public val attrs: List<Attribute>,
-        public val label: Label?,
-        public val forToken: io.github.kotlinmania.syn.token.For,
-        public val pat: Pat,
-        public val inToken: io.github.kotlinmania.syn.token.In,
-        public val expr: Expr,
-        public val body: Block,
+        public var attrs: MutableList<Attribute>,
+        public var label: Label?,
+        public var forToken: io.github.kotlinmania.syn.token.For,
+        public var pat: Pat,
+        public var inToken: io.github.kotlinmania.syn.token.In,
+        public var expr: Expr,
+        public var body: Block,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
@@ -698,30 +1116,30 @@ public sealed class Expr : ToTokens {
             body.toTokens(tokens)
         }
 
-        override fun deepCopy(): ForLoop = ForLoop(attrs.map { it.deepCopy() }, label?.deepCopy(), forToken, pat.deepCopy(), inToken, expr.deepCopy(), body)
+        override fun deepCopy(): ForLoop = ForLoop(attrs.mapTo(mutableListOf()) { it.deepCopy() }, label?.deepCopy(), forToken, pat.deepCopy(), inToken, expr.deepCopy(), body.deepCopy())
     }
 
     /** An expression contained within invisible delimiters. */
     public data class Group(
-        public val attrs: List<Attribute>,
-        public val groupToken: io.github.kotlinmania.syn.token.Group,
-        public val expr: Expr,
+        public var attrs: MutableList<Attribute>,
+        public var groupToken: io.github.kotlinmania.syn.token.Group,
+        public var expr: Expr,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
             groupToken.surround(tokens) { inner -> expr.toTokens(inner) }
         }
 
-        override fun deepCopy(): Group = Group(attrs.map { it.deepCopy() }, groupToken, expr.deepCopy())
+        override fun deepCopy(): Group = Group(attrs.mapTo(mutableListOf()) { it.deepCopy() }, groupToken, expr.deepCopy())
     }
 
     /** An `if` expression with an optional `else` block. */
     public data class If(
-        public val attrs: List<Attribute>,
-        public val ifToken: io.github.kotlinmania.syn.token.If,
-        public val cond: Expr,
-        public val thenBranch: Block,
-        public val elseBranch: ElseExpr?,
+        public var attrs: MutableList<Attribute>,
+        public var ifToken: io.github.kotlinmania.syn.token.If,
+        public var cond: Expr,
+        public var thenBranch: Block,
+        public var elseBranch: ElseExpr?,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
@@ -731,15 +1149,15 @@ public sealed class Expr : ToTokens {
             elseBranch?.toTokens(tokens)
         }
 
-        override fun deepCopy(): If = If(attrs.map { it.deepCopy() }, ifToken, cond.deepCopy(), thenBranch, elseBranch?.let { it.copy(expr = it.expr.deepCopy()) })
+        override fun deepCopy(): If = If(attrs.mapTo(mutableListOf()) { it.deepCopy() }, ifToken, cond.deepCopy(), thenBranch, elseBranch?.let { it.copy(expr = it.expr.deepCopy()) })
     }
 
     /** A square bracketed indexing expression: `vector[2]`. */
     public data class Index(
-        public val attrs: List<Attribute>,
-        public val expr: Expr,
-        public val bracketToken: io.github.kotlinmania.syn.token.Bracket,
-        public val index: Expr,
+        public var attrs: MutableList<Attribute>,
+        public var expr: Expr,
+        public var bracketToken: io.github.kotlinmania.syn.token.Bracket,
+        public var index: Expr,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
@@ -747,29 +1165,29 @@ public sealed class Expr : ToTokens {
             bracketToken.surround(tokens) { inner -> index.toTokens(inner) }
         }
 
-        override fun deepCopy(): Index = Index(attrs.map { it.deepCopy() }, expr.deepCopy(), bracketToken, index.deepCopy())
+        override fun deepCopy(): Index = Index(attrs.mapTo(mutableListOf()) { it.deepCopy() }, expr.deepCopy(), bracketToken, index.deepCopy())
     }
 
     /** The inferred value of a const generic argument, denoted `_`. */
     public data class Infer(
-        public val attrs: List<Attribute>,
-        public val underscoreToken: io.github.kotlinmania.syn.token.Underscore,
+        public var attrs: MutableList<Attribute>,
+        public var underscoreToken: io.github.kotlinmania.syn.token.Underscore,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
             underscoreToken.toTokens(tokens)
         }
 
-        override fun deepCopy(): Infer = Infer(attrs.map { it.deepCopy() }, underscoreToken)
+        override fun deepCopy(): Infer = Infer(attrs.mapTo(mutableListOf()) { it.deepCopy() }, underscoreToken)
     }
 
     /** A pattern guard that tests whether a pattern matches a value. */
     public data class Let(
-        public val attrs: List<Attribute>,
-        public val letToken: io.github.kotlinmania.syn.token.Let,
-        public val pat: Pat,
-        public val eqToken: io.github.kotlinmania.syn.token.Eq,
-        public val expr: Expr,
+        public var attrs: MutableList<Attribute>,
+        public var letToken: io.github.kotlinmania.syn.token.Let,
+        public var pat: Pat,
+        public var eqToken: io.github.kotlinmania.syn.token.Eq,
+        public var expr: Expr,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
@@ -785,28 +1203,28 @@ public sealed class Expr : ToTokens {
             }
         }
 
-        override fun deepCopy(): Let = Let(attrs.map { it.deepCopy() }, letToken, pat.deepCopy(), eqToken, expr.deepCopy())
+        override fun deepCopy(): Let = Let(attrs.mapTo(mutableListOf()) { it.deepCopy() }, letToken, pat.deepCopy(), eqToken, expr.deepCopy())
     }
 
     /** A literal in place of an expression: `1`, `"foo"`. */
     public data class Lit(
-        val attrs: List<Attribute>,
-        val lit: io.github.kotlinmania.syn.Lit,
+        var attrs: MutableList<Attribute>,
+        var lit: io.github.kotlinmania.syn.Lit,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
             lit.toTokens(tokens)
         }
 
-        override fun deepCopy(): Lit = Lit(attrs.map { it.deepCopy() }, lit)
+        override fun deepCopy(): Lit = Lit(attrs.mapTo(mutableListOf()) { it.deepCopy() }, lit)
     }
 
     /** Conditionless loop: `loop { ... }`. */
     public data class Loop(
-        public val attrs: List<Attribute>,
-        public val label: Label?,
-        public val loopToken: io.github.kotlinmania.syn.token.Loop,
-        public val body: Block,
+        public var attrs: MutableList<Attribute>,
+        public var label: Label?,
+        public var loopToken: io.github.kotlinmania.syn.token.Loop,
+        public var body: Block,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
@@ -815,29 +1233,29 @@ public sealed class Expr : ToTokens {
             body.toTokens(tokens)
         }
 
-        override fun deepCopy(): Loop = Loop(attrs.map { it.deepCopy() }, label?.deepCopy(), loopToken, body)
+        override fun deepCopy(): Loop = Loop(attrs.mapTo(mutableListOf()) { it.deepCopy() }, label?.deepCopy(), loopToken, body.deepCopy())
     }
 
     /** A macro invocation expression. */
     public data class Macro(
-        val attrs: List<Attribute>,
-        val mac: io.github.kotlinmania.syn.Macro,
+        var attrs: MutableList<Attribute>,
+        var mac: io.github.kotlinmania.syn.Macro,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
             mac.toTokens(tokens)
         }
 
-        override fun deepCopy(): Macro = Macro(attrs.map { it.deepCopy() }, mac.deepCopy())
+        override fun deepCopy(): Macro = Macro(attrs.mapTo(mutableListOf()) { it.deepCopy() }, mac.deepCopy())
     }
 
     /** A `match` expression. */
     public data class Match(
-        public val attrs: List<Attribute>,
-        public val matchToken: io.github.kotlinmania.syn.token.Match,
-        public val expr: Expr,
-        public val braceToken: io.github.kotlinmania.syn.token.Brace,
-        public val arms: List<Arm>,
+        public var attrs: MutableList<Attribute>,
+        public var matchToken: io.github.kotlinmania.syn.token.Match,
+        public var expr: Expr,
+        public var braceToken: io.github.kotlinmania.syn.token.Brace,
+        public var arms: MutableList<Arm>,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
@@ -848,18 +1266,18 @@ public sealed class Expr : ToTokens {
             }
         }
 
-        override fun deepCopy(): Match = Match(attrs.map { it.deepCopy() }, matchToken, expr.deepCopy(), braceToken, arms.map { it.deepCopy() })
+        override fun deepCopy(): Match = Match(attrs.mapTo(mutableListOf()) { it.deepCopy() }, matchToken, expr.deepCopy(), braceToken, arms.mapTo(mutableListOf()) { it.deepCopy() })
     }
 
     /** A method call expression with optional turbofish and arguments. */
     public data class MethodCall(
-        public val attrs: List<Attribute>,
-        public val receiver: Expr,
-        public val dotToken: io.github.kotlinmania.syn.token.Dot,
-        public val method: Ident,
-        public val turbofish: PathArguments.AngleBracketed?,
-        public val parenToken: io.github.kotlinmania.syn.token.Paren,
-        public val args: ExprList,
+        public var attrs: MutableList<Attribute>,
+        public var receiver: Expr,
+        public var dotToken: io.github.kotlinmania.syn.token.Dot,
+        public var method: Ident,
+        public var turbofish: PathArguments.AngleBracketed?,
+        public var parenToken: io.github.kotlinmania.syn.token.Paren,
+        public var args: ExprList,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
@@ -872,28 +1290,28 @@ public sealed class Expr : ToTokens {
             }
         }
 
-        override fun deepCopy(): MethodCall = MethodCall(attrs.map { it.deepCopy() }, receiver.deepCopy(), dotToken, method.copy(), turbofish?.deepCopy() as? PathArguments.AngleBracketed?, parenToken, args.copy({ it.deepCopy() }, { it }))
+        override fun deepCopy(): MethodCall = MethodCall(attrs.mapTo(mutableListOf()) { it.deepCopy() }, receiver.deepCopy(), dotToken, method.copy(), turbofish?.deepCopy() as? PathArguments.AngleBracketed?, parenToken, args.copy({ it.deepCopy() }, { it }))
     }
 
     /** A parenthesized expression: `(a + b)`. */
     public data class Paren(
-        public val attrs: List<Attribute>,
-        public val parenToken: io.github.kotlinmania.syn.token.Paren,
-        public val expr: Expr,
+        public var attrs: MutableList<Attribute>,
+        public var parenToken: io.github.kotlinmania.syn.token.Paren,
+        public var expr: Expr,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
             parenToken.surround(tokens) { inner -> expr.toTokens(inner) }
         }
 
-        override fun deepCopy(): Paren = Paren(attrs.map { it.deepCopy() }, parenToken, expr.deepCopy())
+        override fun deepCopy(): Paren = Paren(attrs.mapTo(mutableListOf()) { it.deepCopy() }, parenToken, expr.deepCopy())
     }
 
     /** A path expression possibly containing generic parameters. */
     public data class Path(
-        val attrs: List<Attribute>,
-        val qself: QSelf?,
-        val path: io.github.kotlinmania.syn.Path,
+        var attrs: MutableList<Attribute>,
+        var qself: QSelf?,
+        var path: io.github.kotlinmania.syn.Path,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
@@ -906,15 +1324,15 @@ public sealed class Expr : ToTokens {
             path.toTokens(tokens)
         }
 
-        override fun deepCopy(): Path = Path(attrs.map { it.deepCopy() }, qself, path.deepCopy())
+        override fun deepCopy(): Path = Path(attrs.mapTo(mutableListOf()) { it.deepCopy() }, qself, path.deepCopy())
     }
 
     /** A range expression: `1..2`, `1..`, `..2`, `1..=2`, `..=2`. */
     public data class Range(
-        public val attrs: List<Attribute>,
-        public val start: Expr?,
-        public val limits: RangeLimits,
-        public val end: Expr?,
+        public var attrs: MutableList<Attribute>,
+        public var start: Expr?,
+        public var limits: RangeLimits,
+        public var end: Expr?,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
@@ -923,16 +1341,16 @@ public sealed class Expr : ToTokens {
             end?.toTokensWithParens(tokens, Precedence.Range, ExprPosition.RightOperand)
         }
 
-        override fun deepCopy(): Range = Range(attrs.map { it.deepCopy() }, start?.deepCopy(), limits, end?.deepCopy())
+        override fun deepCopy(): Range = Range(attrs.mapTo(mutableListOf()) { it.deepCopy() }, start?.deepCopy(), limits, end?.deepCopy())
     }
 
     /** Address-of operation: `&raw const place` or `&raw mut place`. */
     public data class RawAddr(
-        public val attrs: List<Attribute>,
-        public val andToken: io.github.kotlinmania.syn.token.And,
-        public val raw: io.github.kotlinmania.syn.token.Raw,
-        public val mutability: PointerMutability,
-        public val expr: Expr,
+        public var attrs: MutableList<Attribute>,
+        public var andToken: io.github.kotlinmania.syn.token.And,
+        public var raw: io.github.kotlinmania.syn.token.Raw,
+        public var mutability: PointerMutability,
+        public var expr: Expr,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
@@ -942,15 +1360,15 @@ public sealed class Expr : ToTokens {
             expr.toTokensWithParens(tokens, Precedence.Prefix, ExprPosition.PrefixOperand)
         }
 
-        override fun deepCopy(): RawAddr = RawAddr(attrs.map { it.deepCopy() }, andToken, raw, mutability, expr.deepCopy())
+        override fun deepCopy(): RawAddr = RawAddr(attrs.mapTo(mutableListOf()) { it.deepCopy() }, andToken, raw, mutability, expr.deepCopy())
     }
 
     /** A referencing operation. */
     public data class Reference(
-        public val attrs: List<Attribute>,
-        public val andToken: io.github.kotlinmania.syn.token.And,
-        public val mutability: io.github.kotlinmania.syn.token.Mut?,
-        public val expr: Expr,
+        public var attrs: MutableList<Attribute>,
+        public var andToken: io.github.kotlinmania.syn.token.And,
+        public var mutability: io.github.kotlinmania.syn.token.Mut?,
+        public var expr: Expr,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
@@ -959,16 +1377,16 @@ public sealed class Expr : ToTokens {
             expr.toTokensWithParens(tokens, Precedence.Prefix, ExprPosition.PrefixOperand)
         }
 
-        override fun deepCopy(): Reference = Reference(attrs.map { it.deepCopy() }, andToken, mutability, expr.deepCopy())
+        override fun deepCopy(): Reference = Reference(attrs.mapTo(mutableListOf()) { it.deepCopy() }, andToken, mutability, expr.deepCopy())
     }
 
     /** An array literal constructed from one repeated element: `[0u8; N]`. */
     public data class Repeat(
-        public val attrs: List<Attribute>,
-        public val bracketToken: io.github.kotlinmania.syn.token.Bracket,
-        public val expr: Expr,
-        public val semiToken: io.github.kotlinmania.syn.token.Semi,
-        public val len: Expr,
+        public var attrs: MutableList<Attribute>,
+        public var bracketToken: io.github.kotlinmania.syn.token.Bracket,
+        public var expr: Expr,
+        public var semiToken: io.github.kotlinmania.syn.token.Semi,
+        public var len: Expr,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
@@ -979,14 +1397,14 @@ public sealed class Expr : ToTokens {
             }
         }
 
-        override fun deepCopy(): Repeat = Repeat(attrs.map { it.deepCopy() }, bracketToken, expr.deepCopy(), semiToken, len.deepCopy())
+        override fun deepCopy(): Repeat = Repeat(attrs.mapTo(mutableListOf()) { it.deepCopy() }, bracketToken, expr.deepCopy(), semiToken, len.deepCopy())
     }
 
     /** A `return`, with an optional value to be returned. */
     public data class Return(
-        public val attrs: List<Attribute>,
-        public val returnToken: io.github.kotlinmania.syn.token.Return,
-        public val expr: Expr?,
+        public var attrs: MutableList<Attribute>,
+        public var returnToken: io.github.kotlinmania.syn.token.Return,
+        public var expr: Expr?,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
@@ -994,18 +1412,18 @@ public sealed class Expr : ToTokens {
             expr?.toTokens(tokens)
         }
 
-        override fun deepCopy(): Return = Return(attrs.map { it.deepCopy() }, returnToken, expr?.deepCopy())
+        override fun deepCopy(): Return = Return(attrs.mapTo(mutableListOf()) { it.deepCopy() }, returnToken, expr?.deepCopy())
     }
 
     /** A data-object initialization expression. */
     public data class Struct(
-        public val attrs: List<Attribute>,
-        public val qself: QSelf?,
-        public val path: io.github.kotlinmania.syn.Path,
-        public val braceToken: io.github.kotlinmania.syn.token.Brace,
-        public val fields: FieldValueList,
-        public val dot2Token: io.github.kotlinmania.syn.token.DotDot?,
-        public val rest: Expr?,
+        public var attrs: MutableList<Attribute>,
+        public var qself: QSelf?,
+        public var path: io.github.kotlinmania.syn.Path,
+        public var braceToken: io.github.kotlinmania.syn.token.Brace,
+        public var fields: FieldValueList,
+        public var dot2Token: io.github.kotlinmania.syn.token.DotDot?,
+        public var rest: Expr?,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
@@ -1023,14 +1441,14 @@ public sealed class Expr : ToTokens {
             }
         }
 
-        override fun deepCopy(): Struct = Struct(attrs.map { it.deepCopy() }, qself, path.deepCopy(), braceToken, fields.copy({ it.deepCopy() }, { it }), dot2Token, rest?.deepCopy())
+        override fun deepCopy(): Struct = Struct(attrs.mapTo(mutableListOf()) { it.deepCopy() }, qself, path.deepCopy(), braceToken, fields.copy({ it.deepCopy() }, { it }), dot2Token, rest?.deepCopy())
     }
 
     /** A try-expression: `expr?`. */
     public data class Try(
-        public val attrs: List<Attribute>,
-        public val expr: Expr,
-        public val questionToken: io.github.kotlinmania.syn.token.Question,
+        public var attrs: MutableList<Attribute>,
+        public var expr: Expr,
+        public var questionToken: io.github.kotlinmania.syn.token.Question,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
@@ -1038,14 +1456,14 @@ public sealed class Expr : ToTokens {
             questionToken.toTokens(tokens)
         }
 
-        override fun deepCopy(): Try = Try(attrs.map { it.deepCopy() }, expr.deepCopy(), questionToken)
+        override fun deepCopy(): Try = Try(attrs.mapTo(mutableListOf()) { it.deepCopy() }, expr.deepCopy(), questionToken)
     }
 
     /** A try block: `try { ... }`. */
     public data class TryBlock(
-        public val attrs: List<Attribute>,
-        public val tryToken: io.github.kotlinmania.syn.token.Try,
-        public val block: Block,
+        public var attrs: MutableList<Attribute>,
+        public var tryToken: io.github.kotlinmania.syn.token.Try,
+        public var block: Block,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
@@ -1053,33 +1471,35 @@ public sealed class Expr : ToTokens {
             block.toTokens(tokens)
         }
 
-        override fun deepCopy(): TryBlock = TryBlock(attrs.map { it.deepCopy() }, tryToken, block)
+        override fun deepCopy(): TryBlock = TryBlock(attrs.mapTo(mutableListOf()) { it.deepCopy() }, tryToken, block.deepCopy())
     }
 
     /** A tuple expression: `(a, b, c, d)`. */
     public data class Tuple(
-        public val attrs: List<Attribute>,
-        public val parenToken: io.github.kotlinmania.syn.token.Paren,
-        public val elems: ExprList,
+        public var attrs: MutableList<Attribute>,
+        public var parenToken: io.github.kotlinmania.syn.token.Paren,
+        public var elems: ExprList,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
             parenToken.surround(tokens) { inner ->
                 elems.toTokens(inner)
                 if (elems.len() == 1 && !elems.trailingPunct()) {
-                    io.github.kotlinmania.syn.token.Comma.default().toTokens(inner)
+                    io.github.kotlinmania.syn.token.Comma
+                        .default()
+                        .toTokens(inner)
                 }
             }
         }
 
-        override fun deepCopy(): Tuple = Tuple(attrs.map { it.deepCopy() }, parenToken, elems.copy({ it.deepCopy() }, { it }))
+        override fun deepCopy(): Tuple = Tuple(attrs.mapTo(mutableListOf()) { it.deepCopy() }, parenToken, elems.copy({ it.deepCopy() }, { it }))
     }
 
     /** A unary prefix operation: negation or dereference. */
     public data class Unary(
-        public val attrs: List<Attribute>,
-        public val op: UnOp,
-        public val expr: Expr,
+        public var attrs: MutableList<Attribute>,
+        public var op: UnOp,
+        public var expr: Expr,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
@@ -1087,14 +1507,14 @@ public sealed class Expr : ToTokens {
             expr.toTokensWithParens(tokens, Precedence.Prefix, ExprPosition.PrefixOperand)
         }
 
-        override fun deepCopy(): Unary = Unary(attrs.map { it.deepCopy() }, op, expr.deepCopy())
+        override fun deepCopy(): Unary = Unary(attrs.mapTo(mutableListOf()) { it.deepCopy() }, op, expr.deepCopy())
     }
 
     /** A block expression that permits operations violating memory safety invariants. */
     public data class Unsafe(
-        public val attrs: List<Attribute>,
-        public val unsafeToken: io.github.kotlinmania.syn.token.Unsafe,
-        public val block: Block,
+        public var attrs: MutableList<Attribute>,
+        public var unsafeToken: io.github.kotlinmania.syn.token.Unsafe,
+        public var block: Block,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
@@ -1102,16 +1522,16 @@ public sealed class Expr : ToTokens {
             block.toTokens(tokens)
         }
 
-        override fun deepCopy(): Unsafe = Unsafe(attrs.map { it.deepCopy() }, unsafeToken, block)
+        override fun deepCopy(): Unsafe = Unsafe(attrs.mapTo(mutableListOf()) { it.deepCopy() }, unsafeToken, block.deepCopy())
     }
 
     /** A while loop: `while expr { ... }`. */
     public data class While(
-        public val attrs: List<Attribute>,
-        public val label: Label?,
-        public val whileToken: io.github.kotlinmania.syn.token.While,
-        public val cond: Expr,
-        public val body: Block,
+        public var attrs: MutableList<Attribute>,
+        public var label: Label?,
+        public var whileToken: io.github.kotlinmania.syn.token.While,
+        public var cond: Expr,
+        public var body: Block,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
@@ -1121,14 +1541,14 @@ public sealed class Expr : ToTokens {
             body.toTokens(tokens)
         }
 
-        override fun deepCopy(): While = While(attrs.map { it.deepCopy() }, label?.deepCopy(), whileToken, cond.deepCopy(), body)
+        override fun deepCopy(): While = While(attrs.mapTo(mutableListOf()) { it.deepCopy() }, label?.deepCopy(), whileToken, cond.deepCopy(), body.deepCopy())
     }
 
     /** A yield expression: `yield expr`. */
     public data class Yield(
-        public val attrs: List<Attribute>,
-        public val yieldToken: io.github.kotlinmania.syn.token.Yield,
-        public val expr: Expr?,
+        public var attrs: MutableList<Attribute>,
+        public var yieldToken: io.github.kotlinmania.syn.token.Yield,
+        public var expr: Expr?,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
@@ -1136,15 +1556,15 @@ public sealed class Expr : ToTokens {
             expr?.toTokens(tokens)
         }
 
-        override fun deepCopy(): Yield = Yield(attrs.map { it.deepCopy() }, yieldToken, expr?.deepCopy())
+        override fun deepCopy(): Yield = Yield(attrs.mapTo(mutableListOf()) { it.deepCopy() }, yieldToken, expr?.deepCopy())
     }
 
     /** Tokens in expression position not interpreted by Syn. */
     public data class Verbatim(
-        val tokens: TokenStream,
+        var tokens: TokenStream,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
-            tokens.extendTokenStreams(listOf(tokens))
+            tokens.extendTokenStreams(listOf(this.tokens))
         }
 
         override fun deepCopy(): Verbatim = this
@@ -1162,7 +1582,7 @@ public sealed class Expr : ToTokens {
 /** A member of a data structure or tuple. */
 public sealed class Member : ToTokens {
     public data class Named(
-        val ident: Ident,
+        var ident: Ident,
     ) : Member() {
         override fun toTokens(tokens: TokenStream) {
             ident.toTokens(tokens)
@@ -1170,22 +1590,23 @@ public sealed class Member : ToTokens {
     }
 
     public data class Unnamed(
-        val index: Index,
+        var index: Index,
     ) : Member() {
         override fun toTokens(tokens: TokenStream) {
             index.toTokens(tokens)
         }
     }
-
 }
 
 /** A tuple field index such as `0` in `obj.0`. */
 public data class Index(
-    public val index: UInt,
-    public val span: Span,
+    public var index: UInt,
+    public var span: Span,
 ) : ToTokens {
     override fun toTokens(tokens: TokenStream) {
-        val literal = io.github.kotlinmania.procmacro2.Literal.i64Unsuffixed(index.toLong())
+        var literal =
+            io.github.kotlinmania.procmacro2.Literal
+                .i64Unsuffixed(index.toLong())
         literal.setSpan(span)
         tokens.append(literal)
     }
@@ -1193,10 +1614,10 @@ public data class Index(
 
 /** A field-value pair in a data-object initialization. */
 public data class FieldValue(
-    public val attrs: List<Attribute>,
-    public val member: Member,
-    public val colonToken: io.github.kotlinmania.syn.token.Colon?,
-    public val expr: Expr,
+    public var attrs: MutableList<Attribute>,
+    public var member: Member,
+    public var colonToken: io.github.kotlinmania.syn.token.Colon?,
+    public var expr: Expr,
 ) : ToTokens {
     override fun toTokens(tokens: TokenStream) {
         for (attr in attrs) attr.toTokens(tokens)
@@ -1205,13 +1626,13 @@ public data class FieldValue(
         expr.toTokens(tokens)
     }
 
-    public fun deepCopy(): FieldValue = FieldValue(attrs.map { it.deepCopy() }, member, colonToken, expr.deepCopy())
+    public fun deepCopy(): FieldValue = FieldValue(attrs.mapTo(mutableListOf()) { it.deepCopy() }, member, colonToken, expr.deepCopy())
 }
 
 /** A label on a `for`, `while`, or `loop`. */
 public data class Label(
-    public val name: Lifetime,
-    public val colonToken: io.github.kotlinmania.syn.token.Colon,
+    public var name: Lifetime,
+    public var colonToken: io.github.kotlinmania.syn.token.Colon,
 ) : ToTokens {
     override fun toTokens(tokens: TokenStream) {
         name.toTokens(tokens)
@@ -1223,12 +1644,12 @@ public data class Label(
 
 /** One arm of a `match` expression. */
 public data class Arm(
-    public val attrs: List<Attribute>,
-    public val pat: Pat,
-    public val guard: IfExpr?,
-    public val fatArrowToken: io.github.kotlinmania.syn.token.FatArrow,
-    public val body: Expr,
-    public val comma: io.github.kotlinmania.syn.token.Comma?,
+    public var attrs: MutableList<Attribute>,
+    public var pat: Pat,
+    public var guard: IfExpr?,
+    public var fatArrowToken: io.github.kotlinmania.syn.token.FatArrow,
+    public var body: Expr,
+    public var comma: io.github.kotlinmania.syn.token.Comma?,
 ) : ToTokens {
     override fun toTokens(tokens: TokenStream) {
         for (attr in attrs) attr.toTokens(tokens)
@@ -1239,13 +1660,13 @@ public data class Arm(
         comma?.toTokens(tokens)
     }
 
-    public fun deepCopy(): Arm = Arm(attrs.map { it.deepCopy() }, pat.deepCopy(), guard?.let { it.copy(expr = it.expr.deepCopy()) }, fatArrowToken, body.deepCopy(), comma)
+    public fun deepCopy(): Arm = Arm(attrs.mapTo(mutableListOf()) { it.deepCopy() }, pat.deepCopy(), guard?.let { it.copy(expr = it.expr.deepCopy()) }, fatArrowToken, body.deepCopy(), comma)
 }
 
 /** Limit types of a range, inclusive or exclusive. */
 public sealed class RangeLimits : ToTokens {
     public data class HalfOpen(
-        val token: io.github.kotlinmania.syn.token.DotDot,
+        var token: io.github.kotlinmania.syn.token.DotDot,
     ) : RangeLimits() {
         override fun toTokens(tokens: TokenStream) {
             token.toTokens(tokens)
@@ -1253,7 +1674,7 @@ public sealed class RangeLimits : ToTokens {
     }
 
     public data class Closed(
-        val token: io.github.kotlinmania.syn.token.DotDotEq,
+        var token: io.github.kotlinmania.syn.token.DotDotEq,
     ) : RangeLimits() {
         override fun toTokens(tokens: TokenStream) {
             token.toTokens(tokens)
@@ -1264,7 +1685,7 @@ public sealed class RangeLimits : ToTokens {
 /** Mutability of a raw pointer. */
 public sealed class PointerMutability : ToTokens {
     public data class Const(
-        val token: io.github.kotlinmania.syn.token.Const,
+        var token: io.github.kotlinmania.syn.token.Const,
     ) : PointerMutability() {
         override fun toTokens(tokens: TokenStream) {
             token.toTokens(tokens)
@@ -1272,7 +1693,7 @@ public sealed class PointerMutability : ToTokens {
     }
 
     public data class Mut(
-        val token: io.github.kotlinmania.syn.token.Mut,
+        var token: io.github.kotlinmania.syn.token.Mut,
     ) : PointerMutability() {
         override fun toTokens(tokens: TokenStream) {
             token.toTokens(tokens)
@@ -1280,8 +1701,8 @@ public sealed class PointerMutability : ToTokens {
     }
 }
 
-public object ExprParse : Parse<Expr> {
-    override fun parse(input: ParseStream): SynResult<Expr> = parseExpr(input)
+public object ExprParse {
+    fun parse(input: ParseStream): SynResult<Expr> = parseExpr(input)
 }
 
 public fun parseExpr(input: ParseStream): SynResult<Expr> = parseExprFull(input)
@@ -1301,7 +1722,7 @@ public fun exprAttrs(input: ParseStream): SynResult<List<Attribute>> = exprAttrs
 public fun unaryExpr(input: ParseStream, allowStruct: Boolean): SynResult<Expr> =
     unaryExprImpl(input, allowStruct)
 
-public fun trailerExpr(input: ParseStream, allowStruct: Boolean, attrs: List<Attribute> = emptyList()): SynResult<Expr> =
+public fun trailerExpr(input: ParseStream, allowStruct: Boolean, attrs: MutableList<Attribute> = mutableListOf()): SynResult<Expr> =
     trailerExprImpl(input, allowStruct, attrs)
 
 public fun trailerHelper(input: ParseStream, e: Expr, allowStruct: Boolean): SynResult<Expr> =
@@ -1334,8 +1755,8 @@ public fun parseMember(input: ParseStream): SynResult<Member> = parseMemberImpl(
 
 public fun continueParsingEarly(expr: Expr): Boolean = continueParsingEarlyImpl(expr)
 
-public fun Expr.replaceAttrs(attrs: List<Attribute>): Expr {
-    return when (this) {
+public fun Expr.replaceAttrs(attrs: MutableList<Attribute>): Expr =
+    when (this) {
         is Expr.Binary -> copy(attrs = attrs)
         is Expr.Assign -> copy(attrs = attrs)
         is Expr.Unary -> copy(attrs = attrs)
@@ -1377,19 +1798,16 @@ public fun Expr.replaceAttrs(attrs: List<Attribute>): Expr {
         is Expr.Cast -> copy(attrs = attrs)
         is Expr.Verbatim -> this
     }
-}
 
 public fun Expr.isNamed(name: String): Boolean {
     if (this is Expr.Path) {
-        val last = path.segments.last()
+        var last = path.segments.last()
         return last?.ident?.toString() == name
     }
     return false
 }
 
-public fun Expr.span(): io.github.kotlinmania.procmacro2.Span {
-    return spanOf(this)
-}
+public fun Expr.span(): io.github.kotlinmania.procmacro2.Span = spanOf(this)
 
 public fun printExpr(expr: Expr, tokens: TokenStream) {
     expr.toTokens(tokens)
@@ -1399,27 +1817,83 @@ public fun printSubexpression(expr: Expr, tokens: TokenStream) {
     expr.toTokens(tokens)
 }
 
-public fun printExprAssign(e: Expr.Assign, tokens: TokenStream) { e.toTokens(tokens) }
-public fun printExprAwait(e: Expr.Await, tokens: TokenStream) { e.toTokens(tokens) }
-public fun printExprBinary(e: Expr.Binary, tokens: TokenStream) { e.toTokens(tokens) }
-public fun printExprBlock(e: Expr.BlockExpr, tokens: TokenStream) { e.toTokens(tokens) }
-public fun printExprBreak(e: Expr.Break, tokens: TokenStream) { e.toTokens(tokens) }
-public fun printExprCall(e: Expr.Call, tokens: TokenStream) { e.toTokens(tokens) }
-public fun printExprCast(e: Expr.Cast, tokens: TokenStream) { e.toTokens(tokens) }
-public fun printExprClosure(e: Expr.Closure, tokens: TokenStream) { e.toTokens(tokens) }
-public fun printExprField(e: Expr.Field, tokens: TokenStream) { e.toTokens(tokens) }
-public fun printExprIndex(e: Expr.Index, tokens: TokenStream) { e.toTokens(tokens) }
-public fun printExprLet(e: Expr.Let, tokens: TokenStream) { e.toTokens(tokens) }
-public fun printExprMethodCall(e: Expr.MethodCall, tokens: TokenStream) { e.toTokens(tokens) }
-public fun printExprRange(e: Expr.Range, tokens: TokenStream) { e.toTokens(tokens) }
-public fun printExprRawAddr(e: Expr.Reference, tokens: TokenStream) { e.toTokens(tokens) }
-public fun printExprReference(e: Expr.Reference, tokens: TokenStream) { e.toTokens(tokens) }
-public fun printExprReturn(e: Expr.Return, tokens: TokenStream) { e.toTokens(tokens) }
-public fun printExprTry(e: Expr.Try, tokens: TokenStream) { e.toTokens(tokens) }
-public fun printExprUnary(e: Expr.Unary, tokens: TokenStream) { e.toTokens(tokens) }
-public fun printExprYield(e: Expr.Yield, tokens: TokenStream) { e.toTokens(tokens) }
+public fun printExprAssign(e: Expr.Assign, tokens: TokenStream) {
+    e.toTokens(tokens)
+}
 
-public fun outerAttrsToTokens(attrs: List<Attribute>, tokens: TokenStream) {
+public fun printExprAwait(e: Expr.Await, tokens: TokenStream) {
+    e.toTokens(tokens)
+}
+
+public fun printExprBinary(e: Expr.Binary, tokens: TokenStream) {
+    e.toTokens(tokens)
+}
+
+public fun printExprBlock(e: Expr.BlockExpr, tokens: TokenStream) {
+    e.toTokens(tokens)
+}
+
+public fun printExprBreak(e: Expr.Break, tokens: TokenStream) {
+    e.toTokens(tokens)
+}
+
+public fun printExprCall(e: Expr.Call, tokens: TokenStream) {
+    e.toTokens(tokens)
+}
+
+public fun printExprCast(e: Expr.Cast, tokens: TokenStream) {
+    e.toTokens(tokens)
+}
+
+public fun printExprClosure(e: Expr.Closure, tokens: TokenStream) {
+    e.toTokens(tokens)
+}
+
+public fun printExprField(e: Expr.Field, tokens: TokenStream) {
+    e.toTokens(tokens)
+}
+
+public fun printExprIndex(e: Expr.Index, tokens: TokenStream) {
+    e.toTokens(tokens)
+}
+
+public fun printExprLet(e: Expr.Let, tokens: TokenStream) {
+    e.toTokens(tokens)
+}
+
+public fun printExprMethodCall(e: Expr.MethodCall, tokens: TokenStream) {
+    e.toTokens(tokens)
+}
+
+public fun printExprRange(e: Expr.Range, tokens: TokenStream) {
+    e.toTokens(tokens)
+}
+
+public fun printExprRawAddr(e: Expr.Reference, tokens: TokenStream) {
+    e.toTokens(tokens)
+}
+
+public fun printExprReference(e: Expr.Reference, tokens: TokenStream) {
+    e.toTokens(tokens)
+}
+
+public fun printExprReturn(e: Expr.Return, tokens: TokenStream) {
+    e.toTokens(tokens)
+}
+
+public fun printExprTry(e: Expr.Try, tokens: TokenStream) {
+    e.toTokens(tokens)
+}
+
+public fun printExprUnary(e: Expr.Unary, tokens: TokenStream) {
+    e.toTokens(tokens)
+}
+
+public fun printExprYield(e: Expr.Yield, tokens: TokenStream) {
+    e.toTokens(tokens)
+}
+
+public fun outerAttrsToTokens(attrs: MutableList<Attribute>, tokens: TokenStream) {
     for (attr in attrs) {
         if (attr.style is AttrStyle.Outer) {
             attr.toTokens(tokens)
@@ -1427,7 +1901,7 @@ public fun outerAttrsToTokens(attrs: List<Attribute>, tokens: TokenStream) {
     }
 }
 
-public fun innerAttrsToTokens(attrs: List<Attribute>, tokens: TokenStream) {
+public fun innerAttrsToTokens(attrs: MutableList<Attribute>, tokens: TokenStream) {
     for (attr in attrs) {
         if (attr.style is AttrStyle.Inner) {
             attr.toTokens(tokens)
@@ -1435,23 +1909,31 @@ public fun innerAttrsToTokens(attrs: List<Attribute>, tokens: TokenStream) {
     }
 }
 
-public fun peekExpr(input: ParseStream): Boolean {
-    return input.peek(IdentPeekAny) && !input.peek(AsPeek)
-        || input.peek(ParenPeek)
-        || input.peek(BracketPeek)
-        || input.peek(BracePeek)
-        || input.peek(LitPeek)
-        || input.peek(NotPeek) && !input.peek(NePeek)
-        || input.peek(MinusPeek) && !input.peek(MinusEqPeek) && !input.peek(RArrowPeek)
-        || input.peek(StarPeek) && !input.peek(StarEqPeek)
-        || input.peek(OrPeek) && !input.peek(OrEqPeek)
-        || input.peek(AndPeek) && !input.peek(AndEqPeek)
-        || input.peek(DotDotPeek)
-        || input.peek(LtPeek) && !input.peek(LePeek) && !input.peek(ShlEqPeek)
-        || input.peek(PathSepPeek)
-        || input.peek(LifetimePeek)
-        || input.peek(PoundPeek)
-}
+public fun peekExpr(input: ParseStream): Boolean =
+    input.peek(IdentPeekAny) &&
+        !input.peek(AsPeek) ||
+        input.peek(ParenPeek) ||
+        input.peek(BracketPeek) ||
+        input.peek(BracePeek) ||
+        input.peek(LitPeek) ||
+        input.peek(NotPeek) &&
+        !input.peek(NePeek) ||
+        input.peek(MinusPeek) &&
+        !input.peek(MinusEqPeek) &&
+        !input.peek(RArrowPeek) ||
+        input.peek(StarPeek) &&
+        !input.peek(StarEqPeek) ||
+        input.peek(OrPeek) &&
+        !input.peek(OrEqPeek) ||
+        input.peek(AndPeek) &&
+        !input.peek(AndEqPeek) ||
+        input.peek(DotDotPeek) ||
+        input.peek(LtPeek) &&
+        !input.peek(LePeek) &&
+        !input.peek(ShlEqPeek) ||
+        input.peek(PathSepPeek) ||
+        input.peek(LifetimePeek) ||
+        input.peek(PoundPeek)
 
 public fun memberFromIdent(ident: io.github.kotlinmania.procmacro2.Ident): Member =
     Member.Named(ident)
@@ -1464,40 +1946,45 @@ public fun memberFromUSize(index: Int): Member =
 
 public fun indexFromUSize(index: Int): Index {
     require(index < 0xFFFFFFFF) { "index overflow" }
-    return Index(index.toUInt(), io.github.kotlinmania.procmacro2.Span.callSite())
+    return Index(
+        index.toUInt(),
+        io.github.kotlinmania.procmacro2.Span
+            .callSite(),
+    )
 }
 
 public fun atomLabeled(input: ParseStream): SynResult<Expr> {
-    val labelResult = input.parse(LifetimeParse)
+    var labelResult = LifetimeParse.parse(input)
     if (labelResult.isFailure) return SynResult.failure((labelResult as SynResult.Failure).error)
-    val theLabel = labelResult.getOrThrow()
-    val colonResult = input.parse(ColonParse)
+    var theLabel = labelResult.getOrThrow()
+    var colonResult = ColonParse.parse(input)
     if (colonResult.isFailure) return SynResult.failure((colonResult as SynResult.Failure).error)
-    val theLabelColon = colonResult.getOrThrow()
-    val label = Label(theLabel, theLabelColon)
-    val expr: Expr = when {
-        input.peek(WhilePeek) -> {
-            val whileResult = parseExprWhileLabeled(input)
-            if (whileResult.isFailure) return whileResult
-            whileResult.getOrThrow()
+    var theLabelColon = colonResult.getOrThrow()
+    var label = Label(theLabel, theLabelColon)
+    var expr: Expr =
+        when {
+            input.peek(WhilePeek) -> {
+                val whileResult = parseExprWhileLabeled(input)
+                if (whileResult.isFailure) return whileResult
+                whileResult.getOrThrow()
+            }
+            input.peek(ForPeek) -> {
+                val forResult = parseExprForLabeled(input)
+                if (forResult.isFailure) return forResult
+                forResult.getOrThrow()
+            }
+            input.peek(LoopPeek) -> {
+                val loopResult = parseExprLoopLabeled(input)
+                if (loopResult.isFailure) return loopResult
+                loopResult.getOrThrow()
+            }
+            input.peek(BracePeek) -> {
+                val blockResult = parseExprBlock(input)
+                if (blockResult.isFailure) return blockResult
+                blockResult.getOrThrow()
+            }
+            else -> return SynResult.failure(input.error("expected loop or block expression"))
         }
-        input.peek(ForPeek) -> {
-            val forResult = parseExprForLabeled(input)
-            if (forResult.isFailure) return forResult
-            forResult.getOrThrow()
-        }
-        input.peek(LoopPeek) -> {
-            val loopResult = parseExprLoopLabeled(input)
-            if (loopResult.isFailure) return loopResult
-            loopResult.getOrThrow()
-        }
-        input.peek(BracePeek) -> {
-            val blockResult = parseExprBlock(input)
-            if (blockResult.isFailure) return blockResult
-            blockResult.getOrThrow()
-        }
-        else -> return SynResult.failure(input.error("expected loop or block expression"))
-    }
     return when (expr) {
         is Expr.While -> SynResult.success(expr.copy(label = label))
         is Expr.ForLoop -> SynResult.success(expr.copy(label = label))
@@ -1517,18 +2004,18 @@ internal fun parseExprLoopLabeled(input: ParseStream): SynResult<Expr> =
     parseExprLoop(input)
 
 public fun exprBuiltin(input: ParseStream): SynResult<Expr> {
-    val begin = input.fork()
-    val kwResult = keyword(input, "builtin")
+    var begin = input.fork()
+    var kwResult = keyword(input, "builtin")
     if (kwResult.isFailure) return SynResult.failure((kwResult as SynResult.Failure).error)
-    val poundResult = input.parse(PoundParse)
+    var poundResult = PoundParse.parse(input)
     if (poundResult.isFailure) return SynResult.failure((poundResult as SynResult.Failure).error)
-    val identResult = input.parse(IdentParse)
+    var identResult = IdentParse.parse(input)
     if (identResult.isFailure) return SynResult.failure((identResult as SynResult.Failure).error)
-    val parens = parenthesized(input)
+    var parens = parenthesized(input)
     if (parens.isFailure) return SynResult.failure((parens as SynResult.Failure).error)
-    val parensVal = parens.getOrThrow()
+    var parensVal = parens.getOrThrow()
     parensVal.content.finishChildBuffer()
-    val tokens = verbatimBetween(begin, input)
+    var tokens = verbatimBetween(begin, input)
     return SynResult.success(Expr.Verbatim(tokens))
 }
 
@@ -1539,24 +2026,24 @@ public fun restOfPathOrMacroOrStruct(
     allowStruct: Boolean,
 ): SynResult<Expr> {
     if (qself == null && input.peek(NotPeek) && !input.peek(NePeek) && path.isModStyle()) {
-        val bangResult = input.parse(NotParse)
+        var bangResult = NotParse.parse(input)
         if (bangResult.isFailure) return SynResult.failure((bangResult as SynResult.Failure).error)
-        val delimResult = parseDelimiter(input)
+        var delimResult = parseDelimiter(input)
         if (delimResult.isFailure) return SynResult.failure((delimResult as SynResult.Failure).error)
-        val (delimiter, tokens) = delimResult.getOrThrow()
+        var (delimiter, tokens) = delimResult.getOrThrow()
         return SynResult.success(
             Expr.Macro(
-                emptyList(),
+                mutableListOf(),
                 Macro(path, bangResult.getOrThrow(), delimiter, tokens),
             ),
         )
     }
     if (allowStruct && input.peek(BracePeek)) {
-        val structResult = exprStructHelper(input, qself, path)
+        var structResult = exprStructHelper(input, qself, path)
         if (structResult.isFailure) return structResult
         return SynResult.success(structResult.getOrThrow())
     }
-    return SynResult.success(Expr.Path(emptyList(), qself, path))
+    return SynResult.success(Expr.Path(mutableListOf(), qself, path))
 }
 
 public fun exprStructHelper(
@@ -1564,24 +2051,27 @@ public fun exprStructHelper(
     qself: QSelf?,
     path: Path,
 ): SynResult<Expr.Struct> {
-    val braces = braced(input)
+    var braces = braced(input)
     if (braces.isFailure) return SynResult.failure((braces as SynResult.Failure).error)
-    val bracesVal = braces.getOrThrow()
-    val content = bracesVal.content
-    val fields = FieldValueList()
+    var bracesVal = braces.getOrThrow()
+    var content = bracesVal.content
+    var fields = FieldValueList()
     while (!content.isEmpty()) {
         if (content.peek(DotDotPeek)) {
-            val dot2Result = content.parse(DotDotParse)
+            val dot2Result = DotDotParse.parse(content)
             if (dot2Result.isFailure) return SynResult.failure((dot2Result as SynResult.Failure).error)
-            val rest: Expr? = if (content.isEmpty()) null else {
-                val restResult = content.call { parseExprFull(it) }
-                if (restResult.isFailure) return SynResult.failure((restResult as SynResult.Failure).error)
-                restResult.getOrThrow()
-            }
+            val rest: Expr? =
+                if (content.isEmpty()) {
+                    null
+                } else {
+                    val restResult = parseExprFull(content)
+                    if (restResult.isFailure) return SynResult.failure((restResult as SynResult.Failure).error)
+                    restResult.getOrThrow()
+                }
             content.finishChildBuffer()
             return SynResult.success(
                 Expr.Struct(
-                    emptyList(),
+                    mutableListOf(),
                     qself,
                     path,
                     bracesVal.token,
@@ -1591,34 +2081,34 @@ public fun exprStructHelper(
                 ),
             )
         }
-        val fieldResult = content.call { parseFieldValueImpl(it) }
+        var fieldResult = parseFieldValueImpl(content)
         if (fieldResult.isFailure) return SynResult.failure((fieldResult as SynResult.Failure).error)
         fields.pushValue(fieldResult.getOrThrow())
         if (content.isEmpty()) break
-        val punctResult = content.parse(CommaParse)
+        var punctResult = CommaParse.parse(content)
         if (punctResult.isFailure) break
         fields.pushPunct(punctResult.getOrThrow())
     }
     content.finishChildBuffer()
     return SynResult.success(
-        Expr.Struct(emptyList(), qself, path, bracesVal.token, fields, null, null),
+        Expr.Struct(mutableListOf(), qself, path, bracesVal.token, fields, null, null),
     )
 }
 
 public fun exprLet(input: ParseStream, allowStruct: Boolean): SynResult<Expr.Let> {
-    val letResult = input.parse(LetParse)
+    var letResult = LetParse.parse(input)
     if (letResult.isFailure) return SynResult.failure((letResult as SynResult.Failure).error)
-    val patResult = parsePatMultiWithLeadingVert(input)
+    var patResult = parsePatMultiWithLeadingVert(input)
     if (patResult.isFailure) return SynResult.failure((patResult as SynResult.Failure).error)
-    val eqResult = input.parse(EqParse)
+    var eqResult = EqParse.parse(input)
     if (eqResult.isFailure) return SynResult.failure((eqResult as SynResult.Failure).error)
-    val lhsResult = unaryExprImpl(input, allowStruct)
+    var lhsResult = unaryExprImpl(input, allowStruct)
     if (lhsResult.isFailure) return SynResult.failure((lhsResult as SynResult.Failure).error)
-    val exprResult = parseExprBinaryImpl(input, lhsResult.getOrThrow(), allowStruct, Precedence.Compare)
+    var exprResult = parseExprBinaryImpl(input, lhsResult.getOrThrow(), allowStruct, Precedence.Compare)
     if (exprResult.isFailure) return SynResult.failure((exprResult as SynResult.Failure).error)
     return SynResult.success(
         Expr.Let(
-            emptyList(),
+            mutableListOf(),
             letResult.getOrThrow(),
             patResult.getOrThrow(),
             eqResult.getOrThrow(),
@@ -1627,69 +2117,69 @@ public fun exprLet(input: ParseStream, allowStruct: Boolean): SynResult<Expr.Let
     )
 }
 
-public fun exprUnary(input: ParseStream, attrs: List<Attribute>, allowStruct: Boolean): SynResult<Expr.Unary> {
-    val opResult = input.parse(UnOpParse)
+public fun exprUnary(input: ParseStream, attrs: MutableList<Attribute>, allowStruct: Boolean): SynResult<Expr.Unary> {
+    var opResult = UnOpParse.parse(input)
     if (opResult.isFailure) return SynResult.failure((opResult as SynResult.Failure).error)
-    val innerResult = unaryExprImpl(input, allowStruct)
+    var innerResult = unaryExprImpl(input, allowStruct)
     if (innerResult.isFailure) return SynResult.failure((innerResult as SynResult.Failure).error)
     return SynResult.success(Expr.Unary(attrs, opResult.getOrThrow(), innerResult.getOrThrow()))
 }
 
 public fun exprBecome(input: ParseStream): SynResult<Expr> {
-    val begin = input.fork()
-    val becomeResult = input.parse(BecomeParse)
+    var begin = input.fork()
+    var becomeResult = BecomeParse.parse(input)
     if (becomeResult.isFailure) return SynResult.failure((becomeResult as SynResult.Failure).error)
-    val exprResult = parseExprFull(input)
+    var exprResult = parseExprFull(input)
     if (exprResult.isFailure) return SynResult.failure((exprResult as SynResult.Failure).error)
-    val tokens = verbatimBetween(begin, input)
+    var tokens = verbatimBetween(begin, input)
     return SynResult.success(Expr.Verbatim(tokens))
 }
 
 public fun exprClosure(input: ParseStream, allowStruct: Boolean): SynResult<Expr.Closure> {
-    val lifetimes: BoundLifetimes? = null
-    val constnessResult = input.parse(ConstParse)
-    val constness = if (constnessResult.isSuccess) constnessResult.getOrThrow() else null
-    val movabilityResult = input.parse(StaticParse)
-    val movability = if (movabilityResult.isSuccess) movabilityResult.getOrThrow() else null
-    val asyncnessResult = input.parse(AsyncParse)
-    val asyncness = if (asyncnessResult.isSuccess) asyncnessResult.getOrThrow() else null
-    val captureResult = input.parse(MoveParse)
-    val capture = if (captureResult.isSuccess) captureResult.getOrThrow() else null
-    val or1Result = input.parse(OrParse)
+    var lifetimes: BoundLifetimes? = null
+    var constnessResult = ConstParse.parse(input)
+    var constness = if (constnessResult.isSuccess) constnessResult.getOrThrow() else null
+    var movabilityResult = StaticParse.parse(input)
+    var movability = if (movabilityResult.isSuccess) movabilityResult.getOrThrow() else null
+    var asyncnessResult = AsyncParse.parse(input)
+    var asyncness = if (asyncnessResult.isSuccess) asyncnessResult.getOrThrow() else null
+    var captureResult = MoveParse.parse(input)
+    var capture = if (captureResult.isSuccess) captureResult.getOrThrow() else null
+    var or1Result = OrParse.parse(input)
     if (or1Result.isFailure) return SynResult.failure((or1Result as SynResult.Failure).error)
-    val inputs = PatList()
+    var inputs = PatList()
     while (true) {
         if (input.peek(OrPeek)) break
-        val valueResult = closureArg(input)
+        var valueResult = closureArg(input)
         if (valueResult.isFailure) return SynResult.failure((valueResult as SynResult.Failure).error)
         inputs.pushValue(valueResult.getOrThrow())
         if (input.peek(OrPeek)) break
-        val punctResult = input.parse(CommaParse)
+        var punctResult = CommaParse.parse(input)
         if (punctResult.isFailure) return SynResult.failure((punctResult as SynResult.Failure).error)
         inputs.pushPunct(punctResult.getOrThrow())
     }
-    val or2Result = input.parse(OrParse)
+    var or2Result = OrParse.parse(input)
     if (or2Result.isFailure) return SynResult.failure((or2Result as SynResult.Failure).error)
-    val output: ReturnType
-    val body: Expr
+    var output: ReturnType
+    var body: Expr
     if (input.peek(RArrowPeek)) {
-        val arrowResult = input.parse(RArrowParse)
+        var arrowResult = RArrowParse.parse(input)
         if (arrowResult.isFailure) return SynResult.failure((arrowResult as SynResult.Failure).error)
-        val tyResult = parseTypeFull(input)
+        var tyResult = parseTypeFull(input)
         if (tyResult.isFailure) return SynResult.failure((tyResult as SynResult.Failure).error)
-        val blockResult = parseExprBlock(input)
+        var blockResult = parseExprBlock(input)
         if (blockResult.isFailure) return SynResult.failure((blockResult as SynResult.Failure).error)
         output = ReturnType.TypeReturn(arrowResult.getOrThrow(), tyResult.getOrThrow())
         body = blockResult.getOrThrow()
     } else {
-        val bodyResult = ambiguousExprImpl(input, allowStruct)
+        var bodyResult = ambiguousExprImpl(input, allowStruct)
         if (bodyResult.isFailure) return SynResult.failure((bodyResult as SynResult.Failure).error)
         output = ReturnType.Default
         body = bodyResult.getOrThrow()
     }
     return SynResult.success(
         Expr.Closure(
-            emptyList(),
+            mutableListOf(),
             constness,
             asyncness,
             capture,
@@ -1703,63 +2193,64 @@ public fun exprClosure(input: ParseStream, allowStruct: Boolean): SynResult<Expr
 }
 
 public fun closureArg(input: ParseStream): SynResult<Pat> {
-    val patResult = parsePatSingle(input)
+    var patResult = parsePatSingle(input)
     if (patResult.isFailure) return patResult
-    val pat = patResult.getOrThrow()
+    var pat = patResult.getOrThrow()
     if (input.peek(ColonPeek)) {
-        val colonResult = input.parse(ColonParse)
+        var colonResult = ColonParse.parse(input)
         if (colonResult.isFailure) return SynResult.failure((colonResult as SynResult.Failure).error)
-        val tyResult = parseTypeFull(input)
+        var tyResult = parseTypeFull(input)
         if (tyResult.isFailure) return SynResult.failure((tyResult as SynResult.Failure).error)
-        return SynResult.success(Pat.TypeAscription(emptyList(), pat, colonResult.getOrThrow(), tyResult.getOrThrow()))
+        return SynResult.success(Pat.TypeAscription(mutableListOf(), pat, colonResult.getOrThrow(), tyResult.getOrThrow()))
     }
     return SynResult.success(pat)
 }
 
 public fun exprBreak(input: ParseStream, allowStruct: Boolean): SynResult<Expr.Break> {
-    val breakResult = input.parse(BreakParse)
+    var breakResult = BreakParse.parse(input)
     if (breakResult.isFailure) return SynResult.failure((breakResult as SynResult.Failure).error)
-    val ahead = input.fork()
-    val labelResult = ahead.parse(LifetimeParse)
-    val label = if (labelResult.isSuccess) labelResult.getOrThrow() else null
+    var ahead = input.fork()
+    var labelResult = LifetimeParse.parse(ahead)
+    var label = if (labelResult.isSuccess) labelResult.getOrThrow() else null
     if (label != null && ahead.peek(ColonPeek)) {
-        val exprResult = parseExprFull(input)
+        var exprResult = parseExprFull(input)
         if (exprResult.isFailure) return SynResult.failure((exprResult as SynResult.Failure).error)
         return SynResult.failure(SynError.new2(label.apostrophe, input.span(), "parentheses required"))
     }
     input.advanceTo(ahead)
-    val expr: Expr? = if (peekExpr(input) && (allowStruct || !input.peek(BracePeek))) {
-        val exprResult = parseExprFull(input)
-        if (exprResult.isFailure) return SynResult.failure((exprResult as SynResult.Failure).error)
-        exprResult.getOrThrow()
-    } else {
-        null
-    }
+    var expr: Expr? =
+        if (peekExpr(input) && (allowStruct || !input.peek(BracePeek))) {
+            val exprResult = parseExprFull(input)
+            if (exprResult.isFailure) return SynResult.failure((exprResult as SynResult.Failure).error)
+            exprResult.getOrThrow()
+        } else {
+            null
+        }
     return SynResult.success(
-        Expr.Break(emptyList(), breakResult.getOrThrow(), label, expr),
+        Expr.Break(mutableListOf(), breakResult.getOrThrow(), label, expr),
     )
 }
 
 public fun exprRange(input: ParseStream, allowStruct: Boolean): SynResult<Expr.Range> {
-    val limitsResult = input.parse(RangeLimitsParse)
+    var limitsResult = RangeLimitsParse.parse(input)
     if (limitsResult.isFailure) return SynResult.failure((limitsResult as SynResult.Failure).error)
-    val limits = limitsResult.getOrThrow()
-    val endResult = parseRangeEnd(input, limits, allowStruct)
+    var limits = limitsResult.getOrThrow()
+    var endResult = parseRangeEnd(input, limits, allowStruct)
     if (endResult.isFailure) return SynResult.failure((endResult as SynResult.Failure).error)
     return SynResult.success(
-        Expr.Range(emptyList(), null, limits, endResult.getOrThrow()),
+        Expr.Range(mutableListOf(), null, limits, endResult.getOrThrow()),
     )
 }
 
-public object RangeLimitsParse : Parse<RangeLimits> {
-    override fun parse(input: ParseStream): SynResult<RangeLimits> {
+public object RangeLimitsParse {
+    fun parse(input: ParseStream): SynResult<RangeLimits> {
         if (input.peek(DotDotEqPeek)) {
-            val result = input.parse(DotDotEqParse)
+            val result = DotDotEqParse.parse(input)
             if (result.isFailure) return SynResult.failure((result as SynResult.Failure).error)
             return SynResult.success(RangeLimits.Closed(result.getOrThrow()))
         }
         if (input.peek(DotDotPeek) && !input.peek(DotDotDotPeek)) {
-            val result = input.parse(DotDotParse)
+            val result = DotDotParse.parse(input)
             if (result.isFailure) return SynResult.failure((result as SynResult.Failure).error)
             return SynResult.success(RangeLimits.HalfOpen(result.getOrThrow()))
         }
@@ -1767,25 +2258,26 @@ public object RangeLimitsParse : Parse<RangeLimits> {
     }
 }
 
-public object ArmParse : Parse<Arm> {
-    override fun parse(input: ParseStream): SynResult<Arm> {
-        val attrs = emptyList<Attribute>()
-        val patResult = parsePatMultiWithLeadingVert(input)
+public object ArmParse {
+    fun parse(input: ParseStream): SynResult<Arm> {
+        var attrs = mutableListOf<Attribute>()
+        var patResult = parsePatMultiWithLeadingVert(input)
         if (patResult.isFailure) return SynResult.failure((patResult as SynResult.Failure).error)
-        val guard: IfExpr? = if (input.peek(IfPeek)) {
-            val ifToken = input.parse(IfParse).getOrThrow()
-            val guardExpr = parseExprFull(input)
-            if (guardExpr.isFailure) return SynResult.failure((guardExpr as SynResult.Failure).error)
-            IfExpr(ifToken, guardExpr.getOrThrow())
-        } else {
-            null
-        }
-        val fatArrowResult = input.parse(FatArrowParse)
+        var guard: IfExpr? =
+            if (input.peek(IfPeek)) {
+                val ifToken = IfParse.parse(input).getOrThrow()
+                val guardExpr = parseExprFull(input)
+                if (guardExpr.isFailure) return SynResult.failure((guardExpr as SynResult.Failure).error)
+                IfExpr(ifToken, guardExpr.getOrThrow())
+            } else {
+                null
+            }
+        var fatArrowResult = FatArrowParse.parse(input)
         if (fatArrowResult.isFailure) return SynResult.failure((fatArrowResult as SynResult.Failure).error)
-        val bodyResult = parseExprWithEarlierBoundaryRuleImpl(input)
+        var bodyResult = parseExprWithEarlierBoundaryRuleImpl(input)
         if (bodyResult.isFailure) return SynResult.failure((bodyResult as SynResult.Failure).error)
-        val commaResult = input.parse(CommaParse)
-        val comma = if (commaResult.isSuccess) commaResult.getOrThrow() else null
+        var commaResult = CommaParse.parse(input)
+        var comma = if (commaResult.isSuccess) commaResult.getOrThrow() else null
         return SynResult.success(
             Arm(
                 attrs,
@@ -1800,38 +2292,40 @@ public object ArmParse : Parse<Arm> {
 }
 
 public fun parseRangeEnd(input: ParseStream, limits: RangeLimits, allowStruct: Boolean): SynResult<Expr?> {
-    val isHalfOpen = limits is RangeLimits.HalfOpen
-    val stop = isHalfOpen && (
-        input.isEmpty() ||
-            input.peek(CommaPeek) ||
-            input.peek(SemiPeek) ||
-            (input.peek(DotPeek) && !input.peek(DotDotPeek)) ||
-            input.peek(QuestionPeek) ||
-            input.peek(FatArrowPeek) ||
-            (!allowStruct && input.peek(BracePeek)) ||
-            input.peek(EqPeek) ||
-            input.peek(PlusPeek) ||
-            input.peek(AsPeek)
-    )
+    var isHalfOpen = limits is RangeLimits.HalfOpen
+    var stop =
+        isHalfOpen &&
+            (
+                input.isEmpty() ||
+                    input.peek(CommaPeek) ||
+                    input.peek(SemiPeek) ||
+                    (input.peek(DotPeek) && !input.peek(DotDotPeek)) ||
+                    input.peek(QuestionPeek) ||
+                    input.peek(FatArrowPeek) ||
+                    (!allowStruct && input.peek(BracePeek)) ||
+                    input.peek(EqPeek) ||
+                    input.peek(PlusPeek) ||
+                    input.peek(AsPeek)
+            )
     if (stop) {
         return SynResult.success(null)
     }
-    val endResult = parseBinopRhsImpl(input, allowStruct, Precedence.Range)
+    var endResult = parseBinopRhsImpl(input, allowStruct, Precedence.Range)
     if (endResult.isFailure) return SynResult.failure((endResult as SynResult.Failure).error)
     return SynResult.success(endResult.getOrThrow())
 }
 
 public fun parseObsoleteRangeLimits(input: ParseStream): SynResult<RangeLimits> {
-    val dotDot = input.peek(DotDotPeek)
-    val dotDotEq = dotDot && input.peek(DotDotEqPeek)
-    val dotDotDot = dotDot && input.peek(DotDotDotPeek)
+    var dotDot = input.peek(DotDotPeek)
+    var dotDotEq = dotDot && input.peek(DotDotEqPeek)
+    var dotDotDot = dotDot && input.peek(DotDotDotPeek)
     if (dotDotEq) {
-        val result = input.parse(DotDotEqParse)
+        var result = DotDotEqParse.parse(input)
         if (result.isFailure) return SynResult.failure((result as SynResult.Failure).error)
         return SynResult.success(RangeLimits.Closed(result.getOrThrow()))
     }
     if (dotDot) {
-        val result = input.parse(DotDotParse)
+        var result = DotDotParse.parse(input)
         if (result.isFailure) return SynResult.failure((result as SynResult.Failure).error)
         return SynResult.success(RangeLimits.HalfOpen(result.getOrThrow()))
     }
@@ -1839,9 +2333,9 @@ public fun parseObsoleteRangeLimits(input: ParseStream): SynResult<RangeLimits> 
 }
 
 public fun parseMultipleArms(input: ParseStream): SynResult<List<Arm>> {
-    val arms = mutableListOf<Arm>()
+    var arms = mutableListOf<Arm>()
     while (!input.isEmpty()) {
-        val armResult = input.parse(ArmParse)
+        var armResult = ArmParse.parse(input)
         if (armResult.isFailure) return SynResult.failure((armResult as SynResult.Failure).error)
         arms.add(armResult.getOrThrow())
     }
@@ -1849,10 +2343,10 @@ public fun parseMultipleArms(input: ParseStream): SynResult<List<Arm>> {
 }
 
 public fun multiIndex(e: Expr, dotToken: io.github.kotlinmania.syn.token.Dot, float: LitFloat): SynResult<MultiIndexResult> {
-    val floatToken = float.token()
-    val floatSpan = floatToken.span()
+    var floatToken = float.token()
+    var floatSpan = floatToken.span()
     var floatRepr = floatToken.toString()
-    val trailingDot = floatRepr.endsWith('.')
+    var trailingDot = floatRepr.endsWith('.')
     if (trailingDot) {
         floatRepr = floatRepr.dropLast(1)
     }
@@ -1860,23 +2354,28 @@ public fun multiIndex(e: Expr, dotToken: io.github.kotlinmania.syn.token.Dot, fl
     var currentExpr = e
     var currentDot = dotToken
     for (part in floatRepr.split('.')) {
-        val index: Index = Index(part.toUInt(), floatSpan)
-        val partEnd = offset + part.length
-        val base = currentExpr
-        currentExpr = Expr.Field(
-            emptyList(),
-            base,
-            currentDot,
-            Member.Unnamed(index),
-        )
-        currentDot = io.github.kotlinmania.syn.token.Dot.from(floatSpan)
+        var index: Index = Index(part.toUInt(), floatSpan)
+        var partEnd = offset + part.length
+        var base = currentExpr
+        currentExpr =
+            Expr.Field(
+                mutableListOf(),
+                base,
+                currentDot,
+                Member.Unnamed(index),
+            )
+        currentDot =
+            io.github.kotlinmania.syn.token.Dot
+                .from(floatSpan)
         offset = partEnd + 1
     }
     return SynResult.success(MultiIndexResult(currentExpr, !trailingDot))
 }
 
 @JvmInline
-internal value class AllowStruct(val value: Boolean)
+internal value class AllowStruct(
+    val value: Boolean,
+)
 
 public fun parseWithoutEagerBrace(input: ParseStream): SynResult<Expr> =
     ambiguousExprImpl(input, allowStruct = false)

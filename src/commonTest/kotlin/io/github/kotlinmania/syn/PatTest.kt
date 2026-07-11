@@ -29,29 +29,34 @@ class PatTest {
 
     @Test
     fun testLeadingVert() {
-        assertIs<Item.Fn>(parseStr(ItemParse, "fn f() {}").getOrThrow())
-        assertTrue(parseStr(ItemParse, "fn fun1(| A: E) {}").isFailure)
-        assertTrue(parseStr(ItemParse, "fn fun2(|| A: E) {}").isFailure)
+        assertIs<Item.Fn>(parseStr(ItemParse::parse, "fn f() {}").getOrThrow())
+        assertTrue(parseStr(ItemParse::parse, "fn fun1(| A: E) {}").isFailure)
+        assertTrue(parseStr(ItemParse::parse, "fn fun2(|| A: E) {}").isFailure)
 
-        assertTrue(parseStr(StmtParse, "let | () = ();").isFailure)
+        assertTrue(parseStr(StmtParse::parse, "let | () = ();").isFailure)
 
         assertSingleLeadingOr(assertIs<Pat.PatParen>(assertLocalType("let (| A): E;").pat).pat)
-        assertTrue(parseStr(StmtParse, "let (|| A): (E);").isFailure)
+        assertTrue(parseStr(StmtParse::parse, "let (|| A): (E);").isFailure)
 
         val tuple = assertIs<Pat.Tuple>(assertLocalType("let (| A,): (E,);").pat)
         assertSingleLeadingOr(tuple.elems.toList().single())
 
         val slice = assertIs<Pat.Slice>(assertLocalType("let [| A]: [E; 1];").pat)
         assertSingleLeadingOr(slice.elems.toList().single())
-        assertTrue(parseStr(StmtParse, "let [|| A]: [E; 1];").isFailure)
+        assertTrue(parseStr(StmtParse::parse, "let [|| A]: [E; 1];").isFailure)
 
         val tupleStruct = assertIs<Pat.TupleStruct>(assertLocalType("let TS(| A): TS;").pat)
         assertSingleLeadingOr(tupleStruct.elems.toList().single())
-        assertTrue(parseStr(StmtParse, "let TS(|| A): TS;").isFailure)
+        assertTrue(parseStr(StmtParse::parse, "let TS(|| A): TS;").isFailure)
 
         val struct = assertIs<Pat.Struct>(assertLocalType("let NS { f: | A }: NS;").pat)
-        assertSingleLeadingOr(struct.fields.toList().single().pat)
-        assertTrue(parseStr(StmtParse, "let NS { f: || A }: NS;").isFailure)
+        assertSingleLeadingOr(
+            struct.fields
+                .toList()
+                .single()
+                .pat,
+        )
+        assertTrue(parseStr(StmtParse::parse, "let NS { f: || A }: NS;").isFailure)
     }
 
     @Test
@@ -97,20 +102,20 @@ class PatTest {
     @Test
     fun testTupleComma() {
         // Empty tuple `()` parses as `Pat.Tuple` with zero elements.
-        val empty = parseStr(Pat, "()").getOrThrow()
+        val empty = parseStr(Pat::parse, "()").getOrThrow()
         assertIs<Pat.Tuple>(empty)
         assertEquals(0, empty.elems.size)
 
         // A single element with a trailing comma must parse as
         // `Pat.Tuple` (not `Pat.PatParen`); the element is a `Pat.Wild`.
-        val oneTrailing = parseStr(Pat, "(_,)").getOrThrow()
+        val oneTrailing = parseStr(Pat::parse, "(_,)").getOrThrow()
         assertIs<Pat.Tuple>(oneTrailing)
         assertEquals(1, oneTrailing.elems.size)
         assertTrue(oneTrailing.elems.trailingPunct())
         assertIs<Pat.Wild>(oneTrailing.elems.first())
 
         // Two elements without a trailing comma parse as `Pat.Tuple`.
-        val two = parseStr(Pat, "(_, _)").getOrThrow()
+        val two = parseStr(Pat::parse, "(_, _)").getOrThrow()
         assertIs<Pat.Tuple>(two)
         assertEquals(2, two.elems.size)
         val twoList = two.elems.toList()
@@ -119,12 +124,17 @@ class PatTest {
 
         // Two elements with a trailing comma parse as `Pat.Tuple` and
         // retain the trailing punctuation.
-        val twoTrailing = parseStr(Pat, "(_, _,)").getOrThrow()
+        val twoTrailing = parseStr(Pat::parse, "(_, _,)").getOrThrow()
         assertIs<Pat.Tuple>(twoTrailing)
         assertEquals(2, twoTrailing.elems.size)
         assertTrue(twoTrailing.elems.trailingPunct())
 
-        val tuple = Pat.Tuple(io.github.kotlinmania.syn.token.Paren.default(), PatList())
+        val tuple =
+            Pat.Tuple(
+                io.github.kotlinmania.syn.token.Paren
+                    .default(),
+                PatList(),
+            )
         assertIs<Pat.Tuple>(roundTrip(tuple))
 
         val wild = assertIs<Pat.Wild>(parsePat("_"))
@@ -133,7 +143,10 @@ class PatTest {
         assertEquals(1, onePrinted.elems.size)
         assertTrue(onePrinted.elems.trailingPunct())
 
-        tuple.elems.pushPunct(io.github.kotlinmania.syn.token.Comma.default())
+        tuple.elems.pushPunct(
+            io.github.kotlinmania.syn.token.Comma
+                .default(),
+        )
         val oneTrailingPrinted = assertIs<Pat.Tuple>(roundTrip(tuple))
         assertEquals(1, oneTrailingPrinted.elems.size)
         assertTrue(oneTrailingPrinted.elems.trailingPunct())
@@ -143,17 +156,20 @@ class PatTest {
         assertEquals(2, twoPrinted.elems.size)
         assertFalse(twoPrinted.elems.trailingPunct())
 
-        tuple.elems.pushPunct(io.github.kotlinmania.syn.token.Comma.default())
+        tuple.elems.pushPunct(
+            io.github.kotlinmania.syn.token.Comma
+                .default(),
+        )
         val twoTrailingPrinted = assertIs<Pat.Tuple>(roundTrip(tuple))
         assertEquals(2, twoTrailingPrinted.elems.size)
         assertTrue(twoTrailingPrinted.elems.trailingPunct())
     }
 
     private fun parsePat(source: String): Pat =
-        parseStr(Pat, source).getOrThrow()
+        parseStr(Pat::parse, source).getOrThrow()
 
     private fun parsePat(tokens: TokenStream): Pat =
-        parse2(Pat, tokens).getOrThrow()
+        parse2(Pat::parse, tokens).getOrThrow()
 
     private fun roundTrip(pat: Pat): Pat {
         val tokens = TokenStream.new()
@@ -162,11 +178,11 @@ class PatTest {
     }
 
     private fun assertFailsPat(source: String) {
-        assertTrue(parseStr(Pat, source).isFailure, source)
+        assertTrue(parseStr(Pat::parse, source).isFailure, source)
     }
 
     private fun assertLocalType(source: String): Pat.TypeAscription {
-        val stmt = assertIs<Stmt.Local>(parseStr(StmtParse, source).getOrThrow())
+        val stmt = assertIs<Stmt.Local>(parseStr(StmtParse::parse, source).getOrThrow())
         return assertIs<Pat.TypeAscription>(stmt.pat)
     }
 

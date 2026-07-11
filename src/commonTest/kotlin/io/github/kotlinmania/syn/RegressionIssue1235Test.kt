@@ -15,12 +15,13 @@ class RegressionIssue1235Test {
     @Test
     fun main() {
         parseFileTokens(
-            TokenStream.fromString(
-                """
-                pub static FOO: usize;
-                pub static BAR: usize;
-                """.trimIndent(),
-            ).getOrThrow(),
+            TokenStream
+                .fromString(
+                    """
+                    pub static FOO: usize;
+                    pub static BAR: usize;
+                    """.trimIndent(),
+                ).getOrThrow(),
         )
 
         parseFileTokens(tokensWithPublicInvisibleGroup("static FOO: usize = 0; pub static BAR: usize = 0"))
@@ -37,5 +38,5 @@ class RegressionIssue1235Test {
         )
 
     private fun parseFileTokens(tokens: TokenStream): File =
-        parse2(FileParse, tokens).getOrThrow()
+        parse2(FileParse::parse, tokens).getOrThrow()
 }

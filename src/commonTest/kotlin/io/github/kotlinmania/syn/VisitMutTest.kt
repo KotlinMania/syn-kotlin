@@ -9,7 +9,7 @@ class VisitMutTest {
     fun deriveInputVisitMutRecursesThroughDataAndGenerics() {
         val input =
             parseStr(
-                DeriveInputParse,
+                DeriveInputParse::parse,
                 """
                 #[derive(Clone)]
                 pub(in crate::m) enum Demo<'a, T: for<'b> Into + Clone + 'a, const N: usize>
@@ -148,8 +148,8 @@ class VisitMutTest {
                 "_",
                 "!",
                 "mac!()",
-            ).map { parseStr(SynTypeParseExpr, it).getOrThrow() }
-        val rawAddress = parseStr(ExprParse, "&raw const place").getOrThrow()
+            ).map { parseStr(SynTypeParseExpr::parse, it).getOrThrow() }
+        val rawAddress = parseStr(ExprParse::parse, "&raw const place").getOrThrow()
         val visitor = RecordingVisitMut()
 
         visitor.visitFile(file)
@@ -172,7 +172,7 @@ class VisitMutTest {
     fun generatedVisitMutHooksAreReachedForGenericArgumentsAttrStyleAndBinOp() {
         val outer =
             parseStr(
-                DeriveInputParse,
+                DeriveInputParse::parse,
                 """
                 #[repr(C)]
                 struct S<T>(T);
@@ -185,8 +185,8 @@ class VisitMutTest {
                 type Alias = ();
                 """.trimIndent(),
             ).getOrThrow()
-        val genericType = parseStr(SynTypeParseExpr, "Iterator<Item = T, LEN = 1, Output: Clone>").getOrThrow()
-        val expr = parseStr(ExprParse, "left + right").getOrThrow()
+        val genericType = parseStr(SynTypeParseExpr::parse, "Iterator<Item = T, LEN = 1, Output: Clone>").getOrThrow()
+        val expr = parseStr(ExprParse::parse, "left + right").getOrThrow()
         val visitor = RecordingVisitMut()
 
         visitor.visitDeriveInput(outer)
@@ -210,71 +210,73 @@ class VisitMutTest {
     fun qselfAndCstrVisitMutDispatchThroughGeneratedHelpers() {
         val visitor = RecordingVisitMut()
 
-        visitor.visitLit(parseStr(LitParse, "c\"hello\"").getOrThrow())
-        visitor.visitType(parseStr(SynTypeParseExpr, "<Self as Trait>::Assoc").getOrThrow())
+        visitor.visitLit(parseStr(LitParse::parse, "c\"hello\"").getOrThrow())
+        visitor.visitType(parseStr(SynTypeParseExpr::parse, "<Self as Trait>::Assoc").getOrThrow())
 
-        visitor.assertEvent("lit:cstr")
         visitor.assertEvent("qself")
+        visitor.assertEvent("lit:cstr")
+        visitor.assertEvent("path:Self")
+        visitor.assertEvent("path:Trait::Assoc")
     }
 
     private fun parseItem(source: String): Item =
-        parseStr(ItemParse, source).getOrThrow()
+        parseStr(ItemParse::parse, source).getOrThrow()
 
     private class RecordingVisitMut : VisitMut() {
         val events = mutableListOf<String>()
         var exprCount = 0
 
-        override fun visitDeriveInput(di: DeriveInput): DeriveInput {
+        override fun visitDeriveInput(di: DeriveInput) {
             events += "derive:${di.ident}"
-            return super.visitDeriveInput(di)
+            super.visitDeriveInput(di)
         }
 
-        override fun visitAttribute(a: Attribute): Attribute {
+        override fun visitAttribute(a: Attribute) {
             events += "attr:${a.path()}"
-            return super.visitAttribute(a)
+            super.visitAttribute(a)
         }
 
-        override fun visitAttrStyle(style: AttrStyle): AttrStyle {
+        override fun visitAttrStyle(style: AttrStyle) {
             events +=
                 when (style) {
                     AttrStyle.Outer -> "attrStyle:outer"
                     is AttrStyle.Inner -> "attrStyle:inner"
                 }
-            return super.visitAttrStyle(style)
+            super.visitAttrStyle(style)
         }
 
-        override fun visitAngleBracketedGenericArguments(pathArgs: PathArguments.AngleBracketed): PathArguments.AngleBracketed {
+        override fun visitAngleBracketedGenericArguments(pathArgs: PathArguments.AngleBracketed) {
             events += "angleArgs"
-            return super.visitAngleBracketedGenericArguments(pathArgs)
+            super.visitAngleBracketedGenericArguments(pathArgs)
         }
 
-        override fun visitAssocConst(assoc: AssocConst): AssocConst {
+        override fun visitAssocConst(assoc: AssocConst) {
             events += "assocConst:${assoc.ident}"
-            return super.visitAssocConst(assoc)
+            super.visitAssocConst(assoc)
         }
 
-        override fun visitAssocType(assoc: AssocType): AssocType {
+        override fun visitAssocType(assoc: AssocType) {
             events += "assocType:${assoc.ident}"
-            return super.visitAssocType(assoc)
+            super.visitAssocType(assoc)
         }
 
-        override fun visitBinOp(op: BinOp): BinOp {
+        override fun visitBinOp(op: BinOp) {
             events +=
                 when (op) {
                     is BinOp.Add -> "binop:add"
                     else -> "binop:other"
                 }
-            return super.visitBinOp(op)
+            super.visitBinOp(op)
         }
 
-        override fun visitConstraint(constraint: Constraint): Constraint {
+        override fun visitConstraint(constraint: Constraint) {
             events += "constraint:${constraint.ident}"
-            return super.visitConstraint(constraint)
+            super.visitConstraint(constraint)
         }
 
-        override fun visitDataEnum(d: DataEnum): DataEnum {
+        override fun visitDataEnum(d: DataEnum) {
             events += "data:enum"
-            return super.visitDataEnum(d)
+            super.visitDataEnum(d)
         }
 
         override fun visitExpr(e: Expr): Expr {
@@ -282,36 +284,36 @@ class VisitMutTest {
             return super.visitExpr(e)
         }
 
-        override fun visitField(field: Field): Field {
+        override fun visitField(field: Field) {
             events += "field:${field.ident?.toString() ?: "<unnamed>"}"
-            return super.visitField(field)
+            super.visitField(field)
         }
 
-        override fun visitFile(f: File): File {
+        override fun visitFile(f: File) {
             events += "file"
-            return super.visitFile(f)
+            super.visitFile(f)
         }
 
-        override fun visitFnArg(arg: FnArg): FnArg {
+        override fun visitFnArg(arg: FnArg) {
             events +=
                 when (arg) {
                     is FnArg.Receiver -> "arg:receiver"
                     is FnArg.Typed -> "arg:typed"
                 }
-            return super.visitFnArg(arg)
+            super.visitFnArg(arg)
         }
 
-        override fun visitGenericParam(param: GenericParam): GenericParam {
+        override fun visitGenericParam(param: GenericParam) {
             events +=
                 when (param) {
                     is GenericParam.LifetimeParam -> "generic:lifetime:${param.lifetime}"
                     is GenericParam.TypeParam -> "generic:type:${param.ident}"
                     is GenericParam.ConstParam -> "generic:const:${param.ident}"
                 }
-            return super.visitGenericParam(param)
+            super.visitGenericParam(param)
         }
 
-        override fun visitGenericArgument(genArg: GenericArgument): GenericArgument {
+        override fun visitGenericArgument(genArg: GenericArgument) {
             events +=
                 when (genArg) {
                     is GenericArgument.AssocTypeArg -> "genericArg:assocType"
@@ -319,15 +321,15 @@ class VisitMutTest {
                     is GenericArgument.ConstraintArg -> "genericArg:constraint"
                     else -> "genericArg:other"
                 }
-            return super.visitGenericArgument(genArg)
+            super.visitGenericArgument(genArg)
         }
 
-        override fun visitBlock(block: Block): Block {
+        override fun visitBlock(block: Block) {
             events += "block"
-            return super.visitBlock(block)
+            super.visitBlock(block)
         }
 
-        override fun visitImplItem(item: ImplItem): ImplItem {
+        override fun visitImplItem(item: ImplItem) {
             events +=
                 when (item) {
                     is ImplItem.Const -> "implItem:const:${item.ident}"
@@ -336,10 +338,10 @@ class VisitMutTest {
                     is ImplItem.Macro -> "implItem:macro"
                     is ImplItem.Verbatim -> "implItem:verbatim"
                 }
-            return super.visitImplItem(item)
+            super.visitImplItem(item)
         }
 
-        override fun visitForeignItem(item: ForeignItem): ForeignItem {
+        override fun visitForeignItem(item: ForeignItem) {
             events +=
                 when (item) {
                     is ForeignItem.Fn -> "foreignItem:fn:${item.sig.ident}"
@@ -348,10 +350,10 @@ class VisitMutTest {
                     is ForeignItem.Macro -> "foreignItem:macro"
                     is ForeignItem.Verbatim -> "foreignItem:verbatim"
                 }
-            return super.visitForeignItem(item)
+            super.visitForeignItem(item)
         }
 
-        override fun visitItem(i: Item): Item {
+        override fun visitItem(i: Item) {
             events +=
                 when (i) {
                     is Item.Const -> "item:const:${i.ident}"
@@ -371,37 +373,42 @@ class VisitMutTest {
                     is Item.Use -> "item:use"
                     is Item.Verbatim -> "item:verbatim"
                 }
-            return super.visitItem(i)
+            super.visitItem(i)
         }
 
-        override fun visitPat(p: Pat): Pat {
+        override fun visitPat(p: Pat) {
             if (p is Pat.Ident) {
                 events += "pat:${p.ident}"
             }
-            return super.visitPat(p)
+            super.visitPat(p)
         }
 
-        override fun visitPath(p: Path): Path {
+        override fun visitPath(p: Path) {
             events += "path:$p"
-            return super.visitPath(p)
+            super.visitPath(p)
         }
 
-        override fun visitLitCstrMut(l: LitCStr): LitCStr {
+        override fun visitLitCStrMut(l: LitCStr) {
             events += "lit:cstr"
-            return super.visitLitCstrMut(l)
+            super.visitLitCStrMut(l)
         }
 
-        override fun visitSignature(sig: Signature): Signature {
+        override fun visitLitCstrMut(l: LitCStr) {
+            events += "lit:cstr"
+            super.visitLitCstrMut(l)
+        }
+
+        override fun visitSignature(sig: Signature) {
             events += "signature:${sig.ident}"
-            return super.visitSignature(sig)
+            super.visitSignature(sig)
         }
 
-        override fun visitQselfMut(qself: QSelf): QSelf {
+        override fun visitQSelfMut(qself: QSelf) {
             events += "qself"
-            return super.visitQselfMut(qself)
+            super.visitQSelfMut(qself)
         }
 
-        override fun visitTraitItem(item: TraitItem): TraitItem {
+        override fun visitTraitItem(item: TraitItem) {
             events +=
                 when (item) {
                     is TraitItem.Const -> "traitItem:const:${item.ident}"
@@ -410,54 +417,54 @@ class VisitMutTest {
                     is TraitItem.Macro -> "traitItem:macro"
                     is TraitItem.Verbatim -> "traitItem:verbatim"
                 }
-            return super.visitTraitItem(item)
+            super.visitTraitItem(item)
         }
 
-        override fun visitTypeArray(ty: SynType.Array): SynType {
+        override fun visitTypeArray(ty: SynType.Array) {
             events += "type:array"
-            return super.visitTypeArray(ty)
+            super.visitTypeArray(ty)
         }
 
-        override fun visitTypeInfer(ty: SynType.Infer): SynType {
+        override fun visitTypeInfer(ty: SynType.Infer) {
             events += "type:infer"
-            return super.visitTypeInfer(ty)
+            super.visitTypeInfer(ty)
         }
 
-        override fun visitTypeMacro(ty: SynType.Macro): SynType {
+        override fun visitTypeMacro(ty: SynType.Macro) {
             events += "type:macro"
-            return super.visitTypeMacro(ty)
+            super.visitTypeMacro(ty)
         }
 
-        override fun visitTypeNever(ty: SynType.Never): SynType {
+        override fun visitTypeNever(ty: SynType.Never) {
             events += "type:never"
-            return super.visitTypeNever(ty)
+            super.visitTypeNever(ty)
         }
 
-        override fun visitTypePtr(ty: SynType.Ptr): SynType {
+        override fun visitTypePtr(ty: SynType.Ptr) {
             events += "type:ptr"
-            return super.visitTypePtr(ty)
+            super.visitTypePtr(ty)
         }
 
-        override fun visitTypeSlice(ty: SynType.Slice): SynType {
+        override fun visitTypeSlice(ty: SynType.Slice) {
             events += "type:slice"
-            return super.visitTypeSlice(ty)
+            super.visitTypeSlice(ty)
         }
 
-        override fun visitTypeTuple(ty: SynType.Tuple): SynType {
+        override fun visitTypeTuple(ty: SynType.Tuple) {
             events += "type:tuple"
-            return super.visitTypeTuple(ty)
+            super.visitTypeTuple(ty)
         }
 
-        override fun visitPointerMutability(mutability: PointerMutability): PointerMutability {
+        override fun visitPointerMutability(mutability: PointerMutability) {
             events +=
                 when (mutability) {
                     is PointerMutability.Const -> "pointer:const"
                     is PointerMutability.Mut -> "pointer:mut"
                 }
-            return super.visitPointerMutability(mutability)
+            super.visitPointerMutability(mutability)
         }
 
-        override fun visitTypeParamBound(bound: TypeParamBound): TypeParamBound {
+        override fun visitTypeParamBound(bound: TypeParamBound) {
             events +=
                 when (bound) {
                     is TypeParamBound.Trait -> "bound:trait:${bound.path}"
@@ -465,42 +472,43 @@ class VisitMutTest {
                     is TypeParamBound.PreciseCapture -> "bound:precise"
                     is TypeParamBound.Verbatim -> "bound:verbatim"
                 }
-            return super.visitTypeParamBound(bound)
+            super.visitTypeParamBound(bound)
         }
 
-        override fun visitUseGlob(useTree: UseTree.Glob): UseTree {
+        override fun visitUseGlob(useTree: UseTree.Glob) {
             events += "use:glob"
-            return super.visitUseGlob(useTree)
+            super.visitUseGlob(useTree)
         }
 
-        override fun visitUseRename(useTree: UseTree.Name): UseTree {
+        override fun visitUseRename(useTree: UseTree.Name) {
             events += "use:rename:${useTree.ident}:${useTree.rename?.ident}"
-            return super.visitUseRename(useTree)
+            super.visitUseRename(useTree)
         }
 
-        override fun visitVisibility(visibility: Visibility): Visibility {
+        override fun visitVisibility(visibility: Visibility) {
             if (visibility is Visibility.Restricted) {
                 events += "vis:${visibility.path}"
             }
-            return super.visitVisibility(visibility)
+            super.visitVisibility(visibility)
         }
 
-        override fun visitVariant(variant: Variant): Variant {
+        override fun visitVariant(variant: Variant) {
             events += "variant:${variant.ident}"
-            return super.visitVariant(variant)
+            super.visitVariant(variant)
         }
 
-        override fun visitWherePredicate(wherePredicate: WherePredicate): WherePredicate {
+        override fun visitWherePredicate(wherePredicate: WherePredicate) {
             events +=
                 when (wherePredicate) {
                     is WherePredicate.LifetimePredicate -> "where:lifetime:${wherePredicate.lifetime}"
                     is WherePredicate.TypePredicate -> "where:type"
                 }
-            return super.visitWherePredicate(wherePredicate)
+            super.visitWherePredicate(wherePredicate)
         }
 
         fun assertEvent(event: String) {
-            assertTrue(events.contains(event), dump())
+            val idx = events.indexOfFirst { it == event }
+            assertTrue(idx >= 0, "looking for '$event' but events=[${events.joinToString(", ")}]")
         }
 
         fun dump(): String =

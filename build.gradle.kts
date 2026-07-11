@@ -13,6 +13,8 @@ import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 import org.jetbrains.kotlin.gradle.plugin.mpp.apple.XCFramework
 import org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsEnvSpec
 import org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootExtension
+import org.jetbrains.kotlin.gradle.targets.js.testing.KotlinJsTest
+import org.jetbrains.kotlin.gradle.targets.js.testing.mocha.KotlinMocha
 import org.jetbrains.kotlin.gradle.targets.js.yarn.YarnRootEnvSpec
 import org.jetbrains.kotlin.gradle.targets.js.yarn.YarnRootExtension
 import org.jetbrains.kotlin.gradle.targets.wasm.nodejs.WasmNodeJsEnvSpec
@@ -425,10 +427,8 @@ kotlin {
     linuxArm64 { configureBenchmarkCompilation() }
     mingwX64 { configureBenchmarkCompilation() }
 
-    // Android NDK — always built (full target surface, no opt-in gate).
-    androidNativeArm32 { configureBenchmarkCompilation() }
+    // Android NDK — 64-bit only (32-bit retired §5.5.3, 2026-06-25).
     androidNativeArm64 { configureBenchmarkCompilation() }
-    androidNativeX86 { configureBenchmarkCompilation() }
     androidNativeX64 { configureBenchmarkCompilation() }
 
     // Web
@@ -471,6 +471,14 @@ kotlin {
         minSdk = providers.gradleProperty("android.minSdk").getOrElse("24").toInt()
         withHostTestBuilder {}.configure {}
         withDeviceTestBuilder { sourceSetTreeName = "test" }
+
+        // proc-macro2-kotlin's AAR bundles org.jetbrains:annotations, which
+        // conflicts with the same annotations jar pulled in transitively by
+        // AGP/Kotlin stdlib. Exclude the bundled copy to avoid duplicate
+        // class errors during checkAndroidDeviceTestDuplicateClasses.
+        packaging {
+            resources.excludes += "org/jetbrains/annotations/**"
+        }
     }
 
     // JVM — jvmTarget derived from the same toolchain property so they can't drift.
@@ -541,6 +549,14 @@ tasks.withType<AbstractTestTask>().configureEach {
         showExceptions = true
         showStackTraces = true
         showStandardStreams = true
+    }
+}
+
+tasks.withType<KotlinJsTest>().configureEach {
+    onTestFrameworkSet {
+        if (this is KotlinMocha) {
+            timeout = "1200000"
+        }
     }
 }
 
@@ -853,10 +869,8 @@ tasks.register("swiftExportSmokeTest") {
 // ============================================================================
 val nativeTargetNames =
     listOf(
-        "androidNativeArm32",
         "androidNativeArm64",
         "androidNativeX64",
-        "androidNativeX86",
         "iosArm64",
         "iosSimulatorArm64",
         "iosX64",

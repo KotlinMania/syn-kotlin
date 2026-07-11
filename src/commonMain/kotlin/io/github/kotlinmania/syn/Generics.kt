@@ -31,7 +31,7 @@ public data class Generics(
         public fun parse(input: ParseStream): SynResult<Generics> {
             if (!input.peek(GenericsLtPeek)) return SynResult.success(default())
 
-            val ltToken = input.parse(GenericsLtParse).getOrElse { return SynResult.failure(it) }
+            val ltToken = GenericsLtParse.parse(input).getOrElse { return SynResult.failure(it) }
             val params = GenericParamList()
             while (!input.isEmpty() && !input.peek(GenericsGtPeek)) {
                 val attrs = parseOuterAttributes(input).getOrElse { return SynResult.failure(it) }
@@ -53,7 +53,7 @@ public data class Generics(
                         input.peek(UnderscorePeek) ->
                             GenericParam.TypeParam(
                                 attrs,
-                                identFromUnderscore(input.parse(UnderscoreParse).getOrElse { return SynResult.failure(it) }),
+                                identFromUnderscore(UnderscoreParse.parse(input).getOrElse { return SynResult.failure(it) }),
                                 null,
                                 TypeParamBoundList(),
                                 null,
@@ -63,9 +63,9 @@ public data class Generics(
                     }
                 params.pushValue(param)
                 if (input.peek(GenericsGtPeek)) break
-                params.pushPunct(input.parse(CommaParse).getOrElse { return SynResult.failure(it) })
+                params.pushPunct(CommaParse.parse(input).getOrElse { return SynResult.failure(it) })
             }
-            val gtToken = input.parse(GenericsGtParse).getOrElse { return SynResult.failure(it) }
+            val gtToken = GenericsGtParse.parse(input).getOrElse { return SynResult.failure(it) }
             return SynResult.success(Generics(ltToken, params, gtToken))
         }
     }
@@ -95,13 +95,12 @@ public data class Generics(
         return whereClause!!
     }
 
-    public fun splitForImpl(): SplitForImpl {
-        return SplitForImpl(
+    public fun splitForImpl(): SplitForImpl =
+        SplitForImpl(
             ImplGenerics(this),
             TypeGenerics(this),
             whereClause,
         )
-    }
 
     override fun toTokens(tokens: TokenStream) {
         if (params.isEmpty()) return
@@ -121,9 +120,9 @@ public data class Generics(
 }
 
 public data class SplitForImpl(
-    public val implGenerics: ImplGenerics,
-    public val typeGenerics: TypeGenerics,
-    public val whereClause: WhereClause?,
+    public var implGenerics: ImplGenerics,
+    public var typeGenerics: TypeGenerics,
+    public var whereClause: WhereClause?,
 ) {
     public val turbofish: Turbofish
         get() = typeGenerics.asTurbofish()
@@ -202,7 +201,7 @@ public class ConstParamsMut(
 }
 
 public data class ImplGenerics(
-    public val generics: Generics,
+    public var generics: Generics,
 ) : ToTokens {
     public val ltToken: Lt?
         get() = generics.ltToken
@@ -219,7 +218,7 @@ public data class ImplGenerics(
 }
 
 public data class TypeGenerics(
-    public val generics: Generics,
+    public var generics: Generics,
 ) : ToTokens {
     public val ltToken: Lt?
         get() = generics.ltToken
@@ -242,7 +241,7 @@ public data class TypeGenerics(
 }
 
 public data class Turbofish(
-    public val generics: Generics,
+    public var generics: Generics,
 ) : ToTokens {
     public val ltToken: Lt?
         get() = generics.ltToken
@@ -262,7 +261,7 @@ public data class Turbofish(
 
 private inline fun <reified T : GenericParam> Iterator<GenericParam>.nextParamOfType(): T? {
     while (hasNext()) {
-        val value = next()
+        var value = next()
         if (value is T) return value
     }
     return null
@@ -280,21 +279,22 @@ internal fun chooseGenericsOverQpath(input: ParseStream): Boolean =
                 (
                     input.peek3(GenericsDisambiguationGtPeek) ||
                         input.peek3(CommaPeek) ||
-                        input.peek3(ColonPeek) && !input.peek3(PathSepPeek) ||
+                        input.peek3(ColonPeek) &&
+                        !input.peek3(PathSepPeek) ||
                         input.peek3(EqPeek)
                 ) ||
                 input.peek2(ConstPeek)
         )
 
 internal fun chooseGenericsOverQpathAfterKeyword(input: ParseStream): Boolean {
-    val fork = input.fork()
+    var fork = input.fork()
     identParseAny(fork).getOrElse { return false }
     return chooseGenericsOverQpath(fork)
 }
 
 private object GenericsDisambiguationLtPeek : Peek {
     override fun peek(cursor: Cursor): Boolean {
-        val (punct, _) = cursor.punct() ?: return false
+        var (punct, _) = cursor.punct() ?: return false
         return punct.asChar() == '<'
     }
 
@@ -303,7 +303,7 @@ private object GenericsDisambiguationLtPeek : Peek {
 
 private object GenericsDisambiguationGtPeek : Peek {
     override fun peek(cursor: Cursor): Boolean {
-        val (punct, _) = cursor.punct() ?: return false
+        var (punct, _) = cursor.punct() ?: return false
         return punct.asChar() == '>'
     }
 
@@ -311,28 +311,38 @@ private object GenericsDisambiguationGtPeek : Peek {
 }
 
 private fun Generics.implGenerics(): Generics {
-    val implGenerics = Generics(ltToken, GenericParamList(), gtToken)
+    var implGenerics = Generics(ltToken, GenericParamList(), gtToken)
     for ((value, _) in params.pairsList()) {
         when (value) {
             is GenericParam.LifetimeParam ->
                 implGenerics.params.push(value.deepCopy()) { Comma(Span.callSite()) }
             is GenericParam.TypeParam ->
-                implGenerics.params.push(value.deepCopy().also { it.eqToken = null; it.default = null }) { Comma(Span.callSite()) }
+                implGenerics.params.push(
+                    value.deepCopy().also {
+                        it.eqToken = null
+                        it.default = null
+                    },
+                ) { Comma(Span.callSite()) }
             is GenericParam.ConstParam ->
-                implGenerics.params.push(value.deepCopy().also { it.eqToken = null; it.default = null }) { Comma(Span.callSite()) }
+                implGenerics.params.push(
+                    value.deepCopy().also {
+                        it.eqToken = null
+                        it.default = null
+                    },
+                ) { Comma(Span.callSite()) }
         }
     }
     return implGenerics
 }
 
 private fun Generics.typeGenerics(): Generics {
-    val typeGenerics = Generics(ltToken, GenericParamList(), gtToken)
+    var typeGenerics = Generics(ltToken, GenericParamList(), gtToken)
     for ((value, _) in params.pairsList()) {
         when (value) {
             is GenericParam.LifetimeParam ->
                 typeGenerics.params.push(
                     GenericParam.LifetimeParam(
-                        emptyList(),
+                        mutableListOf(),
                         value.lifetime.deepCopy(),
                         null,
                         LifetimeList(),
@@ -341,7 +351,7 @@ private fun Generics.typeGenerics(): Generics {
             is GenericParam.TypeParam ->
                 typeGenerics.params.push(
                     GenericParam.TypeParam(
-                        emptyList(),
+                        mutableListOf(),
                         value.ident.copy(),
                         null,
                         TypeParamBoundList(),
@@ -350,14 +360,19 @@ private fun Generics.typeGenerics(): Generics {
                     ),
                 ) { Comma(Span.callSite()) }
             is GenericParam.ConstParam ->
-                typeGenerics.params.push(value.deepCopy().also { it.eqToken = null; it.default = null }) { Comma(Span.callSite()) }
+                typeGenerics.params.push(
+                    value.deepCopy().also {
+                        it.eqToken = null
+                        it.default = null
+                    },
+                ) { Comma(Span.callSite()) }
         }
     }
     return typeGenerics
 }
 
 private fun Generics.turbofishArguments(): GenericArgumentList {
-    val args = GenericArgumentList()
+    var args = GenericArgumentList()
     for ((value, _) in params.pairsList()) {
         if (value is GenericParam.LifetimeParam) {
             args.push(GenericArgument.LifetimeArg(value.lifetime.deepCopy())) { Comma(Span.callSite()) }
@@ -369,7 +384,7 @@ private fun Generics.turbofishArguments(): GenericArgumentList {
             is GenericParam.TypeParam ->
                 args.push(GenericArgument.TypeArg(SynType.Path(null, Path.from(value.ident.copy())))) { Comma(Span.callSite()) }
             is GenericParam.ConstParam ->
-                args.push(GenericArgument.ConstArg(Expr.Path(emptyList(), null, Path.from(value.ident.copy())))) { Comma(Span.callSite()) }
+                args.push(GenericArgument.ConstArg(Expr.Path(mutableListOf(), null, Path.from(value.ident.copy())))) { Comma(Span.callSite()) }
         }
     }
     return args
@@ -429,29 +444,29 @@ public sealed class GenericParam : ToTokens {
     }
 
     public data class LifetimeParam(
-        public var attrs: List<Attribute>,
+        public var attrs: MutableList<Attribute>,
         public var lifetime: Lifetime,
         public var colonToken: Colon?,
         public var bounds: LifetimeList,
     ) : GenericParam() {
         public companion object {
             public fun new(lifetime: Lifetime): LifetimeParam =
-                LifetimeParam(emptyList(), lifetime, null, LifetimeList())
+                LifetimeParam(mutableListOf(), lifetime, null, LifetimeList())
 
             public fun parse(input: ParseStream): SynResult<LifetimeParam> {
                 val attrs = parseOuterAttributes(input).getOrElse { return SynResult.failure(it) }
                 return parseWithAttrs(attrs, input)
             }
 
-            internal fun parseWithAttrs(attrs: List<Attribute>, input: ParseStream): SynResult<LifetimeParam> {
-                val lifetime = input.parse(LifetimeParse).getOrElse { return SynResult.failure(it) }
-                val colonToken = input.parse(ColonParse).getOrNull()
+            internal fun parseWithAttrs(attrs: MutableList<Attribute>, input: ParseStream): SynResult<LifetimeParam> {
+                val lifetime = LifetimeParse.parse(input).getOrElse { return SynResult.failure(it) }
+                val colonToken = ColonParse.parse(input).getOrNull()
                 val bounds = LifetimeList()
                 if (colonToken != null) {
                     while (!input.isEmpty() && !input.peek(CommaPeek) && !input.peek(GenericsGtPeek)) {
-                        bounds.pushValue(input.parse(LifetimeParse).getOrElse { return SynResult.failure(it) })
+                        bounds.pushValue(LifetimeParse.parse(input).getOrElse { return SynResult.failure(it) })
                         if (!input.peek(PlusPeek)) break
-                        bounds.pushPunct(input.parse(PlusParse).getOrElse { return SynResult.failure(it) })
+                        bounds.pushPunct(PlusParse.parse(input).getOrElse { return SynResult.failure(it) })
                     }
                 }
                 return SynResult.success(LifetimeParam(attrs, lifetime, colonToken, bounds))
@@ -468,11 +483,11 @@ public sealed class GenericParam : ToTokens {
         }
 
         override fun deepCopy(): LifetimeParam =
-            LifetimeParam(attrs.map { it.deepCopy() }, lifetime.deepCopy(), colonToken, bounds.copy({ it.deepCopy() }, { it }))
+            LifetimeParam(attrs.mapTo(mutableListOf()) { it.deepCopy() }, lifetime.deepCopy(), colonToken, bounds.copy({ it.deepCopy() }, { it }))
     }
 
     public data class TypeParam(
-        public var attrs: List<Attribute>,
+        public var attrs: MutableList<Attribute>,
         public var ident: Ident,
         public var colonToken: Colon?,
         public var bounds: TypeParamBoundList,
@@ -481,16 +496,16 @@ public sealed class GenericParam : ToTokens {
     ) : GenericParam() {
         public companion object {
             public fun from(ident: Ident): TypeParam =
-                TypeParam(emptyList(), ident, null, TypeParamBoundList(), null, null)
+                TypeParam(mutableListOf(), ident, null, TypeParamBoundList(), null, null)
 
             public fun parse(input: ParseStream): SynResult<TypeParam> {
                 val attrs = parseOuterAttributes(input).getOrElse { return SynResult.failure(it) }
                 return parseWithAttrs(attrs, input)
             }
 
-            internal fun parseWithAttrs(attrs: List<Attribute>, input: ParseStream): SynResult<TypeParam> {
-                val ident = input.parse(IdentParse).getOrElse { return SynResult.failure(it) }
-                val colonToken = input.parse(ColonParse).getOrNull()
+            internal fun parseWithAttrs(attrs: MutableList<Attribute>, input: ParseStream): SynResult<TypeParam> {
+                val ident = IdentParse.parse(input).getOrElse { return SynResult.failure(it) }
+                val colonToken = ColonParse.parse(input).getOrNull()
                 val bounds = TypeParamBoundList()
                 if (colonToken != null) {
                     while (!input.isEmpty() &&
@@ -499,17 +514,18 @@ public sealed class GenericParam : ToTokens {
                         !input.peek(EqPeek)
                     ) {
                         bounds.pushValue(
-                            TypeParamBound.parseSingle(
-                                input,
-                                allowPreciseCapture = false,
-                                allowConst = true,
-                            ).getOrElse { return SynResult.failure(it) },
+                            TypeParamBound
+                                .parseSingle(
+                                    input,
+                                    allowPreciseCapture = false,
+                                    allowConst = true,
+                                ).getOrElse { return SynResult.failure(it) },
                         )
                         if (!input.peek(PlusPeek)) break
-                        bounds.pushPunct(input.parse(PlusParse).getOrElse { return SynResult.failure(it) })
+                        bounds.pushPunct(PlusParse.parse(input).getOrElse { return SynResult.failure(it) })
                     }
                 }
-                val eqToken = input.parse(EqParse).getOrNull()
+                val eqToken = EqParse.parse(input).getOrNull()
                 val default =
                     if (eqToken != null) {
                         parseTypeFull(input).getOrElse { return SynResult.failure(it) }
@@ -534,11 +550,11 @@ public sealed class GenericParam : ToTokens {
         }
 
         override fun deepCopy(): TypeParam =
-            TypeParam(attrs.map { it.deepCopy() }, ident.copy(), colonToken, bounds.copy({ it.deepCopy() }, { it }), eqToken, default?.deepCopy())
+            TypeParam(attrs.mapTo(mutableListOf()) { it.deepCopy() }, ident.copy(), colonToken, bounds.copy({ it.deepCopy() }, { it }), eqToken, default?.deepCopy())
     }
 
     public data class ConstParam(
-        public var attrs: List<Attribute>,
+        public var attrs: MutableList<Attribute>,
         public var constToken: io.github.kotlinmania.syn.token.Const,
         public var ident: Ident,
         public var colonToken: Colon,
@@ -552,12 +568,12 @@ public sealed class GenericParam : ToTokens {
                 return parseWithAttrs(attrs, input)
             }
 
-            internal fun parseWithAttrs(attrs: List<Attribute>, input: ParseStream): SynResult<ConstParam> {
-                val constToken = input.parse(ConstParse).getOrElse { return SynResult.failure(it) }
-                val ident = input.parse(IdentParse).getOrElse { return SynResult.failure(it) }
-                val colonToken = input.parse(ColonParse).getOrElse { return SynResult.failure(it) }
+            internal fun parseWithAttrs(attrs: MutableList<Attribute>, input: ParseStream): SynResult<ConstParam> {
+                val constToken = ConstParse.parse(input).getOrElse { return SynResult.failure(it) }
+                val ident = IdentParse.parse(input).getOrElse { return SynResult.failure(it) }
+                val colonToken = ColonParse.parse(input).getOrElse { return SynResult.failure(it) }
                 val ty = parseTypeFull(input).getOrElse { return SynResult.failure(it) }
-                val eqToken = input.parse(EqParse).getOrNull()
+                val eqToken = EqParse.parse(input).getOrNull()
                 val default =
                     if (eqToken != null) {
                         parseExprFull(input).getOrElse { return SynResult.failure(it) }
@@ -581,17 +597,17 @@ public sealed class GenericParam : ToTokens {
         }
 
         override fun deepCopy(): ConstParam =
-            ConstParam(attrs.map { it.deepCopy() }, constToken, ident.copy(), colonToken, ty.deepCopy(), eqToken, default?.deepCopy())
+            ConstParam(attrs.mapTo(mutableListOf()) { it.deepCopy() }, constToken, ident.copy(), colonToken, ty.deepCopy(), eqToken, default?.deepCopy())
     }
 }
 
 public data class WhereClause(
-    public val whereToken: Where,
-    public val predicates: WherePredicateList,
+    public var whereToken: Where,
+    public var predicates: WherePredicateList,
 ) : ToTokens {
     public companion object {
         public fun parse(input: ParseStream): SynResult<WhereClause> {
-            val whereToken = input.parse(WhereParse).getOrElse { return SynResult.failure(it) }
+            val whereToken = WhereParse.parse(input).getOrElse { return SynResult.failure(it) }
             if (chooseGenericsOverQpath(input)) {
                 return SynResult.failure(
                     input.error("generic parameters on `where` clauses are reserved for future use"),
@@ -607,7 +623,7 @@ public data class WhereClause(
             ) {
                 predicates.pushValue(WherePredicate.parse(input).getOrElse { return SynResult.failure(it) })
                 if (!input.peek(CommaPeek)) break
-                predicates.pushPunct(input.parse(CommaParse).getOrElse { return SynResult.failure(it) })
+                predicates.pushPunct(CommaParse.parse(input).getOrElse { return SynResult.failure(it) })
             }
             return SynResult.success(WhereClause(whereToken, predicates))
         }
@@ -636,7 +652,8 @@ internal fun printConstArgument(expr: Expr, tokens: TokenStream) {
                 }
             }
         is Expr.BlockExpr,
-        is Expr.Verbatim -> expr.toTokens(tokens)
+        is Expr.Verbatim,
+        -> expr.toTokens(tokens)
         else ->
             io.github.kotlinmania.syn.token.Brace.default().surround(tokens) { inner ->
                 printExpr(expr, inner)
@@ -650,8 +667,8 @@ public sealed class WherePredicate : ToTokens {
     public companion object {
         public fun parse(input: ParseStream): SynResult<WherePredicate> {
             if (input.peek(LifetimePeek) && input.peek2(ColonPeek)) {
-                val lifetime = input.parse(LifetimeParse).getOrElse { return SynResult.failure(it) }
-                val colonToken = input.parse(ColonParse).getOrElse { return SynResult.failure(it) }
+                val lifetime = LifetimeParse.parse(input).getOrElse { return SynResult.failure(it) }
+                val colonToken = ColonParse.parse(input).getOrElse { return SynResult.failure(it) }
                 val bounds = LifetimeList()
                 while (!input.isEmpty() &&
                     !input.peek(BracePeek) &&
@@ -660,16 +677,16 @@ public sealed class WherePredicate : ToTokens {
                     !input.peek(ColonPeek) &&
                     !input.peek(EqPeek)
                 ) {
-                    bounds.pushValue(input.parse(LifetimeParse).getOrElse { return SynResult.failure(it) })
+                    bounds.pushValue(LifetimeParse.parse(input).getOrElse { return SynResult.failure(it) })
                     if (!input.peek(PlusPeek)) break
-                    bounds.pushPunct(input.parse(PlusParse).getOrElse { return SynResult.failure(it) })
+                    bounds.pushPunct(PlusParse.parse(input).getOrElse { return SynResult.failure(it) })
                 }
                 return SynResult.success(LifetimePredicate(lifetime, colonToken, bounds))
             }
 
             val lifetimes = BoundLifetimes.parseOptional(input).getOrElse { return SynResult.failure(it) }
             val boundedTy = parseTypeFull(input).getOrElse { return SynResult.failure(it) }
-            val colonToken = input.parse(ColonParse).getOrElse { return SynResult.failure(it) }
+            val colonToken = ColonParse.parse(input).getOrElse { return SynResult.failure(it) }
             val bounds = TypeParamBoundList()
             while (!input.isEmpty() &&
                 !input.peek(BracePeek) &&
@@ -679,24 +696,25 @@ public sealed class WherePredicate : ToTokens {
                 !input.peek(EqPeek)
             ) {
                 bounds.pushValue(
-                    TypeParamBound.parseSingle(
-                        input,
-                        allowPreciseCapture = false,
-                        allowConst = true,
-                    ).getOrElse { return SynResult.failure(it) },
+                    TypeParamBound
+                        .parseSingle(
+                            input,
+                            allowPreciseCapture = false,
+                            allowConst = true,
+                        ).getOrElse { return SynResult.failure(it) },
                 )
                 if (!input.peek(PlusPeek)) break
-                bounds.pushPunct(input.parse(PlusParse).getOrElse { return SynResult.failure(it) })
+                bounds.pushPunct(PlusParse.parse(input).getOrElse { return SynResult.failure(it) })
             }
             return SynResult.success(TypePredicate(lifetimes, boundedTy, colonToken, bounds))
         }
     }
 
     public data class TypePredicate(
-        public val lifetimes: BoundLifetimes?,
-        public val boundedTy: SynType,
-        public val colonToken: Colon,
-        public val bounds: TypeParamBoundList,
+        public var lifetimes: BoundLifetimes?,
+        public var boundedTy: SynType,
+        public var colonToken: Colon,
+        public var bounds: TypeParamBoundList,
     ) : WherePredicate() {
         override fun toTokens(tokens: TokenStream) {
             lifetimes?.toTokens(tokens)
@@ -713,9 +731,9 @@ public sealed class WherePredicate : ToTokens {
     }
 
     public data class LifetimePredicate(
-        public val lifetime: Lifetime,
-        public val colonToken: Colon,
-        public val bounds: LifetimeList,
+        public var lifetime: Lifetime,
+        public var colonToken: Colon,
+        public var bounds: LifetimeList,
     ) : WherePredicate() {
         override fun toTokens(tokens: TokenStream) {
             lifetime.toTokens(tokens)
@@ -744,7 +762,7 @@ public sealed class TypeParamBound : ToTokens {
             allowConst: Boolean,
         ): SynResult<TypeParamBound> {
             if (input.peek(LifetimePeek)) {
-                return SynResult.success(LifetimeBound(input.parse(LifetimeParse).getOrElse { return SynResult.failure(it) }))
+                return SynResult.success(LifetimeBound(LifetimeParse.parse(input).getOrElse { return SynResult.failure(it) }))
             }
 
             if (input.peek(UsePeek)) {
@@ -789,13 +807,16 @@ public sealed class TypeParamBound : ToTokens {
                     },
                 )
                 if (!(allowPlus && input.peek(PlusPeek))) break
-                bounds.pushPunct(input.parse(PlusParse).getOrElse { return SynResult.failure(it) })
-                if (!(input.peek(IdentPeekAny) ||
-                        input.peek(PathSepPeek) ||
-                        input.peek(QuestionPeek) ||
-                        input.peek(LifetimePeek) ||
-                        input.peek(ParenPeek) ||
-                        allowConst && (input.peek(BracketPeek) || input.peek(ConstPeek)))
+                bounds.pushPunct(PlusParse.parse(input).getOrElse { return SynResult.failure(it) })
+                if (!(
+                        input.peek(IdentPeekAny) ||
+                            input.peek(PathSepPeek) ||
+                            input.peek(QuestionPeek) ||
+                            input.peek(LifetimePeek) ||
+                            input.peek(ParenPeek) ||
+                            allowConst &&
+                            (input.peek(BracketPeek) || input.peek(ConstPeek))
+                    )
                 ) {
                     break
                 }
@@ -805,10 +826,10 @@ public sealed class TypeParamBound : ToTokens {
     }
 
     public data class Trait(
-        val parenToken: io.github.kotlinmania.syn.token.Paren?,
-        val modifier: TraitBoundModifier,
-        val lifetimes: BoundLifetimes?,
-        val path: Path,
+        var parenToken: io.github.kotlinmania.syn.token.Paren?,
+        var modifier: TraitBoundModifier,
+        var lifetimes: BoundLifetimes?,
+        var path: Path,
     ) : TypeParamBound() {
         public companion object {
             public fun parse(input: ParseStream): SynResult<Trait> {
@@ -823,7 +844,7 @@ public sealed class TypeParamBound : ToTokens {
 
                 if (input.peek(BracketPeek)) {
                     val conditionallyConst = bracketed(input).getOrElse { return SynResult.failure(it) }
-                    conditionallyConst.content.parse(ConstParse).getOrElse { return SynResult.failure(it) }
+                    ConstParse.parse(conditionallyConst.content).getOrElse { return SynResult.failure(it) }
                     if (!conditionallyConst.content.isEmpty()) {
                         return SynResult.failure(conditionallyConst.content.error("unexpected token"))
                     }
@@ -833,7 +854,7 @@ public sealed class TypeParamBound : ToTokens {
                     }
                     isConditionallyConst = true
                 } else if (input.peek(ConstPeek)) {
-                    input.parse(ConstParse).getOrElse { return SynResult.failure(it) }
+                    ConstParse.parse(input).getOrElse { return SynResult.failure(it) }
                     if (!allowConst) {
                         return SynResult.failure(input.error("`const` is not allowed here"))
                     }
@@ -845,14 +866,14 @@ public sealed class TypeParamBound : ToTokens {
                     lifetimes = BoundLifetimes.parseOptional(input).getOrElse { return SynResult.failure(it) }
                 }
 
-                val path = input.parse(PathParse).getOrElse { return SynResult.failure(it) }
+                val path = PathParse.parse(input).getOrElse { return SynResult.failure(it) }
                 val last = path.segments.last()
                 if (last != null &&
                     last.arguments.isEmpty() &&
                     (input.peek(ParenPeek) || (input.peek(PathSepPeek) && input.peek3(ParenPeek)))
                 ) {
                     if (input.peek(PathSepPeek)) {
-                        input.parse(PathSepParse).getOrElse { return SynResult.failure(it) }
+                        PathSepParse.parse(input).getOrElse { return SynResult.failure(it) }
                     }
                     last.arguments = parseParenthesizedPathArguments(input).getOrElse { return SynResult.failure(it) }
                 }
@@ -875,6 +896,7 @@ public sealed class TypeParamBound : ToTokens {
         }
 
         override fun toTokens(tokens: TokenStream) {
+            val parenToken = this.parenToken
             if (parenToken != null) {
                 parenToken.surround(tokens) { inner ->
                     modifier.toTokens(inner)
@@ -892,7 +914,7 @@ public sealed class TypeParamBound : ToTokens {
     }
 
     public data class LifetimeBound(
-        val lifetime: Lifetime,
+        var lifetime: Lifetime,
     ) : TypeParamBound() {
         override fun toTokens(tokens: TokenStream) {
             lifetime.toTokens(tokens)
@@ -902,15 +924,15 @@ public sealed class TypeParamBound : ToTokens {
     }
 
     public data class PreciseCapture(
-        val useToken: io.github.kotlinmania.syn.token.Use,
-        val ltToken: Lt,
-        val params: CapturedParamList,
-        val gtToken: Gt,
+        var useToken: io.github.kotlinmania.syn.token.Use,
+        var ltToken: Lt,
+        var params: CapturedParamList,
+        var gtToken: Gt,
     ) : TypeParamBound() {
         public companion object {
             public fun parse(input: ParseStream): SynResult<PreciseCapture> {
-                val useToken = input.parse(UseParse).getOrElse { return SynResult.failure(it) }
-                val ltToken = input.parse(GenericsLtParse).getOrElse { return SynResult.failure(it) }
+                val useToken = UseParse.parse(input).getOrElse { return SynResult.failure(it) }
+                val ltToken = GenericsLtParse.parse(input).getOrElse { return SynResult.failure(it) }
                 val params = CapturedParamList()
                 loop@ while (true) {
                     val lookahead = input.lookahead1()
@@ -929,7 +951,7 @@ public sealed class TypeParamBound : ToTokens {
                     val separator = input.lookahead1()
                     params.pushPunct(
                         if (separator.peek(CommaPeek)) {
-                            input.parse(CommaParse).getOrElse { return SynResult.failure(it) }
+                            CommaParse.parse(input).getOrElse { return SynResult.failure(it) }
                         } else if (separator.peek(GenericsGtPeek)) {
                             break@loop
                         } else {
@@ -937,7 +959,7 @@ public sealed class TypeParamBound : ToTokens {
                         },
                     )
                 }
-                val gtToken = input.parse(GenericsGtParse).getOrElse { return SynResult.failure(it) }
+                val gtToken = GenericsGtParse.parse(input).getOrElse { return SynResult.failure(it) }
                 return SynResult.success(PreciseCapture(useToken, ltToken, params, gtToken))
             }
         }
@@ -953,7 +975,7 @@ public sealed class TypeParamBound : ToTokens {
     }
 
     public data class Verbatim(
-        val tokens: TokenStream,
+        var tokens: TokenStream,
     ) : TypeParamBound() {
         override fun toTokens(tokens: TokenStream) {
             tokens.extendTokenStreams(listOf(this.tokens))
@@ -969,7 +991,7 @@ public sealed class TraitBoundModifier : ToTokens {
     public companion object {
         public fun parse(input: ParseStream): SynResult<TraitBoundModifier> =
             if (input.peek(QuestionPeek)) {
-                input.parse(QuestionParse).map { Maybe(it) }
+                QuestionParse.parse(input).map { Maybe(it) }
             } else {
                 SynResult.success(None)
             }
@@ -982,7 +1004,7 @@ public sealed class TraitBoundModifier : ToTokens {
     }
 
     public data class Maybe(
-        val token: io.github.kotlinmania.syn.token.Question,
+        var token: io.github.kotlinmania.syn.token.Question,
     ) : TraitBoundModifier() {
         override fun toTokens(tokens: TokenStream) {
             token.toTokens(tokens)
@@ -993,30 +1015,31 @@ public sealed class TraitBoundModifier : ToTokens {
 }
 
 public data class BoundLifetimes(
-    val forToken: io.github.kotlinmania.syn.token.For,
-    val ltToken: Lt,
-    val lifetimes: GenericParamList,
-    val gtToken: Gt,
+    var forToken: io.github.kotlinmania.syn.token.For,
+    var ltToken: Lt,
+    var lifetimes: GenericParamList,
+    var gtToken: Gt,
 ) : ToTokens {
     public companion object {
         public fun default(): BoundLifetimes =
             BoundLifetimes(
-                io.github.kotlinmania.syn.token.For.default(),
+                io.github.kotlinmania.syn.token.For
+                    .default(),
                 Lt.default(),
                 GenericParamList(),
                 Gt.default(),
             )
 
         public fun parse(input: ParseStream): SynResult<BoundLifetimes> {
-            val forToken = input.parse(ForParse).getOrElse { return SynResult.failure(it) }
-            val ltToken = input.parse(GenericsLtParse).getOrElse { return SynResult.failure(it) }
+            val forToken = ForParse.parse(input).getOrElse { return SynResult.failure(it) }
+            val ltToken = GenericsLtParse.parse(input).getOrElse { return SynResult.failure(it) }
             val lifetimes = GenericParamList()
             while (!input.peek(GenericsGtPeek)) {
                 lifetimes.pushValue(GenericParam.parse(input).getOrElse { return SynResult.failure(it) })
                 if (input.peek(GenericsGtPeek)) break
-                lifetimes.pushPunct(input.parse(CommaParse).getOrElse { return SynResult.failure(it) })
+                lifetimes.pushPunct(CommaParse.parse(input).getOrElse { return SynResult.failure(it) })
             }
-            val gtToken = input.parse(GenericsGtParse).getOrElse { return SynResult.failure(it) }
+            val gtToken = GenericsGtParse.parse(input).getOrElse { return SynResult.failure(it) }
             return SynResult.success(BoundLifetimes(forToken, ltToken, lifetimes, gtToken))
         }
 
@@ -1046,11 +1069,11 @@ public sealed class CapturedParam : ToTokens {
             val lookahead = input.lookahead1()
             return when {
                 lookahead.peek(LifetimePeek) ->
-                    input.parse(LifetimeParse).map { Lifetime(it) }
+                    LifetimeParse.parse(input).map { Lifetime(it) }
                 lookahead.peek(IdentPeek) || input.peek(SelfTypePeek) -> {
                     val ident =
                         if (input.peek(SelfTypePeek)) {
-                            identFromSelfType(input.parse(SelfTypeParse).getOrElse { return SynResult.failure(it) })
+                            identFromSelfType(SelfTypeParse.parse(input).getOrElse { return SynResult.failure(it) })
                         } else {
                             identParseAny(input).getOrElse { return SynResult.failure(it) }
                         }
@@ -1062,7 +1085,7 @@ public sealed class CapturedParam : ToTokens {
     }
 
     public data class Lifetime(
-        val lifetime: io.github.kotlinmania.syn.Lifetime,
+        var lifetime: io.github.kotlinmania.syn.Lifetime,
     ) : CapturedParam() {
         override fun toTokens(tokens: TokenStream) {
             lifetime.toTokens(tokens)
@@ -1072,7 +1095,7 @@ public sealed class CapturedParam : ToTokens {
     }
 
     public data class Ident(
-        val ident: io.github.kotlinmania.procmacro2.Ident,
+        var ident: io.github.kotlinmania.procmacro2.Ident,
     ) : CapturedParam() {
         override fun toTokens(tokens: TokenStream) {
             ident.toTokens(tokens)

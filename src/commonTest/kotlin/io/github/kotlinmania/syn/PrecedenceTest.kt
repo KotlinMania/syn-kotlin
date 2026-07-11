@@ -46,12 +46,12 @@ class PrecedenceTest {
     // Upstream rustc precedence stress testing depends on nightly compiler internals and a full compiler source checkout.
 
     private fun intLit(): Expr.Lit =
-        Expr.Lit(attrs = emptyList(), lit = Lit.Int(LitInt.new("1", "", Span.callSite())))
+        Expr.Lit(attrs = mutableListOf(), lit = Lit.Int(LitInt.new("1", "", Span.callSite())))
 
     private fun identPath(name: String): Expr.Path {
         val segments = PathSegmentList()
         segments.pushValue(PathSegment.from(Ident.new(name, Span.callSite())))
-        return Expr.Path(attrs = emptyList(), qself = null, path = Path(null, segments))
+        return Expr.Path(attrs = mutableListOf(), qself = null, path = Path(null, segments))
     }
 
     private fun typePath(name: String): SynType.Path {
@@ -122,7 +122,7 @@ class PrecedenceTest {
     fun testPrefixExprPrecedence() {
         val unary =
             Expr.Unary(
-                attrs = emptyList(),
+                attrs = mutableListOf(),
                 op = UnOp.Deref(Star.default()),
                 expr = intLit(),
             )
@@ -133,7 +133,7 @@ class PrecedenceTest {
     fun testCastExprPrecedence() {
         val cast =
             Expr.Cast(
-                attrs = emptyList(),
+                attrs = mutableListOf(),
                 expr = intLit(),
                 asToken = As.default(),
                 ty = typePath("f64"),
@@ -145,7 +145,7 @@ class PrecedenceTest {
     fun testAssignExprPrecedence() {
         val assign =
             Expr.Assign(
-                attrs = emptyList(),
+                attrs = mutableListOf(),
                 left = identPath("x"),
                 eqToken = Eq.default(),
                 right = intLit(),
@@ -157,7 +157,7 @@ class PrecedenceTest {
     fun testBinaryExprPrecedenceDelegatesToOp() {
         val binary =
             Expr.Binary(
-                attrs = emptyList(),
+                attrs = mutableListOf(),
                 left = intLit(),
                 op = BinOp.Add(Plus.default()),
                 right = intLit(),
@@ -176,9 +176,9 @@ class PrecedenceTest {
     fun testLetExprPrecedence() {
         val letExpr =
             Expr.Let(
-                attrs = emptyList(),
+                attrs = mutableListOf(),
                 letToken = Let.default(),
-                pat = Pat.Wild(attrs = emptyList(), underscoreToken = Underscore.default()),
+                pat = Pat.Wild(attrs = mutableListOf(), underscoreToken = Underscore.default()),
                 eqToken = Eq.default(),
                 expr = intLit(),
             )
@@ -189,7 +189,7 @@ class PrecedenceTest {
     fun testBreakExprPrecedence() {
         val bareBreak =
             Expr.Break(
-                attrs = emptyList(),
+                attrs = mutableListOf(),
                 breakToken = Break.default(),
                 label = null,
                 expr = null,
@@ -198,7 +198,7 @@ class PrecedenceTest {
 
         val valuedBreak =
             Expr.Break(
-                attrs = emptyList(),
+                attrs = mutableListOf(),
                 breakToken = Break.default(),
                 label = null,
                 expr = intLit(),
@@ -210,7 +210,7 @@ class PrecedenceTest {
     fun testContinueExprPrecedence() {
         val continueExpr =
             Expr.Continue(
-                attrs = emptyList(),
+                attrs = mutableListOf(),
                 continueToken = Continue.default(),
                 label = null,
             )
