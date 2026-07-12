@@ -24,7 +24,7 @@ public data class DeriveInput(
             is Data.Union -> data.value.unionToken.toTokens(tokens)
         }
         ident.toTokens(tokens)
-        generics.withoutWhereClause().toTokens(tokens)
+        generics.toTokens(tokens)
         when (val data = data) {
             is Data.Struct ->
                 when (val fields = data.value.fields) {
@@ -55,9 +55,6 @@ public data class DeriveInput(
         }
     }
 }
-
-private fun Generics.withoutWhereClause(): Generics =
-    copy().also { it.whereClause = null }
 
 /** The storage of an enum-like, data-class-like, or union data structure. */
 public sealed class Data : ToTokens {
