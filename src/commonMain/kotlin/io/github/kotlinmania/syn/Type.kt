@@ -6,8 +6,10 @@ import io.github.kotlinmania.procmacro2.Span
 import io.github.kotlinmania.procmacro2.TokenStream
 import io.github.kotlinmania.quote.ToTokens
 import io.github.kotlinmania.quote.toTokens
+import io.github.kotlinmania.syn.token.Bracket
 import io.github.kotlinmania.syn.token.Paren
 import io.github.kotlinmania.syn.token.RArrow
+import io.github.kotlinmania.syn.token.Semi
 
 /**
  * A type syntax tree node.
@@ -29,8 +31,11 @@ public sealed class SynType : ToTokens {
         var len: Expr,
     ) : SynType() {
         override fun toTokens(tokens: TokenStream) {
-            elem.toTokens(tokens)
-            len.toTokens(tokens)
+            Bracket.default().surround(tokens) { inner ->
+                elem.toTokens(inner)
+                Semi.default().toTokens(inner)
+                len.toTokens(inner)
+            }
         }
 
         override fun deepCopy(): Array = Array(elem.deepCopy(), len.deepCopy())
@@ -199,7 +204,9 @@ public sealed class SynType : ToTokens {
         var elem: SynType,
     ) : SynType() {
         override fun toTokens(tokens: TokenStream) {
-            elem.toTokens(tokens)
+            Bracket.default().surround(tokens) { inner ->
+                elem.toTokens(inner)
+            }
         }
 
         override fun deepCopy(): Slice = Slice(elem.deepCopy())
