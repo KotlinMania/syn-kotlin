@@ -19,7 +19,6 @@ public data class EqExpr(
         eqToken.toTokens(tokens)
         expr.toTokens(tokens)
     }
-
 }
 
 public data class EqSynType(
@@ -30,7 +29,6 @@ public data class EqSynType(
         eqToken.toTokens(tokens)
         type.toTokens(tokens)
     }
-
 }
 
 public data class ElseExpr(
@@ -41,7 +39,6 @@ public data class ElseExpr(
         elseToken.toTokens(tokens)
         expr.toTokens(tokens)
     }
-
 }
 
 public data class IfExpr(
@@ -52,7 +49,6 @@ public data class IfExpr(
         ifToken.toTokens(tokens)
         expr.toTokens(tokens)
     }
-
 }
 
 public data class AndLifetime(
@@ -63,7 +59,6 @@ public data class AndLifetime(
         andToken.toTokens(tokens)
         lifetime?.toTokens(tokens)
     }
-
 }
 
 public data class AsIdent(
@@ -74,7 +69,6 @@ public data class AsIdent(
         asToken.toTokens(tokens)
         ident.toTokens(tokens)
     }
-
 }
 
 public data class IdentColon(
@@ -85,7 +79,6 @@ public data class IdentColon(
         ident.toTokens(tokens)
         colonToken.toTokens(tokens)
     }
-
 }
 
 public data class PatColon(
@@ -96,5 +89,4 @@ public data class PatColon(
         pat.toTokens(tokens)
         colonToken.toTokens(tokens)
     }
-
 }

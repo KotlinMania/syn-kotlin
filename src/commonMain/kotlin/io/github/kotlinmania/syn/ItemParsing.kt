@@ -32,58 +32,30 @@ private fun parseRestOfItem(
         val structToken = StructParse.parse(input).getOrThrow()
         val ident = IdentParse.parse(input).getOrThrow()
         val generics = parseGenerics(input).getOrElse { return SynResult.failure(it) }
-        generics.whereClause = parseWhereClause(input).getOrNull()
-        if (input.peek(BracePeek)) {
-            val bracesVal = braced(input).getOrThrow()
-            val fields = parseNamedFieldList(bracesVal.content).getOrElse { return SynResult.failure(it) }
-            bracesVal.content.finishChildBuffer()
-            return SynResult.success(
-                Item.Struct(
-                    attrs,
-                    vis,
-                    structToken,
-                    ident,
-                    generics,
-                    Fields.Named(FieldsNamed(bracesVal.token, fields)),
-                    null,
-                ),
-            )
-        }
-        if (input.peek(ParenPeek)) {
-            val parensVal = parenthesized(input).getOrThrow()
-            val fields = parseUnnamedFieldList(parensVal.content).getOrElse { return SynResult.failure(it) }
-            parensVal.content.finishChildBuffer()
-            val semi = SemiParse.parse(input).getOrNull()
-            return SynResult.success(
-                Item.Struct(
-                    attrs,
-                    vis,
-                    structToken,
-                    ident,
-                    generics,
-                    Fields.Unnamed(FieldsUnnamed(parensVal.token, fields)),
-                    semi,
-                ),
-            )
-        }
-        if (input.peek(SemiPeek)) {
-            val semi = SemiParse.parse(input).getOrThrow()
-            return SynResult.success(
-                Item.Struct(attrs, vis, structToken, ident, generics, Fields.Unit, semi),
-            )
-        }
-        return SynResult.failure(input.error("expected `{`, `(`, or `;`"))
+        val data = dataStruct(input).getOrElse { return SynResult.failure(it) }
+        generics.whereClause = data.whereClause
+        return SynResult.success(
+            Item.Struct(attrs, vis, structToken, ident, generics, data.fields, data.semiToken),
+        )
     }
     if (input.peek(EnumPeek)) {
         val enumToken = EnumParse.parse(input).getOrThrow()
         val ident = IdentParse.parse(input).getOrThrow()
         val generics = parseGenerics(input).getOrElse { return SynResult.failure(it) }
-        generics.whereClause = parseWhereClause(input).getOrNull()
-        val bracesVal = braced(input).getOrThrow()
-        val variants = parseVariantList(bracesVal.content).getOrElse { return SynResult.failure(it) }
-        bracesVal.content.finishChildBuffer()
+        val data = dataEnum(input).getOrElse { return SynResult.failure(it) }
+        generics.whereClause = data.whereClause
         return SynResult.success(
-            Item.Enum(attrs, vis, enumToken, ident, generics, bracesVal.token, variants),
+            Item.Enum(attrs, vis, enumToken, ident, generics, data.braceToken, data.variants),
+        )
+    }
+    if (input.peek(UnionPeek) && input.peek2(IdentPeek)) {
+        val unionToken = UnionParse.parse(input).getOrThrow()
+        val ident = IdentParse.parse(input).getOrThrow()
+        val generics = parseGenerics(input).getOrElse { return SynResult.failure(it) }
+        val data = dataUnion(input).getOrElse { return SynResult.failure(it) }
+        generics.whereClause = data.whereClause
+        return SynResult.success(
+            Item.Union(attrs, vis, unionToken, ident, generics, data.fields),
         )
     }
     if (input.peek(ExternPeek)) {

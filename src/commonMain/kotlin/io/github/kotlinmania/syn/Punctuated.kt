@@ -887,6 +887,7 @@ internal class Punctuated private constructor(
         fun len(): Int
     }
 
+    // Compile-time destructor analysis, manual destruction suppression, and custom destructor behavior have no Kotlin equivalent.
     private class Cursor(
         private val entries: List<Any?>,
         private var front: Int = 0,
@@ -923,7 +924,10 @@ internal class Punctuated private constructor(
 
         override fun hasNext(): Boolean = cursor.hasNext()
 
-        override fun next(): Pair = cursor.next() as Pair
+        override fun next(): Pair {
+            if (!hasNext()) throw NoSuchElementException()
+            return cursor.next() as Pair
+        }
 
         fun nextBack(): Pair? = cursor.nextBack() as Pair?
 
@@ -944,7 +948,10 @@ internal class Punctuated private constructor(
 
         override fun hasNext(): Boolean = cursor.hasNext()
 
-        override fun next(): Pair = cursor.next() as Pair
+        override fun next(): Pair {
+            if (!hasNext()) throw NoSuchElementException()
+            return cursor.next() as Pair
+        }
 
         fun nextBack(): Pair? = cursor.nextBack() as Pair?
 
@@ -965,7 +972,10 @@ internal class Punctuated private constructor(
 
         override fun hasNext(): Boolean = cursor.hasNext()
 
-        override fun next(): Pair = cursor.next() as Pair
+        override fun next(): Pair {
+            if (!hasNext()) throw NoSuchElementException()
+            return cursor.next() as Pair
+        }
 
         fun nextBack(): Pair? = cursor.nextBack() as Pair?
 
@@ -983,7 +993,10 @@ internal class Punctuated private constructor(
 
         override fun hasNext(): Boolean = cursor.hasNext()
 
-        override fun next(): ToTokens = cursor.next() as ToTokens
+        override fun next(): ToTokens {
+            if (!hasNext()) throw NoSuchElementException()
+            return cursor.next() as ToTokens
+        }
 
         override fun nextBack(): ToTokens? = cursor.nextBack() as ToTokens?
 
@@ -1003,7 +1016,10 @@ internal class Punctuated private constructor(
 
         override fun hasNext(): Boolean = cursor.hasNext()
 
-        override fun next(): ToTokens = cursor.next() as ToTokens
+        override fun next(): ToTokens {
+            if (!hasNext()) throw NoSuchElementException()
+            return cursor.next() as ToTokens
+        }
 
         override fun nextBack(): ToTokens? = cursor.nextBack() as ToTokens?
 
@@ -1024,7 +1040,10 @@ internal class Punctuated private constructor(
 
         override fun hasNext(): Boolean = inner.hasNext()
 
-        override fun next(): ToTokens = inner.next()
+        override fun next(): ToTokens {
+            if (!hasNext()) throw NoSuchElementException()
+            return inner.next()
+        }
 
         fun nextBack(): ToTokens? = inner.nextBack()
 
@@ -1045,7 +1064,10 @@ internal class Punctuated private constructor(
 
         override fun hasNext(): Boolean = inner.hasNext()
 
-        override fun next(): ToTokens = inner.next()
+        override fun next(): ToTokens {
+            if (!hasNext()) throw NoSuchElementException()
+            return inner.next()
+        }
 
         fun nextBack(): ToTokens? = inner.nextBack()
 
@@ -1066,7 +1088,10 @@ internal class Punctuated private constructor(
 
         override fun hasNext(): Boolean = inner.hasNext()
 
-        override fun next(): ToTokens = inner.next().intoValue()
+        override fun next(): ToTokens {
+            if (!hasNext()) throw NoSuchElementException()
+            return inner.next().intoValue()
+        }
 
         fun nextBack(): ToTokens? = inner.nextBack()?.intoValue()
 

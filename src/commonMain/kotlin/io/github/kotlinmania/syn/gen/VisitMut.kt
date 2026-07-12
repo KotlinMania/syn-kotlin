@@ -529,7 +529,9 @@ public open class VisitMut {
 
     public open fun visitLitCStrMut(l: LitCStr) { }
 
-    public open fun visitLitCstrMut(l: LitCStr) { visitLitCStrMut(l) }
+    public open fun visitLitCstrMut(l: LitCStr) {
+        visitLitCStrMut(l)
+    }
 
     public open fun visitLitCharMut(l: LitChar) { }
 
@@ -552,7 +554,10 @@ public open class VisitMut {
 
     public open fun visitStmt(s: Stmt): Stmt =
         when (s) {
-            is Stmt.Local -> { visitLocalMut(s); s }
+            is Stmt.Local -> {
+                visitLocalMut(s)
+                s
+            }
             is Stmt.ItemStmt -> {
                 visitItemMut(s.item)
                 s
@@ -561,7 +566,10 @@ public open class VisitMut {
                 s.expr = visitExprMut(s.expr)
                 s
             }
-            is Stmt.MacroStmt -> { visitStmtMacroMut(s); s }
+            is Stmt.MacroStmt -> {
+                visitStmtMacroMut(s)
+                s
+            }
         }
 
     public open fun visitData(d: Data) {
@@ -1229,7 +1237,9 @@ public open class VisitMut {
         visitTypeMut(qself.ty)
     }
 
-    public open fun visitQselfMut(qself: QSelf) { visitQSelfMut(qself) }
+    public open fun visitQselfMut(qself: QSelf) {
+        visitQSelfMut(qself)
+    }
 
     public open fun visitPathTrait(pathTrait: PathTrait) {
         visitPathMut(pathTrait.path)
@@ -1365,243 +1375,481 @@ public open class VisitMut {
 
     public open fun visitExprMut(e: Expr): Expr = visitExpr(e)
 
-    public open fun visitTypeMut(t: SynType) { visitType(t) }
+    public open fun visitTypeMut(t: SynType) {
+        visitType(t)
+    }
 
-    public open fun visitPathMut(p: Path) { visitPath(p) }
+    public open fun visitPathMut(p: Path) {
+        visitPath(p)
+    }
 
-    public open fun visitPatMut(p: Pat) { visitPat(p) }
+    public open fun visitPatMut(p: Pat) {
+        visitPat(p)
+    }
 
-    public open fun visitItemMut(i: Item) { visitItem(i) }
+    public open fun visitItemMut(i: Item) {
+        visitItem(i)
+    }
 
-    public open fun visitFileMut(f: File) { visitFile(f) }
+    public open fun visitFileMut(f: File) {
+        visitFile(f)
+    }
 
-    public open fun visitAttributeMut(a: Attribute) { visitAttribute(a) }
+    public open fun visitAttributeMut(a: Attribute) {
+        visitAttribute(a)
+    }
 
-    public open fun visitAttrStyleMut(style: AttrStyle) { visitAttrStyle(style) }
+    public open fun visitAttrStyleMut(style: AttrStyle) {
+        visitAttrStyle(style)
+    }
 
-    public open fun visitMetaMut(m: Meta) { visitMeta(m) }
+    public open fun visitMetaMut(m: Meta) {
+        visitMeta(m)
+    }
 
-    public open fun visitMetaListMut(m: Meta.List) { visitMetaList(m) }
+    public open fun visitMetaListMut(m: Meta.List) {
+        visitMetaList(m)
+    }
 
-    public open fun visitMetaNameValueMut(m: Meta.NameValue) { visitMetaNameValue(m) }
+    public open fun visitMetaNameValueMut(m: Meta.NameValue) {
+        visitMetaNameValue(m)
+    }
 
-    public open fun visitGenericsMut(g: Generics) { visitGenerics(g) }
+    public open fun visitGenericsMut(g: Generics) {
+        visitGenerics(g)
+    }
 
-    public open fun visitLitMut(l: Lit) { visitLit(l) }
+    public open fun visitLitMut(l: Lit) {
+        visitLit(l)
+    }
 
-    public open fun visitLifetimeMut(lt: Lifetime) { visitLifetime(lt) }
+    public open fun visitLifetimeMut(lt: Lifetime) {
+        visitLifetime(lt)
+    }
 
-    public open fun visitIdentMut(id: Ident) { visitIdent(id) }
+    public open fun visitIdentMut(id: Ident) {
+        visitIdent(id)
+    }
 
     public open fun visitStmtMut(s: Stmt): Stmt = visitStmt(s)
 
-    public open fun visitDataMut(d: Data) { visitData(d) }
-
-    public open fun visitDataEnumMut(d: DataEnum) { visitDataEnum(d) }
-
-    public open fun visitDataStructMut(d: DataStruct) { visitDataStruct(d) }
-
-    public open fun visitDataUnionMut(d: DataUnion) { visitDataUnion(d) }
-
-    public open fun visitDeriveInputMut(di: DeriveInput) { visitDeriveInput(di) }
-
-    public open fun visitBlockMut(block: Block) { visitBlock(block) }
-
-    public open fun visitAttributesMut(attrs: List<Attribute>) { visitAttributes(attrs) }
-
-    public open fun visitSignatureMut(sig: Signature) { visitSignature(sig) }
-
-    public open fun visitAbiMut(a: Abi) { visitAbi(a) }
-
-    public open fun visitReturnTypeMut(rt: ReturnType) { visitReturnType(rt) }
-
-    public open fun visitFnArgMut(arg: FnArg) { visitFnArg(arg) }
-
-    public open fun visitReceiverMut(receiver: FnArg.Receiver) { visitReceiver(receiver) }
-
-    public open fun visitPatTypeMut(patType: PatType) { visitPatType(patType) }
-
-    public open fun visitPatIdentMut(patIdent: Pat.Ident) { visitPatIdent(patIdent) }
-
-    public open fun visitTypePathMut(typePath: SynType.Path) { visitTypePath(typePath) }
-
-    public open fun visitTypeReferenceMut(ty: SynType.Reference) { visitTypeReference(ty) }
-
-    public open fun visitTypeArrayMut(ty: SynType.Array) { visitTypeArray(ty) }
-
-    public open fun visitTypeGroupMut(ty: SynType.Group) { visitTypeGroup(ty) }
-
-    public open fun visitTypeImplTraitMut(ty: SynType.ImplTrait) { visitTypeImplTrait(ty) }
-
-    public open fun visitTypeInferMut(ty: SynType.Infer) { visitTypeInfer(ty) }
-
-    public open fun visitTypeMacroMut(ty: SynType.Macro) { visitTypeMacro(ty) }
-
-    public open fun visitTypeNeverMut(ty: SynType.Never) { visitTypeNever(ty) }
-
-    public open fun visitTypePtrMut(ty: SynType.Ptr) { visitTypePtr(ty) }
-
-    public open fun visitPointerMutabilityMut(mutability: PointerMutability) { visitPointerMutability(mutability) }
-
-    public open fun visitTypeBareFnMut(ty: SynType.BareFn) { visitTypeBareFn(ty) }
-
-    public open fun visitBareFnArgMut(arg: BareFnArg) { visitBareFnArg(arg) }
-
-    public open fun visitBareVariadicMut(variadic: BareVariadic) { visitBareVariadic(variadic) }
-
-    public open fun visitTypeParenMut(ty: SynType.Paren) { visitTypeParen(ty) }
-
-    public open fun visitTypeSliceMut(ty: SynType.Slice) { visitTypeSlice(ty) }
-
-    public open fun visitTypeTraitObjectMut(ty: SynType.TraitObject) { visitTypeTraitObject(ty) }
-
-    public open fun visitTypeTupleMut(ty: SynType.Tuple) { visitTypeTuple(ty) }
-
-    public open fun visitExprPathMut(exprPath: Expr.Path) { visitExprPath(exprPath) }
-
-    public open fun visitMacroMut(mac: Macro) { visitMacro(mac) }
-
-    public open fun visitPathArgumentsMut(pathArgs: PathArguments) { visitPathArguments(pathArgs) }
-
-    public open fun visitAngleBracketedGenericArgumentsMut(pathArgs: PathArguments.AngleBracketed) { visitAngleBracketedGenericArguments(pathArgs) }
-
-    public open fun visitParenthesizedGenericArgumentsMut(pathArgs: PathArguments.Parenthesized) { visitParenthesizedGenericArguments(pathArgs) }
-
-    public open fun visitGenericArgumentMut(genArg: GenericArgument) { visitGenericArgument(genArg) }
-
-    public open fun visitAssocTypeMut(assoc: AssocType) { visitAssocType(assoc) }
-
-    public open fun visitAssocConstMut(assoc: AssocConst) { visitAssocConst(assoc) }
-
-    public open fun visitConstraintMut(constraint: Constraint) { visitConstraint(constraint) }
-
-    public open fun visitTypeParamBoundMut(bound: TypeParamBound) { visitTypeParamBound(bound) }
-
-    public open fun visitTraitBoundMut(bound: TypeParamBound.Trait) { visitTraitBound(bound) }
-
-    public open fun visitTraitBoundModifierMut(modifier: TraitBoundModifier) { visitTraitBoundModifier(modifier) }
-
-    public open fun visitBinOpMut(op: BinOp) { visitBinOp(op) }
-
-    public open fun visitBoundLifetimesMut(boundLifetimes: BoundLifetimes) { visitBoundLifetimes(boundLifetimes) }
-
-    public open fun visitCapturedParamMut(param: CapturedParam) { visitCapturedParam(param) }
-
-    public open fun visitPathSegmentMut(segment: PathSegment) { visitPathSegment(segment) }
-
-    public open fun visitArmMut(arm: Arm) { visitArm(arm) }
-
-    public open fun visitElseExprMut(elseExpr: ElseExpr) { visitElseExpr(elseExpr) }
-
-    public open fun visitFieldPatMut(fieldPat: FieldPat) { visitFieldPat(fieldPat) }
-
-    public open fun visitFieldValueMut(fieldValue: FieldValue) { visitFieldValue(fieldValue) }
-
-    public open fun visitGenericParamMut(param: GenericParam) { visitGenericParam(param) }
-
-    public open fun visitFieldMut(field: Field) { visitField(field) }
-
-    public open fun visitFieldMutabilityMut(fieldMutability: FieldMutability) { visitFieldMutability(fieldMutability) }
-
-    public open fun visitFieldsMut(fields: Fields) { visitFields(fields) }
-
-    public open fun visitFieldsNamedMut(fields: FieldsNamed) { visitFieldsNamed(fields) }
-
-    public open fun visitFieldsUnnamedMut(fields: FieldsUnnamed) { visitFieldsUnnamed(fields) }
-
-    public open fun visitImplItemMut(item: ImplItem) { visitImplItem(item) }
-
-    public open fun visitImplItemConstMut(item: ImplItem.Const) { visitImplItemConst(item) }
-
-    public open fun visitImplItemFnMut(item: ImplItem.Fn) { visitImplItemFn(item) }
-
-    public open fun visitImplItemMacroMut(item: ImplItem.Macro) { visitImplItemMacro(item) }
-
-    public open fun visitImplItemTypeMut(item: ImplItem.AssocType) { visitImplItemType(item) }
-
-    public open fun visitForeignItemMut(item: ForeignItem) { visitForeignItem(item) }
-
-    public open fun visitForeignItemFnMut(item: ForeignItem.Fn) { visitForeignItemFn(item) }
-
-    public open fun visitForeignItemMacroMut(item: ForeignItem.Macro) { visitForeignItemMacro(item) }
-
-    public open fun visitForeignItemStaticMut(item: ForeignItem.Static) { visitForeignItemStatic(item) }
-
-    public open fun visitForeignItemTypeMut(item: ForeignItem.ItemType) { visitForeignItemType(item) }
-
-    public open fun visitImplRestrictionMut(restriction: ImplRestriction) { visitImplRestriction(restriction) }
-
-    public open fun visitItemConstMut(item: Item.Const) { visitItemConst(item) }
-
-    public open fun visitItemEnumMut(item: Item.Enum) { visitItemEnum(item) }
-
-    public open fun visitItemExternCrateMut(item: Item.ExternCrate) { visitItemExternCrate(item) }
-
-    public open fun visitItemFnMut(item: Item.Fn) { visitItemFn(item) }
-
-    public open fun visitItemForeignModMut(item: Item.ForeignMod) { visitItemForeignMod(item) }
-
-    public open fun visitItemImplMut(item: Item.Impl) { visitItemImpl(item) }
-
-    public open fun visitItemMacroMut(item: Item.Macro) { visitItemMacro(item) }
-
-    public open fun visitItemModMut(item: Item.Mod) { visitItemMod(item) }
-
-    public open fun visitItemStaticMut(item: Item.Static) { visitItemStatic(item) }
-
-    public open fun visitItemStructMut(item: Item.Struct) { visitItemStruct(item) }
-
-    public open fun visitItemTraitMut(item: Item.Trait) { visitItemTrait(item) }
-
-    public open fun visitItemTraitAliasMut(item: Item.TraitAlias) { visitItemTraitAlias(item) }
-
-    public open fun visitItemTypeMut(item: Item.ItemType) { visitItemType(item) }
-
-    public open fun visitItemUnionMut(item: Item.Union) { visitItemUnion(item) }
-
-    public open fun visitItemUseMut(item: Item.Use) { visitItemUse(item) }
-
-    public open fun visitStaticMutabilityMut(mutability: StaticMutability) { visitStaticMutability(mutability) }
-
-    public open fun visitModContentMut(modContent: ModContent) { visitModContent(modContent) }
-
-    public open fun visitLocalInitMut(init: LocalInit) { visitLocalInit(init) }
-
-    public open fun visitMemberMut(member: Member) { visitMember(member) }
-
-    public open fun visitQSelfMut(qself: QSelf) { visitQSelf(qself) }
-
-    public open fun visitPathTraitMut(pathTrait: PathTrait) { visitPathTrait(pathTrait) }
-
-    public open fun visitTraitItemMut(item: TraitItem) { visitTraitItem(item) }
-
-    public open fun visitTraitItemConstMut(item: TraitItem.Const) { visitTraitItemConst(item) }
-
-    public open fun visitTraitItemFnMut(item: TraitItem.Fn) { visitTraitItemFn(item) }
-
-    public open fun visitTraitItemMacroMut(item: TraitItem.Macro) { visitTraitItemMacro(item) }
-
-    public open fun visitTraitItemTypeMut(item: TraitItem.AssocType) { visitTraitItemType(item) }
-
-    public open fun visitUseTreeMut(useTree: UseTree) { visitUseTree(useTree) }
-
-    public open fun visitUseGlobMut(useTree: UseTree.Glob) { visitUseGlob(useTree) }
-
-    public open fun visitUseGroupMut(useTree: UseTree.Group) { visitUseGroup(useTree) }
-
-    public open fun visitUseNameMut(useTree: UseTree.Name) { visitUseName(useTree) }
-
-    public open fun visitUsePathMut(useTree: UseTree.Path) { visitUsePath(useTree) }
-
-    public open fun visitUseRenameMut(useTree: UseTree.Name) { visitUseRename(useTree) }
-
-    public open fun visitVariadicMut(variadic: Variadic) { visitVariadic(variadic) }
-
-    public open fun visitVariantMut(variant: Variant) { visitVariant(variant) }
-
-    public open fun visitVisibilityMut(visibility: Visibility) { visitVisibility(visibility) }
-
-    public open fun visitWhereClauseMut(whereClause: WhereClause) { visitWhereClause(whereClause) }
-
-    public open fun visitWherePredicateMut(wherePredicate: WherePredicate) { visitWherePredicate(wherePredicate) }
+    public open fun visitDataMut(d: Data) {
+        visitData(d)
+    }
+
+    public open fun visitDataEnumMut(d: DataEnum) {
+        visitDataEnum(d)
+    }
+
+    public open fun visitDataStructMut(d: DataStruct) {
+        visitDataStruct(d)
+    }
+
+    public open fun visitDataUnionMut(d: DataUnion) {
+        visitDataUnion(d)
+    }
+
+    public open fun visitDeriveInputMut(di: DeriveInput) {
+        visitDeriveInput(di)
+    }
+
+    public open fun visitBlockMut(block: Block) {
+        visitBlock(block)
+    }
+
+    public open fun visitAttributesMut(attrs: List<Attribute>) {
+        visitAttributes(attrs)
+    }
+
+    public open fun visitSignatureMut(sig: Signature) {
+        visitSignature(sig)
+    }
+
+    public open fun visitAbiMut(a: Abi) {
+        visitAbi(a)
+    }
+
+    public open fun visitReturnTypeMut(rt: ReturnType) {
+        visitReturnType(rt)
+    }
+
+    public open fun visitFnArgMut(arg: FnArg) {
+        visitFnArg(arg)
+    }
+
+    public open fun visitReceiverMut(receiver: FnArg.Receiver) {
+        visitReceiver(receiver)
+    }
+
+    public open fun visitPatTypeMut(patType: PatType) {
+        visitPatType(patType)
+    }
+
+    public open fun visitPatIdentMut(patIdent: Pat.Ident) {
+        visitPatIdent(patIdent)
+    }
+
+    public open fun visitTypePathMut(typePath: SynType.Path) {
+        visitTypePath(typePath)
+    }
+
+    public open fun visitTypeReferenceMut(ty: SynType.Reference) {
+        visitTypeReference(ty)
+    }
+
+    public open fun visitTypeArrayMut(ty: SynType.Array) {
+        visitTypeArray(ty)
+    }
+
+    public open fun visitTypeGroupMut(ty: SynType.Group) {
+        visitTypeGroup(ty)
+    }
+
+    public open fun visitTypeImplTraitMut(ty: SynType.ImplTrait) {
+        visitTypeImplTrait(ty)
+    }
+
+    public open fun visitTypeInferMut(ty: SynType.Infer) {
+        visitTypeInfer(ty)
+    }
+
+    public open fun visitTypeMacroMut(ty: SynType.Macro) {
+        visitTypeMacro(ty)
+    }
+
+    public open fun visitTypeNeverMut(ty: SynType.Never) {
+        visitTypeNever(ty)
+    }
+
+    public open fun visitTypePtrMut(ty: SynType.Ptr) {
+        visitTypePtr(ty)
+    }
+
+    public open fun visitPointerMutabilityMut(mutability: PointerMutability) {
+        visitPointerMutability(mutability)
+    }
+
+    public open fun visitTypeBareFnMut(ty: SynType.BareFn) {
+        visitTypeBareFn(ty)
+    }
+
+    public open fun visitBareFnArgMut(arg: BareFnArg) {
+        visitBareFnArg(arg)
+    }
+
+    public open fun visitBareVariadicMut(variadic: BareVariadic) {
+        visitBareVariadic(variadic)
+    }
+
+    public open fun visitTypeParenMut(ty: SynType.Paren) {
+        visitTypeParen(ty)
+    }
+
+    public open fun visitTypeSliceMut(ty: SynType.Slice) {
+        visitTypeSlice(ty)
+    }
+
+    public open fun visitTypeTraitObjectMut(ty: SynType.TraitObject) {
+        visitTypeTraitObject(ty)
+    }
+
+    public open fun visitTypeTupleMut(ty: SynType.Tuple) {
+        visitTypeTuple(ty)
+    }
+
+    public open fun visitExprPathMut(exprPath: Expr.Path) {
+        visitExprPath(exprPath)
+    }
+
+    public open fun visitMacroMut(mac: Macro) {
+        visitMacro(mac)
+    }
+
+    public open fun visitPathArgumentsMut(pathArgs: PathArguments) {
+        visitPathArguments(pathArgs)
+    }
+
+    public open fun visitAngleBracketedGenericArgumentsMut(pathArgs: PathArguments.AngleBracketed) {
+        visitAngleBracketedGenericArguments(pathArgs)
+    }
+
+    public open fun visitParenthesizedGenericArgumentsMut(pathArgs: PathArguments.Parenthesized) {
+        visitParenthesizedGenericArguments(pathArgs)
+    }
+
+    public open fun visitGenericArgumentMut(genArg: GenericArgument) {
+        visitGenericArgument(genArg)
+    }
+
+    public open fun visitAssocTypeMut(assoc: AssocType) {
+        visitAssocType(assoc)
+    }
+
+    public open fun visitAssocConstMut(assoc: AssocConst) {
+        visitAssocConst(assoc)
+    }
+
+    public open fun visitConstraintMut(constraint: Constraint) {
+        visitConstraint(constraint)
+    }
+
+    public open fun visitTypeParamBoundMut(bound: TypeParamBound) {
+        visitTypeParamBound(bound)
+    }
+
+    public open fun visitTraitBoundMut(bound: TypeParamBound.Trait) {
+        visitTraitBound(bound)
+    }
+
+    public open fun visitTraitBoundModifierMut(modifier: TraitBoundModifier) {
+        visitTraitBoundModifier(modifier)
+    }
+
+    public open fun visitBinOpMut(op: BinOp) {
+        visitBinOp(op)
+    }
+
+    public open fun visitBoundLifetimesMut(boundLifetimes: BoundLifetimes) {
+        visitBoundLifetimes(boundLifetimes)
+    }
+
+    public open fun visitCapturedParamMut(param: CapturedParam) {
+        visitCapturedParam(param)
+    }
+
+    public open fun visitPathSegmentMut(segment: PathSegment) {
+        visitPathSegment(segment)
+    }
+
+    public open fun visitArmMut(arm: Arm) {
+        visitArm(arm)
+    }
+
+    public open fun visitElseExprMut(elseExpr: ElseExpr) {
+        visitElseExpr(elseExpr)
+    }
+
+    public open fun visitFieldPatMut(fieldPat: FieldPat) {
+        visitFieldPat(fieldPat)
+    }
+
+    public open fun visitFieldValueMut(fieldValue: FieldValue) {
+        visitFieldValue(fieldValue)
+    }
+
+    public open fun visitGenericParamMut(param: GenericParam) {
+        visitGenericParam(param)
+    }
+
+    public open fun visitFieldMut(field: Field) {
+        visitField(field)
+    }
+
+    public open fun visitFieldMutabilityMut(fieldMutability: FieldMutability) {
+        visitFieldMutability(fieldMutability)
+    }
+
+    public open fun visitFieldsMut(fields: Fields) {
+        visitFields(fields)
+    }
+
+    public open fun visitFieldsNamedMut(fields: FieldsNamed) {
+        visitFieldsNamed(fields)
+    }
+
+    public open fun visitFieldsUnnamedMut(fields: FieldsUnnamed) {
+        visitFieldsUnnamed(fields)
+    }
+
+    public open fun visitImplItemMut(item: ImplItem) {
+        visitImplItem(item)
+    }
+
+    public open fun visitImplItemConstMut(item: ImplItem.Const) {
+        visitImplItemConst(item)
+    }
+
+    public open fun visitImplItemFnMut(item: ImplItem.Fn) {
+        visitImplItemFn(item)
+    }
+
+    public open fun visitImplItemMacroMut(item: ImplItem.Macro) {
+        visitImplItemMacro(item)
+    }
+
+    public open fun visitImplItemTypeMut(item: ImplItem.AssocType) {
+        visitImplItemType(item)
+    }
+
+    public open fun visitForeignItemMut(item: ForeignItem) {
+        visitForeignItem(item)
+    }
+
+    public open fun visitForeignItemFnMut(item: ForeignItem.Fn) {
+        visitForeignItemFn(item)
+    }
+
+    public open fun visitForeignItemMacroMut(item: ForeignItem.Macro) {
+        visitForeignItemMacro(item)
+    }
+
+    public open fun visitForeignItemStaticMut(item: ForeignItem.Static) {
+        visitForeignItemStatic(item)
+    }
+
+    public open fun visitForeignItemTypeMut(item: ForeignItem.ItemType) {
+        visitForeignItemType(item)
+    }
+
+    public open fun visitImplRestrictionMut(restriction: ImplRestriction) {
+        visitImplRestriction(restriction)
+    }
+
+    public open fun visitItemConstMut(item: Item.Const) {
+        visitItemConst(item)
+    }
+
+    public open fun visitItemEnumMut(item: Item.Enum) {
+        visitItemEnum(item)
+    }
+
+    public open fun visitItemExternCrateMut(item: Item.ExternCrate) {
+        visitItemExternCrate(item)
+    }
+
+    public open fun visitItemFnMut(item: Item.Fn) {
+        visitItemFn(item)
+    }
+
+    public open fun visitItemForeignModMut(item: Item.ForeignMod) {
+        visitItemForeignMod(item)
+    }
+
+    public open fun visitItemImplMut(item: Item.Impl) {
+        visitItemImpl(item)
+    }
+
+    public open fun visitItemMacroMut(item: Item.Macro) {
+        visitItemMacro(item)
+    }
+
+    public open fun visitItemModMut(item: Item.Mod) {
+        visitItemMod(item)
+    }
+
+    public open fun visitItemStaticMut(item: Item.Static) {
+        visitItemStatic(item)
+    }
+
+    public open fun visitItemStructMut(item: Item.Struct) {
+        visitItemStruct(item)
+    }
+
+    public open fun visitItemTraitMut(item: Item.Trait) {
+        visitItemTrait(item)
+    }
+
+    public open fun visitItemTraitAliasMut(item: Item.TraitAlias) {
+        visitItemTraitAlias(item)
+    }
+
+    public open fun visitItemTypeMut(item: Item.ItemType) {
+        visitItemType(item)
+    }
+
+    public open fun visitItemUnionMut(item: Item.Union) {
+        visitItemUnion(item)
+    }
+
+    public open fun visitItemUseMut(item: Item.Use) {
+        visitItemUse(item)
+    }
+
+    public open fun visitStaticMutabilityMut(mutability: StaticMutability) {
+        visitStaticMutability(mutability)
+    }
+
+    public open fun visitModContentMut(modContent: ModContent) {
+        visitModContent(modContent)
+    }
+
+    public open fun visitLocalInitMut(init: LocalInit) {
+        visitLocalInit(init)
+    }
+
+    public open fun visitMemberMut(member: Member) {
+        visitMember(member)
+    }
+
+    public open fun visitQSelfMut(qself: QSelf) {
+        visitQSelf(qself)
+    }
+
+    public open fun visitPathTraitMut(pathTrait: PathTrait) {
+        visitPathTrait(pathTrait)
+    }
+
+    public open fun visitTraitItemMut(item: TraitItem) {
+        visitTraitItem(item)
+    }
+
+    public open fun visitTraitItemConstMut(item: TraitItem.Const) {
+        visitTraitItemConst(item)
+    }
+
+    public open fun visitTraitItemFnMut(item: TraitItem.Fn) {
+        visitTraitItemFn(item)
+    }
+
+    public open fun visitTraitItemMacroMut(item: TraitItem.Macro) {
+        visitTraitItemMacro(item)
+    }
+
+    public open fun visitTraitItemTypeMut(item: TraitItem.AssocType) {
+        visitTraitItemType(item)
+    }
+
+    public open fun visitUseTreeMut(useTree: UseTree) {
+        visitUseTree(useTree)
+    }
+
+    public open fun visitUseGlobMut(useTree: UseTree.Glob) {
+        visitUseGlob(useTree)
+    }
+
+    public open fun visitUseGroupMut(useTree: UseTree.Group) {
+        visitUseGroup(useTree)
+    }
+
+    public open fun visitUseNameMut(useTree: UseTree.Name) {
+        visitUseName(useTree)
+    }
+
+    public open fun visitUsePathMut(useTree: UseTree.Path) {
+        visitUsePath(useTree)
+    }
+
+    public open fun visitUseRenameMut(useTree: UseTree.Name) {
+        visitUseRename(useTree)
+    }
+
+    public open fun visitVariadicMut(variadic: Variadic) {
+        visitVariadic(variadic)
+    }
+
+    public open fun visitVariantMut(variant: Variant) {
+        visitVariant(variant)
+    }
+
+    public open fun visitVisibilityMut(visibility: Visibility) {
+        visitVisibility(visibility)
+    }
+
+    public open fun visitWhereClauseMut(whereClause: WhereClause) {
+        visitWhereClause(whereClause)
+    }
+
+    public open fun visitWherePredicateMut(wherePredicate: WherePredicate) {
+        visitWherePredicate(wherePredicate)
+    }
 }
