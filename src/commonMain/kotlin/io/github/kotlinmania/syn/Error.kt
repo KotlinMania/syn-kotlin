@@ -294,8 +294,10 @@ public class IntoIter internal constructor(
     override fun hasNext(): Boolean =
         errors.hasNext()
 
-    override fun next(): SynError =
-        errors.next()
+    override fun next(): SynError {
+        if (!hasNext()) throw NoSuchElementException()
+        return errors.next()
+    }
 }
 
 public class Iter internal constructor(
@@ -304,8 +306,10 @@ public class Iter internal constructor(
     override fun hasNext(): Boolean =
         errors.hasNext()
 
-    override fun next(): SynError =
-        errors.next()
+    override fun next(): SynError {
+        if (!hasNext()) throw NoSuchElementException()
+        return errors.next()
+    }
 }
 
 private data class ErrorMessage(

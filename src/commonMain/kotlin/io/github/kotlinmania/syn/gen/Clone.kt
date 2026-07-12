@@ -1,8 +1,8 @@
 // port-lint: source gen/clone.rs
 package io.github.kotlinmania.syn.gen
 
-import io.github.kotlinmania.syn.AndLifetime
 import io.github.kotlinmania.syn.Abi
+import io.github.kotlinmania.syn.AndLifetime
 import io.github.kotlinmania.syn.Arm
 import io.github.kotlinmania.syn.AsIdent
 import io.github.kotlinmania.syn.AssocConst
@@ -16,15 +16,14 @@ import io.github.kotlinmania.syn.Block
 import io.github.kotlinmania.syn.BoundLifetimes
 import io.github.kotlinmania.syn.CapturedParam
 import io.github.kotlinmania.syn.Constraint
-import io.github.kotlinmania.syn.copy
 import io.github.kotlinmania.syn.Data
 import io.github.kotlinmania.syn.DataEnum
 import io.github.kotlinmania.syn.DataStruct
 import io.github.kotlinmania.syn.DataUnion
 import io.github.kotlinmania.syn.DeriveInput
+import io.github.kotlinmania.syn.ElseExpr
 import io.github.kotlinmania.syn.EqExpr
 import io.github.kotlinmania.syn.EqSynType
-import io.github.kotlinmania.syn.ElseExpr
 import io.github.kotlinmania.syn.Expr
 import io.github.kotlinmania.syn.Field
 import io.github.kotlinmania.syn.FieldMutability
@@ -80,7 +79,7 @@ import io.github.kotlinmania.syn.Variant
 import io.github.kotlinmania.syn.Visibility
 import io.github.kotlinmania.syn.WhereClause
 import io.github.kotlinmania.syn.WherePredicate
-import io.github.kotlinmania.procmacro2.TokenStream
+import io.github.kotlinmania.syn.copy
 
 public fun Abi.clone(): Abi =
     Abi(externToken, name?.clone())

@@ -4,14 +4,14 @@ Based on AST analysis, here are the concrete next steps.
 
 ## Summary
 
-- **Files Present:** 53/55 (96.4%)
-- **Function parity:** 1078/1083 matched (target 3168) — 99.5%
-- **Class/type parity:** 111/121 matched (target 826) — 91.7%
-- **Combined symbol parity:** 1189/1204 matched (target 3994) — 98.8%
-- **Average inline-code cosine:** 0.54 (function body across 53 matched files)
-- **Average documentation cosine:** 0.29 (doc text across 53 matched files)
+- **Files Present:** 52/55 (94.5%)
+- **Function parity:** 1071/1083 matched (target 3383) — 98.9%
+- **Class/type parity:** 108/121 matched (target 823) — 89.3%
+- **Combined symbol parity:** 1179/1204 matched (target 4206) — 97.9%
+- **Average inline-code cosine:** 0.56 (function body across 52 matched files)
+- **Average documentation cosine:** 0.30 (doc text across 52 matched files)
 - **Cheat-zeroed Files:** 3
-- **Critical Issues:** 26 files with <0.60 function similarity
+- **Critical Issues:** 23 files with <0.60 function similarity
 
 ## Priority 1: Fix Incomplete High-Dependency Files
 
@@ -29,7 +29,7 @@ Based on AST analysis, here are the concrete next steps.
 - **Similarity:** 0.48 (needs 37% improvement)
 - **Dependencies:** 13
 - **Priority Score:** 13006805.0
-- **Functions:** 54/54 matched (target 305)
+- **Functions:** 54/54 matched (target 340)
 - **Missing functions:** _none_
 - **Types:** 14/14 matched (target 36)
 - **Missing types:** _none_
@@ -39,7 +39,7 @@ Based on AST analysis, here are the concrete next steps.
 - **Similarity:** 0.47 (needs 38% improvement)
 - **Dependencies:** 10
 - **Priority Score:** 10006605.0
-- **Functions:** 65/65 matched (target 212)
+- **Functions:** 65/65 matched (target 238)
 - **Missing functions:** _none_
 - **Types:** 1/1 matched (target 57)
 - **Missing types:** _none_
@@ -72,7 +72,7 @@ Every matched file is listed below with function and type symbol parity.
 - **Similarity:** 0.88
 - **Dependents:** 14
 - **Priority Score:** 14000601.0
-- **Functions:** 6/6 matched (target 20)
+- **Functions:** 6/6 matched (target 21)
 - **Missing functions:** _none_
 - **Types:** 0/0 matched (target 3)
 - **Missing types:** _none_
@@ -83,7 +83,7 @@ Every matched file is listed below with function and type symbol parity.
 - **Similarity:** 0.48
 - **Dependents:** 13
 - **Priority Score:** 13006805.0
-- **Functions:** 54/54 matched (target 305)
+- **Functions:** 54/54 matched (target 340)
 - **Missing functions:** _none_
 - **Types:** 14/14 matched (target 36)
 - **Missing types:** _none_
@@ -94,7 +94,7 @@ Every matched file is listed below with function and type symbol parity.
 - **Similarity:** 0.47
 - **Dependents:** 10
 - **Priority Score:** 10006605.0
-- **Functions:** 65/65 matched (target 212)
+- **Functions:** 65/65 matched (target 238)
 - **Missing functions:** _none_
 - **Types:** 1/1 matched (target 57)
 - **Missing types:** _none_
@@ -104,9 +104,9 @@ Every matched file is listed below with function and type symbol parity.
 - **Target:** `syn.Path`
 - **Similarity:** 0.76
 - **Dependents:** 9
-- **Priority Score:** 9002802.0
-- **Functions:** 26/26 matched (target 67)
-- **Missing functions:** _none_
+- **Priority Score:** 9012802.0
+- **Functions:** 25/26 matched (target 66)
+- **Missing functions:** `clone`
 - **Types:** 2/2 matched (target 28)
 - **Missing types:** _none_
 - **Lint issues:** 1
@@ -114,11 +114,11 @@ Every matched file is listed below with function and type symbol parity.
 ### 6. lifetime
 
 - **Target:** `syn.Lifetime`
-- **Similarity:** 0.65
+- **Similarity:** 0.63
 - **Dependents:** 8
-- **Priority Score:** 8001203.5
-- **Functions:** 11/11 matched (target 18)
-- **Missing functions:** _none_
+- **Priority Score:** 8011203.5
+- **Functions:** 10/11 matched (target 17)
+- **Missing functions:** `clone`
 - **Types:** 1/1 matched (target 3)
 - **Missing types:** _none_
 
@@ -139,7 +139,7 @@ Every matched file is listed below with function and type symbol parity.
 - **Similarity:** 0.56
 - **Dependents:** 5
 - **Priority Score:** 5004204.5
-- **Functions:** 38/38 matched (target 138)
+- **Functions:** 38/38 matched (target 146)
 - **Missing functions:** _none_
 - **Types:** 4/4 matched (target 36)
 - **Missing types:** _none_
@@ -169,11 +169,11 @@ Every matched file is listed below with function and type symbol parity.
 ### 11. error
 
 - **Target:** `syn.Error`
-- **Similarity:** 0.50
+- **Similarity:** 0.46
 - **Dependents:** 3
-- **Priority Score:** 3002205.0
-- **Functions:** 14/14 matched (target 40)
-- **Missing functions:** _none_
+- **Priority Score:** 3012205.5
+- **Functions:** 13/14 matched (target 39)
+- **Missing functions:** `from`
 - **Types:** 8/8 matched (target 12)
 - **Missing types:** _none_
 
@@ -255,6 +255,7 @@ Every matched file is listed below with function and type symbol parity.
 - **Missing functions:** _none_
 - **Types:** 1/1 matched
 - **Missing types:** _none_
+- **Lint issues:** 24
 
 ### 19. gen.visit
 
@@ -294,7 +295,7 @@ Every matched file is listed below with function and type symbol parity.
 ### 22. ty
 
 - **Target:** `syn.Type`
-- **Similarity:** 0.53
+- **Similarity:** 0.52
 - **Dependents:** 1
 - **Priority Score:** 1000704.8
 - **Functions:** 7/7 matched (target 56)
@@ -373,10 +374,10 @@ Every matched file is listed below with function and type symbol parity.
 ### 29. gen.clone
 
 - **Target:** `gen.Clone`
-- **Similarity:** 0.05
+- **Similarity:** 0.76
 - **Dependents:** 1
-- **Priority Score:** 1000109.5
-- **Functions:** 1/1 matched (target 29)
+- **Priority Score:** 1000102.4
+- **Functions:** 1/1 matched (target 190)
 - **Missing functions:** _none_
 - **Types:** 0/0 matched
 - **Missing types:** _none_
@@ -415,19 +416,7 @@ Every matched file is listed below with function and type symbol parity.
 - **Types:** 3/8 matched (target 4)
 - **Missing types:** `bool`, `str`, `Span`, `TokenStream`, `private`
 
-### 33. drops
-
-- **Target:** `syn.Drops`
-- **Similarity:** 0.45
-- **Dependents:** 0
-- **Priority Score:** 20905.5
-- **Functions:** 4/5 matched (target 9)
-- **Missing functions:** `test_needs_drop`
-- **Types:** 3/4 matched (target 3)
-- **Missing types:** `Target`
-- **Tests:** 0/1 matched
-
-### 34. parse_quote
+### 33. parse_quote
 
 - **Target:** `syn.ParseQuote`
 - **Similarity:** 0.00
@@ -438,7 +427,7 @@ Every matched file is listed below with function and type symbol parity.
 - **Types:** 0/1 matched (target 0)
 - **Missing types:** `ParseQuote`
 
-### 35. buffer
+### 34. buffer
 
 - **Target:** `syn.Buffer`
 - **Similarity:** 0.73
@@ -449,7 +438,7 @@ Every matched file is listed below with function and type symbol parity.
 - **Types:** 4/4 matched (target 10)
 - **Missing types:** _none_
 
-### 36. fixup
+### 35. fixup
 
 - **Target:** `syn.Fixup`
 - **Similarity:** 0.65
@@ -461,7 +450,7 @@ Every matched file is listed below with function and type symbol parity.
 - **Missing types:** _none_
 - **Lint issues:** 1
 
-### 37. data
+### 36. data
 
 - **Target:** `syn.Data`
 - **Similarity:** 0.62
@@ -473,7 +462,7 @@ Every matched file is listed below with function and type symbol parity.
 - **Missing types:** _none_
 - **Lint issues:** 1
 
-### 38. ext
+### 37. ext
 
 - **Target:** `syn.Ext`
 - **Similarity:** 0.82
@@ -484,7 +473,7 @@ Every matched file is listed below with function and type symbol parity.
 - **Types:** 7/7 matched (target 8)
 - **Missing types:** _none_
 
-### 39. stmt
+### 38. stmt
 
 - **Target:** `syn.Stmt`
 - **Similarity:** 0.64
@@ -495,7 +484,7 @@ Every matched file is listed below with function and type symbol parity.
 - **Types:** 1/1 matched (target 9)
 - **Missing types:** _none_
 
-### 40. mac
+### 39. mac
 
 - **Target:** `syn.Mac`
 - **Similarity:** 0.70
@@ -506,7 +495,7 @@ Every matched file is listed below with function and type symbol parity.
 - **Types:** 0/0 matched (target 1)
 - **Missing types:** _none_
 
-### 41. meta
+### 40. meta
 
 - **Target:** `syn.Meta`
 - **Similarity:** 0.66
@@ -517,7 +506,7 @@ Every matched file is listed below with function and type symbol parity.
 - **Types:** 1/1 matched
 - **Missing types:** _none_
 
-### 42. thread
+### 41. thread
 
 - **Target:** `syn.Thread`
 - **Similarity:** 0.44
@@ -528,7 +517,7 @@ Every matched file is listed below with function and type symbol parity.
 - **Types:** 1/1 matched
 - **Missing types:** _none_
 
-### 43. discouraged
+### 42. discouraged
 
 - **Target:** `syn.Discouraged`
 - **Similarity:** 0.30
@@ -539,7 +528,7 @@ Every matched file is listed below with function and type symbol parity.
 - **Types:** 2/2 matched (target 4)
 - **Missing types:** _none_
 
-### 44. tt
+### 43. tt
 
 - **Target:** `syn.Tt`
 - **Similarity:** 0.52
@@ -550,7 +539,7 @@ Every matched file is listed below with function and type symbol parity.
 - **Types:** 2/2 matched
 - **Missing types:** _none_
 
-### 45. restriction
+### 44. restriction
 
 - **Target:** `syn.Restriction`
 - **Similarity:** 0.64
@@ -562,18 +551,7 @@ Every matched file is listed below with function and type symbol parity.
 - **Missing types:** _none_
 - **Lint issues:** 2
 
-### 46. whitespace
-
-- **Target:** `syn.Whitespace`
-- **Similarity:** 0.51
-- **Dependents:** 0
-- **Priority Score:** 204.9
-- **Functions:** 2/2 matched (target 6)
-- **Missing functions:** _none_
-- **Types:** 0/0 matched
-- **Missing types:** _none_
-
-### 47. op
+### 45. op
 
 - **Target:** `syn.Op`
 - **Similarity:** 0.68
@@ -584,7 +562,7 @@ Every matched file is listed below with function and type symbol parity.
 - **Types:** 0/0 matched (target 35)
 - **Missing types:** _none_
 
-### 48. print
+### 46. print
 
 - **Target:** `syn.Print`
 - **Similarity:** 0.86
@@ -595,7 +573,18 @@ Every matched file is listed below with function and type symbol parity.
 - **Types:** 1/1 matched (target 2)
 - **Missing types:** _none_
 
-### 49. gen.eq
+### 47. whitespace
+
+- **Target:** `syn.Whitespace`
+- **Similarity:** 0.88
+- **Dependents:** 0
+- **Priority Score:** 201.2
+- **Functions:** 2/2 matched
+- **Missing functions:** _none_
+- **Types:** 0/0 matched
+- **Missing types:** _none_
+
+### 48. gen.eq
 
 - **Target:** `gen.Eq`
 - **Similarity:** 0.10
@@ -606,7 +595,7 @@ Every matched file is listed below with function and type symbol parity.
 - **Types:** 0/0 matched
 - **Missing types:** _none_
 
-### 50. gen.hash
+### 49. gen.hash
 
 - **Target:** `gen.Hash`
 - **Similarity:** 0.15
@@ -617,7 +606,7 @@ Every matched file is listed below with function and type symbol parity.
 - **Types:** 0/0 matched (target 1)
 - **Missing types:** _none_
 
-### 51. custom_keyword
+### 50. custom_keyword
 
 - **Target:** `syn.CustomKeyword [ZERO]`
 - **Similarity:** 0.00
@@ -628,7 +617,7 @@ Every matched file is listed below with function and type symbol parity.
 - **Types:** 0/0 matched (target 2)
 - **Missing types:** _none_
 
-### 52. parse_macro_input
+### 51. parse_macro_input
 
 - **Target:** `syn.ParseMacroInput [ZERO]`
 - **Similarity:** 0.00
@@ -639,7 +628,7 @@ Every matched file is listed below with function and type symbol parity.
 - **Types:** 0/0 matched (target 3)
 - **Missing types:** _none_
 
-### 53. custom_punctuation
+### 52. custom_punctuation
 
 - **Target:** `syn.CustomPunctuation [ZERO]`
 - **Similarity:** 0.00
