@@ -121,6 +121,7 @@ public sealed class Item : ToTokens {
             enumToken.toTokens(tokens)
             ident.toTokens(tokens)
             generics.toTokens(tokens)
+            generics.whereClause?.toTokens(tokens)
             braceToken.surround(tokens) { inner ->
                 variants.toTokens(inner)
             }
@@ -232,8 +233,21 @@ public sealed class Item : ToTokens {
             structToken.toTokens(tokens)
             ident.toTokens(tokens)
             generics.toTokens(tokens)
-            fields.toTokens(tokens)
-            semiToken?.toTokens(tokens)
+            when (val fields = fields) {
+                is Fields.Named -> {
+                    generics.whereClause?.toTokens(tokens)
+                    fields.toTokens(tokens)
+                }
+                is Fields.Unnamed -> {
+                    fields.toTokens(tokens)
+                    generics.whereClause?.toTokens(tokens)
+                    TokensOrDefault(semiToken, Semi::default).toTokens(tokens)
+                }
+                Fields.Unit -> {
+                    generics.whereClause?.toTokens(tokens)
+                    TokensOrDefault(semiToken, Semi::default).toTokens(tokens)
+                }
+            }
         }
     }
 
