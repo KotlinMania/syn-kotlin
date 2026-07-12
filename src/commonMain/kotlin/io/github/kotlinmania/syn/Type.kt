@@ -291,7 +291,7 @@ public sealed class SynType : ToTokens {
 }
 
 public data class BareFnArg(
-    public var attrs: MutableList<Attribute>,
+    public var attrs: List<Attribute>,
     public var name: IdentColon?,
     public var ty: SynType,
 ) : ToTokens {
@@ -315,7 +315,7 @@ public data class BareFnArg(
 
 /** The variadic argument of a function pointer. */
 public data class BareVariadic(
-    public var attrs: MutableList<Attribute>,
+    public var attrs: List<Attribute>,
     public var name: IdentColon?,
     public var dots: io.github.kotlinmania.syn.token.DotDotDot,
     public var comma: io.github.kotlinmania.syn.token.Comma?,
@@ -372,7 +372,7 @@ internal fun parseBareFnArg(
 
 internal fun parseBareFnArg(
     input: ParseStream,
-    attrs: MutableList<Attribute>,
+    attrs: List<Attribute>,
     allowSelf: Boolean,
 ): SynResult<BareFnArg> {
     var begin = input.fork()
@@ -426,7 +426,7 @@ internal fun parseBareFnArg(
 
 internal fun parseBareVariadic(
     input: ParseStream,
-    attrs: MutableList<Attribute>,
+    attrs: List<Attribute>,
 ): SynResult<BareVariadic> {
     var name =
         if (input.peek(IdentPeek) || input.peek(UnderscorePeek)) {

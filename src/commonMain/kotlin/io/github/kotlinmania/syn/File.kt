@@ -11,8 +11,8 @@ import io.github.kotlinmania.quote.ToTokens
  */
 public data class File(
     public var shebang: String?,
-    public var attrs: MutableList<Attribute>,
-    public var items: MutableList<Item>,
+    public var attrs: List<Attribute>,
+    public var items: List<Item>,
 ) : ToTokens {
     override fun toTokens(tokens: TokenStream) {
         for (attr in attrs) attr.toTokens(tokens)
@@ -42,7 +42,7 @@ public fun parseFile(content: String): SynResult<File> {
 
     var shebang: String? = null
     if (source.startsWith("#!")) {
-        var rest = source.length - skipWhitespace(source.substring(2)).length
+        var rest = source.length - skip(source.substring(2)).length
         if (rest < source.length && source[rest] == '[') {
             source = "#!" + source.substring(rest)
         } else {

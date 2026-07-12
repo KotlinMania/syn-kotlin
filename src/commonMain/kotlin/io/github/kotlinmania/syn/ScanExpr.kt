@@ -173,7 +173,7 @@ internal fun checkCastImpl(input: ParseStream): SynResult<Unit> {
     return SynResult.failure(input.error("casts cannot be followed by $kind"))
 }
 
-internal fun exprAttrsImpl(input: ParseStream): SynResult<MutableList<Attribute>> {
+internal fun exprAttrsImpl(input: ParseStream): SynResult<List<Attribute>> {
     val attrs = mutableListOf<Attribute>()
     while (!startsWithNoneGroup(input) && input.peek(PoundPeek) && !input.peek2(NotPeek)) {
         attrs.add(AttributeParse.parse(input).getOrElse { return SynResult.failure(it) })
@@ -301,7 +301,7 @@ internal fun trailerHelperImpl(input: ParseStream, e: Expr, allowStruct: Boolean
             }
             content.finishChildBuffer()
             current = Expr.Call(mutableListOf(), current, paren, args)
-        } else if (input.peek(DotPeek) && !input.peek2(DotDotPeek) && current !is Expr.Range) {
+        } else if (input.peek(DotPeek) && !input.peek(DotDotPeek) && current !is Expr.Range) {
             val dotResult = DotParse.parse(input)
             if (dotResult.isFailure) return dotResult.asFailure()
             val dotToken = dotResult.getOrThrow()

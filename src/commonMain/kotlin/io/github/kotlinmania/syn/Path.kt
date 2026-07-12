@@ -720,8 +720,9 @@ public object PathPeek : Peek {
 
 public object PathSepPeek : Peek {
     override fun peek(cursor: Cursor): Boolean {
-        var (punct, _) = cursor.punct() ?: return false
-        return punct.asChar() == ':' && punct.spacing() == Spacing.Joint
+        val (first, rest) = cursor.punct() ?: return false
+        if (first.asChar() != ':' || first.spacing() != Spacing.Joint) return false
+        return rest.punct()?.first?.asChar() == ':'
     }
 
     override fun display(): String = "`::`"
@@ -738,8 +739,7 @@ public object PathSepParse {
             if (second == null || second.first.asChar() != ':') {
                 return@step SynResult.failure(cursor.error("expected `::`"))
             }
-            val span = punct.span()
-            SynResult.success(PathSep.from(span) to second.second)
+            SynResult.success(PathSep.from(listOf(punct.span(), second.first.span())) to second.second)
         }
 }
 

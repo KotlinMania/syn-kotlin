@@ -1349,7 +1349,7 @@ public object TypeofParse {
 public object AndPeek : Peek {
     override fun peek(cursor: Cursor): Boolean {
         val (punct, _) = cursor.punct() ?: return false
-        return punct.asChar() == '&' && punct.spacing() == Spacing.Alone
+        return punct.asChar() == '&'
     }
 
     override fun display(): String = "`&`"
@@ -1362,7 +1362,7 @@ public object AndParse {
             val (punct, rest) =
                 cursor.punct()
                     ?: return@step SynResult.failure(cursor.error("expected `&`"))
-            if (punct.asChar() != '&' || punct.spacing() != Spacing.Alone) {
+            if (punct.asChar() != '&') {
                 return@step SynResult.failure(cursor.error("expected `&`"))
             }
             SynResult.success(And.from(punct.span()) to rest)
@@ -1373,7 +1373,7 @@ public object AndParse {
 public object AtPeek : Peek {
     override fun peek(cursor: Cursor): Boolean {
         val (punct, _) = cursor.punct() ?: return false
-        return punct.asChar() == '@' && punct.spacing() == Spacing.Alone
+        return punct.asChar() == '@'
     }
 
     override fun display(): String = "`@`"
@@ -1386,7 +1386,7 @@ public object AtParse {
             val (punct, rest) =
                 cursor.punct()
                     ?: return@step SynResult.failure(cursor.error("expected `@`"))
-            if (punct.asChar() != '@' || punct.spacing() != Spacing.Alone) {
+            if (punct.asChar() != '@') {
                 return@step SynResult.failure(cursor.error("expected `@`"))
             }
             SynResult.success(At.from(punct.span()) to rest)
@@ -1397,7 +1397,7 @@ public object AtParse {
 public object CaretPeek : Peek {
     override fun peek(cursor: Cursor): Boolean {
         val (punct, _) = cursor.punct() ?: return false
-        return punct.asChar() == '^' && punct.spacing() == Spacing.Alone
+        return punct.asChar() == '^'
     }
 
     override fun display(): String = "`^`"
@@ -1410,7 +1410,7 @@ public object CaretParse {
             val (punct, rest) =
                 cursor.punct()
                     ?: return@step SynResult.failure(cursor.error("expected `^`"))
-            if (punct.asChar() != '^' || punct.spacing() != Spacing.Alone) {
+            if (punct.asChar() != '^') {
                 return@step SynResult.failure(cursor.error("expected `^`"))
             }
             SynResult.success(Caret.from(punct.span()) to rest)
@@ -1421,7 +1421,7 @@ public object CaretParse {
 public object ColonPeek : Peek {
     override fun peek(cursor: Cursor): Boolean {
         val (punct, _) = cursor.punct() ?: return false
-        return punct.asChar() == ':' && punct.spacing() == Spacing.Alone
+        return punct.asChar() == ':'
     }
 
     override fun display(): String = "`:`"
@@ -1434,7 +1434,7 @@ public object ColonParse {
             val (punct, rest) =
                 cursor.punct()
                     ?: return@step SynResult.failure(cursor.error("expected `:`"))
-            if (punct.asChar() != ':' || punct.spacing() != Spacing.Alone) {
+            if (punct.asChar() != ':') {
                 return@step SynResult.failure(cursor.error("expected `:`"))
             }
             SynResult.success(Colon.from(punct.span()) to rest)
@@ -1445,7 +1445,7 @@ public object ColonParse {
 public object DollarPeek : Peek {
     override fun peek(cursor: Cursor): Boolean {
         val (punct, _) = cursor.punct() ?: return false
-        return punct.asChar() == '$' && punct.spacing() == Spacing.Alone
+        return punct.asChar() == '$'
     }
 
     override fun display(): String = "`$`"
@@ -1458,7 +1458,7 @@ public object DollarParse {
             val (punct, rest) =
                 cursor.punct()
                     ?: return@step SynResult.failure(cursor.error("expected `$`"))
-            if (punct.asChar() != '$' || punct.spacing() != Spacing.Alone) {
+            if (punct.asChar() != '$') {
                 return@step SynResult.failure(cursor.error("expected `$`"))
             }
             SynResult.success(Dollar.from(punct.span()) to rest)
@@ -1469,7 +1469,7 @@ public object DollarParse {
 public object DotPeek : Peek {
     override fun peek(cursor: Cursor): Boolean {
         val (punct, _) = cursor.punct() ?: return false
-        return punct.asChar() == '.' && punct.spacing() == Spacing.Alone
+        return punct.asChar() == '.'
     }
 
     override fun display(): String = "`.`"
@@ -1482,7 +1482,7 @@ public object DotParse {
             val (punct, rest) =
                 cursor.punct()
                     ?: return@step SynResult.failure(cursor.error("expected `.`"))
-            if (punct.asChar() != '.' || punct.spacing() != Spacing.Alone) {
+            if (punct.asChar() != '.') {
                 return@step SynResult.failure(cursor.error("expected `.`"))
             }
             SynResult.success(Dot.from(punct.span()) to rest)
@@ -1493,7 +1493,7 @@ public object DotParse {
 public object EqPeek : Peek {
     override fun peek(cursor: Cursor): Boolean {
         val (punct, _) = cursor.punct() ?: return false
-        return punct.asChar() == '=' && punct.spacing() == Spacing.Alone
+        return punct.asChar() == '='
     }
 
     override fun display(): String = "`=`"
@@ -1506,7 +1506,7 @@ public object EqParse {
             val (punct, rest) =
                 cursor.punct()
                     ?: return@step SynResult.failure(cursor.error("expected `=`"))
-            if (punct.asChar() != '=' || punct.spacing() != Spacing.Alone) {
+            if (punct.asChar() != '=') {
                 return@step SynResult.failure(cursor.error("expected `=`"))
             }
             SynResult.success(Eq.from(punct.span()) to rest)
@@ -1517,7 +1517,7 @@ public object EqParse {
 public object GtPeek : Peek {
     override fun peek(cursor: Cursor): Boolean {
         val (punct, _) = cursor.punct() ?: return false
-        return punct.asChar() == '>' && punct.spacing() == Spacing.Alone
+        return punct.asChar() == '>'
     }
 
     override fun display(): String = "`>`"
@@ -1530,7 +1530,7 @@ public object GtParse {
             val (punct, rest) =
                 cursor.punct()
                     ?: return@step SynResult.failure(cursor.error("expected `>`"))
-            if (punct.asChar() != '>' || punct.spacing() != Spacing.Alone) {
+            if (punct.asChar() != '>') {
                 return@step SynResult.failure(cursor.error("expected `>`"))
             }
             SynResult.success(Gt.from(punct.span()) to rest)
@@ -1541,7 +1541,7 @@ public object GtParse {
 public object LtPeek : Peek {
     override fun peek(cursor: Cursor): Boolean {
         val (punct, _) = cursor.punct() ?: return false
-        return punct.asChar() == '<' && punct.spacing() == Spacing.Alone
+        return punct.asChar() == '<'
     }
 
     override fun display(): String = "`<`"
@@ -1554,7 +1554,7 @@ public object LtParse {
             val (punct, rest) =
                 cursor.punct()
                     ?: return@step SynResult.failure(cursor.error("expected `<`"))
-            if (punct.asChar() != '<' || punct.spacing() != Spacing.Alone) {
+            if (punct.asChar() != '<') {
                 return@step SynResult.failure(cursor.error("expected `<`"))
             }
             SynResult.success(Lt.from(punct.span()) to rest)
@@ -1565,7 +1565,7 @@ public object LtParse {
 public object MinusPeek : Peek {
     override fun peek(cursor: Cursor): Boolean {
         val (punct, _) = cursor.punct() ?: return false
-        return punct.asChar() == '-' && punct.spacing() == Spacing.Alone
+        return punct.asChar() == '-'
     }
 
     override fun display(): String = "`-`"
@@ -1578,7 +1578,7 @@ public object MinusParse {
             val (punct, rest) =
                 cursor.punct()
                     ?: return@step SynResult.failure(cursor.error("expected `-`"))
-            if (punct.asChar() != '-' || punct.spacing() != Spacing.Alone) {
+            if (punct.asChar() != '-') {
                 return@step SynResult.failure(cursor.error("expected `-`"))
             }
             SynResult.success(Minus.from(punct.span()) to rest)
@@ -1589,7 +1589,7 @@ public object MinusParse {
 public object NotPeek : Peek {
     override fun peek(cursor: Cursor): Boolean {
         val (punct, _) = cursor.punct() ?: return false
-        return punct.asChar() == '!' && punct.spacing() == Spacing.Alone
+        return punct.asChar() == '!'
     }
 
     override fun display(): String = "`!`"
@@ -1602,7 +1602,7 @@ public object NotParse {
             val (punct, rest) =
                 cursor.punct()
                     ?: return@step SynResult.failure(cursor.error("expected `!`"))
-            if (punct.asChar() != '!' || punct.spacing() != Spacing.Alone) {
+            if (punct.asChar() != '!') {
                 return@step SynResult.failure(cursor.error("expected `!`"))
             }
             SynResult.success(Not.from(punct.span()) to rest)
@@ -1613,7 +1613,7 @@ public object NotParse {
 public object OrPeek : Peek {
     override fun peek(cursor: Cursor): Boolean {
         val (punct, _) = cursor.punct() ?: return false
-        return punct.asChar() == '|' && punct.spacing() == Spacing.Alone
+        return punct.asChar() == '|'
     }
 
     override fun display(): String = "`|`"
@@ -1626,7 +1626,7 @@ public object OrParse {
             val (punct, rest) =
                 cursor.punct()
                     ?: return@step SynResult.failure(cursor.error("expected `|`"))
-            if (punct.asChar() != '|' || punct.spacing() != Spacing.Alone) {
+            if (punct.asChar() != '|') {
                 return@step SynResult.failure(cursor.error("expected `|`"))
             }
             SynResult.success(Or.from(punct.span()) to rest)
@@ -1637,7 +1637,7 @@ public object OrParse {
 public object PercentPeek : Peek {
     override fun peek(cursor: Cursor): Boolean {
         val (punct, _) = cursor.punct() ?: return false
-        return punct.asChar() == '%' && punct.spacing() == Spacing.Alone
+        return punct.asChar() == '%'
     }
 
     override fun display(): String = "`%`"
@@ -1650,7 +1650,7 @@ public object PercentParse {
             val (punct, rest) =
                 cursor.punct()
                     ?: return@step SynResult.failure(cursor.error("expected `%`"))
-            if (punct.asChar() != '%' || punct.spacing() != Spacing.Alone) {
+            if (punct.asChar() != '%') {
                 return@step SynResult.failure(cursor.error("expected `%`"))
             }
             SynResult.success(Percent.from(punct.span()) to rest)
@@ -1709,7 +1709,7 @@ public object PoundParse {
 public object QuestionPeek : Peek {
     override fun peek(cursor: Cursor): Boolean {
         val (punct, _) = cursor.punct() ?: return false
-        return punct.asChar() == '?' && punct.spacing() == Spacing.Alone
+        return punct.asChar() == '?'
     }
 
     override fun display(): String = "`?`"
@@ -1722,7 +1722,7 @@ public object QuestionParse {
             val (punct, rest) =
                 cursor.punct()
                     ?: return@step SynResult.failure(cursor.error("expected `?`"))
-            if (punct.asChar() != '?' || punct.spacing() != Spacing.Alone) {
+            if (punct.asChar() != '?') {
                 return@step SynResult.failure(cursor.error("expected `?`"))
             }
             SynResult.success(Question.from(punct.span()) to rest)
@@ -1733,7 +1733,7 @@ public object QuestionParse {
 public object SemiPeek : Peek {
     override fun peek(cursor: Cursor): Boolean {
         val (punct, _) = cursor.punct() ?: return false
-        return punct.asChar() == ';' && punct.spacing() == Spacing.Alone
+        return punct.asChar() == ';'
     }
 
     override fun display(): String = "`;`"
@@ -1746,7 +1746,7 @@ public object SemiParse {
             val (punct, rest) =
                 cursor.punct()
                     ?: return@step SynResult.failure(cursor.error("expected `;`"))
-            if (punct.asChar() != ';' || punct.spacing() != Spacing.Alone) {
+            if (punct.asChar() != ';') {
                 return@step SynResult.failure(cursor.error("expected `;`"))
             }
             SynResult.success(Semi.from(punct.span()) to rest)
@@ -1757,7 +1757,7 @@ public object SemiParse {
 public object SlashPeek : Peek {
     override fun peek(cursor: Cursor): Boolean {
         val (punct, _) = cursor.punct() ?: return false
-        return punct.asChar() == '/' && punct.spacing() == Spacing.Alone
+        return punct.asChar() == '/'
     }
 
     override fun display(): String = "`/`"
@@ -1770,7 +1770,7 @@ public object SlashParse {
             val (punct, rest) =
                 cursor.punct()
                     ?: return@step SynResult.failure(cursor.error("expected `/`"))
-            if (punct.asChar() != '/' || punct.spacing() != Spacing.Alone) {
+            if (punct.asChar() != '/') {
                 return@step SynResult.failure(cursor.error("expected `/`"))
             }
             SynResult.success(Slash.from(punct.span()) to rest)
@@ -1781,7 +1781,7 @@ public object SlashParse {
 public object StarPeek : Peek {
     override fun peek(cursor: Cursor): Boolean {
         val (punct, _) = cursor.punct() ?: return false
-        return punct.asChar() == '*' && punct.spacing() == Spacing.Alone
+        return punct.asChar() == '*'
     }
 
     override fun display(): String = "`*`"
@@ -1794,7 +1794,7 @@ public object StarParse {
             val (punct, rest) =
                 cursor.punct()
                     ?: return@step SynResult.failure(cursor.error("expected `*`"))
-            if (punct.asChar() != '*' || punct.spacing() != Spacing.Alone) {
+            if (punct.asChar() != '*') {
                 return@step SynResult.failure(cursor.error("expected `*`"))
             }
             SynResult.success(Star.from(punct.span()) to rest)
@@ -1805,7 +1805,7 @@ public object StarParse {
 public object TildePeek : Peek {
     override fun peek(cursor: Cursor): Boolean {
         val (punct, _) = cursor.punct() ?: return false
-        return punct.asChar() == '~' && punct.spacing() == Spacing.Alone
+        return punct.asChar() == '~'
     }
 
     override fun display(): String = "`~`"
@@ -1818,7 +1818,7 @@ public object TildeParse {
             val (punct, rest) =
                 cursor.punct()
                     ?: return@step SynResult.failure(cursor.error("expected `~`"))
-            if (punct.asChar() != '~' || punct.spacing() != Spacing.Alone) {
+            if (punct.asChar() != '~') {
                 return@step SynResult.failure(cursor.error("expected `~`"))
             }
             SynResult.success(Tilde.from(punct.span()) to rest)
@@ -1860,7 +1860,7 @@ public object AndAndPeek : Peek {
         val (first, rest1) = cursor.punct() ?: return false
         if (first.asChar() != '&' || first.spacing() != Spacing.Joint) return false
         val second = rest1.punct()?.first ?: return false
-        return second.asChar() == '&' && second.spacing() == Spacing.Alone
+        return second.asChar() == '&'
     }
 
     override fun display(): String = "`&&`"
@@ -1879,7 +1879,7 @@ public object AndAndParse {
             val (second, rest2) =
                 rest1.punct()
                     ?: return@step SynResult.failure(cursor.error("expected `&&`"))
-            if (second.asChar() != '&' || second.spacing() != Spacing.Alone) {
+            if (second.asChar() != '&') {
                 return@step SynResult.failure(cursor.error("expected `&&`"))
             }
             SynResult.success(AndAnd.from(listOf(first.span(), second.span())) to rest2)
@@ -1892,7 +1892,7 @@ public object AndEqPeek : Peek {
         val (first, rest1) = cursor.punct() ?: return false
         if (first.asChar() != '&' || first.spacing() != Spacing.Joint) return false
         val second = rest1.punct()?.first ?: return false
-        return second.asChar() == '=' && second.spacing() == Spacing.Alone
+        return second.asChar() == '='
     }
 
     override fun display(): String = "`&=`"
@@ -1911,7 +1911,7 @@ public object AndEqParse {
             val (second, rest2) =
                 rest1.punct()
                     ?: return@step SynResult.failure(cursor.error("expected `&=`"))
-            if (second.asChar() != '=' || second.spacing() != Spacing.Alone) {
+            if (second.asChar() != '=') {
                 return@step SynResult.failure(cursor.error("expected `&=`"))
             }
             SynResult.success(AndEq.from(listOf(first.span(), second.span())) to rest2)
@@ -1924,7 +1924,7 @@ public object CaretEqPeek : Peek {
         val (first, rest1) = cursor.punct() ?: return false
         if (first.asChar() != '^' || first.spacing() != Spacing.Joint) return false
         val second = rest1.punct()?.first ?: return false
-        return second.asChar() == '=' && second.spacing() == Spacing.Alone
+        return second.asChar() == '='
     }
 
     override fun display(): String = "`^=`"
@@ -1943,7 +1943,7 @@ public object CaretEqParse {
             val (second, rest2) =
                 rest1.punct()
                     ?: return@step SynResult.failure(cursor.error("expected `^=`"))
-            if (second.asChar() != '=' || second.spacing() != Spacing.Alone) {
+            if (second.asChar() != '=') {
                 return@step SynResult.failure(cursor.error("expected `^=`"))
             }
             SynResult.success(CaretEq.from(listOf(first.span(), second.span())) to rest2)
@@ -1956,7 +1956,7 @@ public object EqEqPeek : Peek {
         val (first, rest1) = cursor.punct() ?: return false
         if (first.asChar() != '=' || first.spacing() != Spacing.Joint) return false
         val second = rest1.punct()?.first ?: return false
-        return second.asChar() == '=' && second.spacing() == Spacing.Alone
+        return second.asChar() == '='
     }
 
     override fun display(): String = "`==`"
@@ -1975,7 +1975,7 @@ public object EqEqParse {
             val (second, rest2) =
                 rest1.punct()
                     ?: return@step SynResult.failure(cursor.error("expected `==`"))
-            if (second.asChar() != '=' || second.spacing() != Spacing.Alone) {
+            if (second.asChar() != '=') {
                 return@step SynResult.failure(cursor.error("expected `==`"))
             }
             SynResult.success(EqEq.from(listOf(first.span(), second.span())) to rest2)
@@ -1988,7 +1988,7 @@ public object FatArrowPeek : Peek {
         val (first, rest1) = cursor.punct() ?: return false
         if (first.asChar() != '=' || first.spacing() != Spacing.Joint) return false
         val second = rest1.punct()?.first ?: return false
-        return second.asChar() == '>' && second.spacing() == Spacing.Alone
+        return second.asChar() == '>'
     }
 
     override fun display(): String = "`=>`"
@@ -2007,7 +2007,7 @@ public object FatArrowParse {
             val (second, rest2) =
                 rest1.punct()
                     ?: return@step SynResult.failure(cursor.error("expected `=>`"))
-            if (second.asChar() != '>' || second.spacing() != Spacing.Alone) {
+            if (second.asChar() != '>') {
                 return@step SynResult.failure(cursor.error("expected `=>`"))
             }
             SynResult.success(FatArrow.from(listOf(first.span(), second.span())) to rest2)
@@ -2020,7 +2020,7 @@ public object GePeek : Peek {
         val (first, rest1) = cursor.punct() ?: return false
         if (first.asChar() != '>' || first.spacing() != Spacing.Joint) return false
         val second = rest1.punct()?.first ?: return false
-        return second.asChar() == '=' && second.spacing() == Spacing.Alone
+        return second.asChar() == '='
     }
 
     override fun display(): String = "`>=`"
@@ -2039,7 +2039,7 @@ public object GeParse {
             val (second, rest2) =
                 rest1.punct()
                     ?: return@step SynResult.failure(cursor.error("expected `>=`"))
-            if (second.asChar() != '=' || second.spacing() != Spacing.Alone) {
+            if (second.asChar() != '=') {
                 return@step SynResult.failure(cursor.error("expected `>=`"))
             }
             SynResult.success(Ge.from(listOf(first.span(), second.span())) to rest2)
@@ -2052,7 +2052,7 @@ public object LePeek : Peek {
         val (first, rest1) = cursor.punct() ?: return false
         if (first.asChar() != '<' || first.spacing() != Spacing.Joint) return false
         val second = rest1.punct()?.first ?: return false
-        return second.asChar() == '=' && second.spacing() == Spacing.Alone
+        return second.asChar() == '='
     }
 
     override fun display(): String = "`<=`"
@@ -2071,7 +2071,7 @@ public object LeParse {
             val (second, rest2) =
                 rest1.punct()
                     ?: return@step SynResult.failure(cursor.error("expected `<=`"))
-            if (second.asChar() != '=' || second.spacing() != Spacing.Alone) {
+            if (second.asChar() != '=') {
                 return@step SynResult.failure(cursor.error("expected `<=`"))
             }
             SynResult.success(Le.from(listOf(first.span(), second.span())) to rest2)
@@ -2084,7 +2084,7 @@ public object LArrowPeek : Peek {
         val (first, rest1) = cursor.punct() ?: return false
         if (first.asChar() != '<' || first.spacing() != Spacing.Joint) return false
         val second = rest1.punct()?.first ?: return false
-        return second.asChar() == '-' && second.spacing() == Spacing.Alone
+        return second.asChar() == '-'
     }
 
     override fun display(): String = "`<-`"
@@ -2103,7 +2103,7 @@ public object LArrowParse {
             val (second, rest2) =
                 rest1.punct()
                     ?: return@step SynResult.failure(cursor.error("expected `<-`"))
-            if (second.asChar() != '-' || second.spacing() != Spacing.Alone) {
+            if (second.asChar() != '-') {
                 return@step SynResult.failure(cursor.error("expected `<-`"))
             }
             SynResult.success(LArrow.from(listOf(first.span(), second.span())) to rest2)
@@ -2116,7 +2116,7 @@ public object MinusEqPeek : Peek {
         val (first, rest1) = cursor.punct() ?: return false
         if (first.asChar() != '-' || first.spacing() != Spacing.Joint) return false
         val second = rest1.punct()?.first ?: return false
-        return second.asChar() == '=' && second.spacing() == Spacing.Alone
+        return second.asChar() == '='
     }
 
     override fun display(): String = "`-=`"
@@ -2135,7 +2135,7 @@ public object MinusEqParse {
             val (second, rest2) =
                 rest1.punct()
                     ?: return@step SynResult.failure(cursor.error("expected `-=`"))
-            if (second.asChar() != '=' || second.spacing() != Spacing.Alone) {
+            if (second.asChar() != '=') {
                 return@step SynResult.failure(cursor.error("expected `-=`"))
             }
             SynResult.success(MinusEq.from(listOf(first.span(), second.span())) to rest2)
@@ -2148,7 +2148,7 @@ public object NePeek : Peek {
         val (first, rest1) = cursor.punct() ?: return false
         if (first.asChar() != '!' || first.spacing() != Spacing.Joint) return false
         val second = rest1.punct()?.first ?: return false
-        return second.asChar() == '=' && second.spacing() == Spacing.Alone
+        return second.asChar() == '='
     }
 
     override fun display(): String = "`!=`"
@@ -2167,7 +2167,7 @@ public object NeParse {
             val (second, rest2) =
                 rest1.punct()
                     ?: return@step SynResult.failure(cursor.error("expected `!=`"))
-            if (second.asChar() != '=' || second.spacing() != Spacing.Alone) {
+            if (second.asChar() != '=') {
                 return@step SynResult.failure(cursor.error("expected `!=`"))
             }
             SynResult.success(Ne.from(listOf(first.span(), second.span())) to rest2)
@@ -2180,7 +2180,7 @@ public object OrEqPeek : Peek {
         val (first, rest1) = cursor.punct() ?: return false
         if (first.asChar() != '|' || first.spacing() != Spacing.Joint) return false
         val second = rest1.punct()?.first ?: return false
-        return second.asChar() == '=' && second.spacing() == Spacing.Alone
+        return second.asChar() == '='
     }
 
     override fun display(): String = "`|=`"
@@ -2199,7 +2199,7 @@ public object OrEqParse {
             val (second, rest2) =
                 rest1.punct()
                     ?: return@step SynResult.failure(cursor.error("expected `|=`"))
-            if (second.asChar() != '=' || second.spacing() != Spacing.Alone) {
+            if (second.asChar() != '=') {
                 return@step SynResult.failure(cursor.error("expected `|=`"))
             }
             SynResult.success(OrEq.from(listOf(first.span(), second.span())) to rest2)
@@ -2212,7 +2212,7 @@ public object OrOrPeek : Peek {
         val (first, rest1) = cursor.punct() ?: return false
         if (first.asChar() != '|' || first.spacing() != Spacing.Joint) return false
         val second = rest1.punct()?.first ?: return false
-        return second.asChar() == '|' && second.spacing() == Spacing.Alone
+        return second.asChar() == '|'
     }
 
     override fun display(): String = "`||`"
@@ -2231,7 +2231,7 @@ public object OrOrParse {
             val (second, rest2) =
                 rest1.punct()
                     ?: return@step SynResult.failure(cursor.error("expected `||`"))
-            if (second.asChar() != '|' || second.spacing() != Spacing.Alone) {
+            if (second.asChar() != '|') {
                 return@step SynResult.failure(cursor.error("expected `||`"))
             }
             SynResult.success(OrOr.from(listOf(first.span(), second.span())) to rest2)
@@ -2244,7 +2244,7 @@ public object PercentEqPeek : Peek {
         val (first, rest1) = cursor.punct() ?: return false
         if (first.asChar() != '%' || first.spacing() != Spacing.Joint) return false
         val second = rest1.punct()?.first ?: return false
-        return second.asChar() == '=' && second.spacing() == Spacing.Alone
+        return second.asChar() == '='
     }
 
     override fun display(): String = "`%=`"
@@ -2263,7 +2263,7 @@ public object PercentEqParse {
             val (second, rest2) =
                 rest1.punct()
                     ?: return@step SynResult.failure(cursor.error("expected `%=`"))
-            if (second.asChar() != '=' || second.spacing() != Spacing.Alone) {
+            if (second.asChar() != '=') {
                 return@step SynResult.failure(cursor.error("expected `%=`"))
             }
             SynResult.success(PercentEq.from(listOf(first.span(), second.span())) to rest2)
@@ -2276,7 +2276,7 @@ public object PlusEqPeek : Peek {
         val (first, rest1) = cursor.punct() ?: return false
         if (first.asChar() != '+' || first.spacing() != Spacing.Joint) return false
         val second = rest1.punct()?.first ?: return false
-        return second.asChar() == '=' && second.spacing() == Spacing.Alone
+        return second.asChar() == '='
     }
 
     override fun display(): String = "`+=`"
@@ -2295,7 +2295,7 @@ public object PlusEqParse {
             val (second, rest2) =
                 rest1.punct()
                     ?: return@step SynResult.failure(cursor.error("expected `+=`"))
-            if (second.asChar() != '=' || second.spacing() != Spacing.Alone) {
+            if (second.asChar() != '=') {
                 return@step SynResult.failure(cursor.error("expected `+=`"))
             }
             SynResult.success(PlusEq.from(listOf(first.span(), second.span())) to rest2)
@@ -2308,7 +2308,7 @@ public object RArrowPeek : Peek {
         val (first, rest1) = cursor.punct() ?: return false
         if (first.asChar() != '-' || first.spacing() != Spacing.Joint) return false
         val second = rest1.punct()?.first ?: return false
-        return second.asChar() == '>' && second.spacing() == Spacing.Alone
+        return second.asChar() == '>'
     }
 
     override fun display(): String = "`->`"
@@ -2327,7 +2327,7 @@ public object RArrowParse {
             val (second, rest2) =
                 rest1.punct()
                     ?: return@step SynResult.failure(cursor.error("expected `->`"))
-            if (second.asChar() != '>' || second.spacing() != Spacing.Alone) {
+            if (second.asChar() != '>') {
                 return@step SynResult.failure(cursor.error("expected `->`"))
             }
             SynResult.success(RArrow.from(listOf(first.span(), second.span())) to rest2)
@@ -2340,7 +2340,7 @@ public object SlashEqPeek : Peek {
         val (first, rest1) = cursor.punct() ?: return false
         if (first.asChar() != '/' || first.spacing() != Spacing.Joint) return false
         val second = rest1.punct()?.first ?: return false
-        return second.asChar() == '=' && second.spacing() == Spacing.Alone
+        return second.asChar() == '='
     }
 
     override fun display(): String = "`/=`"
@@ -2359,7 +2359,7 @@ public object SlashEqParse {
             val (second, rest2) =
                 rest1.punct()
                     ?: return@step SynResult.failure(cursor.error("expected `/=`"))
-            if (second.asChar() != '=' || second.spacing() != Spacing.Alone) {
+            if (second.asChar() != '=') {
                 return@step SynResult.failure(cursor.error("expected `/=`"))
             }
             SynResult.success(SlashEq.from(listOf(first.span(), second.span())) to rest2)
@@ -2372,7 +2372,7 @@ public object StarEqPeek : Peek {
         val (first, rest1) = cursor.punct() ?: return false
         if (first.asChar() != '*' || first.spacing() != Spacing.Joint) return false
         val second = rest1.punct()?.first ?: return false
-        return second.asChar() == '=' && second.spacing() == Spacing.Alone
+        return second.asChar() == '='
     }
 
     override fun display(): String = "`*=`"
@@ -2391,7 +2391,7 @@ public object StarEqParse {
             val (second, rest2) =
                 rest1.punct()
                     ?: return@step SynResult.failure(cursor.error("expected `*=`"))
-            if (second.asChar() != '=' || second.spacing() != Spacing.Alone) {
+            if (second.asChar() != '=') {
                 return@step SynResult.failure(cursor.error("expected `*=`"))
             }
             SynResult.success(StarEq.from(listOf(first.span(), second.span())) to rest2)
@@ -2404,7 +2404,7 @@ public object ShlPeek : Peek {
         val (first, rest1) = cursor.punct() ?: return false
         if (first.asChar() != '<' || first.spacing() != Spacing.Joint) return false
         val second = rest1.punct()?.first ?: return false
-        return second.asChar() == '<' && second.spacing() == Spacing.Alone
+        return second.asChar() == '<'
     }
 
     override fun display(): String = "`<<`"
@@ -2423,7 +2423,7 @@ public object ShlParse {
             val (second, rest2) =
                 rest1.punct()
                     ?: return@step SynResult.failure(cursor.error("expected `<<`"))
-            if (second.asChar() != '<' || second.spacing() != Spacing.Alone) {
+            if (second.asChar() != '<') {
                 return@step SynResult.failure(cursor.error("expected `<<`"))
             }
             SynResult.success(Shl.from(listOf(first.span(), second.span())) to rest2)
@@ -2436,7 +2436,7 @@ public object ShrPeek : Peek {
         val (first, rest1) = cursor.punct() ?: return false
         if (first.asChar() != '>' || first.spacing() != Spacing.Joint) return false
         val second = rest1.punct()?.first ?: return false
-        return second.asChar() == '>' && second.spacing() == Spacing.Alone
+        return second.asChar() == '>'
     }
 
     override fun display(): String = "`>>`"
@@ -2455,7 +2455,7 @@ public object ShrParse {
             val (second, rest2) =
                 rest1.punct()
                     ?: return@step SynResult.failure(cursor.error("expected `>>`"))
-            if (second.asChar() != '>' || second.spacing() != Spacing.Alone) {
+            if (second.asChar() != '>') {
                 return@step SynResult.failure(cursor.error("expected `>>`"))
             }
             SynResult.success(Shr.from(listOf(first.span(), second.span())) to rest2)
@@ -2467,8 +2467,8 @@ public object DotDotPeek : Peek {
     override fun peek(cursor: Cursor): Boolean {
         val (first, rest1) = cursor.punct() ?: return false
         if (first.asChar() != '.' || first.spacing() != Spacing.Joint) return false
-        val (second, rest2) = rest1.punct() ?: return false
-        return second.asChar() == '.' && (second.spacing() == Spacing.Alone || rest2.lifetime() != null)
+        val (second, _) = rest1.punct() ?: return false
+        return second.asChar() == '.'
     }
 
     override fun display(): String = "`..`"
@@ -2487,7 +2487,7 @@ public object DotDotParse {
             val (second, rest2) =
                 rest1.punct()
                     ?: return@step SynResult.failure(cursor.error("expected `..`"))
-            if (second.asChar() != '.' || (second.spacing() != Spacing.Alone && rest2.lifetime() == null)) {
+            if (second.asChar() != '.') {
                 return@step SynResult.failure(cursor.error("expected `..`"))
             }
             SynResult.success(DotDot.from(listOf(first.span(), second.span())) to rest2)
@@ -2503,9 +2503,8 @@ public object DotDotDotPeek : Peek {
         if (first.asChar() != '.' || first.spacing() != Spacing.Joint) return false
         val (second, rest2) = rest1.punct() ?: return false
         if (second.asChar() != '.' || second.spacing() != Spacing.Joint) return false
-        val (third, rest3) = rest2.punct() ?: return false
-        return third.asChar() == '.' &&
-            (third.spacing() == Spacing.Alone || rest3.punct()?.first?.asChar() != '.')
+        val (third, _) = rest2.punct() ?: return false
+        return third.asChar() == '.'
     }
 
     override fun display(): String = "`...`"
@@ -2530,7 +2529,7 @@ public object DotDotDotParse {
             val (third, rest3) =
                 rest2.punct()
                     ?: return@step SynResult.failure(cursor.error("expected `...`"))
-            if (third.asChar() != '.' || (third.spacing() != Spacing.Alone && rest3.punct()?.first?.asChar() == '.')) {
+            if (third.asChar() != '.') {
                 return@step SynResult.failure(cursor.error("expected `...`"))
             }
             SynResult.success(DotDotDot.from(listOf(first.span(), second.span(), third.span())) to rest3)
@@ -2545,7 +2544,7 @@ public object DotDotEqPeek : Peek {
         val (second, rest2) = rest1.punct() ?: return false
         if (second.asChar() != '.' || second.spacing() != Spacing.Joint) return false
         val third = rest2.punct()?.first ?: return false
-        return third.asChar() == '=' && third.spacing() == Spacing.Alone
+        return third.asChar() == '='
     }
 
     override fun display(): String = "`..=`"
@@ -2570,7 +2569,7 @@ public object DotDotEqParse {
             val (third, rest3) =
                 rest2.punct()
                     ?: return@step SynResult.failure(cursor.error("expected `..=`"))
-            if (third.asChar() != '=' || third.spacing() != Spacing.Alone) {
+            if (third.asChar() != '=') {
                 return@step SynResult.failure(cursor.error("expected `..=`"))
             }
             SynResult.success(DotDotEq.from(listOf(first.span(), second.span(), third.span())) to rest3)
@@ -2585,7 +2584,7 @@ public object ShlEqPeek : Peek {
         val (second, rest2) = rest1.punct() ?: return false
         if (second.asChar() != '<' || second.spacing() != Spacing.Joint) return false
         val third = rest2.punct()?.first ?: return false
-        return third.asChar() == '=' && third.spacing() == Spacing.Alone
+        return third.asChar() == '='
     }
 
     override fun display(): String = "`<<=`"
@@ -2610,7 +2609,7 @@ public object ShlEqParse {
             val (third, rest3) =
                 rest2.punct()
                     ?: return@step SynResult.failure(cursor.error("expected `<<=`"))
-            if (third.asChar() != '=' || third.spacing() != Spacing.Alone) {
+            if (third.asChar() != '=') {
                 return@step SynResult.failure(cursor.error("expected `<<=`"))
             }
             SynResult.success(ShlEq.from(listOf(first.span(), second.span(), third.span())) to rest3)
@@ -2625,7 +2624,7 @@ public object ShrEqPeek : Peek {
         val (second, rest2) = rest1.punct() ?: return false
         if (second.asChar() != '>' || second.spacing() != Spacing.Joint) return false
         val third = rest2.punct()?.first ?: return false
-        return third.asChar() == '=' && third.spacing() == Spacing.Alone
+        return third.asChar() == '='
     }
 
     override fun display(): String = "`>>=`"
@@ -2650,7 +2649,7 @@ public object ShrEqParse {
             val (third, rest3) =
                 rest2.punct()
                     ?: return@step SynResult.failure(cursor.error("expected `>>=`"))
-            if (third.asChar() != '=' || third.spacing() != Spacing.Alone) {
+            if (third.asChar() != '=') {
                 return@step SynResult.failure(cursor.error("expected `>>=`"))
             }
             SynResult.success(ShrEq.from(listOf(first.span(), second.span(), third.span())) to rest3)

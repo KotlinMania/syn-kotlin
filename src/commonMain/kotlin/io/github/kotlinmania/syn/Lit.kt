@@ -243,13 +243,13 @@ public class LitStr private constructor(
 
 /** A byte string literal: `b"foo"`. */
 public class LitByteStr(
-    public var bytes: MutableList<UByte>,
+    public var bytes: List<UByte>,
     private var spanValue: Span,
     private val suffix: String = "",
     private val literal: Literal? = null,
 ) : ToTokens {
     public companion object {
-        public fun new(value: MutableList<UByte>, span: Span): LitByteStr =
+        public fun new(value: List<UByte>, span: Span): LitByteStr =
             LitByteStr(value, span)
     }
 

@@ -77,7 +77,7 @@ private class FlattenParens(
             else -> listOf(token)
         }
 
-    private fun combineAttrs(expr: Expr, attrs: MutableList<Attribute>) {
+    private fun combineAttrs(expr: Expr, attrs: List<Attribute>) {
         when (expr) {
             is Expr.Assign -> {
                 require(expr.attrs.isEmpty())

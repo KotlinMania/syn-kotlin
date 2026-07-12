@@ -295,6 +295,16 @@ class DeriveInputTest {
         assertEquals(fieldList[1].ty.span(), assertIs<Member.Unnamed>(members[1]).index.span)
     }
 
+    @Test
+    fun tupleFieldWithLifetimeReference() {
+        val input = parse("struct StrDef<'a>(&'a str);")
+        val field = unnamedFields(assertIs<Data.Struct>(input.data).fields).single()
+        val reference = assertIs<SynType.Reference>(field.ty)
+
+        assertEquals("'a", reference.lifetime?.toString())
+        assertEquals("str", assertIs<SynType.Path>(reference.elem).path.toString())
+    }
+
     private fun parse(source: String): DeriveInput =
         parseStr(DeriveInputParse::parse, source).getOrThrow()
 
