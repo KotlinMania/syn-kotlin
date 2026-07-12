@@ -603,10 +603,10 @@ public open class VisitMut {
     }
 
     public open fun visitBlock(block: Block) {
-        for (i in 0 until block.stmts.size) block.stmts[i] = visitStmtMut(block.stmts[i])
+        block.stmts = block.stmts.map(::visitStmtMut)
     }
 
-    public open fun visitAttributes(attrs: MutableList<Attribute>) {
+    public open fun visitAttributes(attrs: List<Attribute>) {
         for (i in attrs.indices) visitAttributeMut(attrs[i])
     }
 
@@ -1407,7 +1407,7 @@ public open class VisitMut {
 
     public open fun visitBlockMut(block: Block) { visitBlock(block) }
 
-    public open fun visitAttributesMut(attrs: MutableList<Attribute>) { visitAttributes(attrs) }
+    public open fun visitAttributesMut(attrs: List<Attribute>) { visitAttributes(attrs) }
 
     public open fun visitSignatureMut(sig: Signature) { visitSignature(sig) }
 

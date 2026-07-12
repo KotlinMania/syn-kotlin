@@ -12,7 +12,7 @@ import io.github.kotlinmania.syn.token.Semi
  */
 public data class Block(
     public var braceToken: Brace,
-    public var stmts: MutableList<Stmt>,
+    public var stmts: List<Stmt>,
 ) : ToTokens {
     override fun toTokens(tokens: TokenStream) {
         braceToken.surround(tokens) { inner ->
@@ -31,7 +31,7 @@ public sealed class Stmt : ToTokens {
 
     /** A local binding. */
     public data class Local(
-        public var attrs: MutableList<Attribute>,
+        public var attrs: List<Attribute>,
         public var letToken: Let,
         public var pat: Pat,
         public var init: LocalInit?,
@@ -74,7 +74,7 @@ public sealed class Stmt : ToTokens {
 
     /** A macro invocation in statement position. */
     public data class MacroStmt(
-        public var attrs: MutableList<Attribute>,
+        public var attrs: List<Attribute>,
         public var mac: Macro,
         public var semiToken: Semi?,
     ) : Stmt() {

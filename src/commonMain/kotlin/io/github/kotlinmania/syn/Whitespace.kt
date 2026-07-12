@@ -5,7 +5,7 @@ package io.github.kotlinmania.syn
  * Skips leading whitespace and comments in the parsed language from [input]. Returns the
  * remaining suffix of the input after the skip.
  */
-internal fun skipWhitespace(input: String): String {
+internal fun skip(input: String): String {
     var s = input
     skip@ while (s.isNotEmpty()) {
         val byte = s[0]
@@ -58,7 +58,7 @@ internal fun skipWhitespace(input: String): String {
                 // fall through to return
             }
             else -> {
-                if (isWhitespaceChar(byte)) {
+                if (isWhitespace(byte)) {
                     s = s.substring(byte.toString().length)
                     continue
                 }
@@ -69,36 +69,4 @@ internal fun skipWhitespace(input: String): String {
     return s
 }
 
-private fun isWhitespaceChar(ch: Char): Boolean = ch.isWhitespace() || ch == '\u200E' || ch == '\u200F'
-
-/**
- * Returns whether the character is considered whitespace.
- * Includes left-to-right mark and right-to-left mark.
- */
-public fun charIsWhitespace(ch: Char): Boolean = isWhitespaceChar(ch)
-
-/**
- * Skips leading whitespace and comments in the parsed language.
- * Public wrapper for the internal [skipWhitespace] function.
- */
-public fun skip(input: String): String =
-    skipWhitespace(input)
-
-/**
- * Returns whether the character is considered whitespace for parsing purposes.
- * Public wrapper for the internal [charIsWhitespace] function (which already
- * delegates to [isWhitespaceChar]).
- */
-public fun isWhitespace(ch: Char): Boolean =
-    charIsWhitespace(ch)
-
-/**
- * Skips all whitespace and comments in the parse stream, advancing the cursor.
- * Returns the number of tokens consumed (always zero since whitespace is
- * not tokenized separately).
- */
-internal fun ParseStream.skipWhitespace(): Int {
-    // In Kotlin, whitespace is not tokenized as separate tokens;
-    // the lexer already handles it. This is a no-op.
-    return 0
-}
+private fun isWhitespace(ch: Char): Boolean = ch.isWhitespace() || ch == '\u200E' || ch == '\u200F'

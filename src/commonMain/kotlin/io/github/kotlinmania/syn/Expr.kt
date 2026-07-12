@@ -826,7 +826,7 @@ private fun exprLeadingLabel(expr: Expr): Boolean {
 public sealed class Expr : ToTokens {
     /** A slice literal expression: `[a, b, c, d]`. */
     public data class Array(
-        public var attrs: MutableList<Attribute>,
+        public var attrs: List<Attribute>,
         public var bracketToken: io.github.kotlinmania.syn.token.Bracket,
         public var elems: ExprList,
     ) : Expr() {
@@ -842,7 +842,7 @@ public sealed class Expr : ToTokens {
 
     /** An assignment expression: `a = compute()`. */
     public data class Assign(
-        public var attrs: MutableList<Attribute>,
+        public var attrs: List<Attribute>,
         public var left: Expr,
         public var eqToken: io.github.kotlinmania.syn.token.Eq,
         public var right: Expr,
@@ -868,7 +868,7 @@ public sealed class Expr : ToTokens {
 
     /** An async block: `async { ... }`. */
     public data class Async(
-        public var attrs: MutableList<Attribute>,
+        public var attrs: List<Attribute>,
         public var asyncToken: io.github.kotlinmania.syn.token.Async,
         public var capture: io.github.kotlinmania.syn.token.Move?,
         public var block: Block,
@@ -885,7 +885,7 @@ public sealed class Expr : ToTokens {
 
     /** An await expression: `fut.await`. */
     public data class Await(
-        public var attrs: MutableList<Attribute>,
+        public var attrs: List<Attribute>,
         public var base: Expr,
         public var dotToken: io.github.kotlinmania.syn.token.Dot,
         public var awaitToken: io.github.kotlinmania.syn.token.Await,
@@ -902,7 +902,7 @@ public sealed class Expr : ToTokens {
 
     /** A binary operation: `a + b`, `a += b`. */
     public data class Binary(
-        public var attrs: MutableList<Attribute>,
+        public var attrs: List<Attribute>,
         public var left: Expr,
         public var op: BinOp,
         public var right: Expr,
@@ -939,7 +939,7 @@ public sealed class Expr : ToTokens {
 
     /** A blocked scope: `{ ... }`. */
     public data class BlockExpr(
-        public var attrs: MutableList<Attribute>,
+        public var attrs: List<Attribute>,
         public var label: Label?,
         public var block: Block,
     ) : Expr() {
@@ -954,7 +954,7 @@ public sealed class Expr : ToTokens {
 
     /** A `break`, with an optional label to break and an optional expression. */
     public data class Break(
-        public var attrs: MutableList<Attribute>,
+        public var attrs: List<Attribute>,
         public var breakToken: io.github.kotlinmania.syn.token.Break,
         public var label: Lifetime?,
         public var expr: Expr?,
@@ -980,7 +980,7 @@ public sealed class Expr : ToTokens {
 
     /** A function call expression: `invoke(a, b)`. */
     public data class Call(
-        public var attrs: MutableList<Attribute>,
+        public var attrs: List<Attribute>,
         public var func: Expr,
         public var parenToken: io.github.kotlinmania.syn.token.Paren,
         public var args: ExprList,
@@ -998,7 +998,7 @@ public sealed class Expr : ToTokens {
 
     /** A cast expression: `foo as f64`. */
     public data class Cast(
-        public var attrs: MutableList<Attribute>,
+        public var attrs: List<Attribute>,
         public var expr: Expr,
         public var asToken: io.github.kotlinmania.syn.token.As,
         public var ty: SynType,
@@ -1024,7 +1024,7 @@ public sealed class Expr : ToTokens {
 
     /** A closure expression: `|a, b| a + b`. */
     public data class Closure(
-        public var attrs: MutableList<Attribute>,
+        public var attrs: List<Attribute>,
         public var constness: io.github.kotlinmania.syn.token.Const?,
         public var asyncness: io.github.kotlinmania.syn.token.Async?,
         public var capture: io.github.kotlinmania.syn.token.Move?,
@@ -1051,7 +1051,7 @@ public sealed class Expr : ToTokens {
 
     /** A const block: `const { ... }`. */
     public data class Const(
-        public var attrs: MutableList<Attribute>,
+        public var attrs: List<Attribute>,
         public var constToken: io.github.kotlinmania.syn.token.Const,
         public var block: Block,
     ) : Expr() {
@@ -1066,7 +1066,7 @@ public sealed class Expr : ToTokens {
 
     /** A `continue`, with an optional label. */
     public data class Continue(
-        public var attrs: MutableList<Attribute>,
+        public var attrs: List<Attribute>,
         public var continueToken: io.github.kotlinmania.syn.token.Continue,
         public var label: Lifetime?,
     ) : Expr() {
@@ -1081,7 +1081,7 @@ public sealed class Expr : ToTokens {
 
     /** Access of a named field of a data class (`obj.k`) or indexed element of a tuple-like compound (`obj.0`). */
     public data class Field(
-        public var attrs: MutableList<Attribute>,
+        public var attrs: List<Attribute>,
         public var base: Expr,
         public var dotToken: io.github.kotlinmania.syn.token.Dot,
         public var member: Member,
@@ -1098,7 +1098,7 @@ public sealed class Expr : ToTokens {
 
     /** A for loop: `for pat in expr { ... }`. */
     public data class ForLoop(
-        public var attrs: MutableList<Attribute>,
+        public var attrs: List<Attribute>,
         public var label: Label?,
         public var forToken: io.github.kotlinmania.syn.token.For,
         public var pat: Pat,
@@ -1121,7 +1121,7 @@ public sealed class Expr : ToTokens {
 
     /** An expression contained within invisible delimiters. */
     public data class Group(
-        public var attrs: MutableList<Attribute>,
+        public var attrs: List<Attribute>,
         public var groupToken: io.github.kotlinmania.syn.token.Group,
         public var expr: Expr,
     ) : Expr() {
@@ -1135,7 +1135,7 @@ public sealed class Expr : ToTokens {
 
     /** An `if` expression with an optional `else` block. */
     public data class If(
-        public var attrs: MutableList<Attribute>,
+        public var attrs: List<Attribute>,
         public var ifToken: io.github.kotlinmania.syn.token.If,
         public var cond: Expr,
         public var thenBranch: Block,
@@ -1154,7 +1154,7 @@ public sealed class Expr : ToTokens {
 
     /** A square bracketed indexing expression: `vector[2]`. */
     public data class Index(
-        public var attrs: MutableList<Attribute>,
+        public var attrs: List<Attribute>,
         public var expr: Expr,
         public var bracketToken: io.github.kotlinmania.syn.token.Bracket,
         public var index: Expr,
@@ -1170,7 +1170,7 @@ public sealed class Expr : ToTokens {
 
     /** The inferred value of a const generic argument, denoted `_`. */
     public data class Infer(
-        public var attrs: MutableList<Attribute>,
+        public var attrs: List<Attribute>,
         public var underscoreToken: io.github.kotlinmania.syn.token.Underscore,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
@@ -1183,7 +1183,7 @@ public sealed class Expr : ToTokens {
 
     /** A pattern guard that tests whether a pattern matches a value. */
     public data class Let(
-        public var attrs: MutableList<Attribute>,
+        public var attrs: List<Attribute>,
         public var letToken: io.github.kotlinmania.syn.token.Let,
         public var pat: Pat,
         public var eqToken: io.github.kotlinmania.syn.token.Eq,
@@ -1208,7 +1208,7 @@ public sealed class Expr : ToTokens {
 
     /** A literal in place of an expression: `1`, `"foo"`. */
     public data class Lit(
-        var attrs: MutableList<Attribute>,
+        var attrs: List<Attribute>,
         var lit: io.github.kotlinmania.syn.Lit,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
@@ -1221,7 +1221,7 @@ public sealed class Expr : ToTokens {
 
     /** Conditionless loop: `loop { ... }`. */
     public data class Loop(
-        public var attrs: MutableList<Attribute>,
+        public var attrs: List<Attribute>,
         public var label: Label?,
         public var loopToken: io.github.kotlinmania.syn.token.Loop,
         public var body: Block,
@@ -1238,7 +1238,7 @@ public sealed class Expr : ToTokens {
 
     /** A macro invocation expression. */
     public data class Macro(
-        var attrs: MutableList<Attribute>,
+        var attrs: List<Attribute>,
         var mac: io.github.kotlinmania.syn.Macro,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
@@ -1251,11 +1251,11 @@ public sealed class Expr : ToTokens {
 
     /** A `match` expression. */
     public data class Match(
-        public var attrs: MutableList<Attribute>,
+        public var attrs: List<Attribute>,
         public var matchToken: io.github.kotlinmania.syn.token.Match,
         public var expr: Expr,
         public var braceToken: io.github.kotlinmania.syn.token.Brace,
-        public var arms: MutableList<Arm>,
+        public var arms: List<Arm>,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
             for (attr in attrs) attr.toTokens(tokens)
@@ -1271,7 +1271,7 @@ public sealed class Expr : ToTokens {
 
     /** A method call expression with optional turbofish and arguments. */
     public data class MethodCall(
-        public var attrs: MutableList<Attribute>,
+        public var attrs: List<Attribute>,
         public var receiver: Expr,
         public var dotToken: io.github.kotlinmania.syn.token.Dot,
         public var method: Ident,
@@ -1295,7 +1295,7 @@ public sealed class Expr : ToTokens {
 
     /** A parenthesized expression: `(a + b)`. */
     public data class Paren(
-        public var attrs: MutableList<Attribute>,
+        public var attrs: List<Attribute>,
         public var parenToken: io.github.kotlinmania.syn.token.Paren,
         public var expr: Expr,
     ) : Expr() {
@@ -1309,7 +1309,7 @@ public sealed class Expr : ToTokens {
 
     /** A path expression possibly containing generic parameters. */
     public data class Path(
-        var attrs: MutableList<Attribute>,
+        var attrs: List<Attribute>,
         var qself: QSelf?,
         var path: io.github.kotlinmania.syn.Path,
     ) : Expr() {
@@ -1329,7 +1329,7 @@ public sealed class Expr : ToTokens {
 
     /** A range expression: `1..2`, `1..`, `..2`, `1..=2`, `..=2`. */
     public data class Range(
-        public var attrs: MutableList<Attribute>,
+        public var attrs: List<Attribute>,
         public var start: Expr?,
         public var limits: RangeLimits,
         public var end: Expr?,
@@ -1346,7 +1346,7 @@ public sealed class Expr : ToTokens {
 
     /** Address-of operation: `&raw const place` or `&raw mut place`. */
     public data class RawAddr(
-        public var attrs: MutableList<Attribute>,
+        public var attrs: List<Attribute>,
         public var andToken: io.github.kotlinmania.syn.token.And,
         public var raw: io.github.kotlinmania.syn.token.Raw,
         public var mutability: PointerMutability,
@@ -1365,7 +1365,7 @@ public sealed class Expr : ToTokens {
 
     /** A referencing operation. */
     public data class Reference(
-        public var attrs: MutableList<Attribute>,
+        public var attrs: List<Attribute>,
         public var andToken: io.github.kotlinmania.syn.token.And,
         public var mutability: io.github.kotlinmania.syn.token.Mut?,
         public var expr: Expr,
@@ -1382,7 +1382,7 @@ public sealed class Expr : ToTokens {
 
     /** An array literal constructed from one repeated element: `[0u8; N]`. */
     public data class Repeat(
-        public var attrs: MutableList<Attribute>,
+        public var attrs: List<Attribute>,
         public var bracketToken: io.github.kotlinmania.syn.token.Bracket,
         public var expr: Expr,
         public var semiToken: io.github.kotlinmania.syn.token.Semi,
@@ -1402,7 +1402,7 @@ public sealed class Expr : ToTokens {
 
     /** A `return`, with an optional value to be returned. */
     public data class Return(
-        public var attrs: MutableList<Attribute>,
+        public var attrs: List<Attribute>,
         public var returnToken: io.github.kotlinmania.syn.token.Return,
         public var expr: Expr?,
     ) : Expr() {
@@ -1417,7 +1417,7 @@ public sealed class Expr : ToTokens {
 
     /** A data-object initialization expression. */
     public data class Struct(
-        public var attrs: MutableList<Attribute>,
+        public var attrs: List<Attribute>,
         public var qself: QSelf?,
         public var path: io.github.kotlinmania.syn.Path,
         public var braceToken: io.github.kotlinmania.syn.token.Brace,
@@ -1446,7 +1446,7 @@ public sealed class Expr : ToTokens {
 
     /** A try-expression: `expr?`. */
     public data class Try(
-        public var attrs: MutableList<Attribute>,
+        public var attrs: List<Attribute>,
         public var expr: Expr,
         public var questionToken: io.github.kotlinmania.syn.token.Question,
     ) : Expr() {
@@ -1461,7 +1461,7 @@ public sealed class Expr : ToTokens {
 
     /** A try block: `try { ... }`. */
     public data class TryBlock(
-        public var attrs: MutableList<Attribute>,
+        public var attrs: List<Attribute>,
         public var tryToken: io.github.kotlinmania.syn.token.Try,
         public var block: Block,
     ) : Expr() {
@@ -1476,7 +1476,7 @@ public sealed class Expr : ToTokens {
 
     /** A tuple expression: `(a, b, c, d)`. */
     public data class Tuple(
-        public var attrs: MutableList<Attribute>,
+        public var attrs: List<Attribute>,
         public var parenToken: io.github.kotlinmania.syn.token.Paren,
         public var elems: ExprList,
     ) : Expr() {
@@ -1497,7 +1497,7 @@ public sealed class Expr : ToTokens {
 
     /** A unary prefix operation: negation or dereference. */
     public data class Unary(
-        public var attrs: MutableList<Attribute>,
+        public var attrs: List<Attribute>,
         public var op: UnOp,
         public var expr: Expr,
     ) : Expr() {
@@ -1512,7 +1512,7 @@ public sealed class Expr : ToTokens {
 
     /** A block expression that permits operations violating memory safety invariants. */
     public data class Unsafe(
-        public var attrs: MutableList<Attribute>,
+        public var attrs: List<Attribute>,
         public var unsafeToken: io.github.kotlinmania.syn.token.Unsafe,
         public var block: Block,
     ) : Expr() {
@@ -1527,7 +1527,7 @@ public sealed class Expr : ToTokens {
 
     /** A while loop: `while expr { ... }`. */
     public data class While(
-        public var attrs: MutableList<Attribute>,
+        public var attrs: List<Attribute>,
         public var label: Label?,
         public var whileToken: io.github.kotlinmania.syn.token.While,
         public var cond: Expr,
@@ -1546,7 +1546,7 @@ public sealed class Expr : ToTokens {
 
     /** A yield expression: `yield expr`. */
     public data class Yield(
-        public var attrs: MutableList<Attribute>,
+        public var attrs: List<Attribute>,
         public var yieldToken: io.github.kotlinmania.syn.token.Yield,
         public var expr: Expr?,
     ) : Expr() {
@@ -1614,7 +1614,7 @@ public data class Index(
 
 /** A field-value pair in a data-object initialization. */
 public data class FieldValue(
-    public var attrs: MutableList<Attribute>,
+    public var attrs: List<Attribute>,
     public var member: Member,
     public var colonToken: io.github.kotlinmania.syn.token.Colon?,
     public var expr: Expr,
@@ -1644,7 +1644,7 @@ public data class Label(
 
 /** One arm of a `match` expression. */
 public data class Arm(
-    public var attrs: MutableList<Attribute>,
+    public var attrs: List<Attribute>,
     public var pat: Pat,
     public var guard: IfExpr?,
     public var fatArrowToken: io.github.kotlinmania.syn.token.FatArrow,
@@ -1722,7 +1722,7 @@ public fun exprAttrs(input: ParseStream): SynResult<List<Attribute>> = exprAttrs
 public fun unaryExpr(input: ParseStream, allowStruct: Boolean): SynResult<Expr> =
     unaryExprImpl(input, allowStruct)
 
-public fun trailerExpr(input: ParseStream, allowStruct: Boolean, attrs: MutableList<Attribute> = mutableListOf()): SynResult<Expr> =
+public fun trailerExpr(input: ParseStream, allowStruct: Boolean, attrs: List<Attribute> = mutableListOf()): SynResult<Expr> =
     trailerExprImpl(input, allowStruct, attrs)
 
 public fun trailerHelper(input: ParseStream, e: Expr, allowStruct: Boolean): SynResult<Expr> =
@@ -1755,7 +1755,7 @@ public fun parseMember(input: ParseStream): SynResult<Member> = parseMemberImpl(
 
 public fun continueParsingEarly(expr: Expr): Boolean = continueParsingEarlyImpl(expr)
 
-public fun Expr.replaceAttrs(attrs: MutableList<Attribute>): Expr =
+public fun Expr.replaceAttrs(attrs: List<Attribute>): Expr =
     when (this) {
         is Expr.Binary -> copy(attrs = attrs)
         is Expr.Assign -> copy(attrs = attrs)
@@ -1893,7 +1893,7 @@ public fun printExprYield(e: Expr.Yield, tokens: TokenStream) {
     e.toTokens(tokens)
 }
 
-public fun outerAttrsToTokens(attrs: MutableList<Attribute>, tokens: TokenStream) {
+public fun outerAttrsToTokens(attrs: List<Attribute>, tokens: TokenStream) {
     for (attr in attrs) {
         if (attr.style is AttrStyle.Outer) {
             attr.toTokens(tokens)
@@ -1901,7 +1901,7 @@ public fun outerAttrsToTokens(attrs: MutableList<Attribute>, tokens: TokenStream
     }
 }
 
-public fun innerAttrsToTokens(attrs: MutableList<Attribute>, tokens: TokenStream) {
+public fun innerAttrsToTokens(attrs: List<Attribute>, tokens: TokenStream) {
     for (attr in attrs) {
         if (attr.style is AttrStyle.Inner) {
             attr.toTokens(tokens)
@@ -2117,7 +2117,7 @@ public fun exprLet(input: ParseStream, allowStruct: Boolean): SynResult<Expr.Let
     )
 }
 
-public fun exprUnary(input: ParseStream, attrs: MutableList<Attribute>, allowStruct: Boolean): SynResult<Expr.Unary> {
+public fun exprUnary(input: ParseStream, attrs: List<Attribute>, allowStruct: Boolean): SynResult<Expr.Unary> {
     var opResult = UnOpParse.parse(input)
     if (opResult.isFailure) return SynResult.failure((opResult as SynResult.Failure).error)
     var innerResult = unaryExprImpl(input, allowStruct)

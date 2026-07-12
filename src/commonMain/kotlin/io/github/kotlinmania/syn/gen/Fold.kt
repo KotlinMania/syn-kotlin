@@ -316,7 +316,7 @@ public open class Fold {
 
     public open fun foldBlock(block: Block): Block = block.copy(stmts = block.stmts.mapTo(mutableListOf()) { foldStmt(it) })
 
-    public open fun foldAttributes(attrs: MutableList<Attribute>): MutableList<Attribute> = attrs.mapTo(mutableListOf()) { foldAttribute(it) }
+    public open fun foldAttributes(attrs: List<Attribute>): List<Attribute> = attrs.mapTo(mutableListOf()) { foldAttribute(it) }
 
     public open fun foldFile(file: File): File =
         file.copy(attrs = foldAttributes(file.attrs), items = file.items.mapTo(mutableListOf()) { foldItem(it) })

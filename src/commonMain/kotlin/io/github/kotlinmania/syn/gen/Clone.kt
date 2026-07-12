@@ -837,7 +837,7 @@ public fun PatColon.clone(): PatColon = PatColon(pat.clone(), colonToken)
 
 public fun LocalInit.clone(): LocalInit = LocalInit(eqToken, expr.clone(), diverge?.clone())
 
-internal fun <T> MutableList<T>.cloneList(): MutableList<T> =
+internal fun <T> List<T>.cloneList(): MutableList<T> =
     mapTo(mutableListOf()) { it }
 
 public fun PathTrait.clone(): PathTrait =

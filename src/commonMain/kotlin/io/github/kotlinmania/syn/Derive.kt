@@ -9,7 +9,7 @@ import io.github.kotlinmania.syn.token.Semi
 
 /** Data structure supplied to a derive macro. */
 public data class DeriveInput(
-    public var attrs: MutableList<Attribute>,
+    public var attrs: List<Attribute>,
     public var vis: Visibility,
     public var ident: Ident,
     public var generics: Generics,

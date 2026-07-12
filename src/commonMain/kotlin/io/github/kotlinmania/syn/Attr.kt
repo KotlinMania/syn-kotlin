@@ -97,13 +97,13 @@ public object AttributeParse {
         parseAttribute(input)
 }
 
-internal fun parseInnerAttributes(input: ParseStream): SynResult<MutableList<Attribute>> =
+internal fun parseInnerAttributes(input: ParseStream): SynResult<List<Attribute>> =
     mutableListOf<Attribute>()
         .also { attrs ->
             parseInner(input, attrs).getOrElse { return SynResult.failure(it) }
         }.let { SynResult.success(it) }
 
-internal fun parseOuterAttributes(input: ParseStream): SynResult<MutableList<Attribute>> {
+internal fun parseOuterAttributes(input: ParseStream): SynResult<List<Attribute>> {
     var attrs = mutableListOf<Attribute>()
     while (input.peek(PoundPeek)) {
         attrs.add(singleParseOuter(input).getOrElse { return SynResult.failure(it) })

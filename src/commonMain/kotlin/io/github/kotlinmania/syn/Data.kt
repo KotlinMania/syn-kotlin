@@ -13,7 +13,7 @@ import io.github.kotlinmania.syn.token.Paren
  * An enum variant.
  */
 public data class Variant(
-    public var attrs: MutableList<Attribute>,
+    public var attrs: List<Attribute>,
     public var ident: Ident,
     public var fields: Fields,
     public var discriminant: EqExpr?,
@@ -152,7 +152,7 @@ public object FieldsUnnamedParse {
 
 /** A field of a data class or enum variant. */
 public data class Field(
-    public var attrs: MutableList<Attribute>,
+    public var attrs: List<Attribute>,
     public var vis: Visibility,
     public var mutability: FieldMutability,
     public var ident: Ident?,
