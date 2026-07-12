@@ -1094,20 +1094,54 @@ private fun startsWithNoneGroup(input: ParseStream): Boolean =
     parseGroup(input.fork()).isSuccess
 
 private fun peekItemStatement(input: ParseStream): Boolean =
-    peekSignature(input) ||
-        input.peek(StructPeek) ||
-        input.peek(EnumPeek) ||
-        input.peek(TraitPeek) ||
-        input.peek(ImplPeek) ||
-        input.peek(UsePeek) ||
-        input.peek(ModPeek) ||
-        peekItemMacro(input)
+    input.fork().let { ahead ->
+        if (Attribute.parseOuter(ahead).isFailure) return@let false
+        ahead.peek(PubPeek) ||
+            ahead.peek(CratePeek) &&
+            !ahead.peek2(PathSepPeek) ||
+            ahead.peek(ExternPeek) ||
+            ahead.peek(UsePeek) ||
+            ahead.peek(StaticPeek) &&
+            (
+                ahead.peek2(MutPeek) ||
+                    ahead.peek2(IdentPeek) &&
+                    !(ahead.peek2(AsyncPeek) && (ahead.peek3(MovePeek) || ahead.peek3(OrPeek)))
+            ) ||
+            ahead.peek(ConstPeek) &&
+            !(
+                ahead.peek2(BracePeek) ||
+                    ahead.peek2(StaticPeek) ||
+                    ahead.peek2(AsyncPeek) &&
+                    !(ahead.peek3(UnsafePeek) || ahead.peek3(ExternPeek) || ahead.peek3(FnPeek)) ||
+                    ahead.peek2(MovePeek) ||
+                    ahead.peek2(OrPeek)
+            ) ||
+            ahead.peek(UnsafePeek) &&
+            !ahead.peek2(BracePeek) ||
+            ahead.peek(AsyncPeek) &&
+            (ahead.peek2(UnsafePeek) || ahead.peek2(ExternPeek) || ahead.peek2(FnPeek)) ||
+            ahead.peek(FnPeek) ||
+            ahead.peek(ModPeek) ||
+            ahead.peek(SynTypePeek) ||
+            ahead.peek(StructPeek) ||
+            ahead.peek(EnumPeek) ||
+            ahead.peek(UnionPeek) &&
+            ahead.peek2(IdentPeek) ||
+            ahead.peek(AutoPeek) &&
+            ahead.peek2(TraitPeek) ||
+            ahead.peek(TraitPeek) ||
+            ahead.peek(DefaultPeek) &&
+            (ahead.peek2(UnsafePeek) || ahead.peek2(ImplPeek)) ||
+            ahead.peek(ImplPeek) ||
+            ahead.peek(MacroPeek) ||
+            peekItemMacro(ahead)
+    }
 
 private fun peekItemMacro(input: ParseStream): Boolean {
     val ahead = input.fork()
     if (parseModStylePath(ahead).isFailure) return false
     if (!ahead.peek(NotPeek)) return false
-    return ahead.peek2(IdentPeek)
+    return ahead.peek2(IdentPeek) || ahead.peek2(TryPeek)
 }
 
 internal fun parsePatFull(input: ParseStream): SynResult<Pat> = PatParseImpl.parse(input)
