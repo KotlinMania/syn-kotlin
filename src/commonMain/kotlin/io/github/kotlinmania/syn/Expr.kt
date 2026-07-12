@@ -2262,31 +2262,31 @@ public object RangeLimitsParse {
 
 public object ArmParse {
     fun parse(input: ParseStream): SynResult<Arm> {
-        var attrs = mutableListOf<Attribute>()
-        var patResult = parsePatMultiWithLeadingVert(input)
-        if (patResult.isFailure) return SynResult.failure((patResult as SynResult.Failure).error)
-        var guard: IfExpr? =
+        val attrs = parseOuterAttributes(input).getOrElse { return SynResult.failure(it) }
+        val pat = parsePatMultiWithLeadingVert(input).getOrElse { return SynResult.failure(it) }
+        val guard =
             if (input.peek(IfPeek)) {
-                val ifToken = IfParse.parse(input).getOrThrow()
-                val guardExpr = parseExprFull(input)
-                if (guardExpr.isFailure) return SynResult.failure((guardExpr as SynResult.Failure).error)
-                IfExpr(ifToken, guardExpr.getOrThrow())
+                val ifToken = IfParse.parse(input).getOrElse { return SynResult.failure(it) }
+                val guardExpr = parseExprFull(input).getOrElse { return SynResult.failure(it) }
+                IfExpr(ifToken, guardExpr)
             } else {
                 null
             }
-        var fatArrowResult = FatArrowParse.parse(input)
-        if (fatArrowResult.isFailure) return SynResult.failure((fatArrowResult as SynResult.Failure).error)
-        var bodyResult = parseExprWithEarlierBoundaryRuleImpl(input)
-        if (bodyResult.isFailure) return SynResult.failure((bodyResult as SynResult.Failure).error)
-        var commaResult = CommaParse.parse(input)
-        var comma = if (commaResult.isSuccess) commaResult.getOrThrow() else null
+        val fatArrowToken = FatArrowParse.parse(input).getOrElse { return SynResult.failure(it) }
+        val body = parseExprFull(input).getOrElse { return SynResult.failure(it) }
+        val comma =
+            if (Classify.requiresCommaToBeMatchArm(body) && !input.isEmpty()) {
+                CommaParse.parse(input).getOrElse { return SynResult.failure(it) }
+            } else {
+                CommaParse.parse(input).getOrNull()
+            }
         return SynResult.success(
             Arm(
                 attrs,
-                patResult.getOrThrow(),
+                pat,
                 guard,
-                fatArrowResult.getOrThrow(),
-                bodyResult.getOrThrow(),
+                fatArrowToken,
+                body,
                 comma,
             ),
         )

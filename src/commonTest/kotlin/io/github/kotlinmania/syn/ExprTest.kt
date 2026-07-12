@@ -985,6 +985,14 @@ class ExprTest {
 
     @Test
     fun testPermutations() {
+        val guardedMatch = assertIs<Expr.Match>(parse("match x { _ if condition => {} }"))
+        val guardedArm = guardedMatch.arms.single()
+        assertIs<Pat.Wild>(guardedArm.pat)
+        val guard = assertNotNull(guardedArm.guard)
+        assertPathExpr(guard.expr, "condition")
+        assertIs<Expr.BlockExpr>(guardedArm.body)
+        assertPermutationRoundTrip(guardedMatch)
+
         var checked = 0
         iterExprPermutations(4) { original ->
             assertPermutationRoundTrip(original)
