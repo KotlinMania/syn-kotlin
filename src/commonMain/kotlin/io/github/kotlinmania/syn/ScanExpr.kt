@@ -864,56 +864,10 @@ private fun parseExprMatch(input: ParseStream): SynResult<Expr> {
     val bracesVal = braceResult.getOrThrow()
     val brace = bracesVal.token
     val content = bracesVal.content
-    val arms = mutableListOf<Arm>()
-    while (!content.isEmpty()) {
-        val armResult = parseMatchArm(content)
-        if (armResult.isFailure) break
-        arms.add(armResult.getOrThrow())
-    }
+    val arms = parseMultipleArms(content).getOrElse { return SynResult.failure(it) }
     content.finishChildBuffer()
     return SynResult.success(Expr.Match(mutableListOf(), matchToken, scrutinee.getOrThrow(), brace, arms))
 }
-
-private fun parseMatchArm(input: ParseStream): SynResult<Arm> {
-    val patResult = parsePatFull(input)
-    if (patResult.isFailure) {
-        return patResult.map { Arm(mutableListOf(), it, null, fatArrowSentinel(input), inferSentinel(input), null) }
-    }
-    val fatArrowResult = FatArrowParse.parse(input)
-    if (fatArrowResult.isFailure) {
-        return fatArrowResult.map {
-            Arm(mutableListOf(), patResult.getOrThrow(), null, it, inferSentinel(input), null)
-        }
-    }
-    val bodyResult = parseExprFull(input)
-    if (bodyResult.isFailure) {
-        return bodyResult.map {
-            Arm(mutableListOf(), patResult.getOrThrow(), null, fatArrowResult.getOrThrow(), it, null)
-        }
-    }
-    val commaResult = CommaParse.parse(input)
-    val comma = if (commaResult.isSuccess) commaResult.getOrThrow() else null
-    return SynResult.success(
-        Arm(mutableListOf(), patResult.getOrThrow(), null, fatArrowResult.getOrThrow(), bodyResult.getOrThrow(), comma),
-    )
-}
-
-private fun fatArrowSentinel(input: ParseStream): io.github.kotlinmania.syn.token.FatArrow =
-    io.github.kotlinmania.syn.token.FatArrow
-        .from(input.span())
-
-private fun inferSentinel(input: ParseStream): Expr =
-    Expr.Infer(
-        mutableListOf(),
-        io.github.kotlinmania.syn.token.Underscore
-            .from(input.span()),
-    )
-
-internal fun inferSentinelType(input: ParseStream): SynType =
-    SynType.Infer(
-        io.github.kotlinmania.syn.token.Underscore
-            .from(input.span()),
-    )
 
 private fun parseExprAsync(input: ParseStream): SynResult<Expr> {
     val asyncToken = AsyncParse.parse(input).getOrThrow()
