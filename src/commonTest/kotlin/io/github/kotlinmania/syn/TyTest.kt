@@ -223,6 +223,12 @@ class TyTest {
     }
 
     @Test
+    fun arrayAndSlicePrintingPreservesDelimiters() {
+        assertEquals("[X ; 0]", parseType("[X; 0]").toTokenStream().toString())
+        assertEquals("[X]", parseType("[X]").toTokenStream().toString())
+    }
+
+    @Test
     fun testBareForBoundTraitObject() {
         val ty = assertIs<SynType.TraitObject>(parseType("for<'a> Trait<'a>"))
         assertNull(ty.dynToken)
