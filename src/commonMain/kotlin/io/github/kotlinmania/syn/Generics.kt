@@ -107,7 +107,6 @@ public data class Generics(
         (ltToken ?: Lt.default()).toTokens(tokens)
         printGenericParams(params, tokens)
         (gtToken ?: Gt.default()).toTokens(tokens)
-        whereClause?.toTokens(tokens)
     }
 
     public fun copy(): Generics =
