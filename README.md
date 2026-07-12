@@ -309,7 +309,7 @@ be dual licensed as above, without any additional terms or conditions.
 
 ```kotlin
 dependencies {
-    implementation("io.github.kotlinmania:syn-kotlin:0.3.7")
+    implementation("io.github.kotlinmania:syn-kotlin:0.3.8")
 }
 ```
 

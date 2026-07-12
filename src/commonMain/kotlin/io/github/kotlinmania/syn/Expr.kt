@@ -1622,8 +1622,10 @@ public data class FieldValue(
     override fun toTokens(tokens: TokenStream) {
         for (attr in attrs) attr.toTokens(tokens)
         member.toTokens(tokens)
-        colonToken?.toTokens(tokens)
-        expr.toTokens(tokens)
+        colonToken?.let { colon ->
+            colon.toTokens(tokens)
+            expr.toTokens(tokens)
+        }
     }
 
     public fun deepCopy(): FieldValue = FieldValue(attrs.mapTo(mutableListOf()) { it.deepCopy() }, member, colonToken, expr.deepCopy())
