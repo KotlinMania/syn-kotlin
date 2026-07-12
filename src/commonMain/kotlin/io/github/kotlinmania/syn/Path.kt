@@ -19,7 +19,7 @@ import io.github.kotlinmania.syn.token.PathSep
 public class Path(
     public var leadingColon: PathSep?,
     public var segments: PathSegmentList,
-) {
+) : ToTokens {
     public companion object {
         public fun from(segment: Ident): Path {
             val path = Path(null, PathSegmentList())
@@ -130,7 +130,7 @@ public class Path(
         return true
     }
 
-    public fun toTokens(tokens: TokenStream) {
+    override fun toTokens(tokens: TokenStream) {
         printPath(tokens, this, PathStyle.AsWritten)
     }
 

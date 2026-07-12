@@ -11,8 +11,14 @@ import io.github.kotlinmania.syn.token.Underscore
 
 public typealias Ident = io.github.kotlinmania.procmacro2.Ident
 
-public fun Ident.copy(): Ident =
-    Ident.new(toString(), span())
+public fun Ident.copy(): Ident {
+    val spelling = toString()
+    return if (spelling.startsWith("r#")) {
+        Ident.newRaw(spelling.removePrefix("r#"), span())
+    } else {
+        Ident.new(spelling, span())
+    }
+}
 
 public fun Ident.clone(): Ident = copy()
 
