@@ -19,11 +19,13 @@ import io.github.kotlinmania.syn.token.Break
 import io.github.kotlinmania.syn.token.Dot
 import io.github.kotlinmania.syn.token.DotDot
 import io.github.kotlinmania.syn.token.Eq
+import io.github.kotlinmania.syn.token.Gt
 import io.github.kotlinmania.syn.token.If
 import io.github.kotlinmania.syn.token.Let
 import io.github.kotlinmania.syn.token.Lt
 import io.github.kotlinmania.syn.token.Or
 import io.github.kotlinmania.syn.token.Paren
+import io.github.kotlinmania.syn.token.PathSep
 import io.github.kotlinmania.syn.token.Plus
 import io.github.kotlinmania.syn.token.Question
 import io.github.kotlinmania.syn.token.Return
@@ -998,7 +1000,7 @@ class ExprTest {
             assertPermutationRoundTrip(original)
             checked += 1
         }
-        assertEquals(243_101, checked)
+        assertEquals(343_441, checked)
     }
 
     private fun assertPermutationRoundTrip(original: Expr) {
@@ -1083,6 +1085,33 @@ class ExprTest {
 
         iterExprPermutations(nextDepth) { expr ->
             emit(Expr.Let(mutableListOf(), Let.default(), wildPat(), Eq.default(), expr.deepCopy()))
+        }
+
+        iterExprPermutations(nextDepth) { expr ->
+            emit(
+                Expr.MethodCall(
+                    mutableListOf(),
+                    expr.deepCopy(),
+                    Dot.default(),
+                    Ident.new("method", Span.callSite()),
+                    null,
+                    Paren.default(),
+                    ExprList(),
+                ),
+            )
+            val args = GenericArgumentList()
+            args.pushValue(GenericArgument.TypeArg(typePath("T")))
+            emit(
+                Expr.MethodCall(
+                    mutableListOf(),
+                    expr.deepCopy(),
+                    Dot.default(),
+                    Ident.new("method", Span.callSite()),
+                    PathArguments.AngleBracketed(PathSep.default(), Lt.default(), args, Gt.default()),
+                    Paren.default(),
+                    ExprList(),
+                ),
+            )
         }
 
         emit(Expr.Range(mutableListOf(), null, RangeLimits.HalfOpen(DotDot.default()), null))

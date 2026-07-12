@@ -324,7 +324,13 @@ internal fun trailerHelperImpl(input: ParseStream, e: Expr, allowStruct: Boolean
             val memberResult = parseMemberImpl(input)
             if (memberResult.isFailure) return memberResult.asFailure()
             val member = memberResult.getOrThrow()
-            if (input.peek(ParenPeek) && member is Member.Named) {
+            val turbofish =
+                if (member is Member.Named && input.peek(PathSepPeek)) {
+                    PathArguments.AngleBracketed.parseTurbofish(input).getOrElse { return SynResult.failure(it) }
+                } else {
+                    null
+                }
+            if ((turbofish != null || input.peek(ParenPeek)) && member is Member.Named) {
                 val parens = parenthesized(input)
                 if (parens.isFailure) return parens.asFailure()
                 val parensVal = parens.getOrThrow()
@@ -341,7 +347,7 @@ internal fun trailerHelperImpl(input: ParseStream, e: Expr, allowStruct: Boolean
                     args.pushPunct(commaResult.getOrThrow())
                 }
                 content.finishChildBuffer()
-                current = Expr.MethodCall(mutableListOf(), current, dotToken, member.ident, null, paren, args)
+                current = Expr.MethodCall(mutableListOf(), current, dotToken, member.ident, turbofish, paren, args)
                 continue
             }
             current = Expr.Field(mutableListOf(), current, dotToken, member)
