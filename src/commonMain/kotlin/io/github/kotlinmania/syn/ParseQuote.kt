@@ -66,3 +66,11 @@ public fun parseQuoteStmtList(tokenStream: TokenStream): List<Stmt> {
         onFailure = { err: SynError -> throw err },
     )
 }
+
+public fun parseQuoteArmList(tokenStream: TokenStream): List<Arm> {
+    val result: SynResult<List<Arm>> = parse2(::parseMultipleArms, tokenStream)
+    return result.fold(
+        onSuccess = { arms: List<Arm> -> arms },
+        onFailure = { err: SynError -> throw err },
+    )
+}

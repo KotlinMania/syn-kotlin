@@ -996,6 +996,11 @@ private fun parseClosureOr(input: ParseStream): SynResult<io.github.kotlinmania.
     }
 
 internal fun parseStmtFull(input: ParseStream): SynResult<Stmt> {
+    // Parse outer attributes that may precede any statement kind.
+    // If the statement turns out to be an item, the item parser does its own
+    // attribute parsing, so we reset to the fork point for the item path.
+    val begin = input.fork()
+    val stmtAttrs = parseOuterAttributes(input).getOrElse { return SynResult.failure(it) }
     if (input.peek(LetPeek) && !startsWithNoneGroup(input)) {
         val letToken = LetParse.parse(input).getOrThrow()
         var pat = parsePatFull(input).getOrElse { return SynResult.failure(it) }
@@ -1012,7 +1017,7 @@ internal fun parseStmtFull(input: ParseStream): SynResult<Stmt> {
                     null
                 } else {
                     val diverge =
-                        if (input.peek(ElsePeek)) {
+                        if (!Classify.exprTrailingBrace(e.getOrThrow()) && input.peek(ElsePeek)) {
                             val elseToken = ElseParse.parse(input).getOrThrow()
                             val block = parseExprBlock(input)
                             if (block.isFailure) return block.asFailure()
@@ -1026,7 +1031,12 @@ internal fun parseStmtFull(input: ParseStream): SynResult<Stmt> {
                 null
             }
         val semi = SemiParse.parse(input).getOrThrow()
-        return SynResult.success(Stmt.Local(mutableListOf(), letToken, pat, init, semi))
+        return SynResult.success(Stmt.Local(stmtAttrs, letToken, pat, init, semi))
+    }
+    // If we consumed outer attrs but the statement is an item or expression,
+    // reset to before the attrs so the item/expr parsers see the full input.
+    if (stmtAttrs.isNotEmpty()) {
+        input.advanceTo(begin)
     }
     if (peekItemStatement(input)) {
         val item = ItemParse.parse(input)

@@ -123,4 +123,24 @@ class ParseQuoteTest {
         assertEquals(true, assertIs<Lit.Bool>(lit.lit).value.value())
         assertNull(expr.semiToken)
     }
+
+    @Test
+    fun testVecArm() {
+        val arms = parseQuoteArmList(tokens("true => 1, false => 0"))
+        assertEquals(2, arms.size)
+
+        val first = arms[0]
+        val firstPat = assertIs<Pat.Lit>(first.pat)
+        assertEquals(true, assertIs<Lit.Bool>(firstPat.lit).value.value())
+        val firstBody = assertIs<Expr.Lit>(first.body)
+        val firstVal = assertIs<Lit.Int>(firstBody.lit)
+        assertEquals("1", firstVal.value.base10Digits())
+
+        val second = arms[1]
+        val secondPat = assertIs<Pat.Lit>(second.pat)
+        assertEquals(false, assertIs<Lit.Bool>(secondPat.lit).value.value())
+        val secondBody = assertIs<Expr.Lit>(second.body)
+        val secondVal = assertIs<Lit.Int>(secondBody.lit)
+        assertEquals("0", secondVal.value.base10Digits())
+    }
 }
