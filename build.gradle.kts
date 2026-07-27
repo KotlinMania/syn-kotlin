@@ -19,6 +19,7 @@ import org.jetbrains.kotlin.gradle.targets.js.yarn.YarnRootEnvSpec
 import org.jetbrains.kotlin.gradle.targets.js.yarn.YarnRootExtension
 import org.jetbrains.kotlin.gradle.targets.wasm.nodejs.WasmNodeJsEnvSpec
 import org.jetbrains.kotlin.gradle.targets.wasm.yarn.WasmYarnRootEnvSpec
+import org.jetbrains.kotlin.gradle.targets.wasm.yarn.WasmYarnRootExtension
 import java.io.ByteArrayInputStream
 import java.net.URI
 import java.nio.file.Files
@@ -662,6 +663,21 @@ rootProject.extensions.configure<YarnRootExtension>("kotlinYarn") {
     // Dependabot bump of the store.
     resolution("webpack", webpackVersion)
     resolution("**/webpack", webpackVersion)
+}
+
+// @js-joda/core version sourced from kotlin-js-store/wasm/package.json — the
+// single source of truth that Dependabot updates natively. The wasm-js variant
+// of kotlinx-datetime declares @js-joda/core@3.2.0 as a transitive dependency;
+// without this resolution, kotlinWasmUpgradeYarnLock downgrades the package to
+// 3.2.0, overriding any Dependabot bump of the wasm store.
+@Suppress("UNCHECKED_CAST")
+val jsJodaCoreVersion: String =
+    (groovy.json.JsonSlurper().parse(rootProject.file("kotlin-js-store/wasm/package.json")) as Map<String, Any>)
+        .let { it["dependencies"] as Map<String, Any> }["@js-joda/core"] as String
+
+rootProject.extensions.configure<WasmYarnRootExtension>("kotlinWasmYarn") {
+    resolution("@js-joda/core", jsJodaCoreVersion)
+    resolution("**/@js-joda/core", jsJodaCoreVersion)
 }
 
 val patchedKarmaWebpackPackage =

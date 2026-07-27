@@ -127,21 +127,42 @@ private fun parseStmt(input: ParseStream, allowNoSemi: AllowNoSemi): SynResult<S
 }
 
 internal fun stmtLocal(input: ParseStream): SynResult<Stmt.Local> {
-    var letToken = LetParse.parse(input).getOrThrow()
-    var pat = parsePatFull(input).getOrElse { return SynResult.failure(it) }
+    val attrs = parseOuterAttributes(input).getOrElse { return SynResult.failure(it) }
+    val letToken = LetParse.parse(input).getOrElse { return SynResult.failure(it) }
+
+    var pat = parsePatSingle(input).getOrElse { return SynResult.failure(it) }
     if (input.peek(ColonPeek)) {
-        var colonToken = ColonParse.parse(input).getOrElse { return SynResult.failure(it) }
-        var ty = parseTypeFull(input).getOrElse { return SynResult.failure(it) }
+        val colonToken = ColonParse.parse(input).getOrElse { return SynResult.failure(it) }
+        val ty = parseTypeFull(input).getOrElse { return SynResult.failure(it) }
         pat = Pat.TypeAscription(mutableListOf(), pat, colonToken, ty)
     }
+
     var init: LocalInit? = null
     if (input.peek(EqPeek)) {
-        var eq = EqParse.parse(input).getOrThrow()
-        var expr = parseExprFull(input).getOrThrow()
-        init = LocalInit(eq, expr, null)
+        val eq = EqParse.parse(input).getOrElse { return SynResult.failure(it) }
+        val expr = parseExprFull(input).getOrElse { return SynResult.failure(it) }
+
+        var diverge: ElseExpr? = null
+        if (!Classify.exprTrailingBrace(expr) && input.peek(ElsePeek)) {
+            val elseToken = ElseParse.parse(input).getOrElse { return SynResult.failure(it) }
+            val bracesResult = braced(input).getOrElse { return SynResult.failure(it) }
+            val stmts = mutableListOf<Stmt>()
+            while (!bracesResult.content.isEmpty()) {
+                val stmtResult = parseStmtFull(bracesResult.content)
+                if (stmtResult.isFailure) {
+                    return SynResult.failure((stmtResult as SynResult.Failure).error)
+                }
+                stmts.add(stmtResult.getOrThrow())
+            }
+            bracesResult.content.finishChildBuffer()
+            val block = Block(bracesResult.token, stmts)
+            diverge = ElseExpr(elseToken, Expr.BlockExpr(mutableListOf(), null, block))
+        }
+
+        init = LocalInit(eq, expr, diverge)
     }
-    var semi = SemiParse.parse(input).getOrThrow()
-    return SynResult.success(Stmt.Local(mutableListOf(), letToken, pat, init, semi))
+    val semi = SemiParse.parse(input).getOrElse { return SynResult.failure(it) }
+    return SynResult.success(Stmt.Local(attrs, letToken, pat, init, semi))
 }
 
 internal fun stmtExpr(input: ParseStream): SynResult<Stmt.ExprStmt> {
