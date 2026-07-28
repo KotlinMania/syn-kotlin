@@ -3,8 +3,9 @@ package io.github.kotlinmania.syn
 
 /** Decimal accumulator used by integer-literal parsing. */
 public class BigInt private constructor(
-    private val digits: MutableList<Int> = mutableListOf(),
+    digits: List<Int> = emptyList(),
 ) {
+    private val digits: MutableList<Int> = digits.toMutableList()
     public companion object {
         public fun new(): BigInt = BigInt()
     }
