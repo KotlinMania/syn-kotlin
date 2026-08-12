@@ -6,6 +6,7 @@ public class BigInt private constructor(
     digits: List<Int> = emptyList(),
 ) {
     private val digits: MutableList<Int> = digits.toMutableList()
+
     public companion object {
         public fun new(): BigInt = BigInt()
     }
