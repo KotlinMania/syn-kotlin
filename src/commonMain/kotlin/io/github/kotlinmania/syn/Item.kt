@@ -21,6 +21,8 @@ import io.github.kotlinmania.syn.token.Unsafe
  */
 public sealed class Item : ToTokens {
     public companion object {
+        public fun parse(input: ParseStream): SynResult<Item> = ItemParse.parse(input)
+
         public fun from(input: DeriveInput): Item =
             when (val data = input.data) {
                 is Data.Struct ->
@@ -662,6 +664,10 @@ public data class Signature(
     public fun receiver(): FnArg.Receiver? {
         var first = inputs.first() ?: return null
         return first as? FnArg.Receiver
+    }
+
+    public companion object {
+        public fun parse(input: ParseStream): SynResult<Signature> = parseSignature(input)
     }
 }
 

@@ -665,7 +665,8 @@ public sealed class WherePredicate : ToTokens {
 
     public companion object {
         public fun parse(input: ParseStream): SynResult<WherePredicate> {
-            if (input.peek(LifetimePeek) && input.peek2(ColonPeek)) {
+            val lifetimePair = input.cursor().lifetime()
+            if (lifetimePair != null && ColonPeek.peek(lifetimePair.second)) {
                 val lifetime = LifetimeParse.parse(input).getOrElse { return SynResult.failure(it) }
                 val colonToken = ColonParse.parse(input).getOrElse { return SynResult.failure(it) }
                 val bounds = LifetimeList()
