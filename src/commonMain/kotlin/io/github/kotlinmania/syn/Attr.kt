@@ -105,7 +105,7 @@ internal fun parseInnerAttributes(input: ParseStream): SynResult<List<Attribute>
 
 internal fun parseOuterAttributes(input: ParseStream): SynResult<List<Attribute>> {
     var attrs = mutableListOf<Attribute>()
-    while (input.peek(PoundPeek)) {
+    while (input.peek(PoundPeek) && input.peek2(BracketPeek)) {
         attrs.add(singleParseOuter(input).getOrElse { return SynResult.failure(it) })
     }
     return SynResult.success(attrs)
@@ -115,7 +115,7 @@ internal fun parseInner(
     input: ParseStream,
     attrs: MutableList<Attribute>,
 ): SynResult<Unit> {
-    while (input.peek(PoundPeek) && input.peek2(NotPeek)) {
+    while (input.peek(PoundPeek) && input.peek2(NotPeek) && input.peek3(BracketPeek)) {
         attrs.add(singleParseInner(input).getOrElse { return SynResult.failure(it) })
     }
     return SynResult.success(Unit)

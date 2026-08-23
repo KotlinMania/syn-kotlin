@@ -7,8 +7,8 @@ import io.github.kotlinmania.syn.token.Semi
 import io.github.kotlinmania.syn.token.SynTypeToken
 import io.github.kotlinmania.syn.token.Underscore
 
-internal object ItemParse {
-    fun parse(input: ParseStream): SynResult<Item> {
+public object ItemParse {
+    public fun parse(input: ParseStream): SynResult<Item> {
         val begin = input.fork()
         val attrs = parseOuterAttributes(input).getOrElse { return SynResult.failure(it) }
         return parseRestOfItem(begin, attrs, input)
@@ -757,7 +757,7 @@ internal fun peekSignature(input: ParseStream): Boolean {
     return fork.peek(FnPeek)
 }
 
-private fun parseSignature(input: ParseStream): SynResult<Signature> {
+public fun parseSignature(input: ParseStream): SynResult<Signature> {
     val constness = ConstParse.parse(input).getOrNull()
     val asyncness = AsyncParse.parse(input).getOrNull()
     val unsafety = UnsafeParse.parse(input).getOrNull()
@@ -862,10 +862,10 @@ private fun parseFnArgs(content: ParseStream): SynResult<Pair<FnArgList, Variadi
     return SynResult.success(inputs to variadic)
 }
 
-internal fun parseReturnType(input: ParseStream): SynResult<ReturnType> =
+public fun parseReturnType(input: ParseStream): SynResult<ReturnType> =
     parseReturnType(input, allowPlus = true)
 
-internal fun parseReturnTypeWithoutPlus(input: ParseStream): SynResult<ReturnType> =
+public fun parseReturnTypeWithoutPlus(input: ParseStream): SynResult<ReturnType> =
     parseReturnType(input, allowPlus = false)
 
 private fun parseReturnType(input: ParseStream, allowPlus: Boolean): SynResult<ReturnType> {
@@ -888,12 +888,9 @@ private fun parseBlock(input: ParseStream): SynResult<Block> {
     val bracesResult = braced(input)
     if (bracesResult.isFailure) return asFailure(bracesResult)
     val bracesVal = bracesResult.getOrThrow()
-    val stmts = mutableListOf<Stmt>()
-    while (!bracesVal.content.isEmpty()) {
-        val stmtResult = parseStmtFull(bracesVal.content)
-        if (stmtResult.isFailure) return asFailure(stmtResult)
-        stmts.add(stmtResult.getOrThrow())
-    }
+    val stmtsResult = parseWithin(bracesVal.content)
+    if (stmtsResult.isFailure) return asFailure(stmtsResult)
+    val stmts = stmtsResult.getOrThrow()
     bracesVal.content.finishChildBuffer()
     return SynResult.success(Block(bracesVal.token, stmts))
 }
@@ -909,12 +906,9 @@ private fun parseRestOfFn(
     val bracesVal = bracesResult.getOrThrow()
     val itemAttrs = attrs.toMutableList()
     parseInner(bracesVal.content, itemAttrs).getOrElse { return SynResult.failure(it) }
-    val stmts = mutableListOf<Stmt>()
-    while (!bracesVal.content.isEmpty()) {
-        val stmtResult = parseStmtFull(bracesVal.content)
-        if (stmtResult.isFailure) return asFailure(stmtResult)
-        stmts.add(stmtResult.getOrThrow())
-    }
+    val stmtsResult = parseWithin(bracesVal.content)
+    if (stmtsResult.isFailure) return asFailure(stmtsResult)
+    val stmts = stmtsResult.getOrThrow()
     bracesVal.content.finishChildBuffer()
     return SynResult.success(Item.Fn(itemAttrs, vis, sig, Block(bracesVal.token, stmts)))
 }
@@ -1427,12 +1421,9 @@ private fun parseImplItemFn(
     if (bracesResult.isFailure) return asFailure(bracesResult)
     val bracesVal = bracesResult.getOrThrow()
     parseInner(bracesVal.content, attrs).getOrElse { return SynResult.failure(it) }
-    val stmts = mutableListOf<Stmt>()
-    while (!bracesVal.content.isEmpty()) {
-        val stmtResult = parseStmtFull(bracesVal.content)
-        if (stmtResult.isFailure) return asFailure(stmtResult)
-        stmts.add(stmtResult.getOrThrow())
-    }
+    val stmtsResult = parseWithin(bracesVal.content)
+    if (stmtsResult.isFailure) return asFailure(stmtsResult)
+    val stmts = stmtsResult.getOrThrow()
     bracesVal.content.finishChildBuffer()
 
     return SynResult.success(ImplItem.Fn(attrs, vis, defaultness, sig, Block(bracesVal.token, stmts)))

@@ -175,7 +175,7 @@ internal fun checkCastImpl(input: ParseStream): SynResult<Unit> {
 
 internal fun exprAttrsImpl(input: ParseStream): SynResult<List<Attribute>> {
     val attrs = mutableListOf<Attribute>()
-    while (!startsWithNoneGroup(input) && input.peek(PoundPeek) && !input.peek2(NotPeek)) {
+    while (!startsWithNoneGroup(input) && input.peek(PoundPeek) && input.peek2(BracketPeek)) {
         attrs.add(AttributeParse.parse(input).getOrElse { return SynResult.failure(it) })
     }
     return SynResult.success(attrs)
@@ -462,7 +462,7 @@ internal fun atomExprImpl(input: ParseStream, allowStruct: Boolean): SynResult<E
     if (input.peek(WhilePeek)) return parseExprWhile(input)
     if (input.peek(LoopPeek)) return parseExprLoop(input)
     if (input.peek(MatchPeek)) return parseExprMatch(input)
-    if (input.peek(AsyncPeek) && input.peek2(BracePeek)) return parseExprAsync(input)
+    if (input.peek(AsyncPeek) && (input.peek2(BracePeek) || (input.peek2(MovePeek) && input.peek3(BracePeek)))) return parseExprAsync(input)
     if (input.peek(UnsafePeek) && input.peek2(BracePeek)) return parseExprUnsafe(input)
     if (input.peek(ConstPeek) && input.peek2(BracePeek)) return parseExprConst(input)
     if (input.peek(BracePeek)) return parseExprBlock(input)
@@ -483,6 +483,18 @@ internal fun atomExprImpl(input: ParseStream, allowStruct: Boolean): SynResult<E
             }
         if (expr.isFailure) return expr.asFailure()
         return SynResult.success(Expr.Return(mutableListOf(), retToken.getOrThrow(), expr.getOrThrow()))
+    }
+    if (input.peek(YieldPeek)) {
+        val yldToken = YieldParse.parse(input)
+        if (yldToken.isFailure) return yldToken.asFailure()
+        val expr =
+            if (peekExprStart(input, allowStruct = true)) {
+                parseExprFull(input)
+            } else {
+                SynResult.success(null)
+            }
+        if (expr.isFailure) return expr.asFailure()
+        return SynResult.success(Expr.Yield(mutableListOf(), yldToken.getOrThrow(), expr.getOrThrow()))
     }
     if (input.peek(LetPeek)) return parseExprLetImpl(input, allowStruct)
     if (input.peek(BreakPeek)) {
@@ -513,7 +525,7 @@ internal fun atomExprImpl(input: ParseStream, allowStruct: Boolean): SynResult<E
         input.peek(OrPeek) ||
         input.peek(OrOrPeek) ||
         (input.peek(ConstPeek) && !input.peek2(BracePeek)) ||
-        (input.peek(AsyncPeek) && (input.peek2(OrPeek) || input.peek2(OrOrPeek) || input.peek2(MovePeek)))
+        (input.peek(AsyncPeek) && (input.peek2(OrPeek) || input.peek2(OrOrPeek) || (input.peek2(MovePeek) && !input.peek3(BracePeek))))
     ) {
         return parseExprClosure(input, allowStruct)
     }
@@ -791,12 +803,9 @@ private fun parseExprIf(input: ParseStream): SynResult<Expr> {
     val bracesVal = braceResult.getOrThrow()
     val brace = bracesVal.token
     val content = bracesVal.content
-    val stmts = mutableListOf<Stmt>()
-    while (!content.isEmpty()) {
-        val stmtResult = parseStmtFull(content)
-        if (stmtResult.isFailure) break
-        stmts.add(stmtResult.getOrThrow())
-    }
+    val stmtsResult = parseWithin(content)
+    if (stmtsResult.isFailure) return stmtsResult.asFailure()
+    val stmts = stmtsResult.getOrThrow()
     content.finishChildBuffer()
     val thenBranch = Block(brace, stmts)
     var elseBranch: ElseExpr? = null
@@ -812,12 +821,9 @@ private fun parseExprIf(input: ParseStream): SynResult<Expr> {
             val eBracesVal = elseBrace.getOrThrow()
             val eBrace = eBracesVal.token
             val eContent = eBracesVal.content
-            val eStmts = mutableListOf<Stmt>()
-            while (!eContent.isEmpty()) {
-                val s = parseStmtFull(eContent)
-                if (s.isFailure) break
-                eStmts.add(s.getOrThrow())
-            }
+            val eStmtsResult = parseWithin(eContent)
+            if (eStmtsResult.isFailure) return eStmtsResult.asFailure()
+            val eStmts = eStmtsResult.getOrThrow()
             eContent.finishChildBuffer()
             elseBranch = ElseExpr(elseToken, Expr.BlockExpr(mutableListOf(), null, Block(eBrace, eStmts)))
         }
@@ -834,12 +840,9 @@ internal fun parseExprWhile(input: ParseStream, label: Label? = null): SynResult
     val bracesVal = braceResult.getOrThrow()
     val brace = bracesVal.token
     val content = bracesVal.content
-    val stmts = mutableListOf<Stmt>()
-    while (!content.isEmpty()) {
-        val s = parseStmtFull(content)
-        if (s.isFailure) break
-        stmts.add(s.getOrThrow())
-    }
+    val stmtsResult = parseWithin(content)
+    if (stmtsResult.isFailure) return stmtsResult.asFailure()
+    val stmts = stmtsResult.getOrThrow()
     content.finishChildBuffer()
     return SynResult.success(Expr.While(mutableListOf(), label, whileToken, cond.getOrThrow(), Block(brace, stmts)))
 }
@@ -851,12 +854,9 @@ internal fun parseExprLoop(input: ParseStream, label: Label? = null): SynResult<
     val bracesVal = braceResult.getOrThrow()
     val brace = bracesVal.token
     val content = bracesVal.content
-    val stmts = mutableListOf<Stmt>()
-    while (!content.isEmpty()) {
-        val s = parseStmtFull(content)
-        if (s.isFailure) break
-        stmts.add(s.getOrThrow())
-    }
+    val stmtsResult = parseWithin(content)
+    if (stmtsResult.isFailure) return stmtsResult.asFailure()
+    val stmts = stmtsResult.getOrThrow()
     content.finishChildBuffer()
     return SynResult.success(Expr.Loop(mutableListOf(), label, loopToken, Block(brace, stmts)))
 }
@@ -884,12 +884,9 @@ private fun parseExprAsync(input: ParseStream): SynResult<Expr> {
     val bracesVal = braceResult.getOrThrow()
     val brace = bracesVal.token
     val content = bracesVal.content
-    val stmts = mutableListOf<Stmt>()
-    while (!content.isEmpty()) {
-        val s = parseStmtFull(content)
-        if (s.isFailure) break
-        stmts.add(s.getOrThrow())
-    }
+    val stmtsResult = parseWithin(content)
+    if (stmtsResult.isFailure) return stmtsResult.asFailure()
+    val stmts = stmtsResult.getOrThrow()
     content.finishChildBuffer()
     return SynResult.success(Expr.Async(mutableListOf(), asyncToken, capture, Block(brace, stmts)))
 }
@@ -901,12 +898,9 @@ private fun parseExprUnsafe(input: ParseStream): SynResult<Expr> {
     val bracesVal = braceResult.getOrThrow()
     val brace = bracesVal.token
     val content = bracesVal.content
-    val stmts = mutableListOf<Stmt>()
-    while (!content.isEmpty()) {
-        val s = parseStmtFull(content)
-        if (s.isFailure) break
-        stmts.add(s.getOrThrow())
-    }
+    val stmtsResult = parseWithin(content)
+    if (stmtsResult.isFailure) return stmtsResult.asFailure()
+    val stmts = stmtsResult.getOrThrow()
     content.finishChildBuffer()
     return SynResult.success(Expr.Unsafe(mutableListOf(), unsafeToken, Block(brace, stmts)))
 }
@@ -918,12 +912,9 @@ private fun parseExprConst(input: ParseStream): SynResult<Expr> {
     val bracesVal = braceResult.getOrThrow()
     val brace = bracesVal.token
     val content = bracesVal.content
-    val stmts = mutableListOf<Stmt>()
-    while (!content.isEmpty()) {
-        val s = parseStmtFull(content)
-        if (s.isFailure) break
-        stmts.add(s.getOrThrow())
-    }
+    val stmtsResult = parseWithin(content)
+    if (stmtsResult.isFailure) return stmtsResult.asFailure()
+    val stmts = stmtsResult.getOrThrow()
     content.finishChildBuffer()
     return SynResult.success(Expr.Const(mutableListOf(), constToken, Block(brace, stmts)))
 }
@@ -934,12 +925,9 @@ internal fun parseExprBlock(input: ParseStream): SynResult<Expr> {
     val bracesVal = braceResult.getOrThrow()
     val brace = bracesVal.token
     val content = bracesVal.content
-    val stmts = mutableListOf<Stmt>()
-    while (!content.isEmpty()) {
-        val s = parseStmtFull(content)
-        if (s.isFailure) break
-        stmts.add(s.getOrThrow())
-    }
+    val stmtsResult = parseWithin(content)
+    if (stmtsResult.isFailure) return stmtsResult.asFailure()
+    val stmts = stmtsResult.getOrThrow()
     content.finishChildBuffer()
     return SynResult.success(Expr.BlockExpr(mutableListOf(), null, Block(brace, stmts)))
 }

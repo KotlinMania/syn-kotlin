@@ -74,3 +74,12 @@ public fun parseQuoteArmList(tokenStream: TokenStream): List<Arm> {
         onFailure = { err: SynError -> throw err },
     )
 }
+
+public fun parseQuoteWherePredicate(tokenStream: TokenStream): WherePredicate {
+    val result: SynResult<WherePredicate> = parse2(WherePredicate.Companion::parse, tokenStream)
+    return result.fold(
+        onSuccess = { pred: WherePredicate -> pred },
+        onFailure = { err: SynError -> throw err },
+    )
+}
+

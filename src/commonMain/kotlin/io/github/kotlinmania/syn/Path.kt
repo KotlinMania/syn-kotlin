@@ -559,7 +559,8 @@ internal fun parseAngleBracketedPathArguments(input: ParseStream): SynResult<Pat
 
 public object GenericArgumentParse {
     fun parse(input: ParseStream): SynResult<GenericArgument> {
-        if (input.peek(LifetimePeek) && !input.peek2(PlusPeek)) {
+        val lifetimePair = input.cursor().lifetime()
+        if (lifetimePair != null && !PlusPeek.peek(lifetimePair.second)) {
             return SynResult.success(GenericArgument.LifetimeArg(LifetimeParse.parse(input).getOrElse { return SynResult.failure(it) }))
         }
 
