@@ -5,9 +5,9 @@ Based on AST analysis, here are the concrete next steps.
 ## Summary
 
 - **Files Present:** 52/55 (94.5%)
-- **Function parity:** 1071/1083 matched (target 3378) — 98.9%
+- **Function parity:** 1071/1083 matched (target 3382) — 98.9%
 - **Class/type parity:** 108/121 matched (target 823) — 89.3%
-- **Combined symbol parity:** 1179/1204 matched (target 4201) — 97.9%
+- **Combined symbol parity:** 1179/1204 matched (target 4205) — 97.9%
 - **Average inline-code cosine:** 0.55 (function body across 52 matched files)
 - **Average documentation cosine:** 0.30 (doc text across 52 matched files)
 - **Cheat-zeroed Files:** 4
@@ -202,10 +202,10 @@ Every matched file is listed below with function and type symbol parity.
 ### 14. item
 
 - **Target:** `syn.Item`
-- **Similarity:** 0.57
+- **Similarity:** 0.58
 - **Dependents:** 2
-- **Priority Score:** 2003204.4
-- **Functions:** 28/28 matched (target 131)
+- **Priority Score:** 2003204.2
+- **Functions:** 28/28 matched (target 133)
 - **Missing functions:** _none_
 - **Types:** 4/4 matched (target 65)
 - **Missing types:** _none_
@@ -422,7 +422,7 @@ Every matched file is listed below with function and type symbol parity.
 - **Similarity:** 0.00
 - **Dependents:** 0
 - **Priority Score:** 20210.0
-- **Functions:** 0/1 matched (target 7)
+- **Functions:** 0/1 matched (target 9)
 - **Missing functions:** `parse`
 - **Types:** 0/1 matched (target 0)
 - **Missing types:** `ParseQuote`
