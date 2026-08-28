@@ -5,6 +5,6 @@ import Syn
 struct SynExportTests {
     @Test("Verify Syn module imports cleanly")
     func smokeTest() {
-        #expect(true)
+        #expect(Bool(true))
     }
 }
