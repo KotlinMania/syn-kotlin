@@ -26,28 +26,33 @@ public data class DeriveInput(
         ident.toTokens(tokens)
         generics.toTokens(tokens)
         when (val data = data) {
-            is Data.Struct ->
+            is Data.Struct -> {
                 when (val fields = data.value.fields) {
                     is Fields.Named -> {
                         generics.whereClause?.toTokens(tokens)
                         fields.toTokens(tokens)
                     }
+
                     is Fields.Unnamed -> {
                         fields.toTokens(tokens)
                         generics.whereClause?.toTokens(tokens)
                         TokensOrDefault(data.value.semiToken, Semi::default).toTokens(tokens)
                     }
+
                     Fields.Unit -> {
                         generics.whereClause?.toTokens(tokens)
                         TokensOrDefault(data.value.semiToken, Semi::default).toTokens(tokens)
                     }
                 }
+            }
+
             is Data.Enum -> {
                 generics.whereClause?.toTokens(tokens)
                 data.value.braceToken.surround(tokens) { inner ->
                     data.value.variants.toTokens(inner)
                 }
             }
+
             is Data.Union -> {
                 generics.whereClause?.toTokens(tokens)
                 data.value.fields.toTokens(tokens)

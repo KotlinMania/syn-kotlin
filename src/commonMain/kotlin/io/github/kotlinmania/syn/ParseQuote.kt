@@ -82,4 +82,3 @@ public fun parseQuoteWherePredicate(tokenStream: TokenStream): WherePredicate {
         onFailure = { err: SynError -> throw err },
     )
 }
-

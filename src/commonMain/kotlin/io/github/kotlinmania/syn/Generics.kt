@@ -38,19 +38,25 @@ public data class Generics(
                 val lookahead = input.lookahead1()
                 val param =
                     when {
-                        lookahead.peek(LifetimePeek) ->
+                        lookahead.peek(LifetimePeek) -> {
                             GenericParam.LifetimeParam.parseWithAttrs(attrs, input).getOrElse {
                                 return SynResult.failure(it)
                             }
-                        lookahead.peek(IdentPeek) ->
+                        }
+
+                        lookahead.peek(IdentPeek) -> {
                             GenericParam.TypeParam.parseWithAttrs(attrs, input).getOrElse {
                                 return SynResult.failure(it)
                             }
-                        lookahead.peek(ConstPeek) ->
+                        }
+
+                        lookahead.peek(ConstPeek) -> {
                             GenericParam.ConstParam.parseWithAttrs(attrs, input).getOrElse {
                                 return SynResult.failure(it)
                             }
-                        input.peek(UnderscorePeek) ->
+                        }
+
+                        input.peek(UnderscorePeek) -> {
                             GenericParam.TypeParam(
                                 attrs,
                                 identFromUnderscore(UnderscoreParse.parse(input).getOrElse { return SynResult.failure(it) }),
@@ -59,7 +65,11 @@ public data class Generics(
                                 null,
                                 null,
                             )
-                        else -> return SynResult.failure(lookahead.error())
+                        }
+
+                        else -> {
+                            return SynResult.failure(lookahead.error())
+                        }
                     }
                 params.pushValue(param)
                 if (input.peek(GenericsGtPeek)) break
@@ -313,22 +323,27 @@ private fun Generics.implGenerics(): Generics {
     var implGenerics = Generics(ltToken, GenericParamList(), gtToken)
     for ((value, _) in params.pairsList()) {
         when (value) {
-            is GenericParam.LifetimeParam ->
+            is GenericParam.LifetimeParam -> {
                 implGenerics.params.push(value.deepCopy()) { Comma(Span.callSite()) }
-            is GenericParam.TypeParam ->
+            }
+
+            is GenericParam.TypeParam -> {
                 implGenerics.params.push(
                     value.deepCopy().also {
                         it.eqToken = null
                         it.default = null
                     },
                 ) { Comma(Span.callSite()) }
-            is GenericParam.ConstParam ->
+            }
+
+            is GenericParam.ConstParam -> {
                 implGenerics.params.push(
                     value.deepCopy().also {
                         it.eqToken = null
                         it.default = null
                     },
                 ) { Comma(Span.callSite()) }
+            }
         }
     }
     return implGenerics
@@ -338,7 +353,7 @@ private fun Generics.typeGenerics(): Generics {
     var typeGenerics = Generics(ltToken, GenericParamList(), gtToken)
     for ((value, _) in params.pairsList()) {
         when (value) {
-            is GenericParam.LifetimeParam ->
+            is GenericParam.LifetimeParam -> {
                 typeGenerics.params.push(
                     GenericParam.LifetimeParam(
                         mutableListOf(),
@@ -347,7 +362,9 @@ private fun Generics.typeGenerics(): Generics {
                         LifetimeList(),
                     ),
                 ) { Comma(Span.callSite()) }
-            is GenericParam.TypeParam ->
+            }
+
+            is GenericParam.TypeParam -> {
                 typeGenerics.params.push(
                     GenericParam.TypeParam(
                         mutableListOf(),
@@ -358,13 +375,16 @@ private fun Generics.typeGenerics(): Generics {
                         null,
                     ),
                 ) { Comma(Span.callSite()) }
-            is GenericParam.ConstParam ->
+            }
+
+            is GenericParam.ConstParam -> {
                 typeGenerics.params.push(
                     value.deepCopy().also {
                         it.eqToken = null
                         it.default = null
                     },
                 ) { Comma(Span.callSite()) }
+            }
         }
     }
     return typeGenerics
@@ -380,10 +400,14 @@ private fun Generics.turbofishArguments(): GenericArgumentList {
     for ((value, _) in params.pairsList()) {
         when (value) {
             is GenericParam.LifetimeParam -> {}
-            is GenericParam.TypeParam ->
+
+            is GenericParam.TypeParam -> {
                 args.push(GenericArgument.TypeArg(SynType.Path(null, Path.from(value.ident.copy())))) { Comma(Span.callSite()) }
-            is GenericParam.ConstParam ->
+            }
+
+            is GenericParam.ConstParam -> {
                 args.push(GenericArgument.ConstArg(Expr.Path(mutableListOf(), null, Path.from(value.ident.copy())))) { Comma(Span.callSite()) }
+            }
         }
     }
     return args
@@ -401,6 +425,7 @@ private fun printGenericParams(params: GenericParamList, tokens: TokenStream) {
     for ((value, punctuation) in params.pairsList()) {
         when (value) {
             is GenericParam.LifetimeParam -> {}
+
             is GenericParam.TypeParam -> {
                 if (!trailingOrEmpty) {
                     Comma.default().toTokens(tokens)
@@ -410,6 +435,7 @@ private fun printGenericParams(params: GenericParamList, tokens: TokenStream) {
                 punctuation?.toTokens(tokens)
                 trailingOrEmpty = punctuation != null
             }
+
             is GenericParam.ConstParam -> {
                 if (!trailingOrEmpty) {
                     Comma.default().toTokens(tokens)
@@ -431,13 +457,21 @@ public sealed class GenericParam : ToTokens {
             val attrs = parseOuterAttributes(input).getOrElse { return SynResult.failure(it) }
             val lookahead = input.lookahead1()
             return when {
-                lookahead.peek(IdentPeek) ->
+                lookahead.peek(IdentPeek) -> {
                     GenericParam.TypeParam.parseWithAttrs(attrs, input)
-                lookahead.peek(LifetimePeek) ->
+                }
+
+                lookahead.peek(LifetimePeek) -> {
                     GenericParam.LifetimeParam.parseWithAttrs(attrs, input)
-                lookahead.peek(ConstPeek) ->
+                }
+
+                lookahead.peek(ConstPeek) -> {
                     GenericParam.ConstParam.parseWithAttrs(attrs, input)
-                else -> SynResult.failure(lookahead.error())
+                }
+
+                else -> {
+                    SynResult.failure(lookahead.error())
+                }
             }
         }
     }
@@ -641,8 +675,11 @@ public data class WhereClause(
 
 internal fun printConstArgument(expr: Expr, tokens: TokenStream) {
     when (expr) {
-        is Expr.Lit -> expr.toTokens(tokens)
-        is Expr.Path ->
+        is Expr.Lit -> {
+            expr.toTokens(tokens)
+        }
+
+        is Expr.Path -> {
             if (expr.attrs.isEmpty() && expr.qself == null && expr.path.getIdent() != null) {
                 expr.toTokens(tokens)
             } else {
@@ -650,13 +687,19 @@ internal fun printConstArgument(expr: Expr, tokens: TokenStream) {
                     printExpr(expr, inner)
                 }
             }
+        }
+
         is Expr.BlockExpr,
         is Expr.Verbatim,
-        -> expr.toTokens(tokens)
-        else ->
+        -> {
+            expr.toTokens(tokens)
+        }
+
+        else -> {
             io.github.kotlinmania.syn.token.Brace.default().surround(tokens) { inner ->
                 printExpr(expr, inner)
             }
+        }
     }
 }
 
@@ -1068,8 +1111,10 @@ public sealed class CapturedParam : ToTokens {
         public fun parse(input: ParseStream): SynResult<CapturedParam> {
             val lookahead = input.lookahead1()
             return when {
-                lookahead.peek(LifetimePeek) ->
+                lookahead.peek(LifetimePeek) -> {
                     LifetimeParse.parse(input).map { Lifetime(it) }
+                }
+
                 lookahead.peek(IdentPeek) || input.peek(SelfTypePeek) -> {
                     val ident =
                         if (input.peek(SelfTypePeek)) {
@@ -1079,7 +1124,10 @@ public sealed class CapturedParam : ToTokens {
                         }
                     SynResult.success(Ident(ident))
                 }
-                else -> SynResult.failure(lookahead.error())
+
+                else -> {
+                    SynResult.failure(lookahead.error())
+                }
             }
         }
     }

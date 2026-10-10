@@ -102,11 +102,15 @@ class MetaTest {
                         kind = lit.value()
                         SynResult.success(Unit)
                     }
+
                     meta.path.isIdent("hot") -> {
                         hot = true
                         SynResult.success(Unit)
                     }
-                    else -> SynResult.failure(meta.error("unsupported tea property"))
+
+                    else -> {
+                        SynResult.failure(meta.error("unsupported tea property"))
+                    }
                 }
             }
 

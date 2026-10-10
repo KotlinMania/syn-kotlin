@@ -56,6 +56,7 @@ internal fun continueParsingEarlyImpl(expr: Expr): Boolean =
         is Expr.Const,
         is Expr.BlockExpr,
         -> false
+
         else -> true
     }
 
@@ -157,7 +158,7 @@ internal fun peekPrecedenceImpl(input: ParseStream): Precedence {
 internal fun checkCastImpl(input: ParseStream): SynResult<Unit> {
     val kind =
         when {
-            input.peek(DotPeek) && !input.peek(DotDotPeek) ->
+            input.peek(DotPeek) && !input.peek(DotDotPeek) -> {
                 if (input.peek2(AwaitPeek)) {
                     "`.await`"
                 } else if (input.peek2(IdentPeek) && (input.peek3(ParenPeek) || input.peek3(PathSepPeek))) {
@@ -165,10 +166,23 @@ internal fun checkCastImpl(input: ParseStream): SynResult<Unit> {
                 } else {
                     "a field access"
                 }
-            input.peek(QuestionPeek) -> "`?`"
-            input.peek(BracketPeek) -> "indexing"
-            input.peek(ParenPeek) -> "a function call"
-            else -> return SynResult.success(Unit)
+            }
+
+            input.peek(QuestionPeek) -> {
+                "`?`"
+            }
+
+            input.peek(BracketPeek) -> {
+                "indexing"
+            }
+
+            input.peek(ParenPeek) -> {
+                "a function call"
+            }
+
+            else -> {
+                return SynResult.success(Unit)
+            }
         }
     return SynResult.failure(input.error("casts cannot be followed by $kind"))
 }
@@ -787,11 +801,15 @@ private fun parseRangeLimits(input: ParseStream): SynResult<RangeLimits> =
             val dotDotEqResult = DotDotEqParse.parse(input)
             if (dotDotEqResult.isFailure) dotDotEqResult.asFailure() else SynResult.success(RangeLimits.Closed(dotDotEqResult.getOrThrow()))
         }
+
         input.peek(DotDotPeek) -> {
             val dotDotResult = DotDotParse.parse(input)
             if (dotDotResult.isFailure) dotDotResult.asFailure() else SynResult.success(RangeLimits.HalfOpen(dotDotResult.getOrThrow()))
         }
-        else -> SynResult.failure(input.error("expected range limits"))
+
+        else -> {
+            SynResult.failure(input.error("expected range limits"))
+        }
     }
 
 private fun parseExprIf(input: ParseStream): SynResult<Expr> {
@@ -1051,49 +1069,49 @@ internal fun parseStmtFull(input: ParseStream): SynResult<Stmt> {
 private fun startsWithNoneGroup(input: ParseStream): Boolean =
     parseGroup(input.fork()).isSuccess
 
-private fun peekItemStatement(input: ParseStream): Boolean =
-    input.fork().let { ahead ->
-        if (Attribute.parseOuter(ahead).isFailure) return@let false
-        ahead.peek(PubPeek) ||
-            ahead.peek(CratePeek) &&
-            !ahead.peek2(PathSepPeek) ||
-            ahead.peek(ExternPeek) ||
-            ahead.peek(UsePeek) ||
-            ahead.peek(StaticPeek) &&
-            (
-                ahead.peek2(MutPeek) ||
-                    ahead.peek2(IdentPeek) &&
-                    !(ahead.peek2(AsyncPeek) && (ahead.peek3(MovePeek) || ahead.peek3(OrPeek)))
-            ) ||
-            ahead.peek(ConstPeek) &&
-            !(
-                ahead.peek2(BracePeek) ||
-                    ahead.peek2(StaticPeek) ||
-                    ahead.peek2(AsyncPeek) &&
-                    !(ahead.peek3(UnsafePeek) || ahead.peek3(ExternPeek) || ahead.peek3(FnPeek)) ||
-                    ahead.peek2(MovePeek) ||
-                    ahead.peek2(OrPeek)
-            ) ||
-            ahead.peek(UnsafePeek) &&
-            !ahead.peek2(BracePeek) ||
-            ahead.peek(AsyncPeek) &&
-            (ahead.peek2(UnsafePeek) || ahead.peek2(ExternPeek) || ahead.peek2(FnPeek)) ||
-            ahead.peek(FnPeek) ||
-            ahead.peek(ModPeek) ||
-            ahead.peek(SynTypePeek) ||
-            ahead.peek(StructPeek) ||
-            ahead.peek(EnumPeek) ||
-            ahead.peek(UnionPeek) &&
-            ahead.peek2(IdentPeek) ||
-            ahead.peek(AutoPeek) &&
-            ahead.peek2(TraitPeek) ||
-            ahead.peek(TraitPeek) ||
-            ahead.peek(DefaultPeek) &&
-            (ahead.peek2(UnsafePeek) || ahead.peek2(ImplPeek)) ||
-            ahead.peek(ImplPeek) ||
-            ahead.peek(MacroPeek) ||
-            peekItemMacro(ahead)
-    }
+private fun peekItemStatement(input: ParseStream): Boolean {
+    val ahead = input.fork()
+    if (Attribute.parseOuter(ahead).isFailure) return false
+    return ahead.peek(PubPeek) ||
+        ahead.peek(CratePeek) &&
+        !ahead.peek2(PathSepPeek) ||
+        ahead.peek(ExternPeek) ||
+        ahead.peek(UsePeek) ||
+        ahead.peek(StaticPeek) &&
+        (
+            ahead.peek2(MutPeek) ||
+                ahead.peek2(IdentPeek) &&
+                !(ahead.peek2(AsyncPeek) && (ahead.peek3(MovePeek) || ahead.peek3(OrPeek)))
+        ) ||
+        ahead.peek(ConstPeek) &&
+        !(
+            ahead.peek2(BracePeek) ||
+                ahead.peek2(StaticPeek) ||
+                ahead.peek2(AsyncPeek) &&
+                !(ahead.peek3(UnsafePeek) || ahead.peek3(ExternPeek) || ahead.peek3(FnPeek)) ||
+                ahead.peek2(MovePeek) ||
+                ahead.peek2(OrPeek)
+        ) ||
+        ahead.peek(UnsafePeek) &&
+        !ahead.peek2(BracePeek) ||
+        ahead.peek(AsyncPeek) &&
+        (ahead.peek2(UnsafePeek) || ahead.peek2(ExternPeek) || ahead.peek2(FnPeek)) ||
+        ahead.peek(FnPeek) ||
+        ahead.peek(ModPeek) ||
+        ahead.peek(SynTypePeek) ||
+        ahead.peek(StructPeek) ||
+        ahead.peek(EnumPeek) ||
+        ahead.peek(UnionPeek) &&
+        ahead.peek2(IdentPeek) ||
+        ahead.peek(AutoPeek) &&
+        ahead.peek2(TraitPeek) ||
+        ahead.peek(TraitPeek) ||
+        ahead.peek(DefaultPeek) &&
+        (ahead.peek2(UnsafePeek) || ahead.peek2(ImplPeek)) ||
+        ahead.peek(ImplPeek) ||
+        ahead.peek(MacroPeek) ||
+        peekItemMacro(ahead)
+}
 
 private fun peekItemMacro(input: ParseStream): Boolean {
     val ahead = input.fork()
@@ -1620,11 +1638,15 @@ private fun ambigTyImpl(
                 constToken = ConstParse.parse(input).getOrElse { return SynResult.failure(it) }
                 mutability = null
             }
+
             input.peek(MutPeek) -> {
                 constToken = null
                 mutability = MutParse.parse(input).getOrElse { return SynResult.failure(it) }
             }
-            else -> return SynResult.failure(input.error("expected `const` or `mut`"))
+
+            else -> {
+                return SynResult.failure(input.error("expected `const` or `mut`"))
+            }
         }
         val inner = parseTypeWithoutPlus(input)
         if (inner.isFailure) return inner.asFailure()
@@ -1682,13 +1704,15 @@ private fun parenthesizedTypeAsBound(
     ty: SynType,
 ): TypeParamBound? =
     when (ty) {
-        is SynType.Path ->
+        is SynType.Path -> {
             if (ty.qself == null) {
                 TypeParamBound.Trait(parenToken, TraitBoundModifier.None, null, ty.path)
             } else {
                 null
             }
-        is SynType.TraitObject ->
+        }
+
+        is SynType.TraitObject -> {
             if (ty.dynToken == null && ty.bounds.size == 1 && !ty.bounds.trailingPunct()) {
                 when (val bound = ty.bounds.first()) {
                     is TypeParamBound.Trait -> bound.copy(parenToken = parenToken)
@@ -1698,7 +1722,11 @@ private fun parenthesizedTypeAsBound(
             } else {
                 null
             }
-        else -> null
+        }
+
+        else -> {
+            null
+        }
     }
 
 private fun parseOuterTraitObjectBounds(

@@ -266,22 +266,47 @@ private fun Expr.toTokensAsRangeStart(tokens: TokenStream) {
 private fun Expr.needsParensAsConditionJumpValue(): Boolean {
     if (canConsumeTrailingBraceAsStruct()) return true
     return when (this) {
-        is Expr.Assign -> true
-        is Expr.Binary -> true
-        is Expr.BlockExpr -> attrs.isEmpty() && label == null
+        is Expr.Assign -> {
+            true
+        }
+
+        is Expr.Binary -> {
+            true
+        }
+
+        is Expr.BlockExpr -> {
+            attrs.isEmpty() && label == null
+        }
+
         is Expr.Break -> {
             val e = expr
             e !is Expr.BlockExpr || e.attrs.isNotEmpty() || label != null
         }
-        is Expr.Let -> true
-        is Expr.Path -> true
+
+        is Expr.Let -> {
+            true
+        }
+
+        is Expr.Path -> {
+            true
+        }
+
         is Expr.Range -> {
             val e = end
             e == null || e.canConsumeTrailingBraceAsStruct()
         }
-        is Expr.Return -> expr == null
-        is Expr.Yield -> expr == null
-        else -> false
+
+        is Expr.Return -> {
+            expr == null
+        }
+
+        is Expr.Yield -> {
+            expr == null
+        }
+
+        else -> {
+            false
+        }
     }
 }
 
@@ -737,16 +762,27 @@ private fun Expr.needsParens(parentPrecedence: Precedence, position: ExprPositio
     if (childPrecedence > parentPrecedence) return false
 
     return when (position) {
-        ExprPosition.LeftOperand ->
+        ExprPosition.LeftOperand -> {
             parentPrecedence == Precedence.Assign ||
                 parentPrecedence == Precedence.Range ||
                 parentPrecedence == Precedence.Compare
-        ExprPosition.RightOperand ->
+        }
+
+        ExprPosition.RightOperand -> {
             parentPrecedence != Precedence.Assign
-        ExprPosition.PrefixOperand ->
+        }
+
+        ExprPosition.PrefixOperand -> {
             childPrecedence <= Precedence.Prefix
-        ExprPosition.Condition -> false
-        ExprPosition.PostfixBase -> false
+        }
+
+        ExprPosition.Condition -> {
+            false
+        }
+
+        ExprPosition.PostfixBase -> {
+            false
+        }
     }
 }
 
@@ -761,6 +797,7 @@ private fun binOpCanBeginExpr(op: BinOp): Boolean =
         is BinOp.Shl,
         is BinOp.Lt,
         -> true
+
         else -> false
     }
 
@@ -1970,22 +2007,28 @@ public fun atomLabeled(input: ParseStream): SynResult<Expr> {
                 if (whileResult.isFailure) return whileResult
                 whileResult.getOrThrow()
             }
+
             input.peek(ForPeek) -> {
                 val forResult = parseExprForLabeled(input)
                 if (forResult.isFailure) return forResult
                 forResult.getOrThrow()
             }
+
             input.peek(LoopPeek) -> {
                 val loopResult = parseExprLoopLabeled(input)
                 if (loopResult.isFailure) return loopResult
                 loopResult.getOrThrow()
             }
+
             input.peek(BracePeek) -> {
                 val blockResult = parseExprBlock(input)
                 if (blockResult.isFailure) return blockResult
                 blockResult.getOrThrow()
             }
-            else -> return SynResult.failure(input.error("expected loop or block expression"))
+
+            else -> {
+                return SynResult.failure(input.error("expected loop or block expression"))
+            }
         }
     return when (expr) {
         is Expr.While -> SynResult.success(expr.copy(label = label))

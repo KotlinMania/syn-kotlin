@@ -184,8 +184,14 @@ public data class FixupContext(
                 is Expr.Let,
                 is Expr.Return,
                 is Expr.Yield,
-                -> return Precedence.Prefix
-                is Expr.Range -> if (expr.start == null) return Precedence.Prefix
+                -> {
+                    return Precedence.Prefix
+                }
+
+                is Expr.Range -> {
+                    if (expr.start == null) return Precedence.Prefix
+                }
+
                 else -> {}
             }
         }
@@ -213,7 +219,10 @@ private enum class Scan {
 
 private fun scanLeft(expr: Expr, fixup: FixupContext): Boolean =
     when (expr) {
-        is Expr.Assign -> fixup.previousOperator <= Precedence.Assign
+        is Expr.Assign -> {
+            fixup.previousOperator <= Precedence.Assign
+        }
+
         is Expr.Binary -> {
             val binopPrec = Precedence.ofBinop(expr.op)
             if (binopPrec == Precedence.Assign) {
@@ -222,9 +231,18 @@ private fun scanLeft(expr: Expr, fixup: FixupContext): Boolean =
                 fixup.previousOperator < binopPrec
             }
         }
-        is Expr.Cast -> fixup.previousOperator < Precedence.Cast
-        is Expr.Range -> expr.start == null || fixup.previousOperator < Precedence.Assign
-        else -> true
+
+        is Expr.Cast -> {
+            fixup.previousOperator < Precedence.Cast
+        }
+
+        is Expr.Range -> {
+            expr.start == null || fixup.previousOperator < Precedence.Assign
+        }
+
+        else -> {
+            true
+        }
     }
 
 private fun scanRight(
@@ -253,33 +271,65 @@ private fun scanRight(
     }
 
     return when (expr) {
-        is Expr.Assign ->
+        is Expr.Assign -> {
             if (expr.attrs.isEmpty()) {
                 scanRightAssign(expr, fixup, consumeByPrecedence, failOffset, bailoutOffset)
             } else {
                 scanRightLeaf(fixup, precedence, consumeByPrecedence)
             }
-        is Expr.Binary ->
+        }
+
+        is Expr.Binary -> {
             if (expr.attrs.isEmpty()) {
                 scanRightBinary(expr, fixup, consumeByPrecedence, failOffset, bailoutOffset)
             } else {
                 scanRightLeaf(fixup, precedence, consumeByPrecedence)
             }
-        is Expr.RawAddr -> scanRightPrefix(expr.expr, fixup, precedence, consumeByPrecedence, failOffset, bailoutOffset)
-        is Expr.Reference -> scanRightPrefix(expr.expr, fixup, precedence, consumeByPrecedence, failOffset, bailoutOffset)
-        is Expr.Unary -> scanRightPrefix(expr.expr, fixup, precedence, consumeByPrecedence, failOffset, bailoutOffset)
-        is Expr.Range ->
+        }
+
+        is Expr.RawAddr -> {
+            scanRightPrefix(expr.expr, fixup, precedence, consumeByPrecedence, failOffset, bailoutOffset)
+        }
+
+        is Expr.Reference -> {
+            scanRightPrefix(expr.expr, fixup, precedence, consumeByPrecedence, failOffset, bailoutOffset)
+        }
+
+        is Expr.Unary -> {
+            scanRightPrefix(expr.expr, fixup, precedence, consumeByPrecedence, failOffset, bailoutOffset)
+        }
+
+        is Expr.Range -> {
             if (expr.attrs.isEmpty()) {
                 scanRightRange(expr, fixup, failOffset)
             } else {
                 scanRightLeaf(fixup, precedence, consumeByPrecedence)
             }
-        is Expr.Break -> scanRightBreak(expr, fixup, precedence, bailoutOffset)
-        is Expr.Return -> scanRightJump(expr.expr, fixup, precedence, bailoutOffset)
-        is Expr.Yield -> scanRightJump(expr.expr, fixup, precedence, bailoutOffset)
-        is Expr.Closure -> scanRightClosure(expr, fixup, bailoutOffset)
-        is Expr.Let -> scanRightLet(expr, fixup, bailoutOffset)
-        else -> scanRightLeaf(fixup, precedence, consumeByPrecedence)
+        }
+
+        is Expr.Break -> {
+            scanRightBreak(expr, fixup, precedence, bailoutOffset)
+        }
+
+        is Expr.Return -> {
+            scanRightJump(expr.expr, fixup, precedence, bailoutOffset)
+        }
+
+        is Expr.Yield -> {
+            scanRightJump(expr.expr, fixup, precedence, bailoutOffset)
+        }
+
+        is Expr.Closure -> {
+            scanRightClosure(expr, fixup, bailoutOffset)
+        }
+
+        is Expr.Let -> {
+            scanRightLet(expr, fixup, bailoutOffset)
+        }
+
+        else -> {
+            scanRightLeaf(fixup, precedence, consumeByPrecedence)
+        }
     }
 }
 
@@ -344,8 +394,14 @@ private fun scanRightBinary(
         )
     when (scan) {
         Scan.Fail -> {}
-        Scan.Bailout -> return consumeByPrecedence
-        Scan.Consume -> return Scan.Consume
+
+        Scan.Bailout -> {
+            return consumeByPrecedence
+        }
+
+        Scan.Consume -> {
+            return Scan.Consume
+        }
     }
     var rightNeedsGroup =
         binopPrec != Precedence.Assign &&
@@ -385,8 +441,14 @@ private fun scanRightPrefix(
         )
     when (scan) {
         Scan.Fail -> {}
-        Scan.Bailout -> return consumeByPrecedence
-        Scan.Consume -> return Scan.Consume
+
+        Scan.Bailout -> {
+            return consumeByPrecedence
+        }
+
+        Scan.Consume -> {
+            return Scan.Consume
+        }
     }
     return if (rightFixup.rightmostSubexpressionPrecedence(expr) < Precedence.Prefix) {
         consumeByPrecedence
@@ -403,12 +465,14 @@ private fun scanRightRange(
     failOffset: Int,
 ): Scan =
     when (val end = expr.end) {
-        null ->
+        null -> {
             if (fixup.nextOperatorCanBeginExpr) {
                 Scan.Consume
             } else {
                 Scan.Fail
             }
+        }
+
         else -> {
             if (failOffset >= 2) {
                 return Scan.Consume
@@ -449,12 +513,14 @@ private fun scanRightBreak(
     bailoutOffset: Int,
 ): Scan =
     when (val value = expr.expr) {
-        null ->
+        null -> {
             if (fixup.nextOperator == Precedence.Assign && precedence > Precedence.Assign) {
                 Scan.Fail
             } else {
                 Scan.Consume
             }
+        }
+
         else -> {
             if (bailoutOffset >= 1 || expr.label == null && Classify.exprLeadingLabel(value)) {
                 return Scan.Consume
@@ -474,12 +540,14 @@ private fun scanRightJump(
     bailoutOffset: Int,
 ): Scan =
     when (expr) {
-        null ->
+        null -> {
             if (fixup.nextOperator == Precedence.Assign && precedence > Precedence.Assign) {
                 Scan.Fail
             } else {
                 Scan.Consume
             }
+        }
+
         else -> {
             if (bailoutOffset >= 1) {
                 return Scan.Consume
@@ -535,11 +603,15 @@ private fun scanRightLet(
             bailoutOffset = if (fixup.nextOperator < Precedence.Let) 0 else 1,
         )
     when (scan) {
-        Scan.Fail, Scan.Bailout ->
+        Scan.Fail, Scan.Bailout -> {
             if (fixup.nextOperator < Precedence.Let) {
                 return Scan.Bailout
             }
-        Scan.Consume -> return Scan.Consume
+        }
+
+        Scan.Consume -> {
+            return Scan.Consume
+        }
     }
     return if (rightFixup.rightmostSubexpressionPrecedence(expr.expr) < Precedence.Let) {
         Scan.Consume
@@ -558,6 +630,8 @@ private fun scanRightLeaf(
     when {
         (fixup.nextOperator == Precedence.Assign || fixup.nextOperator == Precedence.Range) &&
             precedence == Precedence.Range -> Scan.Fail
+
         precedence == Precedence.Let && fixup.nextOperator < Precedence.Let -> Scan.Fail
+
         else -> consumeByPrecedence
     }

@@ -34,46 +34,57 @@ public class SynHasher {
             null -> {
                 writeU8(0)
             }
+
             is AttrStyle -> {
                 writeU8(1)
                 value.hash(this)
             }
+
             is BinOp -> {
                 writeU8(1)
                 value.hash(this)
             }
+
             is CapturedParam -> {
                 writeU8(1)
                 value.hash(this)
             }
+
             is Data -> {
                 writeU8(1)
                 value.hash(this)
             }
+
             is DataEnum -> {
                 writeU8(1)
                 value.hash(this)
             }
+
             is DataStruct -> {
                 writeU8(1)
                 value.hash(this)
             }
+
             is DataUnion -> {
                 writeU8(1)
                 value.hash(this)
             }
+
             is DeriveInput -> {
                 writeU8(1)
                 value.hash(this)
             }
+
             is GenericParam.ConstParam -> {
                 writeU8(1)
                 value.hash(this)
             }
+
             is PathArguments.AngleBracketed -> {
                 writeU8(1)
                 value.hash(this)
             }
+
             else -> {
                 writeU8(1)
                 mix(value.hashCode())
@@ -232,6 +243,7 @@ public fun CapturedParam.hash(state: SynHasher) {
             state.writeU8(0)
             state.write(lifetime)
         }
+
         is CapturedParam.Ident -> {
             state.writeU8(1)
             state.write(ident)
@@ -268,10 +280,12 @@ public fun Data.hash(state: SynHasher) {
             state.writeU8(0)
             value.hash(state)
         }
+
         is Data.Enum -> {
             state.writeU8(1)
             value.hash(state)
         }
+
         is Data.Union -> {
             state.writeU8(2)
             value.hash(state)

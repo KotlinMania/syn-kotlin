@@ -28,14 +28,23 @@ public enum class Precedence {
         public fun ofBinop(op: BinOp): Precedence =
             when (op) {
                 is BinOp.Add, is BinOp.Sub -> Sum
+
                 is BinOp.Mul, is BinOp.Div, is BinOp.Rem -> Product
+
                 is BinOp.And -> And
+
                 is BinOp.Or -> Or
+
                 is BinOp.BitXor -> BitXor
+
                 is BinOp.BitAnd -> BitAnd
+
                 is BinOp.BitOr -> BitOr
+
                 is BinOp.Shl, is BinOp.Shr -> Shift
+
                 is BinOp.Eq, is BinOp.Lt, is BinOp.Le, is BinOp.Ne, is BinOp.Ge, is BinOp.Gt -> Compare
+
                 is BinOp.AddAssign,
                 is BinOp.SubAssign,
                 is BinOp.MulAssign,

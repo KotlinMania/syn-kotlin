@@ -243,11 +243,14 @@ public sealed class SynType : ToTokens {
                             atLeastOneTrait = true
                             break
                         }
-                        is TypeParamBound.LifetimeBound ->
+
+                        is TypeParamBound.LifetimeBound -> {
                             lastLifetimeSpan = bound.lifetime.ident.span()
+                        }
+
                         is TypeParamBound.PreciseCapture,
                         is TypeParamBound.Verbatim,
-                        -> Unit
+                        -> {}
                     }
                 }
                 if (!atLeastOneTrait) {

@@ -4,7 +4,6 @@ package io.github.kotlinmania.syn
 import io.github.kotlinmania.procmacro2.Span
 import io.github.kotlinmania.procmacro2.TokenStream
 import io.github.kotlinmania.quote.ToTokens
-import io.github.kotlinmania.quote.toTokens
 
 /** An attribute attached to an item or field. */
 public data class Attribute(
@@ -82,14 +81,19 @@ private fun Attribute.metaListForArgs(): SynResult<Meta.List> =
                 ),
             )
         }
-        is Meta.NameValue ->
+
+        is Meta.NameValue -> {
             SynResult.failure(
                 SynError.new(
                     metaValue.eqToken.span,
                     "expected parentheses: ${DisplayAttrStyle(style)}[${DisplayPath(metaValue.path)}(...)]",
                 ),
             )
-        is Meta.List -> SynResult.success(metaValue)
+        }
+
+        is Meta.List -> {
+            SynResult.success(metaValue)
+        }
     }
 
 public object AttributeParse {
@@ -243,7 +247,10 @@ public sealed class Meta : ToTokens {
 
     public fun requireList(): SynResult<List> =
         when (this) {
-            is List -> SynResult.success(this)
+            is List -> {
+                SynResult.success(this)
+            }
+
             is PathMeta -> {
                 val first =
                     path
@@ -267,12 +274,18 @@ public sealed class Meta : ToTokens {
                     ),
                 )
             }
-            is NameValue -> SynResult.failure(SynError.new(eqToken.span, "expected `(`"))
+
+            is NameValue -> {
+                SynResult.failure(SynError.new(eqToken.span, "expected `(`"))
+            }
         }
 
     public fun requireNameValue(): SynResult<NameValue> =
         when (this) {
-            is NameValue -> SynResult.success(this)
+            is NameValue -> {
+                SynResult.success(this)
+            }
+
             is PathMeta -> {
                 val first =
                     path
@@ -296,7 +309,10 @@ public sealed class Meta : ToTokens {
                     ),
                 )
             }
-            is List -> SynResult.failure(SynError.new(delimiter.openSpan(), "expected `=`"))
+
+            is List -> {
+                SynResult.failure(SynError.new(delimiter.openSpan(), "expected `=`"))
+            }
         }
 
     public fun copy(): Meta =

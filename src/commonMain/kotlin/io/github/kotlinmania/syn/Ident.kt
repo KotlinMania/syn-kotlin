@@ -73,6 +73,7 @@ internal fun acceptAsIdent(ident: Ident): Boolean {
         "typeof", "unsafe", "unsized", "use", "virtual", "where",
         "while", "yield",
         -> false
+
         else -> true
     }
 }

@@ -440,7 +440,7 @@ private fun parseTraitOrTraitAlias(
     val start = parseStartOfTraitAlias(input, attrs, vis).getOrElse { return SynResult.failure(it) }
     val lookahead = input.lookahead1()
     return when {
-        lookahead.peek(BracePeek) || lookahead.peek(ColonPeek) || lookahead.peek(WherePeek) ->
+        lookahead.peek(BracePeek) || lookahead.peek(ColonPeek) || lookahead.peek(WherePeek) -> {
             parseRestOfTrait(
                 input,
                 start.attrs,
@@ -451,7 +451,9 @@ private fun parseTraitOrTraitAlias(
                 start.ident,
                 start.generics,
             ).map { it }
-        lookahead.peek(EqPeek) ->
+        }
+
+        lookahead.peek(EqPeek) -> {
             parseRestOfTraitAlias(
                 input,
                 start.attrs,
@@ -460,7 +462,11 @@ private fun parseTraitOrTraitAlias(
                 start.ident,
                 start.generics,
             ).map { it }
-        else -> SynResult.failure(lookahead.error())
+        }
+
+        else -> {
+            SynResult.failure(lookahead.error())
+        }
     }
 }
 
@@ -659,7 +665,10 @@ private data class FlexibleItemType(
             when (whereClauseLocation) {
                 WhereClauseLocation.BeforeEq,
                 WhereClauseLocation.Both,
-                -> generics.whereClause = parseWhereClause(input).getOrNull()
+                -> {
+                    generics.whereClause = parseWhereClause(input).getOrNull()
+                }
+
                 WhereClauseLocation.AfterEq -> {}
             }
 
@@ -668,10 +677,12 @@ private data class FlexibleItemType(
             when (whereClauseLocation) {
                 WhereClauseLocation.AfterEq,
                 WhereClauseLocation.Both,
-                ->
+                -> {
                     if (generics.whereClause == null) {
                         generics.whereClause = parseWhereClause(input).getOrNull()
                     }
+                }
+
                 WhereClauseLocation.BeforeEq -> {}
             }
 
@@ -835,7 +846,10 @@ private fun parseFnArgs(content: ParseStream): SynResult<Pair<FnArgList, Variadi
                 .getOrElse { return SynResult.failure(it) }
         val arg =
             when (argOrVariadic) {
-                is FnArgOrVariadic.FnArgValue -> argOrVariadic.arg
+                is FnArgOrVariadic.FnArgValue -> {
+                    argOrVariadic.arg
+                }
+
                 is FnArgOrVariadic.VariadicValue -> {
                     val comma =
                         if (content.isEmpty()) {
