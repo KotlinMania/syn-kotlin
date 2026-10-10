@@ -35,13 +35,6 @@ class ParseStreamTest {
         parse2(logic, tokens).getOrThrow()
     }
 
-    private fun runParserTokens(
-        tokens: TokenStream,
-        logic: (ParseStream) -> SynResult<Unit>,
-    ) {
-        parse2(logic, tokens).getOrThrow()
-    }
-
     @Test
     fun testPeekPunct() {
         val tokens =

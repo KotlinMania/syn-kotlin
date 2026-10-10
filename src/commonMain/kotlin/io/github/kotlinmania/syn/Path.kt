@@ -536,7 +536,9 @@ private fun conditionallyPrintTurbofish(
         PathStyle.Expr,
         PathStyle.Recursion,
         -> TokensOrDefault(colon2Token, PathSep::default).toTokens(tokens)
+
         PathStyle.Mod -> error("module-style paths do not print path arguments")
+
         PathStyle.AsWritten -> colon2Token?.toTokens(tokens)
     }
 }

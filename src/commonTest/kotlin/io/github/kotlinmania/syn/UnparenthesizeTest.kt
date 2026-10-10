@@ -5,7 +5,6 @@ import io.github.kotlinmania.procmacro2.Delimiter
 import io.github.kotlinmania.procmacro2.Group
 import io.github.kotlinmania.procmacro2.TokenStream
 import io.github.kotlinmania.procmacro2.TokenTree
-import io.github.kotlinmania.quote.intoTokenStream
 import io.github.kotlinmania.syn.gen.VisitMut
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -74,7 +73,10 @@ private class FlattenParens(
                     listOf(TokenTree.Group(Group(delimiter, content)))
                 }
             }
-            else -> listOf(token)
+
+            else -> {
+                listOf(token)
+            }
         }
 
     private fun combineAttrs(expr: Expr, attrs: List<Attribute>) {
@@ -83,15 +85,20 @@ private class FlattenParens(
                 require(expr.attrs.isEmpty())
                 expr.attrs = attrs
             }
+
             is Expr.Binary -> {
                 require(expr.attrs.isEmpty())
                 expr.attrs = attrs
             }
+
             is Expr.Cast -> {
                 require(expr.attrs.isEmpty())
                 expr.attrs = attrs
             }
-            else -> error("cannot combine parenthesized attributes into ${expr::class.simpleName}")
+
+            else -> {
+                error("cannot combine parenthesized attributes into ${expr::class.simpleName}")
+            }
         }
     }
 
@@ -134,6 +141,7 @@ internal object AsIfPrinted : VisitMut() {
                 val printsAsMacroStmt =
                     when (expr.mac.delimiter) {
                         is MacroDelimiter.Brace -> true
+
                         is MacroDelimiter.Paren,
                         is MacroDelimiter.Bracket,
                         -> s.semiToken != null

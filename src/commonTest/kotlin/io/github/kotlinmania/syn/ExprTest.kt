@@ -10,7 +10,6 @@ import io.github.kotlinmania.procmacro2.Spacing
 import io.github.kotlinmania.procmacro2.Span
 import io.github.kotlinmania.procmacro2.TokenStream
 import io.github.kotlinmania.procmacro2.TokenTree
-import io.github.kotlinmania.quote.intoTokenStream
 import io.github.kotlinmania.syn.gen.VisitMut
 import io.github.kotlinmania.syn.token.And
 import io.github.kotlinmania.syn.token.As
@@ -85,7 +84,10 @@ class ExprTest {
                         listOf(TokenTree.Group(Group(delimiter, content)))
                     }
                 }
-                else -> listOf(token)
+
+                else -> {
+                    listOf(token)
+                }
             }
 
         private fun combineAttrs(expr: Expr, attrs: List<Attribute>) {
@@ -94,15 +96,20 @@ class ExprTest {
                     require(expr.attrs.isEmpty())
                     expr.attrs = attrs
                 }
+
                 is Expr.Binary -> {
                     require(expr.attrs.isEmpty())
                     expr.attrs = attrs
                 }
+
                 is Expr.Cast -> {
                     require(expr.attrs.isEmpty())
                     expr.attrs = attrs
                 }
-                else -> error("cannot combine parenthesized attributes into ${expr::class.simpleName}")
+
+                else -> {
+                    error("cannot combine parenthesized attributes into ${expr::class.simpleName}")
+                }
             }
         }
 

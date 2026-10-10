@@ -25,7 +25,7 @@ public sealed class Item : ToTokens {
 
         public fun from(input: DeriveInput): Item =
             when (val data = input.data) {
-                is Data.Struct ->
+                is Data.Struct -> {
                     Struct(
                         input.attrs,
                         input.vis,
@@ -35,7 +35,9 @@ public sealed class Item : ToTokens {
                         data.value.fields,
                         data.value.semiToken,
                     )
-                is Data.Enum ->
+                }
+
+                is Data.Enum -> {
                     Enum(
                         input.attrs,
                         input.vis,
@@ -45,7 +47,9 @@ public sealed class Item : ToTokens {
                         data.value.braceToken,
                         data.value.variants,
                     )
-                is Data.Union ->
+                }
+
+                is Data.Union -> {
                     Union(
                         input.attrs,
                         input.vis,
@@ -54,6 +58,7 @@ public sealed class Item : ToTokens {
                         input.generics,
                         data.value.fields,
                     )
+                }
             }
     }
 
@@ -240,11 +245,13 @@ public sealed class Item : ToTokens {
                     generics.whereClause?.toTokens(tokens)
                     fields.toTokens(tokens)
                 }
+
                 is Fields.Unnamed -> {
                     fields.toTokens(tokens)
                     generics.whereClause?.toTokens(tokens)
                     TokensOrDefault(semiToken, Semi::default).toTokens(tokens)
                 }
+
                 Fields.Unit -> {
                     generics.whereClause?.toTokens(tokens)
                     TokensOrDefault(semiToken, Semi::default).toTokens(tokens)

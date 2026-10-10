@@ -77,9 +77,18 @@ public class Lookahead1 internal constructor(
                     SynError.new(cursor.span(), "unexpected token")
                 }
             }
-            1 -> errorNewAt(scope, cursor, "expected ${pruned[0]}")
-            2 -> errorNewAt(scope, cursor, "expected ${pruned[0]} or ${pruned[1]}")
-            else -> errorNewAt(scope, cursor, "expected one of: ${CommaSeparated(pruned)}")
+
+            1 -> {
+                errorNewAt(scope, cursor, "expected ${pruned[0]}")
+            }
+
+            2 -> {
+                errorNewAt(scope, cursor, "expected ${pruned[0]} or ${pruned[1]}")
+            }
+
+            else -> {
+                errorNewAt(scope, cursor, "expected one of: ${CommaSeparated(pruned)}")
+            }
         }
     }
 

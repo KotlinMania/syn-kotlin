@@ -90,16 +90,22 @@ class AttributeTest {
                         kind = lit.value()
                         SynResult.success(Unit)
                     }
+
                     meta.path.isIdent("hot") -> {
                         hot = true
                         SynResult.success(Unit)
                     }
-                    meta.path.isIdent("with") ->
+
+                    meta.path.isIdent("with") -> {
                         meta.parseNestedMeta { nested ->
                             with.add(nested.path.toString())
                             SynResult.success(Unit)
                         }
-                    else -> SynResult.failure(meta.error("unsupported tea property"))
+                    }
+
+                    else -> {
+                        SynResult.failure(meta.error("unsupported tea property"))
+                    }
                 }
             }
 

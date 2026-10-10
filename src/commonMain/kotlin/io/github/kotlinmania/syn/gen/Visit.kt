@@ -469,14 +469,38 @@ public open class Visit {
 
     public open fun visitLit(l: Lit) {
         when (l) {
-            is Lit.Str -> visitLitStr(l.value)
-            is Lit.ByteStr -> visitLitByteStr(l.value)
-            is Lit.CStr -> visitLitCstr(l.value)
-            is Lit.Byte -> visitLitByte(l.value)
-            is Lit.Char -> visitLitChar(l.value)
-            is Lit.Int -> visitLitInt(l.value)
-            is Lit.Float -> visitLitFloat(l.value)
-            is Lit.Bool -> visitLitBool(l.value)
+            is Lit.Str -> {
+                visitLitStr(l.value)
+            }
+
+            is Lit.ByteStr -> {
+                visitLitByteStr(l.value)
+            }
+
+            is Lit.CStr -> {
+                visitLitCstr(l.value)
+            }
+
+            is Lit.Byte -> {
+                visitLitByte(l.value)
+            }
+
+            is Lit.Char -> {
+                visitLitChar(l.value)
+            }
+
+            is Lit.Int -> {
+                visitLitInt(l.value)
+            }
+
+            is Lit.Float -> {
+                visitLitFloat(l.value)
+            }
+
+            is Lit.Bool -> {
+                visitLitBool(l.value)
+            }
+
             is Lit.Verbatim -> {}
         }
     }
@@ -628,8 +652,14 @@ public open class Visit {
 
     public open fun visitFields(f: Fields) {
         when (f) {
-            is Fields.Named -> visitFieldsNamed(f.fields)
-            is Fields.Unnamed -> visitFieldsUnnamed(f.fields)
+            is Fields.Named -> {
+                visitFieldsNamed(f.fields)
+            }
+
+            is Fields.Unnamed -> {
+                visitFieldsUnnamed(f.fields)
+            }
+
             Fields.Unit -> {}
         }
     }
@@ -915,7 +945,10 @@ public open class Visit {
 
     public open fun visitModContent(m: ModContent) {
         when (m) {
-            is ModContent.Inline -> m.items.forEach { visitItem(it) }
+            is ModContent.Inline -> {
+                m.items.forEach { visitItem(it) }
+            }
+
             is ModContent.Unnamed -> {}
         }
     }
@@ -1032,8 +1065,14 @@ public open class Visit {
     public open fun visitPathArguments(p: PathArguments) {
         when (p) {
             PathArguments.None -> {}
-            is PathArguments.AngleBracketed -> visitAngleBracketedGenericArguments(p)
-            is PathArguments.Parenthesized -> visitParenthesizedGenericArguments(p)
+
+            is PathArguments.AngleBracketed -> {
+                visitAngleBracketedGenericArguments(p)
+            }
+
+            is PathArguments.Parenthesized -> {
+                visitParenthesizedGenericArguments(p)
+            }
         }
     }
 
@@ -1098,7 +1137,10 @@ public open class Visit {
     public open fun visitReturnType(r: ReturnType) {
         when (r) {
             ReturnType.Default -> {}
-            is ReturnType.TypeReturn -> visitType(r.ty)
+
+            is ReturnType.TypeReturn -> {
+                visitType(r.ty)
+            }
         }
     }
 
@@ -1307,15 +1349,25 @@ public open class Visit {
 
     public open fun visitUseTree(u: UseTree) {
         when (u) {
-            is UseTree.Path -> visitUsePath(u)
-            is UseTree.Name ->
+            is UseTree.Path -> {
+                visitUsePath(u)
+            }
+
+            is UseTree.Name -> {
                 if (u.rename == null) {
                     visitUseName(u)
                 } else {
                     visitUseRename(u)
                 }
-            is UseTree.Group -> visitUseGroup(u)
-            is UseTree.Glob -> visitUseGlob(u)
+            }
+
+            is UseTree.Group -> {
+                visitUseGroup(u)
+            }
+
+            is UseTree.Glob -> {
+                visitUseGlob(u)
+            }
         }
     }
 
@@ -1349,7 +1401,11 @@ public open class Visit {
     public open fun visitVisibility(v: Visibility) {
         when (v) {
             is Visibility.Public -> {}
-            is Visibility.Restricted -> visitVisRestricted(v)
+
+            is Visibility.Restricted -> {
+                visitVisRestricted(v)
+            }
+
             Visibility.Inherited -> {}
         }
     }

@@ -22,14 +22,23 @@ internal class TokenTreeHelper(
                     TokenStreamHelper(tree.value.stream()).eq(TokenStreamHelper(other.tree.value.stream()))
                 }
             }
-            tree is TokenTree.Punct && other.tree is TokenTree.Punct ->
+
+            tree is TokenTree.Punct && other.tree is TokenTree.Punct -> {
                 tree.value.asChar() == other.tree.value.asChar() &&
                     tree.value.spacing() == other.tree.value.spacing()
-            tree is TokenTree.Literal && other.tree is TokenTree.Literal ->
+            }
+
+            tree is TokenTree.Literal && other.tree is TokenTree.Literal -> {
                 tree.value.toString() == other.tree.value.toString()
-            tree is TokenTree.Ident && other.tree is TokenTree.Ident ->
+            }
+
+            tree is TokenTree.Ident && other.tree is TokenTree.Ident -> {
                 tree.value == other.tree.value
-            else -> false
+            }
+
+            else -> {
+                false
+            }
         }
 
     fun hash(): Int {
@@ -48,15 +57,18 @@ internal class TokenTreeHelper(
                 }
                 mix(0xFF)
             }
+
             is TokenTree.Punct -> {
                 mix(1)
                 mix(tree.value.asChar().code)
                 mix(spacingHash(tree.value.spacing()))
             }
+
             is TokenTree.Literal -> {
                 mix(2)
                 mix(tree.value.toString().hashCode())
             }
+
             is TokenTree.Ident -> {
                 mix(3)
                 mix(tree.value.hashCode())

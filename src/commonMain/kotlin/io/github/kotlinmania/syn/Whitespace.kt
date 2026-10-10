@@ -54,9 +54,11 @@ internal fun skip(input: String): String {
                 s = s.substring(1)
                 continue
             }
+
             byte.code <= 0x7F -> {
                 // fall through to return
             }
+
             else -> {
                 if (isWhitespace(byte)) {
                     s = s.substring(byte.toString().length)

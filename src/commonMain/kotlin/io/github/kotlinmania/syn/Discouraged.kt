@@ -47,6 +47,7 @@ internal fun ParseBuffer.advanceToSpeculative(fork: ParseBuffer) {
             forkSp != null && selfSp == null -> {
                 selfUnexp.value = Unexpected.Some(forkSp.first, forkSp.second)
             }
+
             // Unexpected unset. Use chain to propagate errors from fork.
             forkSp == null && selfSp == null -> {
                 forkUnexp.value = Unexpected.Chain(selfUnexp)
@@ -57,6 +58,7 @@ internal fun ParseBuffer.advanceToSpeculative(fork: ParseBuffer) {
                 // parsers should propagate.
                 fork.unexpected = UnexpectedRef(Unexpected.None)
             }
+
             // Unexpected has been set on this buffer. No changes needed.
             else -> { }
         }

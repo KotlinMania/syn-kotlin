@@ -68,9 +68,18 @@ public class TokenBuffer internal constructor(
         private fun recursiveNew(entries: MutableList<Entry>, stream: TokenStream) {
             for (tt in stream) {
                 when (tt) {
-                    is TokenTree.Ident -> entries.add(Entry.IdentEntry(tt.value))
-                    is TokenTree.Punct -> entries.add(Entry.PunctEntry(tt.value))
-                    is TokenTree.Literal -> entries.add(Entry.LiteralEntry(tt.value))
+                    is TokenTree.Ident -> {
+                        entries.add(Entry.IdentEntry(tt.value))
+                    }
+
+                    is TokenTree.Punct -> {
+                        entries.add(Entry.PunctEntry(tt.value))
+                    }
+
+                    is TokenTree.Literal -> {
+                        entries.add(Entry.LiteralEntry(tt.value))
+                    }
+
                     is TokenTree.Group -> {
                         val groupStartIndex = entries.size
                         entries.add(Entry.End(0, 0)) // we replace this below
@@ -334,19 +343,25 @@ public class Cursor internal constructor(
                 tree = TokenTree.Group(e.group)
                 len = e.endOffset
             }
+
             is Entry.LiteralEntry -> {
                 tree = TokenTree.Literal(e.literal)
                 len = 1
             }
+
             is Entry.IdentEntry -> {
                 tree = TokenTree.Ident(e.ident)
                 len = 1
             }
+
             is Entry.PunctEntry -> {
                 tree = TokenTree.Punct(e.punct)
                 len = 1
             }
-            is Entry.End -> return null
+
+            is Entry.End -> {
+                return null
+            }
         }
 
         val rest = create(entries, index + len, scope)
@@ -359,10 +374,22 @@ public class Cursor internal constructor(
      */
     public fun span(): Span =
         when (val e = entry()) {
-            is Entry.GroupEntry -> e.group.span()
-            is Entry.LiteralEntry -> e.literal.span()
-            is Entry.IdentEntry -> e.ident.span()
-            is Entry.PunctEntry -> e.punct.span()
+            is Entry.GroupEntry -> {
+                e.group.span()
+            }
+
+            is Entry.LiteralEntry -> {
+                e.literal.span()
+            }
+
+            is Entry.IdentEntry -> {
+                e.ident.span()
+            }
+
+            is Entry.PunctEntry -> {
+                e.punct.span()
+            }
+
             is Entry.End -> {
                 val targetIndex = index + e.toGroup
                 val target = entries[targetIndex]
@@ -392,15 +419,22 @@ public class Cursor internal constructor(
         val e = c.entry()
         val len =
             when {
-                e is Entry.End -> return null
+                e is Entry.End -> {
+                    return null
+                }
 
                 // Treat named durations as a single tt for the purposes of `skip`.
                 e is Entry.PunctEntry && e.punct.asChar() == '\'' && e.punct.spacing() == Spacing.Joint -> {
                     if (c.entries[c.index + 1] is Entry.IdentEntry) 2 else 1
                 }
 
-                e is Entry.GroupEntry -> e.endOffset
-                else -> 1
+                e is Entry.GroupEntry -> {
+                    e.endOffset
+                }
+
+                else -> {
+                    1
+                }
             }
 
         return create(c.entries, c.index + len, c.scope)

@@ -26,15 +26,20 @@ public sealed class Lit : ToTokens {
             when (byte(repr, 0)) {
                 '"'.code,
                 'r'.code,
-                -> parseLitStr(repr)?.let { return Str(LitStr.fromLiteral(token, it.value, it.suffix)) }
+                -> {
+                    parseLitStr(repr)?.let { return Str(LitStr.fromLiteral(token, it.value, it.suffix)) }
+                }
+
                 'b'.code -> {
                     when (byte(repr, 1)) {
                         '"'.code,
                         'r'.code,
                         -> parseLitByteStr(repr)?.let { return ByteStr(LitByteStr(it.value, token.span(), it.suffix, token)) }
+
                         '\''.code -> parseLitByteParts(repr)?.let { return Byte(LitByte(it.value, it.suffix, token.span(), token)) }
                     }
                 }
+
                 'c'.code -> {
                     when (byte(repr, 1)) {
                         '"'.code,
@@ -42,16 +47,23 @@ public sealed class Lit : ToTokens {
                         -> parseLitCStr(repr)?.let { return CStr(LitCStr(it.value, token.span(), it.suffix, token)) }
                     }
                 }
-                '\''.code -> parseLitChar(repr)?.let { return Char(LitChar(it.value, token.span(), it.suffix, token)) }
+
+                '\''.code -> {
+                    parseLitChar(repr)?.let { return Char(LitChar(it.value, token.span(), it.suffix, token)) }
+                }
+
                 in '0'.code..'9'.code,
                 '-'.code,
                 -> {
                     parseLitInt(repr)?.let { return Int(LitInt.from(token, it.digits, it.suffix)) }
                     parseLitFloat(repr)?.let { return Float(LitFloat.from(token, it.digits, it.suffix)) }
                 }
+
                 't'.code,
                 'f'.code,
-                -> if (repr == "true" || repr == "false") return Bool(LitBool(repr == "true", token.span()))
+                -> {
+                    if (repr == "true" || repr == "false") return Bool(LitBool(repr == "true", token.span()))
+                }
             }
             return Verbatim(token)
         }
@@ -612,7 +624,10 @@ private fun respanTokenTree(token: TokenTree, span: Span): TokenTree =
             group.setSpan(span)
             TokenTree.Group(group)
         }
-        else -> token.setSpan(span)
+
+        else -> {
+            token.setSpan(span)
+        }
     }
 
 private data class StringLiteralParts(
@@ -676,7 +691,10 @@ private fun parseLitStrCooked(s: String): StringLiteralParts? {
     outer@ while (true) {
         var ch = s.getOrNull(index) ?: return null
         when (ch) {
-            '"' -> break
+            '"' -> {
+                break
+            }
+
             '\\' -> {
                 index += 1
                 val escaped = s.getOrNull(index) ?: return null
@@ -688,18 +706,41 @@ private fun parseLitStrCooked(s: String): StringLiteralParts? {
                         index = next
                         content.append(value.toChar())
                     }
+
                     'u' -> {
                         val (value, next) = backslashU(s, index) ?: return null
                         index = next
                         content.appendCodePoint(value)
                     }
-                    'n' -> content.append('\n')
-                    'r' -> content.append('\r')
-                    't' -> content.append('\t')
-                    '\\' -> content.append('\\')
-                    '0' -> content.append('\u0000')
-                    '\'' -> content.append('\'')
-                    '"' -> content.append('"')
+
+                    'n' -> {
+                        content.append('\n')
+                    }
+
+                    'r' -> {
+                        content.append('\r')
+                    }
+
+                    't' -> {
+                        content.append('\t')
+                    }
+
+                    '\\' -> {
+                        content.append('\\')
+                    }
+
+                    '0' -> {
+                        content.append('\u0000')
+                    }
+
+                    '\'' -> {
+                        content.append('\'')
+                    }
+
+                    '"' -> {
+                        content.append('"')
+                    }
+
                     '\r',
                     '\n',
                     -> {
@@ -710,14 +751,19 @@ private fun parseLitStrCooked(s: String): StringLiteralParts? {
                             }
                         }
                     }
-                    else -> return null
+
+                    else -> {
+                        return null
+                    }
                 }
             }
+
             '\r' -> {
                 if (s.getOrNull(index + 1) != '\n') return null
                 index += 2
                 content.append('\n')
             }
+
             else -> {
                 val (codePoint, next) = nextChr(s, index) ?: return null
                 content.appendCodePoint(codePoint)
@@ -766,7 +812,10 @@ private fun parseLitByteStrCooked(s: String): ByteStringLiteralParts? {
     outer@ while (true) {
         var ch = s.getOrNull(index) ?: return null
         when (ch) {
-            '"' -> break
+            '"' -> {
+                break
+            }
+
             '\\' -> {
                 index += 1
                 val escaped = s.getOrNull(index) ?: return null
@@ -786,22 +835,48 @@ private fun parseLitByteStrCooked(s: String): ByteStringLiteralParts? {
                             index = next
                             value
                         }
-                        'n' -> '\n'.code
-                        'r' -> '\r'.code
-                        't' -> '\t'.code
-                        '\\' -> '\\'.code
-                        '0' -> 0
-                        '\'' -> '\''.code
-                        '"' -> '"'.code
-                        else -> return null
+
+                        'n' -> {
+                            '\n'.code
+                        }
+
+                        'r' -> {
+                            '\r'.code
+                        }
+
+                        't' -> {
+                            '\t'.code
+                        }
+
+                        '\\' -> {
+                            '\\'.code
+                        }
+
+                        '0' -> {
+                            0
+                        }
+
+                        '\'' -> {
+                            '\''.code
+                        }
+
+                        '"' -> {
+                            '"'.code
+                        }
+
+                        else -> {
+                            return null
+                        }
                     }
                 content += value.toUByte()
             }
+
             '\r' -> {
                 if (s.getOrNull(index + 1) != '\n') return null
                 index += 2
                 content += '\n'.code.toUByte()
             }
+
             else -> {
                 if (ch.code > 0x7f) return null
                 index += 1
@@ -839,7 +914,10 @@ private fun parseLitCStrCooked(s: String): CStringLiteralParts? {
     outer@ while (true) {
         var ch = s.getOrNull(index) ?: return null
         when (ch) {
-            '"' -> break
+            '"' -> {
+                break
+            }
+
             '\\' -> {
                 index += 1
                 val escaped = s.getOrNull(index) ?: return null
@@ -859,27 +937,54 @@ private fun parseLitCStrCooked(s: String): CStringLiteralParts? {
                         index = next
                         content += value.toByte()
                     }
+
                     'u' -> {
                         val (value, next) = backslashU(s, index) ?: return null
                         if (value == 0) return null
                         index = next
                         content.addUtf8(value)
                     }
-                    'n' -> content += '\n'.code.toByte()
-                    'r' -> content += '\r'.code.toByte()
-                    't' -> content += '\t'.code.toByte()
-                    '\\' -> content += '\\'.code.toByte()
-                    '\'' -> content += '\''.code.toByte()
-                    '"' -> content += '"'.code.toByte()
-                    else -> return null
+
+                    'n' -> {
+                        content += '\n'.code.toByte()
+                    }
+
+                    'r' -> {
+                        content += '\r'.code.toByte()
+                    }
+
+                    't' -> {
+                        content += '\t'.code.toByte()
+                    }
+
+                    '\\' -> {
+                        content += '\\'.code.toByte()
+                    }
+
+                    '\'' -> {
+                        content += '\''.code.toByte()
+                    }
+
+                    '"' -> {
+                        content += '"'.code.toByte()
+                    }
+
+                    else -> {
+                        return null
+                    }
                 }
             }
+
             '\r' -> {
                 if (s.getOrNull(index + 1) != '\n') return null
                 index += 2
                 content += '\n'.code.toByte()
             }
-            '\u0000' -> return null
+
+            '\u0000' -> {
+                return null
+            }
+
             else -> {
                 val (codePoint, next) = nextChr(s, index) ?: return null
                 if (codePoint == 0) return null
@@ -918,16 +1023,41 @@ private fun parseLitByteParts(s: String): ByteLiteralParts? {
                         index = next
                         value
                     }
-                    'n' -> '\n'.code
-                    'r' -> '\r'.code
-                    't' -> '\t'.code
-                    '\\' -> '\\'.code
-                    '0' -> 0
-                    '\'' -> '\''.code
-                    '"' -> '"'.code
-                    else -> return null
+
+                    'n' -> {
+                        '\n'.code
+                    }
+
+                    'r' -> {
+                        '\r'.code
+                    }
+
+                    't' -> {
+                        '\t'.code
+                    }
+
+                    '\\' -> {
+                        '\\'.code
+                    }
+
+                    '0' -> {
+                        0
+                    }
+
+                    '\'' -> {
+                        '\''.code
+                    }
+
+                    '"' -> {
+                        '"'.code
+                    }
+
+                    else -> {
+                        return null
+                    }
                 }
             }
+
             else -> {
                 index += 1
                 if (ch.code > 0xff) return null
@@ -955,21 +1085,47 @@ private fun parseLitChar(s: String): CharLiteralParts? {
                         index = next
                         byte
                     }
+
                     'u' -> {
                         val (codePoint, next) = backslashU(s, index) ?: return null
                         index = next
                         codePoint
                     }
-                    'n' -> '\n'.code
-                    'r' -> '\r'.code
-                    't' -> '\t'.code
-                    '\\' -> '\\'.code
-                    '0' -> 0
-                    '\'' -> '\''.code
-                    '"' -> '"'.code
-                    else -> return null
+
+                    'n' -> {
+                        '\n'.code
+                    }
+
+                    'r' -> {
+                        '\r'.code
+                    }
+
+                    't' -> {
+                        '\t'.code
+                    }
+
+                    '\\' -> {
+                        '\\'.code
+                    }
+
+                    '0' -> {
+                        0
+                    }
+
+                    '\'' -> {
+                        '\''.code
+                    }
+
+                    '"' -> {
+                        '"'.code
+                    }
+
+                    else -> {
+                        return null
+                    }
                 }
             }
+
             else -> {
                 val (codePoint, next) = nextChr(s, index) ?: return null
                 index = next
@@ -995,16 +1151,34 @@ private fun backslashU(s: String, index: Int): Pair<Int, Int>? {
         var ch = s[cursor]
         var digit =
             when {
-                ch in '0'..'9' -> ch.code - '0'.code
-                ch in 'a'..'f' -> 10 + ch.code - 'a'.code
-                ch in 'A'..'F' -> 10 + ch.code - 'A'.code
+                ch in '0'..'9' -> {
+                    ch.code - '0'.code
+                }
+
+                ch in 'a'..'f' -> {
+                    10 + ch.code - 'a'.code
+                }
+
+                ch in 'A'..'F' -> {
+                    10 + ch.code - 'A'.code
+                }
+
                 ch == '_' && digits > 0 -> {
                     cursor += 1
                     continue
                 }
-                ch == '}' && digits == 0 -> return null
-                ch == '}' -> break
-                else -> return null
+
+                ch == '}' && digits == 0 -> {
+                    return null
+                }
+
+                ch == '}' -> {
+                    break
+                }
+
+                else -> {
+                    return null
+                }
             }
         if (digits == 6) return null
         value = value * 0x10 + digit
@@ -1028,16 +1202,24 @@ private fun parseLitInt(s: String): DigitsLiteralParts? {
                 index += 2
                 16
             }
+
             byte(s, index) == '0'.code && byte(s, index + 1) == 'o'.code -> {
                 index += 2
                 8
             }
+
             byte(s, index) == '0'.code && byte(s, index + 1) == 'b'.code -> {
                 index += 2
                 2
             }
-            byte(s, index) in '0'.code..'9'.code -> 10
-            else -> return null
+
+            byte(s, index) in '0'.code..'9'.code -> {
+                10
+            }
+
+            else -> {
+                return null
+            }
         }
 
     var value = BigInt.new()
@@ -1046,22 +1228,42 @@ private fun parseLitInt(s: String): DigitsLiteralParts? {
         var ch = s[index]
         var digit =
             when {
-                ch in '0'..'9' -> ch.code - '0'.code
-                ch in 'a'..'f' && base > 10 -> ch.code - 'a'.code + 10
-                ch in 'A'..'F' && base > 10 -> ch.code - 'A'.code + 10
+                ch in '0'..'9' -> {
+                    ch.code - '0'.code
+                }
+
+                ch in 'a'..'f' && base > 10 -> {
+                    ch.code - 'a'.code + 10
+                }
+
+                ch in 'A'..'F' && base > 10 -> {
+                    ch.code - 'A'.code + 10
+                }
+
                 ch == '_' -> {
                     index += 1
                     continue@loop
                 }
-                ch == '.' && base == 10 -> return null
+
+                ch == '.' && base == 10 -> {
+                    return null
+                }
+
                 (ch == 'e' || ch == 'E') && base == 10 -> {
                     var hasExp = false
                     var suffixIndex = index + 1
                     while (suffixIndex < s.length) {
                         when (val exp = s[suffixIndex]) {
-                            '_' -> Unit
-                            '-', '+' -> return null
-                            in '0'..'9' -> hasExp = true
+                            '_' -> {}
+
+                            '-', '+' -> {
+                                return null
+                            }
+
+                            in '0'..'9' -> {
+                                hasExp = true
+                            }
+
                             else -> {
                                 val suffix = s.substring(suffixIndex)
                                 if (hasExp && xidOk(suffix)) {
@@ -1077,7 +1279,10 @@ private fun parseLitInt(s: String): DigitsLiteralParts? {
                     }
                     break@loop
                 }
-                else -> break@loop
+
+                else -> {
+                    break@loop
+                }
             }
         if (digit >= base) return null
         hasDigit = true
@@ -1114,15 +1319,18 @@ private fun parseLitFloat(input: String): DigitsLiteralParts? {
                 read += 1
                 continue
             }
+
             in '0'..'9' -> {
                 if (hasE) hasExponent = true
                 chars[write] = ch
             }
+
             '.' -> {
                 if (hasE || hasDot) return null
                 hasDot = true
                 chars[write] = '.'
             }
+
             'e',
             'E',
             -> {
@@ -1134,6 +1342,7 @@ private fun parseLitFloat(input: String): DigitsLiteralParts? {
                 hasE = true
                 chars[write] = 'e'
             }
+
             '-',
             '+',
             -> {
@@ -1146,7 +1355,10 @@ private fun parseLitFloat(input: String): DigitsLiteralParts? {
                     continue
                 }
             }
-            else -> break
+
+            else -> {
+                break
+            }
         }
         read += 1
         write += 1

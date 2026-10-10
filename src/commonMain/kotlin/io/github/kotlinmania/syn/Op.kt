@@ -218,28 +218,36 @@ public object UnOpParse {
                     ?: return@step SynResult.failure(cursor.error("expected unary operator"))
             val span = punct.span()
             when (punct.asChar()) {
-                '*' ->
+                '*' -> {
                     SynResult.success(
                         UnOp.Deref(
                             io.github.kotlinmania.syn.token.Star
                                 .from(span),
                         ) to rest,
                     )
-                '!' ->
+                }
+
+                '!' -> {
                     SynResult.success(
                         UnOp.NotOp(
                             io.github.kotlinmania.syn.token.Not
                                 .from(span),
                         ) to rest,
                     )
-                '-' ->
+                }
+
+                '-' -> {
                     SynResult.success(
                         UnOp.Neg(
                             io.github.kotlinmania.syn.token.Minus
                                 .from(span),
                         ) to rest,
                     )
-                else -> SynResult.failure(cursor.error("expected unary operator"))
+                }
+
+                else -> {
+                    SynResult.failure(cursor.error("expected unary operator"))
+                }
             }
         }
 }

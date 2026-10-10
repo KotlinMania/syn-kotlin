@@ -360,20 +360,62 @@ public open class VisitMut {
 
     public open fun visitType(t: SynType) {
         when (t) {
-            is SynType.Array -> visitTypeArrayMut(t)
-            is SynType.BareFn -> visitTypeBareFnMut(t)
-            is SynType.Group -> visitTypeGroupMut(t)
-            is SynType.ImplTrait -> visitTypeImplTraitMut(t)
-            is SynType.Infer -> visitTypeInferMut(t)
-            is SynType.Macro -> visitTypeMacroMut(t)
-            is SynType.Never -> visitTypeNeverMut(t)
-            is SynType.Paren -> visitTypeParenMut(t)
-            is SynType.Path -> visitTypePathMut(t)
-            is SynType.Ptr -> visitTypePtrMut(t)
-            is SynType.Reference -> visitTypeReferenceMut(t)
-            is SynType.Slice -> visitTypeSliceMut(t)
-            is SynType.TraitObject -> visitTypeTraitObjectMut(t)
-            is SynType.Tuple -> visitTypeTupleMut(t)
+            is SynType.Array -> {
+                visitTypeArrayMut(t)
+            }
+
+            is SynType.BareFn -> {
+                visitTypeBareFnMut(t)
+            }
+
+            is SynType.Group -> {
+                visitTypeGroupMut(t)
+            }
+
+            is SynType.ImplTrait -> {
+                visitTypeImplTraitMut(t)
+            }
+
+            is SynType.Infer -> {
+                visitTypeInferMut(t)
+            }
+
+            is SynType.Macro -> {
+                visitTypeMacroMut(t)
+            }
+
+            is SynType.Never -> {
+                visitTypeNeverMut(t)
+            }
+
+            is SynType.Paren -> {
+                visitTypeParenMut(t)
+            }
+
+            is SynType.Path -> {
+                visitTypePathMut(t)
+            }
+
+            is SynType.Ptr -> {
+                visitTypePtrMut(t)
+            }
+
+            is SynType.Reference -> {
+                visitTypeReferenceMut(t)
+            }
+
+            is SynType.Slice -> {
+                visitTypeSliceMut(t)
+            }
+
+            is SynType.TraitObject -> {
+                visitTypeTraitObjectMut(t)
+            }
+
+            is SynType.Tuple -> {
+                visitTypeTupleMut(t)
+            }
+
             is SynType.Verbatim -> {
                 visitTokenStreamMut(t.tokens)
             }
@@ -390,36 +432,74 @@ public open class VisitMut {
                 visitAttributesMut(p.attrs)
                 visitBlockMut(p.block)
             }
-            is Pat.Ident -> visitPatIdentMut(p)
+
+            is Pat.Ident -> {
+                visitPatIdentMut(p)
+            }
+
             is Pat.Lit -> {
                 visitAttributesMut(p.attrs)
                 visitLitMut(p.lit)
             }
+
             is Pat.Macro -> {
                 visitAttributesMut(p.attrs)
                 visitMacroMut(p.mac)
             }
-            is Pat.Or -> visitPatOrMut(p)
-            is Pat.PatParen -> visitPatParenMut(p)
+
+            is Pat.Or -> {
+                visitPatOrMut(p)
+            }
+
+            is Pat.PatParen -> {
+                visitPatParenMut(p)
+            }
+
             is Pat.Path -> {
                 visitAttributesMut(p.attrs)
                 p.qself?.let { visitQSelfMut(it) }
                 visitPathMut(p.path)
             }
+
             is Pat.Range -> {
                 visitAttributesMut(p.attrs)
                 p.start = p.start?.let { visitExprMut(it) }
                 visitRangeLimitsMut(p.limits)
                 p.end = p.end?.let { visitExprMut(it) }
             }
-            is Pat.Reference -> visitPatReferenceMut(p)
-            is Pat.Rest -> visitPatRestMut(p)
-            is Pat.Slice -> visitPatSliceMut(p)
-            is Pat.Struct -> visitPatStructMut(p)
-            is Pat.Tuple -> visitPatTupleMut(p)
-            is Pat.TupleStruct -> visitPatTupleStructMut(p)
-            is Pat.TypeAscription -> visitPatTypeMut(p)
-            is Pat.Wild -> visitPatWildMut(p)
+
+            is Pat.Reference -> {
+                visitPatReferenceMut(p)
+            }
+
+            is Pat.Rest -> {
+                visitPatRestMut(p)
+            }
+
+            is Pat.Slice -> {
+                visitPatSliceMut(p)
+            }
+
+            is Pat.Struct -> {
+                visitPatStructMut(p)
+            }
+
+            is Pat.Tuple -> {
+                visitPatTupleMut(p)
+            }
+
+            is Pat.TupleStruct -> {
+                visitPatTupleStructMut(p)
+            }
+
+            is Pat.TypeAscription -> {
+                visitPatTypeMut(p)
+            }
+
+            is Pat.Wild -> {
+                visitPatWildMut(p)
+            }
+
             is Pat.Verbatim -> {
                 visitTokenStreamMut(p.tokens)
             }
@@ -428,21 +508,66 @@ public open class VisitMut {
 
     public open fun visitItem(i: Item) {
         when (i) {
-            is Item.Const -> visitItemConstMut(i)
-            is Item.Enum -> visitItemEnumMut(i)
-            is Item.ExternCrate -> visitItemExternCrateMut(i)
-            is Item.Fn -> visitItemFnMut(i)
-            is Item.ForeignMod -> visitItemForeignModMut(i)
-            is Item.Impl -> visitItemImplMut(i)
-            is Item.Macro -> visitItemMacroMut(i)
-            is Item.Mod -> visitItemModMut(i)
-            is Item.Static -> visitItemStaticMut(i)
-            is Item.Struct -> visitItemStructMut(i)
-            is Item.Trait -> visitItemTraitMut(i)
-            is Item.TraitAlias -> visitItemTraitAliasMut(i)
-            is Item.ItemType -> visitItemTypeMut(i)
-            is Item.Union -> visitItemUnionMut(i)
-            is Item.Use -> visitItemUseMut(i)
+            is Item.Const -> {
+                visitItemConstMut(i)
+            }
+
+            is Item.Enum -> {
+                visitItemEnumMut(i)
+            }
+
+            is Item.ExternCrate -> {
+                visitItemExternCrateMut(i)
+            }
+
+            is Item.Fn -> {
+                visitItemFnMut(i)
+            }
+
+            is Item.ForeignMod -> {
+                visitItemForeignModMut(i)
+            }
+
+            is Item.Impl -> {
+                visitItemImplMut(i)
+            }
+
+            is Item.Macro -> {
+                visitItemMacroMut(i)
+            }
+
+            is Item.Mod -> {
+                visitItemModMut(i)
+            }
+
+            is Item.Static -> {
+                visitItemStaticMut(i)
+            }
+
+            is Item.Struct -> {
+                visitItemStructMut(i)
+            }
+
+            is Item.Trait -> {
+                visitItemTraitMut(i)
+            }
+
+            is Item.TraitAlias -> {
+                visitItemTraitAliasMut(i)
+            }
+
+            is Item.ItemType -> {
+                visitItemTypeMut(i)
+            }
+
+            is Item.Union -> {
+                visitItemUnionMut(i)
+            }
+
+            is Item.Use -> {
+                visitItemUseMut(i)
+            }
+
             is Item.Verbatim -> {
                 visitTokenStreamMut(i.tokens)
             }
@@ -466,8 +591,14 @@ public open class VisitMut {
             is Meta.PathMeta -> {
                 visitPathMut(m.path)
             }
-            is Meta.List -> visitMetaListMut(m)
-            is Meta.NameValue -> visitMetaNameValueMut(m)
+
+            is Meta.List -> {
+                visitMetaListMut(m)
+            }
+
+            is Meta.NameValue -> {
+                visitMetaNameValueMut(m)
+            }
         }
     }
 
@@ -492,27 +623,35 @@ public open class VisitMut {
             is Lit.Str -> {
                 visitLitStrMut(l.value)
             }
+
             is Lit.ByteStr -> {
                 visitLitByteStrMut(l.value)
             }
+
             is Lit.CStr -> {
                 visitLitCStrMut(l.value)
             }
+
             is Lit.Byte -> {
                 visitLitByteMut(l.value)
             }
+
             is Lit.Char -> {
                 visitLitCharMut(l.value)
             }
+
             is Lit.Int -> {
                 visitLitIntMut(l.value)
             }
+
             is Lit.Float -> {
                 visitLitFloatMut(l.value)
             }
+
             is Lit.Bool -> {
                 visitLitBoolMut(l.value)
             }
+
             is Lit.Verbatim -> { }
         }
     }
@@ -558,14 +697,17 @@ public open class VisitMut {
                 visitLocalMut(s)
                 s
             }
+
             is Stmt.ItemStmt -> {
                 visitItemMut(s.item)
                 s
             }
+
             is Stmt.ExprStmt -> {
                 s.expr = visitExprMut(s.expr)
                 s
             }
+
             is Stmt.MacroStmt -> {
                 visitStmtMacroMut(s)
                 s
@@ -577,9 +719,11 @@ public open class VisitMut {
             is Data.Struct -> {
                 visitDataStructMut(d.value)
             }
+
             is Data.Enum -> {
                 visitDataEnumMut(d.value)
             }
+
             is Data.Union -> {
                 visitDataUnionMut(d.value)
             }
@@ -632,6 +776,7 @@ public open class VisitMut {
     public open fun visitReturnType(rt: ReturnType) {
         when (rt) {
             is ReturnType.Default -> { }
+
             is ReturnType.TypeReturn -> {
                 visitTypeMut(rt.ty)
             }
@@ -640,7 +785,10 @@ public open class VisitMut {
 
     public open fun visitFnArg(arg: FnArg) {
         when (arg) {
-            is FnArg.Receiver -> visitReceiverMut(arg)
+            is FnArg.Receiver -> {
+                visitReceiverMut(arg)
+            }
+
             is FnArg.Typed -> {
                 visitPatTypeMut(arg.patType)
             }
@@ -649,10 +797,22 @@ public open class VisitMut {
 
     public open fun visitForeignItem(item: ForeignItem) {
         when (item) {
-            is ForeignItem.Fn -> visitForeignItemFnMut(item)
-            is ForeignItem.Static -> visitForeignItemStaticMut(item)
-            is ForeignItem.ItemType -> visitForeignItemTypeMut(item)
-            is ForeignItem.Macro -> visitForeignItemMacroMut(item)
+            is ForeignItem.Fn -> {
+                visitForeignItemFnMut(item)
+            }
+
+            is ForeignItem.Static -> {
+                visitForeignItemStaticMut(item)
+            }
+
+            is ForeignItem.ItemType -> {
+                visitForeignItemTypeMut(item)
+            }
+
+            is ForeignItem.Macro -> {
+                visitForeignItemMacroMut(item)
+            }
+
             is ForeignItem.Verbatim -> {
                 visitTokenStreamMut(item.tokens)
             }
@@ -850,8 +1010,14 @@ public open class VisitMut {
     public open fun visitPathArguments(pathArgs: PathArguments) {
         when (pathArgs) {
             is PathArguments.None -> { }
-            is PathArguments.AngleBracketed -> visitAngleBracketedGenericArgumentsMut(pathArgs)
-            is PathArguments.Parenthesized -> visitParenthesizedGenericArgumentsMut(pathArgs)
+
+            is PathArguments.AngleBracketed -> {
+                visitAngleBracketedGenericArgumentsMut(pathArgs)
+            }
+
+            is PathArguments.Parenthesized -> {
+                visitParenthesizedGenericArgumentsMut(pathArgs)
+            }
         }
     }
 
@@ -869,18 +1035,23 @@ public open class VisitMut {
             is GenericArgument.LifetimeArg -> {
                 visitLifetimeMut(genArg.lifetime)
             }
+
             is GenericArgument.TypeArg -> {
                 visitTypeMut(genArg.type)
             }
+
             is GenericArgument.ConstArg -> {
                 genArg.expr = visitExprMut(genArg.expr)
             }
+
             is GenericArgument.AssocTypeArg -> {
                 visitAssocTypeMut(genArg.assoc)
             }
+
             is GenericArgument.AssocConstArg -> {
                 visitAssocConstMut(genArg.assoc)
             }
+
             is GenericArgument.ConstraintArg -> {
                 visitConstraintMut(genArg.constraint)
             }
@@ -907,11 +1078,18 @@ public open class VisitMut {
 
     public open fun visitTypeParamBound(bound: TypeParamBound) {
         when (bound) {
-            is TypeParamBound.Trait -> visitTraitBoundMut(bound)
+            is TypeParamBound.Trait -> {
+                visitTraitBoundMut(bound)
+            }
+
             is TypeParamBound.LifetimeBound -> {
                 visitLifetimeMut(bound.lifetime)
             }
-            is TypeParamBound.PreciseCapture -> visitPreciseCaptureMut(bound)
+
+            is TypeParamBound.PreciseCapture -> {
+                visitPreciseCaptureMut(bound)
+            }
+
             is TypeParamBound.Verbatim -> {
                 visitTokenStreamMut(bound.tokens)
             }
@@ -939,6 +1117,7 @@ public open class VisitMut {
             is CapturedParam.Lifetime -> {
                 visitLifetimeMut(param.lifetime)
             }
+
             is CapturedParam.Ident -> {
                 visitIdentMut(param.ident)
             }
@@ -1020,9 +1199,11 @@ public open class VisitMut {
             is Fields.Named -> {
                 visitFieldsNamedMut(fields.fields)
             }
+
             is Fields.Unnamed -> {
                 visitFieldsUnnamedMut(fields.fields)
             }
+
             Fields.Unit -> { }
         }
     }
@@ -1037,10 +1218,22 @@ public open class VisitMut {
 
     public open fun visitImplItem(item: ImplItem) {
         when (item) {
-            is ImplItem.Const -> visitImplItemConstMut(item)
-            is ImplItem.Fn -> visitImplItemFnMut(item)
-            is ImplItem.AssocType -> visitImplItemTypeMut(item)
-            is ImplItem.Macro -> visitImplItemMacroMut(item)
+            is ImplItem.Const -> {
+                visitImplItemConstMut(item)
+            }
+
+            is ImplItem.Fn -> {
+                visitImplItemFnMut(item)
+            }
+
+            is ImplItem.AssocType -> {
+                visitImplItemTypeMut(item)
+            }
+
+            is ImplItem.Macro -> {
+                visitImplItemMacroMut(item)
+            }
+
             is ImplItem.Verbatim -> {
                 visitTokenStreamMut(item.tokens)
             }
@@ -1203,6 +1396,7 @@ public open class VisitMut {
             is ModContent.Inline -> {
                 for (i in modContent.items.indices) visitItemMut(modContent.items[i])
             }
+
             is ModContent.Unnamed -> { }
         }
     }
@@ -1223,6 +1417,7 @@ public open class VisitMut {
             is Member.Named -> {
                 visitIdentMut(member.ident)
             }
+
             is Member.Unnamed -> {
                 visitIndexMut(member.index)
             }
@@ -1247,10 +1442,22 @@ public open class VisitMut {
 
     public open fun visitTraitItem(item: TraitItem) {
         when (item) {
-            is TraitItem.Const -> visitTraitItemConstMut(item)
-            is TraitItem.Fn -> visitTraitItemFnMut(item)
-            is TraitItem.AssocType -> visitTraitItemTypeMut(item)
-            is TraitItem.Macro -> visitTraitItemMacroMut(item)
+            is TraitItem.Const -> {
+                visitTraitItemConstMut(item)
+            }
+
+            is TraitItem.Fn -> {
+                visitTraitItemFnMut(item)
+            }
+
+            is TraitItem.AssocType -> {
+                visitTraitItemTypeMut(item)
+            }
+
+            is TraitItem.Macro -> {
+                visitTraitItemMacroMut(item)
+            }
+
             is TraitItem.Verbatim -> {
                 visitTokenStreamMut(item.tokens)
             }
@@ -1286,15 +1493,25 @@ public open class VisitMut {
 
     public open fun visitUseTree(useTree: UseTree) {
         when (useTree) {
-            is UseTree.Path -> visitUsePathMut(useTree)
-            is UseTree.Name ->
+            is UseTree.Path -> {
+                visitUsePathMut(useTree)
+            }
+
+            is UseTree.Name -> {
                 if (useTree.rename == null) {
                     visitUseNameMut(useTree)
                 } else {
                     visitUseRenameMut(useTree)
                 }
-            is UseTree.Group -> visitUseGroupMut(useTree)
-            is UseTree.Glob -> visitUseGlobMut(useTree)
+            }
+
+            is UseTree.Group -> {
+                visitUseGroupMut(useTree)
+            }
+
+            is UseTree.Glob -> {
+                visitUseGlobMut(useTree)
+            }
         }
     }
 
@@ -1333,7 +1550,11 @@ public open class VisitMut {
     public open fun visitVisibility(visibility: Visibility) {
         when (visibility) {
             is Visibility.Public -> { }
-            is Visibility.Restricted -> visitVisRestrictedMut(visibility)
+
+            is Visibility.Restricted -> {
+                visitVisRestrictedMut(visibility)
+            }
+
             Visibility.Inherited -> { }
         }
     }

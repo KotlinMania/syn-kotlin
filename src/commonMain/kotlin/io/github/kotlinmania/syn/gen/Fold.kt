@@ -137,20 +137,62 @@ public open class Fold {
 
     public open fun foldType(t: SynType): SynType =
         when (t) {
-            is SynType.Array -> foldTypeArray(t)
-            is SynType.BareFn -> foldTypeBareFn(t)
-            is SynType.Group -> foldTypeGroup(t)
-            is SynType.ImplTrait -> foldTypeImplTrait(t)
-            is SynType.Infer -> foldTypeInfer(t)
-            is SynType.Macro -> foldTypeMacro(t)
-            is SynType.Never -> foldTypeNever(t)
-            is SynType.Paren -> foldTypeParen(t)
-            is SynType.Path -> foldTypePath(t)
-            is SynType.Ptr -> foldTypePtr(t)
-            is SynType.Reference -> foldTypeReference(t)
-            is SynType.Slice -> foldTypeSlice(t)
-            is SynType.TraitObject -> foldTypeTraitObject(t)
-            is SynType.Tuple -> foldTypeTuple(t)
+            is SynType.Array -> {
+                foldTypeArray(t)
+            }
+
+            is SynType.BareFn -> {
+                foldTypeBareFn(t)
+            }
+
+            is SynType.Group -> {
+                foldTypeGroup(t)
+            }
+
+            is SynType.ImplTrait -> {
+                foldTypeImplTrait(t)
+            }
+
+            is SynType.Infer -> {
+                foldTypeInfer(t)
+            }
+
+            is SynType.Macro -> {
+                foldTypeMacro(t)
+            }
+
+            is SynType.Never -> {
+                foldTypeNever(t)
+            }
+
+            is SynType.Paren -> {
+                foldTypeParen(t)
+            }
+
+            is SynType.Path -> {
+                foldTypePath(t)
+            }
+
+            is SynType.Ptr -> {
+                foldTypePtr(t)
+            }
+
+            is SynType.Reference -> {
+                foldTypeReference(t)
+            }
+
+            is SynType.Slice -> {
+                foldTypeSlice(t)
+            }
+
+            is SynType.TraitObject -> {
+                foldTypeTraitObject(t)
+            }
+
+            is SynType.Tuple -> {
+                foldTypeTuple(t)
+            }
+
             is SynType.Verbatim -> {
                 foldTokenStream(t.tokens)
                 t
@@ -165,22 +207,70 @@ public open class Fold {
 
     public open fun foldPat(p: Pat): Pat =
         when (p) {
-            is Pat.Const -> p.copy(attrs = foldAttributes(p.attrs), block = foldBlock(p.block))
-            is Pat.Ident -> foldPatIdent(p)
-            is Pat.Lit -> p.copy(attrs = foldAttributes(p.attrs), lit = foldLit(p.lit))
-            is Pat.Macro -> p.copy(attrs = foldAttributes(p.attrs), mac = foldMacro(p.mac))
-            is Pat.Or -> foldPatOr(p)
-            is Pat.PatParen -> foldPatParen(p)
-            is Pat.Path -> p.copy(attrs = foldAttributes(p.attrs), qself = p.qself?.let { foldQself(it) }, path = foldPath(p.path))
-            is Pat.Range -> foldPatRange(p)
-            is Pat.Reference -> foldPatReference(p)
-            is Pat.Rest -> foldPatRest(p)
-            is Pat.Slice -> foldPatSlice(p)
-            is Pat.Struct -> foldPatStruct(p)
-            is Pat.Tuple -> foldPatTuple(p)
-            is Pat.TupleStruct -> foldPatTupleStruct(p)
-            is Pat.TypeAscription -> p.copy(attrs = foldAttributes(p.attrs), pat = foldPat(p.pat), ty = foldType(p.ty))
-            is Pat.Wild -> foldPatWild(p)
+            is Pat.Const -> {
+                p.copy(attrs = foldAttributes(p.attrs), block = foldBlock(p.block))
+            }
+
+            is Pat.Ident -> {
+                foldPatIdent(p)
+            }
+
+            is Pat.Lit -> {
+                p.copy(attrs = foldAttributes(p.attrs), lit = foldLit(p.lit))
+            }
+
+            is Pat.Macro -> {
+                p.copy(attrs = foldAttributes(p.attrs), mac = foldMacro(p.mac))
+            }
+
+            is Pat.Or -> {
+                foldPatOr(p)
+            }
+
+            is Pat.PatParen -> {
+                foldPatParen(p)
+            }
+
+            is Pat.Path -> {
+                p.copy(attrs = foldAttributes(p.attrs), qself = p.qself?.let { foldQself(it) }, path = foldPath(p.path))
+            }
+
+            is Pat.Range -> {
+                foldPatRange(p)
+            }
+
+            is Pat.Reference -> {
+                foldPatReference(p)
+            }
+
+            is Pat.Rest -> {
+                foldPatRest(p)
+            }
+
+            is Pat.Slice -> {
+                foldPatSlice(p)
+            }
+
+            is Pat.Struct -> {
+                foldPatStruct(p)
+            }
+
+            is Pat.Tuple -> {
+                foldPatTuple(p)
+            }
+
+            is Pat.TupleStruct -> {
+                foldPatTupleStruct(p)
+            }
+
+            is Pat.TypeAscription -> {
+                p.copy(attrs = foldAttributes(p.attrs), pat = foldPat(p.pat), ty = foldType(p.ty))
+            }
+
+            is Pat.Wild -> {
+                foldPatWild(p)
+            }
+
             is Pat.Verbatim -> {
                 foldTokenStream(p.tokens)
                 p
@@ -189,21 +279,66 @@ public open class Fold {
 
     public open fun foldItem(i: Item): Item =
         when (i) {
-            is Item.Const -> foldItemConst(i)
-            is Item.Enum -> foldItemEnum(i)
-            is Item.ExternCrate -> foldItemExternCrate(i)
-            is Item.Fn -> foldItemFn(i)
-            is Item.ForeignMod -> foldItemForeignMod(i)
-            is Item.Impl -> foldItemImpl(i)
-            is Item.Macro -> foldItemMacro(i)
-            is Item.Mod -> foldItemMod(i)
-            is Item.Static -> foldItemStatic(i)
-            is Item.Struct -> foldItemStruct(i)
-            is Item.Trait -> foldItemTrait(i)
-            is Item.TraitAlias -> foldItemTraitAlias(i)
-            is Item.ItemType -> foldItemType(i)
-            is Item.Union -> foldItemUnion(i)
-            is Item.Use -> foldItemUse(i)
+            is Item.Const -> {
+                foldItemConst(i)
+            }
+
+            is Item.Enum -> {
+                foldItemEnum(i)
+            }
+
+            is Item.ExternCrate -> {
+                foldItemExternCrate(i)
+            }
+
+            is Item.Fn -> {
+                foldItemFn(i)
+            }
+
+            is Item.ForeignMod -> {
+                foldItemForeignMod(i)
+            }
+
+            is Item.Impl -> {
+                foldItemImpl(i)
+            }
+
+            is Item.Macro -> {
+                foldItemMacro(i)
+            }
+
+            is Item.Mod -> {
+                foldItemMod(i)
+            }
+
+            is Item.Static -> {
+                foldItemStatic(i)
+            }
+
+            is Item.Struct -> {
+                foldItemStruct(i)
+            }
+
+            is Item.Trait -> {
+                foldItemTrait(i)
+            }
+
+            is Item.TraitAlias -> {
+                foldItemTraitAlias(i)
+            }
+
+            is Item.ItemType -> {
+                foldItemType(i)
+            }
+
+            is Item.Union -> {
+                foldItemUnion(i)
+            }
+
+            is Item.Use -> {
+                foldItemUse(i)
+            }
+
             is Item.Verbatim -> {
                 foldTokenStream(i.tokens)
                 i
@@ -848,9 +983,18 @@ public open class Fold {
 
     public open fun foldTypeParamBound(bound: TypeParamBound): TypeParamBound =
         when (bound) {
-            is TypeParamBound.Trait -> foldTraitBound(bound)
-            is TypeParamBound.LifetimeBound -> bound.copy(lifetime = foldLifetime(bound.lifetime))
-            is TypeParamBound.PreciseCapture -> foldPreciseCapture(bound)
+            is TypeParamBound.Trait -> {
+                foldTraitBound(bound)
+            }
+
+            is TypeParamBound.LifetimeBound -> {
+                bound.copy(lifetime = foldLifetime(bound.lifetime))
+            }
+
+            is TypeParamBound.PreciseCapture -> {
+                foldPreciseCapture(bound)
+            }
+
             is TypeParamBound.Verbatim -> {
                 foldTokenStream(bound.tokens)
                 bound
@@ -964,10 +1108,22 @@ public open class Fold {
 
     public open fun foldImplItem(item: ImplItem): ImplItem =
         when (item) {
-            is ImplItem.Const -> foldImplItemConst(item)
-            is ImplItem.Fn -> foldImplItemFn(item)
-            is ImplItem.AssocType -> foldImplItemType(item)
-            is ImplItem.Macro -> foldImplItemMacro(item)
+            is ImplItem.Const -> {
+                foldImplItemConst(item)
+            }
+
+            is ImplItem.Fn -> {
+                foldImplItemFn(item)
+            }
+
+            is ImplItem.AssocType -> {
+                foldImplItemType(item)
+            }
+
+            is ImplItem.Macro -> {
+                foldImplItemMacro(item)
+            }
+
             is ImplItem.Verbatim -> {
                 foldTokenStream(item.tokens)
                 item
@@ -1214,10 +1370,22 @@ public open class Fold {
 
     public open fun foldTraitItem(item: TraitItem): TraitItem =
         when (item) {
-            is TraitItem.Const -> foldTraitItemConst(item)
-            is TraitItem.Fn -> foldTraitItemFn(item)
-            is TraitItem.AssocType -> foldTraitItemType(item)
-            is TraitItem.Macro -> foldTraitItemMacro(item)
+            is TraitItem.Const -> {
+                foldTraitItemConst(item)
+            }
+
+            is TraitItem.Fn -> {
+                foldTraitItemFn(item)
+            }
+
+            is TraitItem.AssocType -> {
+                foldTraitItemType(item)
+            }
+
+            is TraitItem.Macro -> {
+                foldTraitItemMacro(item)
+            }
+
             is TraitItem.Verbatim -> {
                 foldTokenStream(item.tokens)
                 item
@@ -1258,15 +1426,25 @@ public open class Fold {
 
     public open fun foldUseTree(useTree: UseTree): UseTree =
         when (useTree) {
-            is UseTree.Path -> foldUsePath(useTree)
-            is UseTree.Name ->
+            is UseTree.Path -> {
+                foldUsePath(useTree)
+            }
+
+            is UseTree.Name -> {
                 if (useTree.rename == null) {
                     foldUseName(useTree)
                 } else {
                     foldUseRename(useTree)
                 }
-            is UseTree.Group -> foldUseGroup(useTree)
-            is UseTree.Glob -> foldUseGlob(useTree)
+            }
+
+            is UseTree.Group -> {
+                foldUseGroup(useTree)
+            }
+
+            is UseTree.Glob -> {
+                foldUseGlob(useTree)
+            }
         }
 
     public open fun foldUseGlob(useTree: UseTree.Glob): UseTree.Glob = useTree
