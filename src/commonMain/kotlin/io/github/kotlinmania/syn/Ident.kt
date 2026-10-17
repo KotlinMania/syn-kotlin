@@ -8,6 +8,8 @@ import io.github.kotlinmania.syn.token.SelfType
 import io.github.kotlinmania.syn.token.SelfValue
 import io.github.kotlinmania.syn.token.Super
 import io.github.kotlinmania.syn.token.Underscore
+import io.github.kotlinmania.unicodeident.isXidContinue
+import io.github.kotlinmania.unicodeident.isXidStart
 
 public typealias Ident = io.github.kotlinmania.procmacro2.Ident
 
@@ -46,19 +48,6 @@ internal fun xidOk(symbol: String): Boolean {
     }
     return true
 }
-
-private fun isXidStart(ch: Char): Boolean =
-    ch == '_' || ch.isLetter()
-
-private fun isXidContinue(ch: Char): Boolean =
-    isXidStart(ch) || ch.isDigit() || ch.category in XID_CONTINUE_MARK_CATEGORIES
-
-private val XID_CONTINUE_MARK_CATEGORIES =
-    setOf(
-        CharCategory.NON_SPACING_MARK,
-        CharCategory.ENCLOSING_MARK,
-        CharCategory.COMBINING_SPACING_MARK,
-    )
 
 internal fun acceptAsIdent(ident: Ident): Boolean {
     val s = ident.toString()

@@ -4,6 +4,24 @@ package io.github.kotlinmania.syn
 
 import io.github.kotlinmania.procmacro2.TokenStream
 
+/**
+ * Parsing interface for syntax tree types supported by `parseQuote`.
+ */
+public interface ParseQuote {
+    public fun parse(input: ParseStream): SynResult<Any?>
+}
+
+/**
+ * Parses [tokenStream] using [parser], throwing [SynError] if parsing fails.
+ */
+public fun <T> parse(tokenStream: TokenStream, parser: (ParseStream) -> SynResult<T>): T {
+    val result: SynResult<T> = parse2(parser, tokenStream)
+    return result.fold(
+        onSuccess = { value: T -> value },
+        onFailure = { err: SynError -> throw err },
+    )
+}
+
 public fun parseQuoteAttribute(tokenStream: TokenStream): Attribute {
     val result: SynResult<Attribute> = parse2(AttributeParse::parse, tokenStream)
     return result.fold(

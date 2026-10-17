@@ -414,6 +414,8 @@ public enum class PathStyle {
     AsWritten,
 }
 
+public fun PathStyle.clone(): PathStyle = this
+
 internal fun printPath(
     tokens: TokenStream,
     path: Path,

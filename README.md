@@ -309,7 +309,7 @@ be dual licensed as above, without any additional terms or conditions.
 
 ```kotlin
 dependencies {
-    implementation("io.github.kotlinmania:syn-kotlin:0.3.10")
+    implementation("io.github.kotlinmania:syn-kotlin:0.3.12")
 }
 ```
 
@@ -320,8 +320,8 @@ dependencies {
 ./gradlew test
 ```
 
-This project depends on `io.github.kotlinmania:proc-macro2-kotlin:0.1.2` and
-`io.github.kotlinmania:quote-kotlin:0.1.2`. Builds resolve Kotlinmania
+This project depends on `io.github.kotlinmania:proc-macro2-kotlin:0.1.6` and
+`io.github.kotlinmania:quote-kotlin:0.2.5`. Builds resolve Kotlinmania
 dependencies from published Maven repositories, not Gradle composite builds or
 developer-machine repositories.
 
@@ -332,17 +332,17 @@ developer-machine repositories.
 - Windows mingw-x64
 - iOS arm64 / simulator-arm64 (Swift export + XCFramework)
 - tvOS arm64 / simulator-arm64
-- watchOS arm32 / arm64 / device-arm64 / simulator-arm64
-- Android Native arm32 / arm64 / x86 / x64
+- watchOS device-arm64 / simulator-arm64
+- Android Native arm64 / x64
 - JS (browser + Node.js)
-- Wasm-JS (browser + Node.js)
+- Wasm-JS (Node.js)
 - Wasm-WASI (Node.js)
 - Android (API 24+)
 - JVM
 
 ### Porting guidelines
 
-See [AGENTS.md](AGENTS.md) and [CLAUDE.md](CLAUDE.md) for translator discipline, port-lint header convention, and Rust → Kotlin idiom mapping.
+See [AGENTS.md](AGENTS.md) and [SWIFT.md](SWIFT.md) for translator discipline, port-lint header convention, and Rust → Kotlin idiom mapping.
 
 ### License
 

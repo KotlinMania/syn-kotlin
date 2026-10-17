@@ -11,6 +11,7 @@ ktlintEngine = "1.8.0"
 kotlinxBenchmark = "0.5.0"
 procMacro2 = "0.1.6"
 quote = "0.2.5"
+unicodeIdent = "0.1.0"
 anyhow = "0.1.1"
 
 [plugins]
@@ -31,6 +32,7 @@ collections-immutable = { module = "org.jetbrains.kotlinx:kotlinx-collections-im
 kotlinx-benchmark-runtime = { module = "org.jetbrains.kotlinx:kotlinx-benchmark-runtime", version.ref = "kotlinxBenchmark" }
 proc-macro2-kotlin = { module = "io.github.kotlinmania:proc-macro2-kotlin", version.ref = "procMacro2" }
 quote-kotlin = { module = "io.github.kotlinmania:quote-kotlin", version.ref = "quote" }
+unicode-ident-kotlin = { module = "io.github.kotlinmania:unicode-ident-kotlin", version.ref = "unicodeIdent" }
 anyhow-kotlin = { module = "io.github.kotlinmania:anyhow-kotlin", version.ref = "anyhow" }
 
 [bundles]
@@ -42,4 +44,5 @@ syn-commonMain = [
   "collections-immutable",
   "proc-macro2-kotlin",
   "quote-kotlin",
+  "unicode-ident-kotlin",
 ]

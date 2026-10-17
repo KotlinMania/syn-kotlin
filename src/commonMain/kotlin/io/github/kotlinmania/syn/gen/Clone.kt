@@ -517,9 +517,6 @@ public fun Item.Verbatim.clone(): Item.Verbatim =
 public fun Label.clone(): Label =
     Label(name.clone(), colonToken)
 
-public fun Lifetime.clone(): Lifetime =
-    Lifetime(apostrophe, ident.copy())
-
 public fun GenericParam.LifetimeParam.clone(): GenericParam.LifetimeParam =
     GenericParam.LifetimeParam(attrs.cloneList(), lifetime.clone(), colonToken, bounds.copy({ it.clone() }, { it }))
 

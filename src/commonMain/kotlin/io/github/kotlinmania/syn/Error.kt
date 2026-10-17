@@ -101,12 +101,6 @@ public sealed class SynResult<out T> {
     }
 }
 
-/** The result of a Syn parser. */
-public typealias Result<T> = SynResult<T>
-
-/** Error returned when a Syn parser cannot parse the input tokens. */
-public typealias Error = SynError
-
 /**
  * Error returned when a Syn parser cannot parse the input tokens.
  *
@@ -208,6 +202,9 @@ public class SynError private constructor(
                     ),
                 ),
             )
+
+        public fun from(err: io.github.kotlinmania.procmacro2.TokenStreamParseResult): SynError =
+            new(Span.callSite(), err.error ?: "cannot parse string")
     }
 
     /** The source location of the error. */
