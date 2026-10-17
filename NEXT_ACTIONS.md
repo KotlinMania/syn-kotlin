@@ -8,9 +8,9 @@ Based on AST analysis, here are the concrete next steps.
 - **Function parity:** 1071/1083 matched (target 3382) — 98.9%
 - **Class/type parity:** 108/121 matched (target 823) — 89.3%
 - **Combined symbol parity:** 1179/1204 matched (target 4205) — 97.9%
-- **Average inline-code cosine:** 0.55 (function body across 52 matched files)
+- **Average inline-code cosine:** 0.56 (function body across 52 matched files)
 - **Average documentation cosine:** 0.30 (doc text across 52 matched files)
-- **Cheat-zeroed Files:** 4
+- **Cheat-zeroed Files:** 3
 - **Critical Issues:** 23 files with <0.60 function similarity
 
 ## Priority 1: Fix Incomplete High-Dependency Files
@@ -328,10 +328,10 @@ Every matched file is listed below with function and type symbol parity.
 
 ### 25. scan_expr
 
-- **Target:** `syn.ScanExpr [ZERO]`
-- **Similarity:** 0.00
+- **Target:** `syn.ScanExpr`
+- **Similarity:** 0.58
 - **Dependents:** 1
-- **Priority Score:** 1000310.0
+- **Priority Score:** 1000304.2
 - **Functions:** 1/1 matched (target 83)
 - **Missing functions:** _none_
 - **Types:** 2/2 matched (target 5)
