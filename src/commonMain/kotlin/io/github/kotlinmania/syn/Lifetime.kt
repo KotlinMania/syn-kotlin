@@ -44,6 +44,9 @@ public data class Lifetime(
     public fun deepCopy(): Lifetime =
         Lifetime(apostrophe, ident.copy())
 
+    public fun clone(): Lifetime =
+        deepCopy()
+
     override fun toTokens(tokens: TokenStream) {
         tokens.append(Punct('\'', Spacing.Joint, apostrophe))
         tokens.append(ident)

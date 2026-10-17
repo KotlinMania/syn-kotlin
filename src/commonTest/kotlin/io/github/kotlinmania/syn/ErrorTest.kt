@@ -9,9 +9,9 @@ import kotlin.test.assertTrue
 
 class ErrorTest {
     @Test
-    fun resultAndErrorAliasesUseSynTypes() {
-        val ok: Result<Int> = SynResult.success(7)
-        val err: Error = SynError.new(Span.callSite(), "nope")
+    fun resultAndErrorUseSynTypes() {
+        val ok: SynResult<Int> = SynResult.success(7)
+        val err: SynError = SynError.new(Span.callSite(), "nope")
 
         assertEquals(7, ok.getOrThrow())
         assertEquals("nope", err.toString())

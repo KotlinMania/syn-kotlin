@@ -56,6 +56,14 @@ import io.github.kotlinmania.quote.ToTokens
  */
 
 /**
+ * Parsing interface implemented by all types that can be parsed in a default
+ * way from a token stream.
+ */
+public interface Parse {
+    public fun parse(input: ParseStream): SynResult<Any?>
+}
+
+/**
  * Input to a Syn parser function.
  *
  * Spelled `ParseStream = ParseBuffer`. The shared-mutable part is the way a parser represents "may
@@ -90,6 +98,18 @@ public class ParseBuffer internal constructor(
     override fun toString(): String = currentCursor.tokenStream().toString()
 
     public fun fmt(): String = toString()
+
+    /**
+     * Parses a syntax tree node of type [T], advancing the position of our
+     * parse stream past it.
+     */
+    public fun <T> parse(parser: (ParseStream) -> SynResult<T>): SynResult<T> = parser(this)
+
+    /**
+     * Calls the given parser function to parse a syntax tree node of type [T]
+     * from this stream.
+     */
+    public fun <T> call(function: (ParseStream) -> SynResult<T>): SynResult<T> = function(this)
 
     /**
      * Looks at the next token in the parse stream to determine whether it
@@ -432,6 +452,33 @@ public object LiteralParse {
         }
 }
 
+public typealias Output = Any?
+
+/**
+ * Parser that can parse tokens into a particular syntax tree node.
+ */
+public interface Parser {
+    public fun parse2(tokens: TokenStream): SynResult<Output>
+
+    public fun parse(tokens: TokenStream): SynResult<Output> =
+        parse2(tokens)
+
+    public fun parseStr(s: String): SynResult<Output> {
+        val parseResult = TokenStream.fromString(s)
+        if (parseResult.isFailure()) {
+            return SynResult.failure(SynError.from(parseResult))
+        }
+        return parse2(parseResult.getOrThrow())
+    }
+}
+
+internal fun tokensToParseBuffer(tokens: TokenBuffer): ParseBuffer {
+    val scope = Span.callSite()
+    val cursor = tokens.begin()
+    val unexpected = UnexpectedRef(Unexpected.None)
+    return newParseBuffer(scope, cursor, unexpected)
+}
+
 internal fun <T> parseScoped(
     parser: (ParseStream) -> SynResult<T>,
     scope: Span,
@@ -490,13 +537,6 @@ public object Nothing : ToTokens {
 }
 
 /**
- * Top-level parsing entry points. These live
- * in the root module; see
- * [Lib.kt] when that file is ported. Provided here as a convenience while
- * downstream ports compile against the parse infrastructure.
- */
-
-/**
  * Parse a [TokenStream] into the chosen syntax tree node, enforcing that the
  * entire stream is consumed. Mirrors `parse2`.
  */
@@ -510,7 +550,7 @@ public fun <T> parse2(parser: (ParseStream) -> SynResult<T>, tokens: TokenStream
 public fun <T> parseStr(parser: (ParseStream) -> SynResult<T>, s: String): SynResult<T> {
     val parseResult = TokenStream.fromString(s)
     if (parseResult.isFailure()) {
-        return SynResult.failure(SynError.new(Span.callSite(), parseResult.error ?: "cannot parse string"))
+        return SynResult.failure(SynError.from(parseResult))
     }
     return parse2(parser, parseResult.getOrThrow())
 }

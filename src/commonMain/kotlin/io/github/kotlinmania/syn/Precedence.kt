@@ -112,3 +112,5 @@ public enum class Precedence {
 
     public fun eq(other: Precedence): Boolean = this == other
 }
+
+public fun Precedence.clone(): Precedence = this
