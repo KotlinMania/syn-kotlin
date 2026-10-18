@@ -8,8 +8,6 @@ public typealias Formatter = Any
 
 public typealias FmtResult = Unit
 
-public typealias TokenStream2 = TokenStream
-
 /**
  * Re-export convenience aliases for types that live in other modules.
  *

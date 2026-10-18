@@ -35,7 +35,7 @@ import io.github.kotlinmania.syn.ForeignItem
 import io.github.kotlinmania.syn.GenericArgument
 import io.github.kotlinmania.syn.GenericParam
 import io.github.kotlinmania.syn.Generics
-import io.github.kotlinmania.syn.Ident
+import io.github.kotlinmania.procmacro2.Ident
 import io.github.kotlinmania.syn.ImplItem
 import io.github.kotlinmania.syn.ImplRestriction
 import io.github.kotlinmania.syn.Index

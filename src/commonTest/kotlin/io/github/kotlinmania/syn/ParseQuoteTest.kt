@@ -1,6 +1,7 @@
 // port-lint: tests tests/test_parse_quote.rs
 package io.github.kotlinmania.syn
 
+
 import io.github.kotlinmania.procmacro2.TokenStream
 import io.github.kotlinmania.syn.token.Or
 import kotlin.test.Test

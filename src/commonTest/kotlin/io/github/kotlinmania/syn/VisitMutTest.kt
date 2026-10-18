@@ -1,5 +1,6 @@
 package io.github.kotlinmania.syn
 
+
 import io.github.kotlinmania.syn.gen.VisitMut
 import kotlin.test.Test
 import kotlin.test.assertTrue

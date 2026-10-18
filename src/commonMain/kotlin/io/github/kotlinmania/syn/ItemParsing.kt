@@ -1,6 +1,8 @@
 // port-lint: source item.rs
 package io.github.kotlinmania.syn
 
+import io.github.kotlinmania.procmacro2.Ident
+
 import io.github.kotlinmania.syn.token.Colon
 import io.github.kotlinmania.syn.token.Default
 import io.github.kotlinmania.syn.token.Semi

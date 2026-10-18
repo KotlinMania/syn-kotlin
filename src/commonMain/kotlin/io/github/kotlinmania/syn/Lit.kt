@@ -2,6 +2,8 @@
 
 package io.github.kotlinmania.syn
 
+import io.github.kotlinmania.procmacro2.Ident
+
 import io.github.kotlinmania.procmacro2.Group
 import io.github.kotlinmania.procmacro2.Literal
 import io.github.kotlinmania.procmacro2.Punct

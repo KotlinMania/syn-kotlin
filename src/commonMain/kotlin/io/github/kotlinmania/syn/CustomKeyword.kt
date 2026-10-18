@@ -1,6 +1,8 @@
 // port-lint: source custom_keyword.rs
 package io.github.kotlinmania.syn
 
+import io.github.kotlinmania.procmacro2.Ident
+
 /**
  * Support for defining custom keywords that can be used as tokens in parsing.
  *
