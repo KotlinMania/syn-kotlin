@@ -1,6 +1,7 @@
 // port-lint: source gen/visit_mut.rs
 package io.github.kotlinmania.syn.gen
 
+import io.github.kotlinmania.procmacro2.Ident
 import io.github.kotlinmania.procmacro2.Span
 import io.github.kotlinmania.procmacro2.TokenStream
 import io.github.kotlinmania.syn.Abi
@@ -36,7 +37,6 @@ import io.github.kotlinmania.syn.ForeignItem
 import io.github.kotlinmania.syn.GenericArgument
 import io.github.kotlinmania.syn.GenericParam
 import io.github.kotlinmania.syn.Generics
-import io.github.kotlinmania.procmacro2.Ident
 import io.github.kotlinmania.syn.ImplItem
 import io.github.kotlinmania.syn.ImplRestriction
 import io.github.kotlinmania.syn.Index

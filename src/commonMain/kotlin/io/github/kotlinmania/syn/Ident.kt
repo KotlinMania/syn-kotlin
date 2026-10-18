@@ -3,7 +3,6 @@
 package io.github.kotlinmania.syn
 
 import io.github.kotlinmania.procmacro2.Ident
-
 import io.github.kotlinmania.syn.token.Crate
 import io.github.kotlinmania.syn.token.Extern
 import io.github.kotlinmania.syn.token.SelfType
