@@ -81,12 +81,12 @@ For long target surfaces, a single clean `build` may run long. Do not count a ki
 
 ## 5.3 Canonical complete `build.gradle.kts` — model after this
 
-The file `/Volumes/stuff/Projects/kotlinmania/canonical/build.gradle.kts.template` is the single source of truth for what every `*-kotlin/` repo's `build.gradle.kts` should look like, section-by-section, with rationale comments at every block. It was adapted from `kasuari-kotlin` v0.1.5 (the most recently verified end-to-end repo — Maven Central publish succeeded on 2026-05-24) with `watchosArm32` retired and the JVM-required guard enforced.
+The file `../canonical/build.gradle.kts.template` is the single source of truth for what every `*-kotlin/` repo's `build.gradle.kts` should look like, section-by-section, with rationale comments at every block. It was adapted from `kasuari-kotlin` v0.1.5 (the most recently verified end-to-end repo — Maven Central publish succeeded on 2026-05-24) with `watchosArm32` retired and the JVM-required guard enforced.
 
 To check a repo against the canonical:
 
 ```bash
-diff -u /Volumes/stuff/Projects/kotlinmania/canonical/build.gradle.kts.template \
+diff -u ../canonical/build.gradle.kts.template \
         <repo>/build.gradle.kts \
   | grep -vE "<RepoName>|<repo-name>|<package|<Version>|<Description>|<inception>|<package_dir>"
 ```
@@ -96,10 +96,10 @@ Differences that are NOT placeholder substitutions need explanation.
 The canonical has 10 sections, in this order — keep this order in any new repo:
 
 1. **Plugins + project coordinates.** Pinned Kotlin 2.3.21, Android KMP library 9.2.1, vanniktech maven-publish 0.36.0. `group = "io.github.kotlinmania"`. `version` is the only per-release knob.
-2. **Android SDK installer.** Gradle-backed, no shell scripts. Installs at configuration time so the Android Gradle plugin can resolve the SDK before any task runs (see [ANDROID.md](file:///Volumes/stuff/Projects/kotlinmania/ANDROID.md)).
+2. **Android SDK installer.** Gradle-backed, no shell scripts. Installs at configuration time so the Android Gradle plugin can resolve the SDK before any task runs (see [ANDROID.md](file://../ANDROID.md)).
 3. **`kotlin { … }` target block.** The "never remove" set: `jvm()`, `macosArm64`, all three current iOS targets, both current tvOS targets, all three current watchOS targets (no `watchosArm32`), Linux x64/Arm64, MinGW, all four Android Native targets, `js { browser(); nodejs() }`, `wasmJs { browser(); nodejs() }`, `wasmWasi { nodejs() }`, `swiftExport { … }`, `android { … }`. Plus `XCFramework("<RepoName>")`. Plus `jvmToolchain(21)`. Plus `applyDefaultHierarchyTemplate()`. Plus `allWarningsAsErrors.set(true)`.
 4. **Test logging.** Full stack traces + standard streams. Required so test failures in CI surface diagnostics.
-5. **Kotlin/JS toolchain + security patches.** Node 24.16.0, Yarn 1.22.22, the workspace-wide yarn resolutions block, vendored `karma-webpack` (see [JS_SECURITY.md](file:///Volumes/stuff/Projects/kotlinmania/JS_SECURITY.md)).
+5. **Kotlin/JS toolchain + security patches.** Node 24.16.0, Yarn 1.22.22, the workspace-wide yarn resolutions block, vendored `karma-webpack` (see [JS_SECURITY.md](file://../JS_SECURITY.md)).
 6. **Maven publishing** (vanniktech plugin). Pinned coordinates, Apache 2.0 license, sydneyrenee developer block, SCM URLs.
 7. **CodeQL extraction.** `codeqlCompileJvm` task with `prepareCodeqlCommonMainSources` (strips Swift Export annotations for plain JVM kotlinc). `codeqlAndroidAar` for sibling Android artifacts.
 8. **Setup tasks.** `setupAndroidSdk` (Kotlin-backed, not Exec). `swiftExportSmokeTest` (runs `embedSwiftExportForXcode` + `swift test`). `test` umbrella that runs the host-portable subset including the Swift smoke test.
@@ -282,9 +282,9 @@ tasks.register("test") {
 
 A complete repo also needs:
 
-- **`gradle.properties`** with `kotlin.native.parallelThreads=0` (see [AGENTS.md](file:///Volumes/stuff/Projects/kotlinmania/AGENTS.md#10-kotlinnative--kotlinjs-gotchas)).
-- **`gradle/npm/karma-webpack/package.json`** — vendored karma-webpack with hardened glob/rimraf/inflight pins (see [JS_SECURITY.md](file:///Volumes/stuff/Projects/kotlinmania/JS_SECURITY.md)).
-- **`swift-test-harness/Package.swift`** + at least one `Tests/.../*.swift` smoke test that does `import <RepoName>` (see [SWIFT.md](file:///Volumes/stuff/Projects/kotlinmania/SWIFT.md)).
+- **`gradle.properties`** with `kotlin.native.parallelThreads=0` (see [AGENTS.md](file://../AGENTS.md#10-kotlinnative--kotlinjs-gotchas)).
+- **`gradle/npm/karma-webpack/package.json`** — vendored karma-webpack with hardened glob/rimraf/inflight pins (see [JS_SECURITY.md](file://../JS_SECURITY.md)).
+- **`swift-test-harness/Package.swift`** + at least one `Tests/.../*.swift` smoke test that does `import <RepoName>` (see [SWIFT.md](file://../SWIFT.md)).
 - **`.github/workflows/{ci,codeql,publish,ios,macos,tvos,watchos,android,android-native,linux,windows,js,wasm,swift}.yml`** (triggers and reusable workflows).
 
 ---
