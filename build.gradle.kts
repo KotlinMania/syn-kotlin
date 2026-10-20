@@ -336,6 +336,10 @@ tasks
 // Workspace contract: allWarningsAsErrors = true across all compilation tasks (AGENTS.md §4).
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask<*>>().configureEach {
     compilerOptions.allWarningsAsErrors.set(true)
+    if (name.startsWith("compileSwiftExportMainKotlin")) {
+        // The Swift coroutine runtime implements Job, which requires an explicit inheritance opt-in.
+        compilerOptions.optIn.add("kotlinx.coroutines.InternalForInheritanceCoroutinesApi")
+    }
 }
 
 val jvmToolchainVersion = providers.gradleProperty("jvm.toolchain").getOrElse("21").toInt()
@@ -463,10 +467,6 @@ kotlin {
     swiftExport {
         moduleName = frameworkName
         flattenPackage = projectNamespace
-        @OptIn(org.jetbrains.kotlin.gradle.swiftexport.ExperimentalSwiftExportDsl::class)
-        configure {
-            settings.put("enableCoroutinesSupport", "true")
-        }
     }
 
     // Android KMP library. Block name is `android` — `androidLibrary` is deprecated in current KGP.

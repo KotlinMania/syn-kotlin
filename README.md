@@ -313,6 +313,24 @@ dependencies {
 }
 ```
 
+### Migrating to 0.4.0
+
+Import `Ident` and `TokenStream` from `io.github.kotlinmania.procmacro2`.
+The `syn.Ident` and `syn.TokenStream2` aliases have been removed.
+
+`TransparentFn.fn` now uses the named `TokenStreamTransform` interface.
+Its `invoke` method accepts and returns a `TokenStream`. Kotlin lambdas,
+function variables, and function references can still be passed to the
+`TransparentFn` constructor. Use `handler.fn::invoke` when a function-typed
+value is required. Rebuild compiled consumers for the changed constructor
+and property signatures. Direct Swift Export callers can wrap their closure
+with the generated `tokenStreamTransform(function:)` factory and pass the
+result to `TransparentFn(fn:span:)`.
+
+`SynError` remains an `IllegalArgumentException`. A failed
+`SynResult.getOrThrow()` throws the original `SynError` object, preserving
+typed catch behavior and diagnostic identity.
+
 ### Building
 
 ```bash
@@ -335,7 +353,7 @@ developer-machine repositories.
 - watchOS device-arm64 / simulator-arm64
 - Android Native arm64 / x64
 - JS (browser + Node.js)
-- Wasm-JS (Node.js)
+- Wasm-JS (browser + Node.js)
 - Wasm-WASI (Node.js)
 - Android (API 24+)
 - JVM

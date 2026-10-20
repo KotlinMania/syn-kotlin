@@ -28,4 +28,13 @@ struct SynExportTests {
         #expect(!path.isIdent(ident: "select"))
         #expect(path.deepCopy().isModStyle())
     }
+
+    @Test("Pass a typed token transformation through the exported callback")
+    func tokenTransformPreservesTheTokenStream() {
+        let tokens = ExportedKotlinPackages.io.github.kotlinmania.procmacro2.TokenStream.Companion.shared.new()
+        let span = ExportedKotlinPackages.io.github.kotlinmania.procmacro2.Span.Companion.shared.callSite()
+        let transform = tokenStreamTransform(function: { input in input })
+        let handler = TransparentFn(fn: transform, span: span)
+        #expect(handler.fn(tokens: tokens) === tokens)
+    }
 }
