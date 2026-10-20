@@ -140,15 +140,42 @@ Swift bindings for a Kotlin Multiplatform module's exported API.
 Instead of consuming the Kotlin output through Objective-C interop
 (the legacy approach that produces `KotlinInt`, mangled names, and
 `underscore_prefixed_calls`), Swift consumers get a real
-`.swiftmodule` they can `import <Module>` against, with Kotlin
-typealiases mapped to native Swift types, generic parameters
-preserved, and nullability flowing through correctly.
+`.swiftmodule` they can `import <Module>` against. Kotlin typealiases
+are exported too; generic type parameters are erased to their upper
+bounds rather than preserved as concrete Swift types.
 
 The KotlinMania workspace standardized on Swift Export across every
 repository that ships an XCFramework so that downstream Swift / Xcode
 consumers don't have to opt into the legacy interop. The rollout
 this recipe describes is the mechanical part — wiring up the build,
 the test harness, and the CI workflow.
+
+### Direct-export contracts and generated evidence
+
+Use the [official direct Swift export guide](https://kotlinlang.org/docs/native-swift-export.html)
+to assess the source API, then read the generated Swift declarations and
+Kotlin bridges to verify what the installed toolchain actually exports.
+Emission alone does not prove that an API satisfies the documented contract.
+
+- Ordinary exported classes must be final and directly inherit from
+  `Any`. The guide separately documents sealed hierarchies and
+  cross-language inheritance through a Kotlin interface plus an open
+  Kotlin base; those are not general permission to export exception
+  subclasses.
+- Generic parameters erase to their upper bounds, generic types are
+  generally unsupported, and operator support is limited. A Kotlin
+  `SynResult<T>` whose generated `getOrThrow()` returns
+  `(any KotlinRuntimeSupport._KotlinBridgeable)?` is not a concrete,
+  typed Swift result.
+- `Unit` maps to `Void`, and constructors map to initializers. Diagnose
+  generated conversion warnings separately from source API violations.
+- Declarations requiring opt-in need the explicit module compiler
+  `optIn` required by the guide. Opting in does not repair unrelated
+  unchecked casts or redundant expressions.
+
+For diagnostic APIs, follow
+[the concrete SynError repair and verification rules](#diagnostic-apis-repair-the-exported-types-not-their-aliases)
+below. A new name alone does not remove inherited or erased Kotlin APIs.
 
 ---
 
@@ -675,65 +702,52 @@ become deletable.
    type in public surface); every match in
    `io.github.kotlinmania.<pkg>.<Type><kotlin.Any` is trigger 8a
    (unconstrained generic). Both are fixable per-repo via the
-   recipes below. If grep returns no results, gap #8 doesn't apply to
-   this repo and no API change is needed.
+   recipes below. No matches rule out only those searched patterns;
+   still check the documented source contracts and the complete
+   generated compilation diagnostics.
 
-9. **Exporting `kotlinx.coroutines.Flow` (or suspend functions) needs a
-   four-part setup that the base rollout does NOT cover.** First repo to
-   hit this end-to-end: `crossterm-kotlin` (public `Flow<InternalEvent>`
-   event stream). The failures cascade one after another; all four fixes
-   are required together. Symptom that starts it: the generated
+9. **Audit coroutine export against the installed toolchain and strict
+   generated compilation.** The historical `crossterm-kotlin` rollout
+   (public `Flow<InternalEvent>` event stream) encountered the following
+   configuration, runtime, cache and package issues. Diagnose each from
+   actual output; they are not an unconditional four-part recipe.
+   One observed symptom was that the generated
    `OrgJetbrainsKotlinxKotlinxCoroutinesCore.swift` references a
    `KotlinCoroutineSupport` module that is neither imported nor emitted
    (`cannot find type 'KotlinCoroutineSupport' in scope`).
 
-   **9a — Turn on coroutine support in the `swiftExport {}` block.** KGP
-   defaults it OFF (`SwiftExportAction.kt`:
-   `userDefinedSettings.getOrElse("enableCoroutinesSupport") { "false" }`),
-   so `Flow` gets half-exported with references to a `KotlinCoroutineSupport`
-   module the build never generates. Turn it on (the DSL method is
-   `@ExperimentalSwiftExportDsl`, so opt in on the call expression):
+   **9a — Verify configuration rather than inferring runtime inclusion
+   from a setting name.** In the inspected Kotlin 2.4.20 KGP action,
+   module `settings` become `SwiftModuleConfig.experimentalFeatures`;
+   the global `SwiftExportConfig` coroutine-support Boolean is separate.
+   Removing `settings["enableCoroutinesSupport"] = "true"` from Syn did
+   not remove `KotlinCoroutineSupport` from freshly generated output.
+   Do not claim that removing an unused module setting fixes runtime
+   warnings. Check the resolved plugin, actual configuration and emitted
+   module inputs. Use documented configuration supported by that
+   installed version; do not invent settings or mutate cached tools.
 
-   ```kotlin
-   swiftExport {
-       moduleName = frameworkName
-       flattenPackage = projectNamespace
-       @OptIn(org.jetbrains.kotlin.gradle.swiftexport.ExperimentalSwiftExportDsl::class)
-       configure {
-           settings.put("enableCoroutinesSupport", "true")
-       }
-   }
-   ```
+   **9b — Keep `allWarningsAsErrors=true` for generated bridge and runtime
+   compilation. There is no coroutine-runtime exception.** This replaces
+   the former recipe that disabled strict warnings on `compileSwiftExport*`.
+   A warning in generated source still fails the gate.
 
-   **9b — Relax `allWarningsAsErrors` for the `compileSwiftExport*` task
-   family — and ONLY for the coroutine-runtime case.** Once 9a is on, the
-   plugin emits a generated `build/SwiftExport/<t>/<c>/KotlinCoroutineSupport/
-   KotlinCoroutineSupport.kt` runtime module that is itself not
-   warning-clean (kotlinx.coroutines inheritance opt-in, useless-elvis,
-   unchecked `SwiftFlowIterator` casts). That is **plugin-generated
-   runtime we do not author and cannot edit** (it is regenerated every
-   build), so there is no source fix.
+   Classify the cause before changing code. Source API shapes can pull
+   unsupported stdlib bridges into the output; repair those shapes as
+   described under Class Stdlib. The documented explicit compiler opt-in
+   resolved Syn's inheritance opt-in diagnostic in the inspected 2.4.20
+   run with strict warnings retained. It did not fix the runtime's two
+   iterator casts or redundant Elvis expression.
 
-   ```kotlin
-   tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask<*>>().configureEach {
-       if (name.startsWith("compileSwiftExport")) {
-           compilerOptions.allWarningsAsErrors.set(false)
-       }
-   }
-   ```
-
-   > **This is NOT the gap-#8 anti-pattern.** Gap #8 forbids this exact
-   > block when it is used to silence unchecked-cast warnings in the
-   > bridge for *your own* public API — because there you fix the source
-   > (rename it, make it `internal`, or use a named `fun interface`). The
-   > distinction is *whose code emits the warning*: gap #8 = your bridge
-   > (fix source, never relax); gap #9 = the generated
-   > `KotlinCoroutineSupport.kt` coroutine runtime (no source exists,
-   > relax is the only option). Before relying on 9b, confirm with the
-   > gap-#8 audit grep that your own bridge files have zero unchecked
-   > casts; if they do, fix those at the source first. Do NOT delete this
-   > block as "the forbidden gap-#8 block" — it is load-bearing for any
-   > Flow-exporting repo.
+   Concrete constructor bridges also emitted
+   `return run { _result; true }` after initialization and produced
+   `UNUSED_EXPRESSION`. A nominal callback fixed its separate Function1
+   cast without fixing that constructor conversion. Preserve these
+   distinctions in the evidence. Verify any generator/runtime repair
+   through regeneration and strict compilation; a proposed rewrite or
+   successful source compilation is not a completed bridge repair.
+   Do not patch generated bridge sources, suppress diagnostics, or edit
+   installed compiler/cache JARs to manufacture a passing gate.
 
    **9c — Disable the Kotlin/Native incremental cache.** Linking the
    Swift Export binary builds a K/N cache for `…_swiftExportMain.klib`,
@@ -781,13 +795,12 @@ become deletable.
    `platforms: [.macOS(.v14)]`. If a prior failed run cached a bad
    manifest, clear `swift-test-harness/.build` once.
 
-   **Where Flow-exporting symbols live in the generated package.** With
-   9a on, the SPM package gains `KotlinCoroutineSupport` and
-   `OrgJetbrainsKotlinxKotlinxCoroutinesCore` targets and
-   `CrosstermLibrary` lists both — confirmed working end-to-end on
-   `crossterm-kotlin` (`swift test` → 1 test, 0 failures). Canonical
-   reference: `crossterm-kotlin/build.gradle.kts` (the four fixes) +
-   `swift-test-harness/Package.swift`.
+   **Where Flow-exporting symbols live in the generated package.**
+   Inspect the emitted SPM targets and dependencies, including
+   `KotlinCoroutineSupport` and the exported coroutine library. The
+   historical crossterm smoke result under the former warning exception
+   does not establish that current strict compilation and tests pass.
+   Record fresh results for the exact source, plugin and configuration.
 
 ## Recipe for replacing `kotlin.Result<T>` in a public API
 
@@ -1522,11 +1535,121 @@ Swift Export's generated bridge fails `allWarningsAsErrors=true` in four distinc
 
 **Class Stdlib (the fourth class) — warnings in *auto-generated* `KotlinStdlib.kt`.** Public `kotlin.Result<X>`, classes extending `RuntimeException` / `Exception` / any `Throwable` subclass, public `MutableList<X>`, public `MutableMap<K, V>` each drag the `Throwable.getStackTrace()` → `Array` bridge or the `MutableList`/`MutableMap` bridge into the generated `KotlinStdlib.kt`, which then fails Unchecked-cast under `-Werror`. Fixes:
 
-- **Public `kotlin.Result<T>`** → sealed `Outcome.Ok(value: T) | Outcome.Err(error: SomeError)`, where `SomeError` does NOT extend `Throwable`.
+- **Public `kotlin.Result<T>`** → a named, concrete success/failure API for the exported value type, with a non-Throwable diagnostic. Merely replacing it with another generic result does not restore concrete Swift typing.
 - **`class FooError : RuntimeException(...)`** (or `Exception`) → data class / sealed class that does NOT extend any `Throwable`. Kotlin callers that need to throw it wrap in their own throw site.
 - **Public `MutableList<X>` / `MutableMap<K, V>`** → internal-backed `List<X>` / a custom read-only Map wrapper; internal helpers do copy-and-replace to keep the read-only public surface.
 - **Public `Pair<A, B>`** → named record class.
 - **Public `() -> X` / `(A) -> B`** function types → `fun interface` SAM type. Swift Export can't bridge raw Kotlin function types.
+
+### Diagnostic APIs: repair the exported types, not their aliases
+
+`Swift.Error` name collisions and unsupported exception inheritance are
+separate problems. Rename the actual Kotlin declaration to a distinct
+name where needed, and repair its actual superclass and parameter types.
+Renaming `Error.kt`, adding `typealias SynError = Error`, or renaming an
+exception subclass to `SynError` does not stop re-exporting its raw
+Kotlin/Native functionality. Keeping `typealias Error = SynError` also
+retains the colliding exported name. Generated namespace aliases must be
+traced to their underlying declaration; they are not evidence that its
+API has been repaired.
+
+The Syn bridge audit exposed this concrete chain before the diagnostic
+redesign:
+
+```text
+SynError : IllegalArgumentException
+  → exported Throwable constructors and getStackTrace()
+  → Array<String> stack trace
+  → erased Array<Any?> receivers in Array get / iterator / set / size
+  → four unchecked-cast diagnostics in KotlinStdlib.kt
+```
+
+Its `new`, `newAt` and `newSpanned` message factories also accepted
+Kotlin `Any`. Their generated Swift parameters were
+`any KotlinRuntimeSupport._KotlinBridgeable`, even though callers needed
+text. Renaming the class cannot repair those factory signatures.
+Warnings in `KotlinStdlib.kt` therefore do not, by themselves, establish
+that the only remedy is an upstream compiler change.
+
+The required source repair is:
+
+1. Make `SynError` an actual non-Throwable diagnostic, with no exception
+   superclass. Preserve its message, span and compile-error operations.
+   Preserve the same diagnostic object when propagating a failure result.
+2. Use concrete, non-null Kotlin `String` messages in the diagnostic
+   property and every exported message factory or constructor. Format
+   other values into text at the caller. Do not keep an `Any` overload
+   that reintroduces the erased exported parameter.
+3. Migrate `catch (error: SynError)` and `throw diagnostic` sites
+   deliberately. Prefer result-based propagation in the original parse
+   order. A Kotlin `OrThrow` boundary can throw an internal exception
+   carrying the original diagnostic; do not publish another Throwable
+   subclass as its replacement. Record source and binary compatibility
+   changes and rebuild consumers. A generated function named `getOrThrow`
+   is not evidence of a Swift `throws` contract.
+4. Provide concrete result types at Swift-facing boundaries that need
+   typed success values. A non-Throwable diagnostic does not by itself
+   solve the generic `SynResult<T>` erasure described above.
+
+**Verify the repair in regenerated output, not just the source diff.**
+Record the source revision, resolved plugin version and configuration,
+target/build type, generated compilation inputs and their hashes.
+Inspect both the module's `.swift` declarations and its Kotlin bridges,
+then follow dependencies into `KotlinStdlib.kt`:
+
+- `SynError` must no longer inherit the exported Kotlin exception class;
+  its message property and message parameters must emit `Swift.String`.
+- The Throwable constructors, `getStackTrace()` and four Array receiver
+  casts brought in by that diagnostic must disappear. If they remain,
+  identify the other exported declaration keeping them reachable.
+  Inspect newly exposed stdlib shapes as well; removal of one chain
+  does not prove the entire export surface is clean.
+- Retain identity, message/span and failure-path regression tests and
+  exercise the concrete diagnostic/result API from the Swift harness.
+  Keep `allWarningsAsErrors=true` through bridge/runtime compilation
+  and run the actual Swift tests. Generation, linking, skipped tests and
+  earlier results for a different revision are not current test passes.
+
+The non-Throwable/String redesign addresses this source API chain.
+Bundled coroutine warnings and concrete Unit-conversion warnings require
+their own evidence and validated repairs; neither disappears merely
+because the diagnostic was renamed or redesigned.
+
+### Result APIs: retain concrete success and diagnostic types
+
+Apply the same source-level repair to `SynResult` at public operations
+whose success type is known. In the inspected generated Swift,
+`SynResult.success`, `Success.value`, `getOrThrow`, `getOrElse` and
+`fold` use optional `KotlinRuntimeSupport._KotlinBridgeable` values.
+The absence of an unchecked-cast diagnostic does not restore the lost
+success type. A sealed-case wrapper around an erased payload does not
+restore it either.
+
+Use an actual, non-generic result class for each concrete public
+contract: `FileParseResult` for `parseFile`, Syn's `TokenStreamParseResult`
+for token transformations, and the consumer's `ArgsParseResult` for
+async-trait arguments. Each class has a concrete nullable `value`, a
+nullable non-Throwable `SynError`, and exactly one populated field.
+Private constructors and concrete success/failure factories enforce
+that invariant. Conversion must retain the original value or diagnostic
+object.
+
+Change the operation's actual return type. Do not use
+`typealias TokenStreamParseResult = SynResult<TokenStream>`, inherit
+from `SynResult<TokenStream>`, substitute `Any` for the payload, or
+hide the operation while leaving no equivalent concrete API. Generic
+results can serve algorithms whose parser callbacks genuinely choose
+arbitrary types, but that does not justify exposing an erased result
+from an operation with a known output. Public generic `fold`/`map`
+callbacks must not reintroduce the same erased result surface.
+
+Record the source and binary signature changes, migrate callers and
+rebuild compiled consumers. Regenerate the bridge and inspect the
+operation return, factory arguments, result properties and accessors.
+Swift consumer tests must assign the success payload to its concrete
+type and use the diagnostic's `String` message without forced casts.
+Run those tests through the full strict KMP gate. Neither a Kotlin-only
+test nor a warning-free but erased declaration proves this contract.
 
 ### Annotation hiding is not an API repair
 
@@ -1637,7 +1760,7 @@ Inspect commonMain for **all** of these, not just whatever last tripped CI:
 1. `runs-on:` on `swift.yml` is `macos-26`; no `setup-xcode` action.
 2. Public mutable collection surfaces (`MutableList`, `MutableMap`, `MutableSet`) → read-only Kotlin types + internal copy-and-replace helpers.
 3. Public generic types / SAMs / function-type surfaces -> **first choice: de-generify** (concrete named subtypes, `fun interface` SAM with a real name, internal generic base). See "Project goal: strongly-typed public APIs" above.
-4. Public `kotlin.Result<X>` / `Throwable` subclasses → sealed Outcome types + non-Throwable error classes.
+4. Public `kotlin.Result<X>` / `Throwable` subclasses → concrete outcome APIs and non-Throwable diagnostic classes; use `String` messages, migrate catches deliberately, and verify that regenerated output removes the inherited Throwable/Array chain and erased message parameters.
 5. Public `Pair<A, B>` helpers → named record class.
 
 Run the gate after every repair, not just at the end:

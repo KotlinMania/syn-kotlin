@@ -28,11 +28,7 @@ class TransparentFnTest {
 
     @Test
     fun acceptsAnExplicitTokenStreamTransform() {
-        val transform =
-            object : TokenStreamTransform {
-                override fun invoke(tokens: TokenStream): TokenStream =
-                    TokenStream.fromString("$tokens output").getOrThrow()
-            }
+        val transform = AppendOutput()
         val handler = TransparentFn(transform, Span.callSite())
         val input = TokenStream.fromString("input").getOrThrow()
 
@@ -49,4 +45,8 @@ class TransparentFnTest {
     }
 
     private fun identity(tokens: TokenStream): TokenStream = tokens
+
+    private class AppendOutput : TokenStreamTransform {
+        override fun invoke(tokens: TokenStream): TokenStream = TokenStream.fromString("$tokens output").getOrThrow()
+    }
 }

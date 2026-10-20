@@ -336,6 +336,18 @@ the diagnostic message. Migrate `catch (SynError)` to result-based failure
 handling; exception inheritance and stack-trace APIs are no longer part
 of the exported diagnostic.
 
+`parseFile` now returns `FileParseResult`, whose `value` is a `File?` and
+whose `error` is a `SynError?`. `TokenStreamParseResult` provides the same
+concrete contract for procedural-macro output. Both offer concrete
+`success`/`failure` factories, `isSuccess`/`isFailure`, `getOrNull`,
+`exceptionOrNull` and a Kotlin `getOrThrow` boundary. Exactly one branch is
+present; adapting with `SynResult<TokenStream>.toTokenStreamParseResult()`
+retains the same tokens or diagnostic object. Generic `SynResult<T>` remains
+for Kotlin parser callbacks producing caller-defined types; it does not
+provide a typed Swift success value. Exported consumer functions use their
+own concrete outcomes for custom syntax types. Rebuild consumers for the
+changed `parseFile` return signature.
+
 ### Building
 
 ```bash

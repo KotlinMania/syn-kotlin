@@ -14,20 +14,11 @@ import io.github.kotlinmania.quote.ToTokens
 import io.github.kotlinmania.quote.append
 
 /**
- * The result of a Syn parser.
+ * The result used by Kotlin parser callbacks with caller-defined output types.
  *
- * Parser results carry [SynError] as the dedicated failure type. This
- * sealed result keeps that typed failure in the Kotlin API instead of erasing
- * it behind a generic throwable. It also avoids the unchecked-cast bridge that
- * Swift export generates for the standard library result type under
- * warnings-as-errors builds.
- *
- * Named `SynResult` to avoid colliding with Swift's built-in `Result` type.
- *
- * The companion-object factories [SynResult.success] / [SynResult.failure], the
- * `isSuccess` / `isFailure` properties, and the `getOrThrow` /
- * `getOrNull` / `exceptionOrNull` / `getOrElse` / `fold` / `map` operations
- * match the standard result idioms used throughout this port.
+ * Failures preserve their original [SynError]. Direct Swift callers use
+ * concrete outcomes such as [FileParseResult] and [TokenStreamParseResult];
+ * the type parameter here is erased by Swift export.
  */
 // generic by design: parsers produce caller-selected syntax trees and helper values.
 public sealed class SynResult<out T> {

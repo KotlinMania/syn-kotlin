@@ -42,10 +42,34 @@ struct SynExportTests {
     func diagnosticRetainsItsMessageAndIdentity() {
         let span = ExportedKotlinPackages.io.github.kotlinmania.procmacro2.Span.Companion.shared.callSite()
         let diagnostic = SynError.Companion.shared.new(span: span, message: "invalid syntax")
-        let result = SynResult.Companion.shared.failure(error: diagnostic)
+        let result = TokenStreamParseResult.Companion.shared.failure(error: diagnostic)
         #expect(result.isFailure)
         #expect(result.exceptionOrNull() === diagnostic)
         #expect(diagnostic.message == "invalid syntax")
         #expect(diagnostic.toCompileError().toString().contains("invalid syntax"))
+    }
+
+    @Test("Parse a file and inspect its concrete syntax tree without an erased cast")
+    func fileResultExposesItsSyntaxTree() {
+        let result = parseFile(content: "fn main() {}")
+        #expect(result.isSuccess)
+        #expect(result.error == nil)
+        #expect(result.value?.items.count == 1)
+        #expect(result.getOrNull() === result.value)
+
+        let failure = parseFile(content: "trait Service { async fn broken(")
+        #expect(failure.isFailure)
+        #expect(failure.value == nil)
+        #expect(failure.error === failure.exceptionOrNull())
+    }
+
+    @Test("Inspect a concrete token result without an erased success value")
+    func tokenResultExposesItsTokenStream() {
+        let tokens = ExportedKotlinPackages.io.github.kotlinmania.procmacro2.TokenStream.Companion.shared.new()
+        let result = TokenStreamParseResult.Companion.shared.success(value: tokens)
+        #expect(result.isSuccess)
+        #expect(result.value === tokens)
+        #expect(result.getOrNull() === tokens)
+        #expect(result.error == nil)
     }
 }
