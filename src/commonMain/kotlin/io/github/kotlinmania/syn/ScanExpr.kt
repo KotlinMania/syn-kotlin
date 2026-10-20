@@ -651,7 +651,7 @@ internal fun pathOrMacroOrStructImpl(input: ParseStream, allowStruct: Boolean): 
     val qpathResult = qpath(input, exprStyle = true)
     if (qpathResult.isFailure) return qpathResult.asFailure()
     val (qself, path) = qpathResult.getOrThrow()
-    if (qself == null && input.peek(NotPeek) && path.getIdent() != null) {
+    if (qself == null && input.peek(NotPeek) && !input.peek(NePeek) && path.isModStyle()) {
         val bangResult = NotParse.parse(input)
         if (bangResult.isFailure) return bangResult.asFailure()
         val delimResult = parseDelimiter(input)

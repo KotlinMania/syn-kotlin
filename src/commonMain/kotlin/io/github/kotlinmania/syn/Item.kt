@@ -840,11 +840,16 @@ public sealed class TraitItem : ToTokens {
         public var semiToken: Semi?,
     ) : TraitItem() {
         override fun toTokens(tokens: TokenStream) {
-            for (attr in attrs) attr.toTokens(tokens)
+            for (attr in attrs) {
+                if (attr.style is AttrStyle.Outer) attr.toTokens(tokens)
+            }
             sig.toTokens(tokens)
             val default = this.default
             if (default != null) {
                 default.braceToken.surround(tokens) { inner ->
+                    for (attr in attrs) {
+                        if (attr.style is AttrStyle.Inner) attr.toTokens(inner)
+                    }
                     for (stmt in default.stmts) stmt.toTokens(inner)
                 }
             } else {

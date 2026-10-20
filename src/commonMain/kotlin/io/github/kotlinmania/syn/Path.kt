@@ -123,7 +123,6 @@ public class Path(
     }
 
     public fun isModStyle(): Boolean {
-        if (leadingColon != null) return false
         for (segment in segments.toList()) {
             if (segment.arguments !is PathArguments.None) return false
         }
