@@ -1,6 +1,8 @@
 const client = config.client || {};
 
 config.set({
+  pingTimeout: 1200000,
+  transports: ['polling'],
   browserNoActivityTimeout: 1200000,
   browserDisconnectTimeout: 1200000,
   browserDisconnectTolerance: 1,
