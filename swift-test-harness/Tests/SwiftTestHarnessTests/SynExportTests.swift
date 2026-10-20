@@ -37,4 +37,15 @@ struct SynExportTests {
         let handler = TransparentFn(fn: transform, span: span)
         #expect(handler.fn(tokens: tokens) === tokens)
     }
+
+    @Test("Inspect and render a Syn diagnostic through a failure result")
+    func diagnosticRetainsItsMessageAndIdentity() {
+        let span = ExportedKotlinPackages.io.github.kotlinmania.procmacro2.Span.Companion.shared.callSite()
+        let diagnostic = SynError.Companion.shared.new(span: span, message: "invalid syntax")
+        let result = SynResult.Companion.shared.failure(error: diagnostic)
+        #expect(result.isFailure)
+        #expect(result.exceptionOrNull() === diagnostic)
+        #expect(diagnostic.message == "invalid syntax")
+        #expect(diagnostic.toCompileError().toString().contains("invalid syntax"))
+    }
 }

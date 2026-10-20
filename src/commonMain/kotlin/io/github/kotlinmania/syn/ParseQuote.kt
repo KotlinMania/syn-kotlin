@@ -12,13 +12,13 @@ public interface ParseQuote {
 }
 
 /**
- * Parses [tokenStream] using [parser], throwing [SynError] if parsing fails.
+ * Parses [tokenStream] using [parser], throwing an argument exception if parsing fails.
  */
 public fun <T> parse(tokenStream: TokenStream, parser: (ParseStream) -> SynResult<T>): T {
     val result: SynResult<T> = parse2(parser, tokenStream)
     return result.fold(
         onSuccess = { value: T -> value },
-        onFailure = { err: SynError -> throw err },
+        onFailure = { err: SynError -> err.raise() },
     )
 }
 
@@ -26,7 +26,7 @@ public fun parseQuoteAttribute(tokenStream: TokenStream): Attribute {
     val result: SynResult<Attribute> = parse2(AttributeParse::parse, tokenStream)
     return result.fold(
         onSuccess = { attribute: Attribute -> attribute },
-        onFailure = { err: SynError -> throw err },
+        onFailure = { err: SynError -> err.raise() },
     )
 }
 
@@ -34,7 +34,7 @@ public fun parseQuoteAttributeList(tokenStream: TokenStream): List<Attribute> {
     val result: SynResult<List<Attribute>> = parse2(::parseQuoteAttributeList, tokenStream)
     return result.fold(
         onSuccess = { attributes: List<Attribute> -> attributes },
-        onFailure = { err: SynError -> throw err },
+        onFailure = { err: SynError -> err.raise() },
     )
 }
 
@@ -50,7 +50,7 @@ public fun parseQuoteField(tokenStream: TokenStream): Field {
     val result: SynResult<Field> = parse2(::parseQuoteField, tokenStream)
     return result.fold(
         onSuccess = { field: Field -> field },
-        onFailure = { err: SynError -> throw err },
+        onFailure = { err: SynError -> err.raise() },
     )
 }
 
@@ -73,7 +73,7 @@ public fun parseQuotePat(tokenStream: TokenStream): Pat {
     val result: SynResult<Pat> = parse2(::parsePatMultiWithLeadingVert, tokenStream)
     return result.fold(
         onSuccess = { pat: Pat -> pat },
-        onFailure = { err: SynError -> throw err },
+        onFailure = { err: SynError -> err.raise() },
     )
 }
 
@@ -81,7 +81,7 @@ public fun parseQuoteStmtList(tokenStream: TokenStream): List<Stmt> {
     val result: SynResult<List<Stmt>> = parse2(::parseWithin, tokenStream)
     return result.fold(
         onSuccess = { stmts: List<Stmt> -> stmts },
-        onFailure = { err: SynError -> throw err },
+        onFailure = { err: SynError -> err.raise() },
     )
 }
 
@@ -89,7 +89,7 @@ public fun parseQuoteArmList(tokenStream: TokenStream): List<Arm> {
     val result: SynResult<List<Arm>> = parse2(::parseMultipleArms, tokenStream)
     return result.fold(
         onSuccess = { arms: List<Arm> -> arms },
-        onFailure = { err: SynError -> throw err },
+        onFailure = { err: SynError -> err.raise() },
     )
 }
 
@@ -97,6 +97,6 @@ public fun parseQuoteWherePredicate(tokenStream: TokenStream): WherePredicate {
     val result: SynResult<WherePredicate> = parse2(WherePredicate.Companion::parse, tokenStream)
     return result.fold(
         onSuccess = { pred: WherePredicate -> pred },
-        onFailure = { err: SynError -> throw err },
+        onFailure = { err: SynError -> err.raise() },
     )
 }

@@ -41,11 +41,11 @@ class TransparentFnTest {
     }
 
     @Test
-    fun preservesTheOriginalTypedException() {
-        val error = SynError.new(Span.callSite(), "invalid macro input")
+    fun preservesTheOriginalThrownException() {
+        val error = IllegalStateException("invalid macro input")
         val handler = TransparentFn({ throw error }, Span.callSite())
 
-        assertSame(error, assertFailsWith<SynError> { handler.fn(TokenStream.new()) })
+        assertSame(error, assertFailsWith<IllegalStateException> { handler.fn(TokenStream.new()) })
     }
 
     private fun identity(tokens: TokenStream): TokenStream = tokens

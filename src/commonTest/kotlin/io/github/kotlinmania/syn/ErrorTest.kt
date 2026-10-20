@@ -13,15 +13,17 @@ import kotlin.test.assertTrue
 
 class ErrorTest {
     @Test
-    fun failedResultThrowsTheOriginalTypedException() {
+    fun failedResultPreservesTheDiagnosticAtTheThrowBoundary() {
         val error = SynError.new(Span.callSite(), "invalid syntax")
         val result: SynResult<TokenStream> = SynResult.failure(error)
 
         assertTrue(result.isFailure)
         assertNull(result.getOrNull())
         assertSame(error, result.exceptionOrNull())
-        assertSame(error, assertFailsWith<SynError> { result.getOrThrow() })
-        assertSame(error, assertFailsWith<IllegalArgumentException> { result.getOrThrow() })
+        assertSame(error, result.map { it }.exceptionOrNull())
+        val thrown = assertFailsWith<IllegalArgumentException> { result.getOrThrow() }
+        assertSame(error, assertIs<SynParseException>(thrown).diagnostic)
+        assertEquals(error.message, thrown.message)
         assertEquals("invalid syntax", error.message)
     }
 

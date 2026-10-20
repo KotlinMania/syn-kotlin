@@ -109,12 +109,16 @@ public class Path(
         return if (segment.arguments.isNone()) segment.ident else null
     }
 
-    public fun requireIdent(): Ident =
-        getIdent() ?: throw SynError.new(
-            segments.first()?.ident?.span() ?: io.github.kotlinmania.procmacro2.Span
-                .callSite(),
-            "expected this path to be an identifier",
-        )
+    public fun requireIdent(): Ident {
+        val ident = getIdent()
+        if (ident != null) return ident
+        val diagnostic =
+            SynError.new(
+                segments.first()?.ident?.span() ?: Span.callSite(),
+                "expected this path to be an identifier",
+            )
+        diagnostic.raise()
+    }
 
     public fun span(): Span {
         var first = segments.first()?.ident?.span() ?: Span.callSite()

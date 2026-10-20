@@ -327,9 +327,14 @@ and property signatures. Direct Swift Export callers can wrap their closure
 with the generated `tokenStreamTransform(function:)` factory and pass the
 result to `TransparentFn(fn:span:)`.
 
-`SynError` remains an `IllegalArgumentException`. A failed
-`SynResult.getOrThrow()` throws the original `SynError` object, preserving
-typed catch behavior and diagnostic identity.
+`SynError` is a non-throwable diagnostic with a `String` message, span and
+compile-error rendering operations. Error factories now accept `String`;
+format other values explicitly before passing them. Propagate failures
+through `SynResult` and `getOrElse` to retain the original diagnostic.
+Throwing helpers still fail with an `IllegalArgumentException` containing
+the diagnostic message. Migrate `catch (SynError)` to result-based failure
+handling; exception inheritance and stack-trace APIs are no longer part
+of the exported diagnostic.
 
 ### Building
 
