@@ -4,6 +4,7 @@ package io.github.kotlinmania.syn
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
+import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
@@ -16,12 +17,13 @@ class ShebangTest {
         assertTrue(file.attrs.isEmpty())
         val item = assertIs<Item.Fn>(file.items.single())
         assertEquals("main", item.ident.toString())
-        assertTrue(
-            item.block
-                ?.stmts
-                .orEmpty()
-                .isEmpty(),
-        )
+        assertIs<Visibility.Inherited>(item.vis)
+        assertNull(item.sig.generics.ltToken)
+        assertTrue(item.sig.generics.params.isEmpty())
+        assertNull(item.sig.generics.gtToken)
+        assertNull(item.sig.generics.whereClause)
+        assertIs<ReturnType.Default>(item.sig.output)
+        assertTrue(assertNotNull(item.block).stmts.isEmpty())
     }
 
     @Test
@@ -43,5 +45,12 @@ class ShebangTest {
         assertEquals("dead_code", meta.tokens.toString())
         val item = assertIs<Item.Fn>(file.items.single())
         assertEquals("main", item.ident.toString())
+        assertIs<Visibility.Inherited>(item.vis)
+        assertNull(item.sig.generics.ltToken)
+        assertTrue(item.sig.generics.params.isEmpty())
+        assertNull(item.sig.generics.gtToken)
+        assertNull(item.sig.generics.whereClause)
+        assertIs<ReturnType.Default>(item.sig.output)
+        assertTrue(assertNotNull(item.block).stmts.isEmpty())
     }
 }
