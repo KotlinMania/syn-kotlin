@@ -1,0 +1,11 @@
+--- a/native/swift/swift-export-standalone/resources/swift/KotlinRuntimeSupport.swift
++++ b/native/swift/swift-export-standalone/resources/swift/KotlinRuntimeSupport.swift
+@@ -1 +1 @@
+-@_implementationOnly import KotlinRuntimeSupportBridge
++internal import KotlinRuntimeSupportBridge
+@@ -197 +197 @@
+-        case 13: let v: [Any] = KotlinBridgeable_Array_unbox(ref) as! [Any]; KotlinBridgeable_disposeRef(ref); return v
++        case 13: let v: [Any] = KotlinBridgeable_Array_unbox(ref); KotlinBridgeable_disposeRef(ref); return v
+@@ -205 +205 @@
+-            return __createProtocolWrapper(externalRCRef: ref) as! any _KotlinBridgeable
++            return __createProtocolWrapper(externalRCRef: ref)!
