@@ -20,5 +20,18 @@
   "tests_status": "Nativefixture44274 bridge/staticlink pass; actualSwift64802 all6 retained enumcases pass once0skip,8product/test frontends Swift6Werror. Wrapper1 was summaryparser only; offline classification preserves raw. ProcMacro2 owner reports actual91639 Nativeembed and3Swiftcases pass, separate ownerreceipt.",
   "component_sha256": "57182d059e9c7f087206310aeaa6ccd56fa06ea552f31510ce58c8e7e2945e32",
   "runtime_delta_sha256": "73bcc8efdca81188e2d358b15b60fd42841f5c9ba5959c39673c7a6eaf0c9034",
-  "runtime_reason": "Job1.11.0 requires InternalForInheritanceCoroutinesApi opt-in for SwiftJob delegation; existing Job lifetime/cancellation implementation unchanged."
+  "runtime_reason": "Job1.11.0 requires InternalForInheritanceCoroutinesApi opt-in for SwiftJob delegation; existing Job lifetime/cancellation implementation unchanged.",
+  "additional_assertions": {
+    "execution": 80224,
+    "actual_exit": 0,
+    "tests": 6,
+    "source_sha256": "372d357fffe752c43be33d12f07153b9725a90567c5bf45f01d65fedd9329b11",
+    "result_sha256": "c69ba1f4be65ae8947c8aa2d8d79fd9e6f174f8ab00b29b059e2b51e6722cea4",
+    "coverage": "Empty Int32.min,-1,0,1,Int32.max all return nil; six original cases retained;8product/test frontends Swift6Werror",
+    "native_regeneration": false
+  },
+  "fixture_files": {
+    "EnumTests.swift": "372d357fffe752c43be33d12f07153b9725a90567c5bf45f01d65fedd9329b11",
+    "Enums.kt": "6e9e1450ee777490280519aa3eeeab1c41d02ace7cf0c7c7729983fe4f9654b1"
+  }
 }
