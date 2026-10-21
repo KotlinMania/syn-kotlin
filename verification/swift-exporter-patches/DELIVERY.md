@@ -26,6 +26,8 @@ The consumer's retained classification receipt is `automation-artifacts/2026-10-
 
 Six separate enum fixture cases also pass against a freshly compiled and linked Native archive. Those cases cover empty, single and multiple enums, descriptions, integer/string rejection and native reference round trips. They do not replace the consumer's three cases or establish the original 22 asynchronous cases.
 
+The subsequent production-default CI is a separate negative: ProcMacro2 head `3d8718c2412be6aa99175ab88663edec8dbfa6db`, run39534052281, Swift job119006447304, fails with the official exporter after catalog alignment and the targeted swiftExportSmokeTest entry. Its actual RuntimeSupport frontend uses Swift6/Werror and reports the original implementation-only/library-evolution and wrapped:KotlinBase Sendable errors. The preconcurrency suggestion was not applied; none of the three Swift cases executed. The independently verified log SHA256 is `1fb088fbdfc45b55c6764b9e2044b0e34e15149a0deae45f99bda43cfb079149`, at workspace `automation-artifacts/2026-10-20-proc-macro2-publication-repair/current-head-production-ci/proc-macro2-kotlin-swift-119006447304.log`. This does not invalidate the isolated91639 result or turn that result into production adoption. The existing owner monitors the original run; no duplicate CI was requested.
+
 ## Compatibility changes that must travel with delivery
 
 - `KotlinError.wrapped` is removed. Its replacement stores an immutable String captured at the boundary. The `init(wrapped:)` label remains, but code reading or writing the property breaks; original Kotlin object identity and later message mutation are not preserved. This is a source and binary compatibility change.
