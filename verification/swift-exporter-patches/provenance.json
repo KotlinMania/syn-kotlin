@@ -1,0 +1,76 @@
+{
+  "upstream_repository": "https://github.com/JetBrains/kotlin",
+  "version": "2.4.20",
+  "revision": "890ac1d94fdb80eb85f0eeb5be5e4352df987b2f",
+  "actual_full_source_git_checkout": null,
+  "official_jar_sha256": "24c6159bcf0087ecf86bfc9bad01a975e192abcf75005b248292d85a139c2055",
+  "candidate_jar_sha256": "49851dd9c565dec2c0aab8806690946706713f42f5115e491214b78f19ed313e",
+  "files": [
+    {
+      "upstream_path": "native/swift/sir-providers/src/org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/TypeBridging.kt",
+      "baseline_git_blob": "e4c2729147cab80d11b3c4e82dd48862177cec7f",
+      "baseline_sha256": "7ae7399f7359e7661695beec2239b21b13b277e7ebe67740fb65e2a3293246ef",
+      "candidate_sha256": "df746e7b87b7d1c88672fe4c282103091a43a172f72b15674dfe8135defba9d3",
+      "patch_sha256": "d9744986b256356658e6bfec33d23c56482c86d76fa5f21c5bc4f153dd2d85e6",
+      "patch_file": "TypeBridging.kt.patch",
+      "source_artifact": "automation-artifacts/2026-10-20-syn-isolated-library-validation/runtime-task-ownership-repair/flow-handoff-candidate-v2/TypeBridging.kt"
+    },
+    {
+      "upstream_path": "native/swift/swift-export-standalone/resources/swift/KotlinCoroutineSupport.kt",
+      "baseline_git_blob": "2f1b36bcf861b444ceffa74bed066e69a4846ba9",
+      "baseline_sha256": "cc30c61170e4a5fee58fcdda09539f30781cbada4c59389d99da8fed2a6f6d6f",
+      "candidate_sha256": "7811794c2878afb528a14832500a48c45ea0a4467fe6c9f92f38ba4abc6eb9c5",
+      "patch_sha256": "1e30db15444df9f701e2f52708ebbf43739556d7e8261891f549d9f2cfb90932",
+      "patch_file": "KotlinCoroutineSupport.kt.patch",
+      "source_artifact": "automation-artifacts/2026-10-20-syn-isolated-library-validation/runtime-task-ownership-repair/flow-handoff-candidate-v2/forward-managed-result-source-v2/KotlinCoroutineSupport.kt"
+    },
+    {
+      "upstream_path": "native/swift/sir-printer/src/org/jetbrains/sir/printer/impl/SirAsSwiftSourcesPrinter.kt",
+      "baseline_git_blob": "c7b5f69050d8cfa2d67031b826ad98d0caa0631c",
+      "baseline_sha256": "0e51637ef237330a6d90eb3b13ae092ffd312a5869ac290d36b3690538a5c8dc",
+      "candidate_sha256": "2fc573b813be8e82584b242b9c72b266e0e92b582ab7b5c5de3f879047de8e77",
+      "patch_sha256": "8699dcde7f9d749587d65c5e87d509351fb71f042ad4d3bdb49ba63e179373a4",
+      "patch_file": "SirAsSwiftSourcesPrinter.kt.patch",
+      "source_artifact": "automation-artifacts/2026-10-20-syn-isolated-library-validation/runtime-task-ownership-repair/flow-handoff-candidate-v2/forward-managed-result-source-v2/SirAsSwiftSourcesPrinter.kt"
+    },
+    {
+      "upstream_path": "native/swift/swift-export-standalone/resources/swift/KotlinRuntimeSupport.swift",
+      "baseline_git_blob": "e72b3dc1d6883d645f590de6b55909908b4ff237",
+      "baseline_sha256": "1a241c02c38f69a59af1778022b814098478e32e747ae8eb9fe922d32a619d65",
+      "candidate_sha256": "69ce24e6cad0169a25a129d79cc597883c8359e23d6f3241a485c41f0c6fee25",
+      "patch_sha256": "821a2b07daa8a5b8c105ba88ef7d45e3e3181e657702e601f1f25a9fa08cd464",
+      "patch_file": "KotlinRuntimeSupport.swift.patch",
+      "source_artifact": "automation-artifacts/2026-10-20-syn-isolated-library-validation/runtime-snapshot-repair/producer-src/KotlinRuntimeSupport.swift"
+    },
+    {
+      "upstream_path": "native/swift/swift-export-standalone/resources/swift/KotlinCoroutineSupport.swift",
+      "baseline_git_blob": "45f508d7d0be1f27e9d680cc77a363489925f174",
+      "baseline_sha256": "a7993337ed8c1debbd1b09e028258690cd17a9abc517ead32320e0417e7a3cee",
+      "candidate_sha256": "e85cb96e0af34c25faf8bfbc46e990f353b0ada50cebc0e90e1a14131f6cdd19",
+      "patch_sha256": "2dd099bebc8f3d5409703acd4699878dd82042bea8ec511224bd62fbb7b2c88c",
+      "patch_file": "KotlinCoroutineSupport.swift.patch",
+      "source_artifact": "automation-artifacts/2026-10-20-syn-isolated-library-validation/runtime-task-ownership-repair/flow-handoff-candidate-v2/forward-managed-result-source-v2/KotlinCoroutineSupport.swift"
+    },
+    {
+      "upstream_path": "native/swift/sir-providers/src/org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/SirBridgeProviderImpl.kt",
+      "baseline_git_blob": "1920fef799369534ecd3940920b3b62289b62152",
+      "baseline_sha256": "5f3573d81732efd98290376520d8b37c4b668251fa9aa74a82940a19ca8115ea",
+      "candidate_sha256": "be7702ac46f20d52d5ea22c8f749aed75a231deffa206fd184831bd6f6524ac3",
+      "patch_sha256": "16fb9085244ecc7bcf7342e9bccecc33ebdc98bfba31c95eef383949dc609562",
+      "patch_file": "SirBridgeProviderImpl.kt.patch",
+      "source_artifact": "automation-artifacts/2026-10-20-syn-isolated-library-validation/runtime-task-ownership-repair/flow-handoff-candidate-v2/forward-managed-result-source-v2/SirBridgeProviderImpl.kt"
+    },
+    {
+      "upstream_path": "native/swift/swift-export-standalone/resources/swift/KotlinCoroutineSupport.h",
+      "baseline_source": "Official exporter resource; Git blob not independently pinned",
+      "baseline_sha256": "62a8e7264901993a7ddd3921b455c027d160dec217904af273e84426bfb1ba50",
+      "candidate_sha256": "a7aefff3c55d161918fdab28b44563a73d61e52563bb3f9ec6e5575677eb1039",
+      "patch_sha256": "1e89d71abdbd131075ff247d45df92ce4010840f9971abb8610b74f2c8ae7bc3",
+      "patch_file": "KotlinCoroutineSupport.h.patch",
+      "source_artifact": "automation-artifacts/2026-10-20-syn-isolated-library-validation/runtime-task-ownership-repair/flow-handoff-candidate-v2/KotlinCoroutineSupport.h"
+    }
+  ],
+  "source_provenance_sha256": "e72bdbaee2620e8ff7b0daec1d72cb8b2a9d2edf50768515478ab0f181e1bc5a",
+  "status": "Source patch preservation; no official submission or published compatible producer coordinate",
+  "compatibility": "Original reverse callback contract remains unverified; no product toolchain adoption"
+}
