@@ -1,0 +1,11 @@
+# Runtime diagnostic boundary checks
+
+These authored fixtures exercise actual Kotlin/Native objects through generated Swift bindings. They are not Rust reference sources and are not library publication inputs. `Diagnostics.kt` belongs in commonMain and `DiagnosticCollection.kt` in macosMain. The latter invokes the actual Native collector with the API's explicit opt-in; it does not simulate reclamation.
+
+The five Swift cases check message/empty-message capture, snapshot independence after mutation, nil and non-Throwable fallback, release of the original wrapper while retaining the diagnostic, and transfer of the owned diagnostic through a detached task. The lifetime assertion requires the weak wrapper to become nil after actual collection and main-actor processing. A successful compiler invocation or a test declaration count is not acceptance: require all five named cases to pass once, no failures or skips, and the five-test summary.
+
+The initial Native message helper casts every KotlinBase input to Throwable. A plain Kotlin object aborts that helper before any of the five cases completes. `../KotlinRuntimeSupport.kt.patch` makes the cast checked and retains the existing absent-message fallback. It leaves the exported C signature unchanged.
+
+The stock Native header declares both wrapper factories without retained-return ownership, while their exact-version implementations return alloc/init results. Actual Swift importer SIL records autoreleased returns. `../KotlinBase.h.patch` declares the ownership returned by those implementations. This is a Native runtime source-header correction, not a Kotlin annotation used to hide an API. It requires separately verified Native header provenance; an exporter archive alone does not deliver it. Preserve the installed SDK and use a separate artifact-local SDK input for validation.
+
+Exact source revision, immutable input manifests, commands, generated-resource and Native archive hashes, actual frontend flags, negative histories and measured results are in the adjacent `contract-results.json` and the canonical workspace `template/SWIFT.md`. No production adoption, publication, arbitrary callback ownership or AWS/OpenTelemetry test acceptance follows from these fixture results. The intentional removal of mutable KotlinError.wrapped remains a separate compatibility change.

@@ -2,6 +2,7 @@
 
 package io.github.kotlinmania.syn
 
+import io.github.kotlinmania.procmacro2.Ident
 import io.github.kotlinmania.procmacro2.Span
 import io.github.kotlinmania.procmacro2.TokenStream
 import io.github.kotlinmania.quote.ToTokens

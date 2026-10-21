@@ -1,0 +1,31 @@
+--- a/native/swift/sir-printer/src/org/jetbrains/sir/printer/impl/SirAsSwiftSourcesPrinter.kt
++++ b/native/swift/sir-printer/src/org/jetbrains/sir/printer/impl/SirAsSwiftSourcesPrinter.kt
+@@ -8,0 +9 @@
++import org.jetbrains.kotlin.sir.builder.buildExtension
+@@ -210 +211 @@
+-            this@with.filterIsInstance<SirExtension>()
++            val extensions = this@with.filterIsInstance<SirExtension>()
+@@ -212 +213,22 @@
+-                .forEach { it.print() }
++            val penBoxConformances = extensions.filter {
++                it.extendedType.swiftName == "KotlinRuntimeSupport._KotlinExistentialPenBox" &&
++                        it.declarations.isEmpty() && it.constraints.isEmpty() &&
++                        it.attributes.isEmpty() && it.documentation == null &&
++                        it.visibility == SirVisibility.PACKAGE &&
++                        it.protocols.isNotEmpty()
++            }
++            if (penBoxConformances.size < 2) {
++                extensions.forEach { it.print() }
++            } else {
++                val first = penBoxConformances.first()
++                val combined = buildExtension {
++                    origin = first.origin
++                    visibility = first.visibility
++                    extendedType = first.extendedType
++                    protocols.addAll(penBoxConformances.flatMap { it.protocols }.distinct())
++                }.also { it.parent = first.parent }
++                extensions.forEach {
++                    if (it === first) combined.print()
++                    else if (it !in penBoxConformances) it.print()
++                }
++            }

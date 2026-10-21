@@ -38,7 +38,6 @@ import io.github.kotlinmania.syn.ForeignItem
 import io.github.kotlinmania.syn.GenericArgument
 import io.github.kotlinmania.syn.GenericParam
 import io.github.kotlinmania.syn.Generics
-import io.github.kotlinmania.syn.Ident
 import io.github.kotlinmania.syn.IdentColon
 import io.github.kotlinmania.syn.IfExpr
 import io.github.kotlinmania.syn.ImplItem

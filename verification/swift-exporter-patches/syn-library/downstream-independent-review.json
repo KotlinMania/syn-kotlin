@@ -1,0 +1,26 @@
+{
+  "consumer": "proc-macro2-kotlin",
+  "source_head": "3d8718c2412be6aa99175ab88663edec8dbfa6db",
+  "owner_session": 33903,
+  "verified_owner_receipt_sha256": "3f6ca3ee7743d7c72fe8dcd59a7a51aa1e7883d9402c6a213c64d917adcc8035",
+  "independent_reviewer": "Syn producer owner",
+  "all_receipt_file_hashes_verified": true,
+  "actual_named_passes": {
+    "tokenStreamParsingAndFormatting": 1,
+    "tokenStreamParseFailure": 1,
+    "literalAndPunctExport": 1
+  },
+  "authored_test_source_byte_identical": true,
+  "actual_frontend_count": 16,
+  "dependency_modules_explicit_mode": "5",
+  "authored_consumer_explicit_mode": "6",
+  "generated_runner_explicit_mode": null,
+  "all_product_frontends_werror_mac15": true,
+  "configuration_frontends_excluded": true,
+  "native_build_exit": 0,
+  "swift_process_exit": 0,
+  "public_records": 282,
+  "public_records_and_c_header_guard_pass": true,
+  "not_a_full_target_gate": true,
+  "production_adoption_or_publication": false
+}

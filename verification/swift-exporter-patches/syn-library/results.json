@@ -1,0 +1,85 @@
+{
+  "native_session": 38329,
+  "native_exit": 0,
+  "swift_session": 42332,
+  "swift_exit": 0,
+  "actual_tests": 6,
+  "failures": 0,
+  "skips": 0,
+  "product_test_frontends": {
+    "KotlinRuntimeSupport": {
+      "count": 2,
+      "strict": true
+    },
+    "ExportedKotlinPackages": {
+      "count": 2,
+      "strict": true
+    },
+    "KotlinCoroutineSupport": {
+      "count": 2,
+      "strict": true
+    },
+    "KotlinStdlib": {
+      "count": 2,
+      "strict": true
+    },
+    "IoGithubKotlinmaniaProcMacro2Kotlin": {
+      "count": 2,
+      "strict": true
+    },
+    "IoGithubKotlinmaniaQuoteKotlin": {
+      "count": 2,
+      "strict": true
+    },
+    "Syn": {
+      "count": 2,
+      "strict": true
+    },
+    "SwiftTestHarnessTests": {
+      "count": 2,
+      "strict": true
+    },
+    "SwiftTestHarnessPackageTests": {
+      "count": 2,
+      "strict": true
+    }
+  },
+  "inputs_unchanged": true,
+  "generated_inputs_unchanged": true,
+  "source_head": "deaafb4edd143e82c13346244b35d1e5b4af0e46",
+  "component_sha256": "11da4d91a1985c1e079e5b363ad33a1404fbd223d702131d19439446c01ba555",
+  "header_sha256": "99186d1dd029a8ba5b66dae390a3aec0d6d0e5293eff641d85daab5e212723c3",
+  "returned_at": "2026-10-21T06:41:31Z",
+  "production_adoption": false,
+  "full_KMP_gate": false,
+  "archive": "a50f374fc0f1cae9e119ea96e4f8a5a12fc562001525d9f98d14d6378ebd11f4",
+  "source_deltas": [
+    {
+      "upstream_path": "native/swift/sir-printer/src/org/jetbrains/sir/printer/impl/SirAsSwiftSourcesPrinter.kt",
+      "baseline_source_sha256": "2fc573b813be8e82584b242b9c72b266e0e92b582ab7b5c5de3f879047de8e77",
+      "candidate_source_sha256": "de8fcbf3257fc252f0ae55fc0f63fcca88d5176d80dfe15c92c764377de37209",
+      "incremental_patch": "SirAsSwiftSourcesPrinter.kt.patch",
+      "patch_sha256": "751324bfd21881955e10d25d8428f8370968070973fe281e638b26690aed0380"
+    },
+    {
+      "upstream_path": "native/swift/sir-providers/src/org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/TypeBridging.kt",
+      "baseline_source_sha256": "df746e7b87b7d1c88672fe4c282103091a43a172f72b15674dfe8135defba9d3",
+      "candidate_source_sha256": "9ace3dc7fede02c03a94554c784abd4a161757c858b23cbd197b069018601a3d",
+      "incremental_patch": "TypeBridging.kt.patch",
+      "patch_sha256": "eaaed4c46f4d6b97241d0bc16783e36f6faf5c2f293f93a3d0ad6112647899bd"
+    }
+  ],
+  "scope": "Actual Syn library Native and Swift validation using isolated tooling, not a full KMP or production-delivery gate",
+  "evidence": {
+    "2026-10-21-syn-real-swift-deaafb4/optional-set-corrected/native.log": "10d4ad5948bad3b3665e5bf78b59599c41d2df2dc2fe1015646f17b81d55054d",
+    "2026-10-21-syn-real-swift-deaafb4/optional-set-corrected/native-result.json": "41d4edc3bf1085b7acddab5f95b04d636e2fd3f552ce578cb46ef6fa781a4171",
+    "2026-10-21-syn-real-swift-deaafb4/optional-set-corrected/swift.log": "e044686a46dda9280799837e97598a72f9b718a3e0327f4d733c6acd22055816",
+    "2026-10-21-syn-real-swift-deaafb4/optional-set-corrected/swift-result.json": "83b37d9e4802d4215fdada019bca729cd28aaebc53936d014f239515236d16a7",
+    "2026-10-21-syn-real-swift-deaafb4/optional-set-corrected/generated-api-comparison.json": "e1da747cd3a72ea8c9e9f7b6e55acac41f470008ed1152934ab50ba732f1ac98",
+    "2026-10-21-syn-real-swift-deaafb4/optional-set-corrected/inputs.json": "f26481d2559ad25a33622ed220cadb149c37ba97524e51f9c11408ab6df23f88"
+  },
+  "baseline_diagnostics": {
+    "43241": "Swift header conformance-extension ordering; zero Swift tests",
+    "49957": "Eighteen optional-context casts and two identity Set<String> casts; zero Swift tests"
+  }
+}

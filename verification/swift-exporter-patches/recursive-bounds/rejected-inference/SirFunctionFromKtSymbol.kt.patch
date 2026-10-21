@@ -1,0 +1,58 @@
+--- a/native/swift/sir-light-classes/src/org/jetbrains/sir/lightclasses/nodes/SirFunctionFromKtSymbol.kt
++++ b/native/swift/sir-light-classes/src/org/jetbrains/sir/lightclasses/nodes/SirFunctionFromKtSymbol.kt
+@@ -13,6 +13,10 @@
+ import org.jetbrains.kotlin.analysis.api.renderer.types.impl.KaTypeRendererForSource
+ import org.jetbrains.kotlin.analysis.api.symbols.*
+ import org.jetbrains.kotlin.analysis.api.symbols.markers.KaNamedSymbol
++import org.jetbrains.kotlin.analysis.api.types.KaClassType
++import org.jetbrains.kotlin.analysis.api.types.KaType
++import org.jetbrains.kotlin.analysis.api.types.KaTypeArgumentWithVariance
++import org.jetbrains.kotlin.analysis.api.types.KaTypeParameterType
+ import org.jetbrains.kotlin.analysis.api.types.builtinTypes
+ import org.jetbrains.kotlin.sir.*
+ import org.jetbrains.kotlin.sir.builder.buildFunctionCopy
+@@ -142,7 +146,7 @@
+ 
+     context(_: KaSession, _: SirSession)
+     private fun buildForwardKotlinCall(): BridgeFunctionBuilder.() -> String = {
+-        val typeArgs = ktSymbol.typeParameters.map { it.upperBounds.singleOrNull() ?: builtinTypes.nullableAny }
++        val typeArgs = if (hasRecursiveFunctionBounds()) emptyList() else ktSymbol.typeParameters.map { it.upperBounds.singleOrNull() ?: builtinTypes.nullableAny }
+         val renderer = KaTypeRendererForSource.UPPER_BOUNDS_WITH_QUALIFIED_NAMES
+         val typesAsString = typeArgs.takeIf { it.isNotEmpty() }?.joinToString(prefix = "<", postfix = ">") {
+             it.render(renderer, position = Variance.INVARIANT)
+@@ -151,6 +155,35 @@
+         buildCall("$typesAsString(${actualArgs.joinToString()})")
+     }
+ 
++    context(_: KaSession)
++    private fun hasRecursiveFunctionBounds(): Boolean {
++        fun visitsActiveParameter(type: KaType, active: MutableSet<KaTypeParameterSymbol>): Boolean {
++            when (type) {
++                is KaTypeParameterType -> {
++                    val symbol = type.symbol
++                    if (!active.add(symbol)) return true
++                    for (bound in symbol.upperBounds) {
++                        if (visitsActiveParameter(bound, active)) return true
++                    }
++                    active.remove(symbol)
++                }
++                is KaClassType -> {
++                    for (projection in type.typeArguments) {
++                        if (projection is KaTypeArgumentWithVariance && visitsActiveParameter(projection.type, active)) return true
++                    }
++                }
++            }
++            return false
++        }
++        for (parameter in ktSymbol.typeParameters) {
++            val active = mutableSetOf(parameter)
++            for (bound in parameter.upperBounds) {
++                if (visitsActiveParameter(bound, active)) return true
++            }
++        }
++        return false
++    }
++
+     override val bridges: List<SirBridge> by lazyWithSessions {
+         val forwardKotlinCall = buildForwardKotlinCall()
+ 

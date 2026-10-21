@@ -1,0 +1,49 @@
+{
+  "stock_export_session": 79429,
+  "stock_export_exit": 1,
+  "stock_export_log_sha256": "63ccf8574e3abe7cbedc882d407d89f4170b5f8085873ed9eb29d5a2e67cd75f",
+  "native_negative_session": 19399,
+  "native_negative_exit": 1,
+  "native_negative_source_sha256": "409137400b2badd584e1927efbc9aeed6ff594360d284dc7ad63b9181e35adfa",
+  "native_single_input_compile_session": 34733,
+  "native_single_input_compile_exit": 0,
+  "native_single_input_run_session": 77287,
+  "native_single_input_run_exit": 0,
+  "native_executable_sha256": "2b3af2d41c11bf685ec8c9f9627dcf8fcae3d59eb73476c225f3729737e4d948",
+  "native_executable_kind": "Mach-O 64-bit arm64",
+  "native_assertions": [
+    "factory retains original source identity",
+    "factory retains source bits"
+  ],
+  "baseline_audit_session": 30095,
+  "baseline_audit": true,
+  "baseline_classes": 14,
+  "candidate_compile_session": 25902,
+  "candidate_compile_exit": 0,
+  "candidate_delta_audit_session": 11305,
+  "candidate_component_sha256": "d0d307231e0dc02dbfa6749aa607ba3d3e3348ebabc2a0f1bac7384b65ff8bd1",
+  "candidate_native_session": 71898,
+  "candidate_native_exit": 1,
+  "candidate_export_generation": "passed, retained generated files untouched",
+  "generated_source_sha256": "72236aed0c0551cdd0ece0a47239bab9d1372b8e79dcf5b8070d229a6d605363",
+  "candidate_native_log_sha256": "62da8b88eaf6abd59440755193c542d87342852a995f570ff4678152ddceedb0",
+  "located_errors": [
+    "e: file:///Volumes/stuff/Projects/kotlinmania/automation-artifacts/2026-10-20-syn-isolated-library-validation/recursive-bound-repair/candidate-build/SwiftExport/macosArm64/Debug/files/BoundFixture/BoundFixture.kt:56:46 Argument type mismatch: actual type is 'Flags<CapturedType(*)>', but 'Flags<uninferred B (of fun <B : Flags<B>> withRemaining)>' was expected.",
+    "e: file:///Volumes/stuff/Projects/kotlinmania/automation-artifacts/2026-10-20-syn-isolated-library-validation/recursive-bound-repair/candidate-build/SwiftExport/macosArm64/Debug/files/BoundFixture/BoundFixture.kt:56:56 Argument type mismatch: actual type is 'Flags<CapturedType(*)>', but 'Flags<uninferred B (of fun <B : Flags<B>> withRemaining)>' was expected.",
+    "e: file:///Volumes/stuff/Projects/kotlinmania/automation-artifacts/2026-10-20-syn-isolated-library-validation/recursive-bound-repair/candidate-build/SwiftExport/macosArm64/Debug/files/BoundFixture/BoundFixture.kt:62:102 Type argument is not within its bounds: type parameter 'B (of class FlagIterator<B : Flags<B>>)' must be subtype of 'Flags<Flags<*>>', but actual: 'Flags<*>'.",
+    "e: file:///Volumes/stuff/Projects/kotlinmania/automation-artifacts/2026-10-20-syn-isolated-library-validation/recursive-bound-repair/candidate-build/SwiftExport/macosArm64/Debug/files/BoundFixture/BoundFixture.kt:70:82 Inapplicable candidate(s): constructor<B : Flags<B>>(source: Flags<B>): FlagIterator<B>",
+    "e: file:///Volumes/stuff/Projects/kotlinmania/automation-artifacts/2026-10-20-syn-isolated-library-validation/recursive-bound-repair/candidate-build/SwiftExport/macosArm64/Debug/files/BoundFixture/BoundFixture.kt:70:95 Type argument is not within its bounds: type parameter 'B (of class FlagIterator<B : Flags<B>>)' must be subtype of 'Flags<Flags<*>>', but actual: 'Flags<*>'."
+  ],
+  "swift_tests_executed": 0,
+  "native_bridge_linked": false,
+  "interpretation": "Call inference avoids unbounded explicit-bound rendering but does not repair erased shared type relationships or generic class constructor/allocation bounds. This candidate is rejected as a complete repair; no product adoption or publication.",
+  "next_source_requirements": [
+    "Preserve one shared generic capture across all related inputs rather than independent erased arguments",
+    "Preserve recursive generic bounds in class allocation and initialization",
+    "Check actual public factory visibility and generated operation completeness",
+    "Compile actual generated Native bridge before Swift tests"
+  ],
+  "published_source_requirement": "No vendored frozen Rust. Local Rust reference tools remain outside release contents.",
+  "checkpoint_sha256": "43af6f95180239a47ec5aec77d847928297bec708eb65bc46386fd2b370290f2",
+  "source_scope_inspection_sha256": "cc83fccc7222458518d9151b7cc87e39a64b1a96edc25f2827b877f53a0f44fe"
+}

@@ -33,7 +33,7 @@ public object FileParse {
     }
 }
 
-public fun parseFile(content: String): SynResult<File> {
+public fun parseFile(content: String): FileParseResult {
     var source = content
     var bom = "\uFEFF"
     if (source.startsWith(bom)) {
@@ -57,5 +57,5 @@ public fun parseFile(content: String): SynResult<File> {
         }
     }
 
-    return parseStr(FileParse::parse, source).map { it.copy(shebang = shebang) }
+    return parseStr(FileParse::parse, source).map { it.copy(shebang = shebang) }.toFileParseResult()
 }

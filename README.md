@@ -309,9 +309,44 @@ be dual licensed as above, without any additional terms or conditions.
 
 ```kotlin
 dependencies {
-    implementation("io.github.kotlinmania:syn-kotlin:0.3.12")
+    implementation("io.github.kotlinmania:syn-kotlin:0.4.0")
 }
 ```
+
+### Migrating to 0.4.0
+
+Import `Ident` and `TokenStream` from `io.github.kotlinmania.procmacro2`.
+The `syn.Ident` and `syn.TokenStream2` aliases have been removed.
+
+`TransparentFn.fn` now uses the named `TokenStreamTransform` interface.
+Its `invoke` method accepts and returns a `TokenStream`. Kotlin lambdas,
+function variables, and function references can still be passed to the
+`TransparentFn` constructor. Use `handler.fn::invoke` when a function-typed
+value is required. Rebuild compiled consumers for the changed constructor
+and property signatures. Direct Swift Export callers can wrap their closure
+with the generated `tokenStreamTransform(function:)` factory and pass the
+result to `TransparentFn(fn:span:)`.
+
+`SynError` is a non-throwable diagnostic with a `String` message, span and
+compile-error rendering operations. Error factories now accept `String`;
+format other values explicitly before passing them. Propagate failures
+through `SynResult` and `getOrElse` to retain the original diagnostic.
+Throwing helpers still fail with an `IllegalArgumentException` containing
+the diagnostic message. Migrate `catch (SynError)` to result-based failure
+handling; exception inheritance and stack-trace APIs are no longer part
+of the exported diagnostic.
+
+`parseFile` now returns `FileParseResult`, whose `value` is a `File?` and
+whose `error` is a `SynError?`. `TokenStreamParseResult` provides the same
+concrete contract for procedural-macro output. Both offer concrete
+`success`/`failure` factories, `isSuccess`/`isFailure`, `getOrNull`,
+`exceptionOrNull` and a Kotlin `getOrThrow` boundary. Exactly one branch is
+present; adapting with `SynResult<TokenStream>.toTokenStreamParseResult()`
+retains the same tokens or diagnostic object. Generic `SynResult<T>` remains
+for Kotlin parser callbacks producing caller-defined types; it does not
+provide a typed Swift success value. Exported consumer functions use their
+own concrete outcomes for custom syntax types. Rebuild consumers for the
+changed `parseFile` return signature.
 
 ### Building
 
@@ -335,7 +370,7 @@ developer-machine repositories.
 - watchOS device-arm64 / simulator-arm64
 - Android Native arm64 / x64
 - JS (browser + Node.js)
-- Wasm-JS (Node.js)
+- Wasm-JS (browser + Node.js)
 - Wasm-WASI (Node.js)
 - Android (API 24+)
 - JVM

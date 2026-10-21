@@ -74,7 +74,7 @@ public class ParseNestedMeta(
         return result
     }
 
-    public fun error(msg: Any): SynError {
+    public fun error(msg: String): SynError {
         val startSpan =
             path.segments
                 .first()
@@ -82,7 +82,7 @@ public class ParseNestedMeta(
                 ?.span()
                 ?: Span.callSite()
         val endSpan = input.cursor().prevSpan()
-        return SynError.new2(startSpan, endSpan, msg.toString())
+        return SynError.new2(startSpan, endSpan, msg)
     }
 }
 

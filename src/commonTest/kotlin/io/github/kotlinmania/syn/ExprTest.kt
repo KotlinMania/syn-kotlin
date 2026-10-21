@@ -988,7 +988,7 @@ class ExprTest {
             val reconstructed =
                 runCatching { roundTrip(flat) }
                     .getOrElse { error("failed to reparse flattened `$case` as `${flat.intoTokenStream()}`: $it") }
-            assertEquals(original.toString(), reconstructed.toString(), case)
+            assertEquals(original, reconstructed, case)
         }
     }
 

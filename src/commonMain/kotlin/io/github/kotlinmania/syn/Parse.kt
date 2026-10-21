@@ -2,6 +2,7 @@
 
 package io.github.kotlinmania.syn
 
+
 import io.github.kotlinmania.procmacro2.Delimiter
 import io.github.kotlinmania.procmacro2.Group
 import io.github.kotlinmania.procmacro2.Literal
@@ -185,7 +186,7 @@ public class ParseBuffer internal constructor(
         )
 
     /** Triggers an error at the current position of the parse stream. */
-    public fun error(message: Any): SynError = errorNewAt(scope, currentCursor, message)
+    public fun error(message: String): SynError = errorNewAt(scope, currentCursor, message)
 
     /**
      * Speculatively parses tokens from this parse stream, advancing the
@@ -281,7 +282,7 @@ public class StepCursor internal constructor(
      * The [ParseBuffer.step] invocation will return this same error without
      * advancing the stream state.
      */
-    public fun error(message: Any): SynError = errorNewAt(scope, cursor, message)
+    public fun error(message: String): SynError = errorNewAt(scope, cursor, message)
 
     // Delegates each Cursor method by forwarding.
     public fun eof(): Boolean = cursor.eof()

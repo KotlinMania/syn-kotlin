@@ -14,21 +14,13 @@ import io.github.kotlinmania.quote.ToTokens
 import io.github.kotlinmania.quote.append
 
 /**
- * The result of a Syn parser.
+ * The result used by Kotlin parser callbacks with caller-defined output types.
  *
- * Parser results carry [SynError] as the dedicated failure type. This
- * sealed result keeps that typed failure in the Kotlin API instead of erasing
- * it behind a generic throwable. It also avoids the unchecked-cast bridge that
- * Swift export generates for the standard library result type under
- * warnings-as-errors builds.
- *
- * Named `SynResult` to avoid colliding with Swift's built-in `Result` type.
- *
- * The companion-object factories [SynResult.success] / [SynResult.failure], the
- * `isSuccess` / `isFailure` properties, and the `getOrThrow` /
- * `getOrNull` / `exceptionOrNull` / `getOrElse` / `fold` / `map` operations
- * match the standard result idioms used throughout this port.
+ * Failures preserve their original [SynError]. Direct Swift callers use
+ * concrete outcomes such as [FileParseResult] and [TokenStreamParseResult];
+ * the type parameter here is erased by Swift export.
  */
+// generic by design: parsers produce caller-selected syntax trees and helper values.
 public sealed class SynResult<out T> {
     /** Successful parse result carrying the parsed value. */
     public class Success<out T>(
@@ -49,14 +41,13 @@ public sealed class SynResult<out T> {
         get() = this is Failure
 
     /**
-     * Returns the parsed value if this is a [Success], or throws the
-     * carried [SynError] if this is a [Failure]. `SynError` extends
-     * `IllegalArgumentException`, so the throw is well-typed.
+     * Returns the parsed value if this is a [Success], or throws
+     * an argument exception containing the diagnostic if this is a [Failure].
      */
     public fun getOrThrow(): T =
         when (this) {
             is Success -> value
-            is Failure -> throw error
+            is Failure -> error.raise()
         }
 
     /** Returns the parsed value if this is a [Success], or `null` if this is a [Failure]. */
@@ -122,13 +113,16 @@ public sealed class SynResult<out T> {
  */
 public class SynError private constructor(
     messages: List<ErrorMessage>,
-) : IllegalArgumentException(messages.first().message),
-    Iterable<SynError> {
+) : Iterable<SynError> {
     public typealias Item = SynError
     public typealias IntoIter = Iterator<SynError>
     public typealias _Test = Unit
 
     private val messages: MutableList<ErrorMessage> = messages.toMutableList()
+
+    /** The first diagnostic message. */
+    public val message: String
+        get() = messages.first().message
 
     public companion object {
         /**
@@ -139,12 +133,12 @@ public class SynError private constructor(
          * Use `SynError.new` when the error needs to be triggered on some span
          * other than where the parse stream is currently positioned.
          */
-        public fun new(span: Span, message: Any): SynError =
+        public fun new(span: Span, message: String): SynError =
             SynError(
                 mutableListOf(
                     ErrorMessage(
                         span = ThreadBound.new(SpanRange(span, span)),
-                        message = message.toString(),
+                        message = message,
                     ),
                 ),
             )
@@ -173,10 +167,10 @@ public class SynError private constructor(
          *
          * When in doubt it's recommended to stick to `SynError.new`!
          */
-        public fun newSpanned(tokens: ToTokens, message: Any): SynError =
+        public fun newSpanned(tokens: ToTokens, message: String): SynError =
             newSpanned(tokens.intoTokenStream(), message)
 
-        public fun newSpanned(tokens: TokenStream, message: Any): SynError {
+        public fun newSpanned(tokens: TokenStream, message: String): SynError {
             val iterator = tokens.iterator()
             val start = if (iterator.hasNext()) iterator.next().span() else Span.callSite()
             var end = start
@@ -187,18 +181,18 @@ public class SynError private constructor(
                 mutableListOf(
                     ErrorMessage(
                         span = ThreadBound.new(SpanRange(start, end)),
-                        message = message.toString(),
+                        message = message,
                     ),
                 ),
             )
         }
 
-        public fun newAt(start: Span, end: Span, message: Any): SynError =
+        public fun newAt(start: Span, end: Span, message: String): SynError =
             SynError(
                 mutableListOf(
                     ErrorMessage(
                         span = ThreadBound.new(SpanRange(start, end)),
-                        message = message.toString(),
+                        message = message,
                     ),
                 ),
             )
@@ -287,6 +281,12 @@ public class SynError private constructor(
         SynError(messages.mapTo(mutableListOf()) { it.copy() })
 }
 
+internal class SynParseException(
+    internal val diagnostic: SynError,
+) : IllegalArgumentException(diagnostic.message)
+
+internal fun SynError.raise(): kotlin.Nothing = throw SynParseException(this)
+
 public class IntoIter internal constructor(
     private val errors: Iterator<SynError>,
 ) : Iterator<SynError> {
@@ -351,7 +351,7 @@ private data class SpanRange(
     var end: Span,
 )
 
-internal fun newAt(scope: Span, cursor: Cursor, message: Any): SynError =
+internal fun newAt(scope: Span, cursor: Cursor, message: String): SynError =
     if (cursor.eof()) {
         SynError.new(scope, "unexpected end of input, $message")
     } else {
@@ -359,7 +359,7 @@ internal fun newAt(scope: Span, cursor: Cursor, message: Any): SynError =
         SynError.new(span, message)
     }
 
-internal fun errorNewAt(scope: Span, cursor: Cursor, message: Any): SynError =
+internal fun errorNewAt(scope: Span, cursor: Cursor, message: String): SynError =
     newAt(scope, cursor, message)
 
 private fun String.debugStringLiteral(): String =

@@ -2,6 +2,7 @@
 
 package io.github.kotlinmania.syn
 
+import io.github.kotlinmania.procmacro2.Ident
 import io.github.kotlinmania.syn.token.Crate
 import io.github.kotlinmania.syn.token.Extern
 import io.github.kotlinmania.syn.token.SelfType
@@ -10,8 +11,6 @@ import io.github.kotlinmania.syn.token.Super
 import io.github.kotlinmania.syn.token.Underscore
 import io.github.kotlinmania.unicodeident.isXidContinue
 import io.github.kotlinmania.unicodeident.isXidStart
-
-public typealias Ident = io.github.kotlinmania.procmacro2.Ident
 
 public fun Ident.copy(): Ident {
     val spelling = toString()

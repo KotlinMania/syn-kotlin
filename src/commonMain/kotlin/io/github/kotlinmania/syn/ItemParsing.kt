@@ -1,6 +1,7 @@
 // port-lint: source item.rs
 package io.github.kotlinmania.syn
 
+import io.github.kotlinmania.procmacro2.Ident
 import io.github.kotlinmania.syn.token.Colon
 import io.github.kotlinmania.syn.token.Default
 import io.github.kotlinmania.syn.token.Semi
@@ -414,9 +415,7 @@ private fun parseRestOfTrait(
     val bracesVal = braced(input).getOrThrow()
     val items = mutableListOf<TraitItem>()
     while (!bracesVal.content.isEmpty()) {
-        val i = parseTraitItem(bracesVal.content)
-        if (i.isFailure) break
-        items.add(i.getOrThrow())
+        items.add(parseTraitItem(bracesVal.content).getOrElse { return SynResult.failure(it) })
     }
     bracesVal.content.finishChildBuffer()
     return SynResult.success(
@@ -624,9 +623,7 @@ private fun parseImpl(
     val bracesVal = braced(input).getOrThrow()
     val items = mutableListOf<ImplItem>()
     while (!bracesVal.content.isEmpty()) {
-        val i = parseImplItem(bracesVal.content)
-        if (i.isFailure) break
-        items.add(i.getOrThrow())
+        items.add(parseImplItem(bracesVal.content).getOrElse { return SynResult.failure(it) })
     }
     bracesVal.content.finishChildBuffer()
     return SynResult.success(
@@ -1281,17 +1278,21 @@ private fun parseUseTree(
 }
 
 internal fun parseTraitItem(input: ParseStream): SynResult<TraitItem> {
+    val begin = input.fork()
+    val attrs = parseOuterAttributes(input).getOrElse { return SynResult.failure(it) }.toMutableList()
     if (peekSignature(input)) {
         val sigResult = parseSignature(input)
         if (sigResult.isFailure) return asFailure(sigResult)
         if (input.peek(BracePeek)) {
-            val defaultResult = parseBlock(input)
-            if (defaultResult.isFailure) return asFailure(defaultResult)
-            return SynResult.success(TraitItem.Fn(mutableListOf(), sigResult.getOrThrow(), defaultResult.getOrThrow(), null))
+            val braces = braced(input).getOrElse { return SynResult.failure(it) }
+            parseInner(braces.content, attrs).getOrElse { return SynResult.failure(it) }
+            val stmts = parseWithin(braces.content).getOrElse { return SynResult.failure(it) }
+            braces.content.finishChildBuffer()
+            return SynResult.success(TraitItem.Fn(attrs, sigResult.getOrThrow(), Block(braces.token, stmts), null))
         }
         val semiResult = SemiParse.parse(input)
         if (semiResult.isFailure) return asFailure(semiResult)
-        return SynResult.success(TraitItem.Fn(mutableListOf(), sigResult.getOrThrow(), null, semiResult.getOrThrow()))
+        return SynResult.success(TraitItem.Fn(attrs, sigResult.getOrThrow(), null, semiResult.getOrThrow()))
     }
     if (input.peek(ConstPeek)) {
         val constToken = ConstParse.parse(input).getOrThrow()
@@ -1301,17 +1302,14 @@ internal fun parseTraitItem(input: ParseStream): SynResult<TraitItem> {
         var default: EqExpr? = null
         if (input.peek(EqPeek)) {
             val eq = EqParse.parse(input).getOrThrow()
-            val exprResult = parseExprFull(input)
-            if (exprResult.isSuccess) {
-                default = EqExpr(eq, exprResult.getOrThrow())
-            }
+            val expr = parseExprFull(input).getOrElse { return SynResult.failure(it) }
+            default = EqExpr(eq, expr)
         }
         val semi = SemiParse.parse(input).getOrThrow()
-        return SynResult.success(TraitItem.Const(mutableListOf(), constToken, ident, Generics(), colon, ty, default, semi))
+        return SynResult.success(TraitItem.Const(attrs, constToken, ident, Generics(), colon, ty, default, semi))
     }
     if (peekFlexibleItemType(input, TypeDefaultness.Disallowed)) {
-        val begin = input.fork()
-        return parseTraitItemType(begin, input)
+        return parseTraitItemType(begin, input, attrs)
     }
     if (input.peek(SemiPeek)) {
         SemiParse.parse(input).getOrThrow()
@@ -1358,7 +1356,7 @@ internal fun parseImplItem(input: ParseStream): SynResult<ImplItem> {
     return SynResult.failure(input.error("expected impl item"))
 }
 
-private fun parseTraitItemType(begin: ParseStream, input: ParseStream): SynResult<TraitItem> {
+private fun parseTraitItemType(begin: ParseStream, input: ParseStream, attrs: List<Attribute>): SynResult<TraitItem> {
     val itemType =
         FlexibleItemType
             .parse(
@@ -1371,7 +1369,7 @@ private fun parseTraitItemType(begin: ParseStream, input: ParseStream): SynResul
     }
     return SynResult.success(
         TraitItem.AssocType(
-            mutableListOf(),
+            attrs,
             itemType.typeToken,
             itemType.ident,
             itemType.generics,

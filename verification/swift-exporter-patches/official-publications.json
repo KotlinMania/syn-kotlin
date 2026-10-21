@@ -1,0 +1,40 @@
+{
+  "at": "2026-10-21T02:32:04Z",
+  "metadata_sha256": "eaa8255c42e3e9f823dee083d11cb1a246ec6bba7769db95003e3d319f80034b",
+  "artifacts": [
+    {
+      "version": "2.4.20",
+      "sha256": "24c6159bcf0087ecf86bfc9bad01a975e192abcf75005b248292d85a139c2055",
+      "sha1": "fca999aacbe2d0ff9cd148802ba0718e310f5710",
+      "checksum_verified": true,
+      "runtime_sha256": "1a241c02c38f69a59af1778022b814098478e32e747ae8eb9fe922d32a619d65",
+      "implementation_only": true,
+      "wrapped_non_sendable": true
+    },
+    {
+      "version": "2.4.21",
+      "sha256": "615e8a032f47baa15bc6126cbffe707c87069445b215ecce7c4830d13b079180",
+      "sha1": "35b927154b012bb6cb1d187e194988b2571bd833",
+      "checksum_verified": true,
+      "runtime_sha256": "1a241c02c38f69a59af1778022b814098478e32e747ae8eb9fe922d32a619d65",
+      "implementation_only": true,
+      "wrapped_non_sendable": true
+    },
+    {
+      "version": "2.5.0-Beta1",
+      "sha256": "305891487adf9692c420aa94ee1eda3149cffb17331018dfd3d2a06d46307ed0",
+      "sha1": "a949a17ad8782cbc8d25a7b6f4f9358658adf357",
+      "checksum_verified": true,
+      "runtime_sha256": "b3beead058f9a66cf2f5c43df1d6cb24368b7d37f5e3908002770ed40008d0f6",
+      "implementation_only": true,
+      "wrapped_non_sendable": true
+    }
+  ],
+  "metadata_url": "https://repo.maven.apache.org/maven2/org/jetbrains/kotlin/swift-export-embeddable/maven-metadata.xml",
+  "latest_non_prerelease": "2.4.21",
+  "latest_preview": "2.5.0-Beta1",
+  "exporter_pom_sha256": "a11638ddb770715e1460c433ff13bcc413ce4f7978fa69b662c0bc99f8b5b141",
+  "finding": "Examined official2.4.20,2.4.21,latestpreview2.5.0-Beta1 all retain implementationOnly and nonSendable wrapped storage; none supplies tested repair. No older-version or all-versions blanketclaim.",
+  "evidence_path": "automation-artifacts/2026-10-20-syn-isolated-library-validation/production-delivery/official-artifact-inspection.json",
+  "evidence_sha256": "f9f9111f8f00706e85890bc7b4934c1ea9d481f60571c0c4866e5a8a5058b835"
+}

@@ -1,0 +1,40 @@
+--- a/native/swift/sir-printer/src/org/jetbrains/sir/printer/impl/SirAsSwiftSourcesPrinter.kt
++++ b/native/swift/sir-printer/src/org/jetbrains/sir/printer/impl/SirAsSwiftSourcesPrinter.kt
+@@ -272,6 +272,9 @@
+             printModifiers()
+             printOverride()
+         }
++        if (this is SirFunction && isAsync) {
++            print("nonisolated(nonsending) ")
++        }
+         printPreNameKeywords()
+         printName()
+         printPostNameKeywords()
+@@ -327,7 +330,7 @@
+             when (mode) {
+                 SirImport.Mode.Exported -> "@_exported "
+                 SirImport.Mode.Default -> ""
+-                SirImport.Mode.ImplementationOnly -> "@_implementationOnly "
++                SirImport.Mode.ImplementationOnly -> "internal "
+             }
+         )
+         print(spi.render(SirTypeVariance.INVARIANT).takeUnless { it.isBlank() }?.let { "$it " } ?: "")
+@@ -593,15 +596,15 @@
+                     "[${keyType.swiftRender(SirTypeVariance.INVARIANT)}: ${valueType.swiftRender(SirTypeVariance.INVARIANT)}]"
+ 
+                 is SirFunctionalType -> {
+-                    val parameters = (listOfNotNull(contextType) + parameterTypes).render()
++                    val parameters = (listOfNotNull(contextType) + parameterTypes).joinToString { (if (isAsync) "sending " else "") + it.swiftRender(SirTypeVariance.CONTRAVARIANT) }
+                     val async = " async".takeIf { isAsync } ?: ""
+                     val throws = when (errorType) {
+                         SirType.never -> ""
+                         SirType.any -> " throws"
+                         else -> " throws(${errorType.swiftRender(SirTypeVariance.COVARIANT)})"
+                     }
+-                    val returnType = returnType.swiftRender(SirTypeVariance.COVARIANT)
+-                    "($parameters)$async$throws -> $returnType"
++                    val returnType = (if (isAsync) "sending " else "") + returnType.swiftRender(SirTypeVariance.COVARIANT)
++                    (if (isAsync) "@Sendable @isolated(any) " else "") + "($parameters)$async$throws -> $returnType"
+                 }
+ 
+                 is SirTupleType ->

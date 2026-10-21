@@ -1,0 +1,21 @@
+{
+  "tested_product_source": "deaafb4edd143e82c13346244b35d1e5b4af0e46",
+  "durable_product_evidence_revision": "1c71b20ecc216ea2e78e40629d310f79a042895d",
+  "compatibility_compile_session": 69114,
+  "expected_negative": true,
+  "runtime_tests_added_or_run": 0,
+  "new_mode_comparison_builds": 0,
+  "candidate_legacy_resource_compiled_or_packaged": false,
+  "files": {
+    "automation-artifacts/2026-10-21-syn-runtime-compatibility/client-inputs.json": "fa995d1b99edc01e31a79bacbe8638d593559788d26c75956971ccdadf566a85",
+    "automation-artifacts/2026-10-21-syn-runtime-compatibility/client-invocation.json": "8e49194895230f941c981485335667edf0d7a15d8f39848f6d4324a0a0ee07c3",
+    "automation-artifacts/2026-10-21-syn-runtime-compatibility/client-result.json": "1674b235aef595556643757a4e7fa0a65e38c99ec9a5c62b81cf9e2a963a4d74",
+    "automation-artifacts/2026-10-21-syn-runtime-compatibility/client.log": "bdc162b4d76fc000d9ef7780c7f63e94d22d6e5595c354d36ac89b7a937512a8",
+    "automation-artifacts/2026-10-21-syn-runtime-compatibility/repository-scan.json": "3fae889f5124ce0b83017c4f7f4d4eb30d30f47ae7f5a1a31466781b36372ef1",
+    "automation-artifacts/2026-10-21-syn-runtime-compatibility/source-compatible-preparation/source-contract.json": "0689f23cc5b80b8ff316b0ebf2cf1900908d88389fcbfa158dbb80b3538a9840",
+    "automation-artifacts/2026-10-21-syn-runtime-compatibility/source-compatible-preparation/KotlinRuntimeSupport.swift": "dbfc468afd0cbf3325e555ec2ded72f583e1fe4ac3fd690cf831ff8bf3668266",
+    "automation-artifacts/2026-10-20-openssl-sys-swift-mode-diagnostic/report.json": "2ff2e0380ba11b70839a31ab086537b0a8797970212ebefaf3e66605db135226",
+    "automation-artifacts/2026-10-20-async-trait-swift-mode-diagnostic/report.json": "7902e419248e09a0868e0d989863a508c7d28a713e106a20e183d52aaec41ae3"
+  },
+  "candidate_patch_sha256": "4ce5f4ef806ab54fef3485802f2422f664f0ee5481d22cd817c4221ba3d9826f"
+}

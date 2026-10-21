@@ -1,13 +1,32 @@
 package io.github.kotlinmania.syn
 
 import io.github.kotlinmania.procmacro2.Span
+import io.github.kotlinmania.procmacro2.TokenStream
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertIs
+import kotlin.test.assertNull
+import kotlin.test.assertSame
 import kotlin.test.assertTrue
 
 class ErrorTest {
+    @Test
+    fun failedResultPreservesTheDiagnosticAtTheThrowBoundary() {
+        val error = SynError.new(Span.callSite(), "invalid syntax")
+        val result: SynResult<TokenStream> = SynResult.failure(error)
+
+        assertTrue(result.isFailure)
+        assertNull(result.getOrNull())
+        assertSame(error, result.exceptionOrNull())
+        assertSame(error, result.map { it }.exceptionOrNull())
+        val thrown = assertFailsWith<IllegalArgumentException> { result.getOrThrow() }
+        assertSame(error, assertIs<SynParseException>(thrown).diagnostic)
+        assertEquals(error.message, thrown.message)
+        assertEquals("invalid syntax", error.message)
+    }
+
     @Test
     fun resultAndErrorUseSynTypes() {
         val ok: SynResult<Int> = SynResult.success(7)

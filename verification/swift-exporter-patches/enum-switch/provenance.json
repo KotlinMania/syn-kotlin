@@ -1,0 +1,37 @@
+{
+  "version": "2.4.20",
+  "revision": "890ac1d94fdb80eb85f0eeb5be5e4352df987b2f",
+  "upstream_path": "native/swift/sir-light-classes/src/org/jetbrains/sir/lightclasses/nodes/SirEnumFromKtSymbol.kt",
+  "source_git_blob": "b568e90314c57fbd493a1554a2bab395a753331d",
+  "source_sha256": "05c1a96eb208340637ea3366b6dee4fc465b59cd7c15ef822f7deb166d0803a8",
+  "candidate_sha256": "13fa738bb55a4ad7d8034809d01487d12fc3d219d76962dfafe4434389018778",
+  "patch_sha256": "1ef18b4391f0355437611f3097955e21c960ce6898c30526fef29aa7c349e396",
+  "changed_sites": 4,
+  "actual_regression": "ProcMacro2 Native-to-Swift diagnostic2800: six default-will-never-be-executed errors at Swift212/223/262/274/283/316; zero Swift tests",
+  "preserved": [
+    "Empty enum default fallback",
+    "Unknown native ordinal trap",
+    "Invalid string and integer inputs return nil"
+  ],
+  "compiler_status": "Bootstrap2.4.20-dev-7885 with pinned same-module inline sources; baseline23522 all12 signatures/instructions exact; candidates7198/29555 pass Werror and fullmemberflags.",
+  "audit_status": "Original guard retained. Including upstream AnnotationUtils and lazyWithSessions source resolves the soleinline mismatch. Candidate changes exactly4reviewed methods; package24059 retains6263entries/zeroaddremove, changes enumclass and coroutine resource only atop49851.",
+  "evidence": "automation-artifacts/2026-10-20-syn-isolated-library-validation/enum-repair/bootstrap-provenance/six-tests-classification.json",
+  "evidence_sha256": "bf47c0cefa075ff604cf00827a8e4bc28dfaf4947d409dc519ad216b7a1675a7",
+  "tests_status": "Nativefixture44274 bridge/staticlink pass; actualSwift64802 all6 retained enumcases pass once0skip,8product/test frontends Swift6Werror. Wrapper1 was summaryparser only; offline classification preserves raw. ProcMacro2 owner reports actual91639 Nativeembed and3Swiftcases pass, separate ownerreceipt.",
+  "component_sha256": "57182d059e9c7f087206310aeaa6ccd56fa06ea552f31510ce58c8e7e2945e32",
+  "runtime_delta_sha256": "73bcc8efdca81188e2d358b15b60fd42841f5c9ba5959c39673c7a6eaf0c9034",
+  "runtime_reason": "Job1.11.0 requires InternalForInheritanceCoroutinesApi opt-in for SwiftJob delegation; existing Job lifetime/cancellation implementation unchanged.",
+  "additional_assertions": {
+    "execution": 80224,
+    "actual_exit": 0,
+    "tests": 6,
+    "source_sha256": "372d357fffe752c43be33d12f07153b9725a90567c5bf45f01d65fedd9329b11",
+    "result_sha256": "c69ba1f4be65ae8947c8aa2d8d79fd9e6f174f8ab00b29b059e2b51e6722cea4",
+    "coverage": "Empty Int32.min,-1,0,1,Int32.max all return nil; six original cases retained;8product/test frontends Swift6Werror",
+    "native_regeneration": false
+  },
+  "fixture_files": {
+    "EnumTests.swift": "372d357fffe752c43be33d12f07153b9725a90567c5bf45f01d65fedd9329b11",
+    "Enums.kt": "6e9e1450ee777490280519aa3eeeab1c41d02ace7cf0c7c7729983fe4f9654b1"
+  }
+}
