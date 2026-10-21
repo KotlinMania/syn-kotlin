@@ -1,0 +1,29 @@
+--- a/native/swift/sir-providers/src/org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/TypeBridging.kt
++++ b/native/swift/sir-providers/src/org/jetbrains/kotlin/sir/providers/impl/BridgeProvider/TypeBridging.kt
+@@ -773,6 +773,14 @@
+ 
+     class AsNSSet(swiftType: SirNominalType, private val elementBridge: BidirectionalBridge) : AsNSCollection(swiftType, CType.NSSet(elementBridge.cType)) {
+         override val inSwiftSources = object : InSwiftSources() {
++            context(session: SirSession)
++            override fun kotlinToSwift(typeNamer: SirTypeNamer, valueExpression: String): String =
++                if (elementBridge.swiftType == SirNominalType(SirSwiftModule.string) && elementBridge.cType == CType.NSString) {
++                    valueExpression
++                } else {
++                    super.kotlinToSwift(typeNamer, valueExpression)
++                }
++
+             context(session: SirSession)
+             override fun swiftToKotlin(typeNamer: SirTypeNamer, valueExpression: String): String {
+                 val transformedElements = valueExpression.mapSwift { elementBridge.inSwiftSources.swiftToKotlin(typeNamer, it) }
+@@ -927,9 +935,9 @@
+                     is AsObjCBridged, is AsCovariantBlock, is AsInvariantBlock ->
+                         valueExpression.mapSwift { wrappedObject.inSwiftSources.kotlinToSwift(typeNamer, it) }
+                     is AsObject, is AsExistential, is AsAnyBridgeable, is AsTypedFlow, is SirCustomTypeTranslatorImpl.RangeBridge ->
+-                        "{ switch $valueExpression { case ${wrappedObject.renderNil()}: .none; case let res?: ${
++                        "{ switch $valueExpression { case ${wrappedObject.renderNil()}: .none; case let res?: .some(${
+                             wrappedObject.inSwiftSources.kotlinToSwift(typeNamer, "res")
+-                        }; } }()"
++                        }); } }()"
+                     is AsContravariantBlock,
+                     is AsBlockPointerInCollection,
+                     is AsIs,
