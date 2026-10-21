@@ -1,0 +1,39 @@
+{
+  "official_exporter_version": "2.4.20",
+  "official_exporter_sha256": "24c6159bcf0087ecf86bfc9bad01a975e192abcf75005b248292d85a139c2055",
+  "inspection": "Read-only javap -c -p against exact official artifact; no compilation or injection",
+  "bytecode_evidence": {
+    "PatchConfigAndLogIssuesKt": {
+      "artifact": "automation-artifacts/2026-10-20-syn-isolated-library-validation/ordinary-runtime-minimal/PatchConfigAndLogIssuesKt.javap.txt",
+      "sha256": "64c5c61aa9008239a5db4dd4bff2a7573332268dc8c64b0af6b0464fb0703192"
+    },
+    "SwiftExportConfig": {
+      "artifact": "automation-artifacts/2026-10-20-syn-isolated-library-validation/ordinary-runtime-minimal/SwiftExportConfig.javap.txt",
+      "sha256": "34c71fd7ad8b2a9506865cc8dfec8dff73b1ee83be8dce7ae298927755cac08f"
+    },
+    "SwiftExportRunnerKt": {
+      "artifact": "automation-artifacts/2026-10-20-syn-isolated-library-validation/ordinary-runtime-minimal/SwiftExportRunnerKt.javap.txt",
+      "sha256": "a8f9407b3148037390a46c93f06c5bb43cddd83677a5bde208fff6570e640460"
+    }
+  },
+  "config_override": {
+    "predicate": "module name contains KotlinxCoroutinesCore",
+    "copy_default_mask": 503,
+    "coroutine_property_bit": 8,
+    "bit_preserved": false,
+    "meaning": "Coroutine boolean is supplied from module predicate rather than retained from incoming configuration; runner invokes this before translation and support emission."
+  },
+  "actual_consumer": {
+    "source_head": "4287fb5e0b69eb3f758802792a9a2e8f70e90b3d",
+    "receipt": "automation-artifacts/2026-10-20-proc-macro2-publication-repair/sync-export-attempt-result.json",
+    "receipt_sha256": "e3d7e42d97aee8e0a15405a25b7805882c55e189606a4ce8284410f6c1391b4e",
+    "unset_regeneration_session": 3211,
+    "explicit_false_regeneration_session": 11525,
+    "both_exit": 0,
+    "root_swift_kotlin_header_byte_identical": true,
+    "coroutine_module_still_exported": true
+  },
+  "qualification": "Existing kotlin-source tree references have no Git revision proof; causal attribution above is to exact official JAR bytecode, correlated with real regeneration.",
+  "required_closure": "Ordinary RuntimeSupport/import changes alone do not establish a complete ProcMacro2 fix. Validate coherent emitted CoroutineSupport under Swift6/Werror, or implement a supported explicit opt-out with configuration/graph/API regression tests. Preserve legitimate published transitive dependencies.",
+  "unverified": "No minimal candidate component build/package or actual three-case ProcMacro2 validation; no approved adoption/publication route."
+}

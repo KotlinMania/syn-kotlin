@@ -11,10 +11,12 @@
     "SirAsSwiftSourcesPrinter.kt.patch": "deec4b2fd9bb53d97c1cef0ac65a7bb1c8b5be22287b40cabb7f05f84adb3c74"
   },
   "compiler_status": "The ordinary RuntimeSupport resource is fixture-verified within49851; this minimal printer-only component has not been compiled or packaged.",
-  "consumer_status": "ProcMacro2 actual published-toolchain Swift build fails before its three behavior cases; no isolated component injected",
+  "consumer_status": "Actual ProcMacro2 unset and explicit-false regeneration both retain CoroutineSupport byte-identically. This two-file subset fixes identified ordinary defects but does not establish the complete emitted runtime closure.",
   "api_impact": "KotlinError.wrapped mutable KotlinBase property removed intentionally; wrapped initializer label retained with snapshot semantics, message:String added. This is not source/binary compatibility for clients using wrapped.",
   "excluded": "No async ownership, Flow, callback transfer, caller-inheriting declaration or reverse-registration change",
   "publication": "No coordinate allocated or publication authorized; official upstream source PR/accepted release or explicitly authorized compatible immutable producer route required",
   "artifact_source": "automation-artifacts/2026-10-20-syn-isolated-library-validation/ordinary-runtime-minimal/SirAsSwiftSourcesPrinter.kt",
-  "artifact_source_sha256": "ca82359856633082785752a4c1d0d49b9c330914fe313cfcd92a5e7fbcb9b45c"
+  "artifact_source_sha256": "ca82359856633082785752a4c1d0d49b9c330914fe313cfcd92a5e7fbcb9b45c",
+  "runtime_closure": "runtime-closure.json",
+  "scope_qualification": "No public async API does not imply no CoroutineSupport. Exact official exporter overrides incoming boolean using resolved module graph."
 }
