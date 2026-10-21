@@ -104,7 +104,12 @@ public sealed class Lit : ToTokens {
 
     public data class Verbatim(
         var value: Literal,
-    ) : Lit()
+    ) : Lit() {
+        override fun equals(other: Any?): Boolean =
+            other is Verbatim && value.toString() == other.value.toString()
+
+        override fun hashCode(): kotlin.Int = value.toString().hashCode()
+    }
 
     public fun span(): Span =
         when (this) {
@@ -249,9 +254,9 @@ public class LitStr private constructor(
     override fun toString(): String = "\"$cooked\""
 
     override fun equals(other: Any?): Boolean =
-        other is LitStr && cooked == other.cooked
+        other is LitStr && repr.token.toString() == other.repr.token.toString()
 
-    override fun hashCode(): Int = cooked.hashCode()
+    override fun hashCode(): Int = repr.token.toString().hashCode()
 }
 
 /** A byte string literal: `b"foo"`. */
@@ -297,6 +302,11 @@ public class LitByteStr(
     public fun clone(): LitByteStr = copy()
 
     override fun toString(): String = "b\"${bytes.map { it.toInt().toChar() }.joinToString("")}\""
+
+    override fun equals(other: Any?): Boolean =
+        other is LitByteStr && token().toString() == other.token().toString()
+
+    override fun hashCode(): Int = token().toString().hashCode()
 }
 
 /** A nul-terminated C-string literal: `c"foo"`. */
@@ -345,9 +355,9 @@ public class LitCStr(
     override fun toString(): String = token().toString()
 
     override fun equals(other: Any?): Boolean =
-        other is LitCStr && bytes.contentEquals(other.bytes) && suffix == other.suffix
+        other is LitCStr && token().toString() == other.token().toString()
 
-    override fun hashCode(): Int = bytes.contentHashCode() * 31 + suffix.hashCode()
+    override fun hashCode(): Int = token().toString().hashCode()
 }
 
 /** A byte literal: `bf`. */
@@ -399,6 +409,11 @@ public class LitByte(
     public fun clone(): LitByte = copy()
 
     override fun toString(): String = Literal.byteCharacter(value).toString() + suffix
+
+    override fun equals(other: Any?): Boolean =
+        other is LitByte && token().toString() == other.token().toString()
+
+    override fun hashCode(): Int = token().toString().hashCode()
 }
 
 /** A character literal: `a`. */
@@ -458,6 +473,11 @@ public class LitChar(
     public fun clone(): LitChar = copy()
 
     override fun toString(): String = token().toString()
+
+    override fun equals(other: Any?): Boolean =
+        other is LitChar && token().toString() == other.token().toString()
+
+    override fun hashCode(): Int = token().toString().hashCode()
 }
 
 /** An integer literal: `1` or `1` with an optional suffix like `i32`. */
@@ -515,6 +535,11 @@ public class LitInt private constructor(
     public fun clone(): LitInt = copy()
 
     override fun toString(): String = repr.token.toString()
+
+    override fun equals(other: Any?): Boolean =
+        other is LitInt && repr.token.toString() == other.repr.token.toString()
+
+    override fun hashCode(): Int = repr.token.toString().hashCode()
 }
 
 /** A floating point literal: `1.0` or `1f64`. */
@@ -572,6 +597,11 @@ public class LitFloat private constructor(
     public fun clone(): LitFloat = copy()
 
     override fun toString(): String = repr.token.toString()
+
+    override fun equals(other: Any?): Boolean =
+        other is LitFloat && repr.token.toString() == other.repr.token.toString()
+
+    override fun hashCode(): Int = repr.token.toString().hashCode()
 }
 
 /** A boolean literal: `true` or `false`. */
@@ -604,6 +634,11 @@ public data class LitBool(
     public fun clone(): LitBool = copy()
 
     override fun toString(): String = value.toString()
+
+    override fun equals(other: Any?): Boolean =
+        other is LitBool && value == other.value
+
+    override fun hashCode(): Int = value.hashCode()
 }
 
 /** String literal spelling style. */
