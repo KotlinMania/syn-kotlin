@@ -1,0 +1,21 @@
+{
+  "version": "2.4.20",
+  "revision": "890ac1d94fdb80eb85f0eeb5be5e4352df987b2f",
+  "upstream_path": "native/swift/sir-light-classes/src/org/jetbrains/sir/lightclasses/nodes/SirEnumFromKtSymbol.kt",
+  "source_git_blob": "b568e90314c57fbd493a1554a2bab395a753331d",
+  "source_sha256": "05c1a96eb208340637ea3366b6dee4fc465b59cd7c15ef822f7deb166d0803a8",
+  "candidate_sha256": "78909aa01d77bc0148f1b6c82ffb7bec72b9a84cab633eabe18432be45ca42f7",
+  "patch_sha256": "bf9079e2d1661f2f428f0a78fe39de1249197edbc6aea0b99b42c88f13a83a34",
+  "changed_sites": 3,
+  "actual_regression": "ProcMacro2 Native-to-Swift diagnostic2800: six default-will-never-be-executed errors at Swift212/223/262/274/283/316; zero Swift tests",
+  "preserved": [
+    "Empty enum default fallback",
+    "Unknown native ordinal trap",
+    "Invalid string and integer inputs return nil"
+  ],
+  "compiler_status": "Retained baseline and candidate tool compilations pass Werror; no new compilation here.",
+  "audit_status": "Not accepted/packaged: unchanged attributes_delegate lambda in reconstructed baseline differs in one method. All other11classes match unchanged normalization. No waiver or normalization change.",
+  "evidence": "automation-artifacts/2026-10-20-syn-isolated-library-validation/enum-repair/baseline-followup/all-baseline-classification.json",
+  "evidence_sha256": "808538b29ff2df2e862f0394e3bfe3fc586e3241ca545e090619ec51ffa7bacc",
+  "tests_status": "No enum fixture or actual three-case consumer pass established. Existing49851 artifact does not include this correction."
+}
