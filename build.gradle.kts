@@ -494,6 +494,8 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
+            api(libs.proc.macro2.kotlin)
+            api(libs.quote.kotlin)
             implementation(commonMainDependencyBundle)
         }
         commonTest.dependencies {
@@ -835,7 +837,14 @@ val verifyPublicationPins =
         outputs.file(receipt)
         doFirst {
             val expected =
-                commonMainDependencyBundle.get().map { dependency ->
+                (
+                    commonMainDependencyBundle.get() +
+                        listOf(
+                            libs.proc.macro2.kotlin
+                                .get(),
+                            libs.quote.kotlin.get(),
+                        )
+                ).map { dependency ->
                     val pinnedVersion = dependency.versionConstraint.requiredVersion
                     check(pinnedVersion.isNotBlank()) { "Publication dependency requires an explicit version" }
                     "${dependency.module.group}:${dependency.module.name}:$pinnedVersion"

@@ -36,7 +36,5 @@ syn-commonMain = [
   "kotlinx-coroutines-core",
   "kotlinx-datetime",
   "collections-immutable",
-  "proc-macro2-kotlin",
-  "quote-kotlin",
   "unicode-ident-kotlin",
 ]
