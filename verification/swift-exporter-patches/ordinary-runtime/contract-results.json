@@ -1,0 +1,127 @@
+{
+  "upstream": "https://github.com/JetBrains/kotlin",
+  "version": "2.4.20",
+  "source_revision": "890ac1d94fdb80eb85f0eeb5be5e4352df987b2f",
+  "source_provenance": {
+    "revision": "890ac1d94fdb80eb85f0eeb5be5e4352df987b2f",
+    "KotlinRuntimeSupport.kt": {
+      "blob": "40d9348df7d5cb5ad89ea152ade31e3eda84ada3",
+      "sha256": "d771d2df25034de4ff08ba8522af8833d82425cc8b3a78521720d2f1ecfa6b3e"
+    },
+    "KotlinBase.h": {
+      "blob": "5ec1617148b9203e94475523336b119c5d79b127",
+      "matches_actual_sdk_header": true
+    },
+    "ObjCExportClasses.mm": {
+      "blob": "48c1ab0a73b873e77860cb998f9f36d56f8d6a07"
+    },
+    "actual_importer_sil_session": 30109,
+    "actual_importer_results": "Both factory results @autoreleased, Swift6/Werror",
+    "runtime_tests_completed": 5,
+    "runtime_tests_passed": 4,
+    "runtime_tests_failed": 1
+  },
+  "component_sha256": "339db91315cbfc46f0a25539f908de36972872188fcb22131955ee13808f1543",
+  "component_parent_sha256": "57182d059e9c7f087206310aeaa6ccd56fa06ea552f31510ce58c8e7e2945e32",
+  "component_delta": "Only swift/KotlinRuntimeSupport.kt changes; zero class or entry set changes",
+  "native_header_sha256": "99186d1dd029a8ba5b66dae390a3aec0d6d0e5293eff641d85daab5e212723c3",
+  "sdk_files_audited": 68681,
+  "native_sdk_delta": "Only konan/swift_export/kotlin_runtime/KotlinBase.h; zero binary changes, zero symlinks",
+  "native_embed_session": 24366,
+  "native_embed_exit": 0,
+  "swift_session": 7394,
+  "swift_process_exit": 0,
+  "actual_cases": {
+    "capturesMessage": 1,
+    "snapshotSurvivesMutation": 1,
+    "fallbackForMissingMessages": 1,
+    "releasesOriginalWrapper": 1,
+    "transfersOwnedDiagnostic": 1
+  },
+  "failed_or_skipped": false,
+  "actual_product_frontends": {
+    "RuntimeDiagnostic": {
+      "count": 2,
+      "strict": true
+    },
+    "KotlinRuntimeSupport": {
+      "count": 2,
+      "strict": true
+    },
+    "KotlinCoroutineSupport": {
+      "count": 2,
+      "strict": true
+    },
+    "ExportedKotlinPackages": {
+      "count": 2,
+      "strict": true
+    },
+    "RuntimeSupportContractTests": {
+      "count": 2,
+      "strict": true
+    }
+  },
+  "generated_inputs_unchanged": true,
+  "native_archive": {
+    "path": "/Volumes/stuff/Projects/kotlinmania/automation-artifacts/2026-10-20-syn-isolated-library-validation/runtime-wrapper-corrected/products/libRuntimeDiagnostic.a",
+    "sha256": "d44714fc6d46b1b6ccc469031482f46603d148a0139382b1f136d0652c49af6c",
+    "bytes": 36307800
+  },
+  "artifact_root": "/Volumes/stuff/Projects/kotlinmania/automation-artifacts/2026-10-20-syn-isolated-library-validation/runtime-wrapper-corrected",
+  "files": {
+    "/Volumes/stuff/Projects/kotlinmania/automation-artifacts/2026-10-20-syn-isolated-library-validation/runtime-wrapper-corrected/inputs.json": "ecc09a91dfbecbac8234f27ef3cd3382028dd28d61cb90c0431a942c7c63df61",
+    "/Volumes/stuff/Projects/kotlinmania/automation-artifacts/2026-10-20-syn-isolated-library-validation/runtime-wrapper-corrected/native-sdk-audit.json": "fc307f74503549f798b5be8b5d05b1401db69eade9c15a36b7767fc9f35d43c9",
+    "/Volumes/stuff/Projects/kotlinmania/automation-artifacts/2026-10-20-syn-isolated-library-validation/runtime-wrapper-corrected/embed.log": "1b07f5f17f6550ee24a4448393428c40b5f0b251813a926147c70be4c93743a2",
+    "/Volumes/stuff/Projects/kotlinmania/automation-artifacts/2026-10-20-syn-isolated-library-validation/runtime-wrapper-corrected/embed-result.json": "fcabd2354382a6c023809a863d4b0b489a47d7670e2b816e646c60d5f3c57a3e",
+    "/Volumes/stuff/Projects/kotlinmania/automation-artifacts/2026-10-20-syn-isolated-library-validation/runtime-wrapper-corrected/output-pins.json": "11f623a986323c70d408284c7f7929ce0ba5401e8ee0a7e03111b8c4a99db4e0",
+    "/Volumes/stuff/Projects/kotlinmania/automation-artifacts/2026-10-20-syn-isolated-library-validation/runtime-wrapper-corrected/swift-test.log": "f7e9b694cc7813db372dcc648e38ce5029695489bb2418ffa6822a7b4627aa4c",
+    "/Volumes/stuff/Projects/kotlinmania/automation-artifacts/2026-10-20-syn-isolated-library-validation/runtime-wrapper-corrected/swift-test-result.json": "7f05208be3721beda582b0ec13ee0ef4eef6252cb05689a16bad4b506d5e37aa",
+    "/Volumes/stuff/Projects/kotlinmania/automation-artifacts/2026-10-20-syn-isolated-library-validation/runtime-wrapper-corrected/run-embed.rb": "e02c7009c43e801031874583c032da4729f91cd797b39523cf122291a2074fdf",
+    "/Volumes/stuff/Projects/kotlinmania/automation-artifacts/2026-10-20-syn-isolated-library-validation/runtime-wrapper-corrected/contract.init.gradle": "f0f38270ddb3585c96732fe3792a9c186302813aedb56ac72a0cd36f56aef537",
+    "/Volumes/stuff/Projects/kotlinmania/automation-artifacts/2026-10-20-syn-isolated-library-validation/runtime-wrapper-corrected/pin-output.py": "23fbc8572a35909eff5282f6b845bf54299167a961cc2b6d7616bbb5ded67dd6",
+    "/Volumes/stuff/Projects/kotlinmania/automation-artifacts/2026-10-20-syn-isolated-library-validation/runtime-wrapper-corrected/run-contract-tests.rb": "0d8ae59b5d0701a1da0ad2c2404149602fce3177bda85f5648a19bb7e3a53ac6"
+  },
+  "negative_history": [
+    {
+      "session": 60081,
+      "completed_cases": 0,
+      "cause": "Forced Throwable cast aborts on real non-Throwable KotlinBase",
+      "result_sha256": "8abd2f8c4accabfbf97f9f14449559bce3809ed14666966c158eb32cdafab6dc"
+    },
+    {
+      "session": 19883,
+      "completed_cases": 5,
+      "passed": 4,
+      "failed": 1,
+      "cause": "Immediate wrapper release assertion fails"
+    },
+    {
+      "session": 7146,
+      "completed_cases": 5,
+      "passed": 4,
+      "failed": 1,
+      "cause": "Actual Native GC alone does not fix wrapper ownership"
+    },
+    {
+      "session": 62427,
+      "completed_cases": 5,
+      "passed": 4,
+      "failed": 1,
+      "cause": "Checked guard extraction alone does not fix wrapper ownership; test instrumentation hypothesis rejected"
+    }
+  ],
+  "compatibility": "Native header now declares actual retained factory return semantics; same selectors/types/native binary implementation. Existing KotlinError.wrapped removal remains intentional source/binary API break. Exporter-only delivery is incomplete without coherent Native header input.",
+  "limits": [
+    "No production adoption/publication/external submission",
+    "Not AWS or OpenTelemetry behavior acceptance",
+    "No original22/reverse arbitrary callback acceptance",
+    "No class-factory-specific behavior test; protocol/existential factory lifetime exercised",
+    "No general Native GC/ARC leak certification"
+  ],
+  "reproduction": [
+    "ruby /Volumes/stuff/Projects/kotlinmania/automation-artifacts/2026-10-20-syn-isolated-library-validation/runtime-wrapper-corrected/run-embed.rb",
+    "python3 /Volumes/stuff/Projects/kotlinmania/automation-artifacts/2026-10-20-syn-isolated-library-validation/runtime-wrapper-corrected/pin-output.py",
+    "ruby /Volumes/stuff/Projects/kotlinmania/automation-artifacts/2026-10-20-syn-isolated-library-validation/runtime-wrapper-corrected/run-contract-tests.rb"
+  ],
+  "reproduction_note": "Invocation files guard against accidental repeats. New execution requires a new artifact-owned output directory and refreshed manifest; preserve original logs. Source fixtures are hand-authored; no product checkout/source snapshot copied."
+}
