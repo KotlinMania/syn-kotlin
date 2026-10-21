@@ -355,7 +355,7 @@ changed `parseFile` return signature.
 ./gradlew test
 ```
 
-This project depends on `io.github.kotlinmania:proc-macro2-kotlin:0.1.6` and
+This project depends on `io.github.kotlinmania:proc-macro2-kotlin:0.1.7` and
 `io.github.kotlinmania:quote-kotlin:0.2.5`. Builds resolve Kotlinmania
 dependencies from published Maven repositories, not Gradle composite builds or
 developer-machine repositories.
