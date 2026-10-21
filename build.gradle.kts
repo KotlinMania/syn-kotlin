@@ -1128,7 +1128,11 @@ tasks.register("swiftExportSmokeTest") {
                 )
             }.assertNormalExitValue()
 
-        val swiftScratch = layout.buildDirectory.dir("swift-harness").get().asFile
+        val swiftScratch =
+            layout.buildDirectory
+                .dir("swift-harness")
+                .get()
+                .asFile
         if (swiftScratch.exists()) {
             swiftScratch.deleteRecursively()
         }
