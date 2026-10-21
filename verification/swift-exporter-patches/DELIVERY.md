@@ -34,6 +34,7 @@ The subsequent production-default CI is a separate negative: ProcMacro2 head `3d
 - Swift resources, generated Native Kotlin runtime, C headers and exporter classes must be delivered coherently. Earlier experimental Flow changes cannot be mixed with independently selected runtime files. The retained legacy entry and new ready/take entry have distinct contracts.
 - Generic reverse callbacks involving arbitrary cached non-Sendable Kotlin objects still lack a proven automatic registration/ownership contract. The original 22 cases have not passed. A separate six-case MainActor lexical-frame result requires explicit caller registration and does not prove that old API compatible.
 - The tested scope is KGP/Native 2.4.20 and the recorded Swift toolchain. Neither 2.4.21 compatibility nor fleet-wide compatibility follows from it.
+- BitFlags exposes another unvalidated producer family: recursive F-bounds cause UpperBoundTypeProjectionRenderer stack exhaustion while emitting explicit Kotlin bridge-call arguments. RECURSIVE_BOUNDS.md records the actual stacktrace and source classification. Component57182 has not been validated against it; do not extend the proposed initial ProcMacro2 scope by implication.
 
 ## Official upstream route
 
