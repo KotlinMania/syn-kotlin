@@ -23,7 +23,7 @@ class PublicationPinsTest(unittest.TestCase):
                 shutil.copyfile(options.repository / destination.relative_to(self.repository), destination)
 
     def check(self):
-        return verify(self.repository, options.group, options.module, options.version, expected)
+        return verify(self.repository, options.group, options.module, options.version, expected, android_modules)
 
     def stale_module(self, base, usage):
         path = Path(str(base) + ".module")
@@ -62,6 +62,26 @@ class PublicationPinsTest(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "Wrong POM dependency pin"):
             self.check()
 
+    def test_stale_selected_jvm_pom_is_rejected(self):
+        if not android_modules:
+            self.fail("Supply real Android-selected JVM platform modules")
+        source, target = next(iter(android_modules.items()))
+        path = Path(str(self.android) + ".pom")
+        text = path.read_text()
+        old = "<artifactId>" + target[1] + "</artifactId>\n      <version>" + expected[source] + "</version>"
+        self.assertIn(old, text)
+        path.write_text(text.replace(old, old.replace(expected[source], "0.0.0-stale")))
+        with self.assertRaisesRegex(ValueError, "Wrong POM dependency pin"):
+            self.check()
+
+    def test_unapproved_platform_module_is_rejected(self):
+        source, target = next(iter(android_modules.items()))
+        path = Path(str(self.android) + ".pom")
+        path.write_text(path.read_text().replace("<artifactId>" + target[1] + "</artifactId>",
+                                               "<artifactId>wrong-platform-module</artifactId>"))
+        with self.assertRaisesRegex(ValueError, "Missing POM dependencies"):
+            self.check()
+
     def test_stale_target_redirect_is_rejected(self):
         path = Path(str(self.root) + ".module")
         metadata = json.loads(path.read_text())
@@ -84,8 +104,11 @@ if __name__ == "__main__":
     parser.add_argument("--module", required=True)
     parser.add_argument("--version", required=True)
     parser.add_argument("--dependency", action="append", required=True)
+    parser.add_argument("--android-module", action="append", default=[])
     options = parser.parse_args()
     expected = {(parts[0], parts[1]): parts[2] for parts in [value.split(":") for value in options.dependency]}
+    android_modules = {tuple(a.split(":")): tuple(b.split(":")) for a, b in
+                       [value.split("=") for value in options.android_module]}
     reviewed_edge = ("io.github.kotlinmania", "proc-macro2-kotlin")
     if reviewed_edge not in expected:
         raise ValueError("Supply the actual ProcMacro2 dependency pin")

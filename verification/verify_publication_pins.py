@@ -16,7 +16,9 @@ def fingerprint(path):
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def verify(repository, group, module, version, expected):
+def verify(repository, group, module, version, expected, android_modules=None):
+    android_modules = android_modules or {}
+    require(set(android_modules) <= set(expected), "Unexpected Android dependency mapping")
     directory = Path(group.replace(".", "/"))
     root = repository / directory / module / version / (module + "-" + version)
     target = repository / directory / (module + "-android") / version / (module + "-android-" + version)
@@ -83,8 +85,9 @@ def verify(repository, group, module, version, expected):
         for edge in pom.findall("m:dependencies/m:dependency", ns):
             edge_group = edge.findtext("m:groupId", namespaces=ns)
             edge_module = edge.findtext("m:artifactId", namespaces=ns)
-            key = next((k for k in expected if k[0] == edge_group and edge_module in
-                        ([k[1], k[1] + "-android"] if name == "android_pom" else [k[1]])), None)
+            key = next((k for k in expected if (edge_group, edge_module) in
+                        ([k, (k[0], k[1] + "-android"), android_modules.get(k)]
+                         if name == "android_pom" else [k])), None)
             if key is None:
                 continue
             require(key not in found, "Duplicate POM dependency")
@@ -107,6 +110,7 @@ def main():
     parser.add_argument("--module", required=True)
     parser.add_argument("--version", required=True)
     parser.add_argument("--dependency", action="append", required=True)
+    parser.add_argument("--android-module", action="append", default=[])
     parser.add_argument("--receipt", type=Path, required=True)
     parser.add_argument("--source-head", required=True)
     args = parser.parse_args()
@@ -117,7 +121,14 @@ def main():
             group, module, version = value.split(":")
             require((group, module) not in expected, "Duplicate expected pin")
             expected[(group, module)] = version
-        receipt = verify(args.repository, args.group, args.module, args.version, expected)
+        android_modules = {}
+        for mapping in args.android_module:
+            source, target = mapping.split("=")
+            source_key, target_key = tuple(source.split(":")), tuple(target.split(":"))
+            require(len(source_key) == 2 and len(target_key) == 2 and source_key not in android_modules,
+                    "Invalid Android dependency mapping")
+            android_modules[source_key] = target_key
+        receipt = verify(args.repository, args.group, args.module, args.version, expected, android_modules)
         receipt["source_head"] = args.source_head
     except (ValueError, KeyError, OSError, ET.ParseError) as error:
         receipt = {"status": "failed", "error": str(error)}

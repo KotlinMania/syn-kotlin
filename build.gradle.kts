@@ -858,7 +858,14 @@ val verifyPublicationPins =
                     receipt.get().asFile.absolutePath,
                     "--source-head",
                     sourceHead.get(),
-                ) + expected.flatMap { listOf("--dependency", it) },
+                ) + expected.flatMap { listOf("--dependency", it) } +
+                    listOf(
+                        "kotlinx-coroutines-core",
+                        "kotlinx-datetime",
+                        "kotlinx-collections-immutable",
+                    ).flatMap { module ->
+                        listOf("--android-module", "org.jetbrains.kotlinx:$module=org.jetbrains.kotlinx:$module-jvm")
+                    },
             )
         }
     }
