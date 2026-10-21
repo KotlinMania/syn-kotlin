@@ -1,5 +1,7 @@
 # Delivering the Native-to-Swift producer repair
 
+> Current API-preserving delivery status is in [syn-library/DELIVERY_CURRENT.md](syn-library/DELIVERY_CURRENT.md). The historical snapshot proposal below is retained as evidence; its requirement to accept removal of `KotlinError.wrapped` is superseded for the new tested variant. The coherent Native header and publication/adoption holds still apply.
+
 The isolated component is validated for the concrete ProcMacro2 consumer described below. It is not installed, published or selected by production builds. The concrete proposal is to submit the repairs upstream and, if authorized, deliver an immutable KotlinMania-owned tooling component for ProcMacro2 first. It does not authorize a fleet rollout or claim the asynchronous contracts are repaired.
 
 ## Official publications inspected on 21 October 2026

@@ -1,0 +1,8 @@
+{
+  "component_sha256": "32f6c1ac5f137a204bdcaca192b0e59a9999f72d9c549ea0018b6d5fe77b797e",
+  "file_entry_count": 6263,
+  "rust_source_or_library_entries": [],
+  "tracked_patch_tree_rust_source_or_library_files": [],
+  "license_named_entries": [],
+  "qualification": "Entry-name inventory only; not a complete third-party license or binary provenance audit. No proposal to distribute Native SDK binaries. Local upstream Rust reference tooling is excluded from release closure."
+}
