@@ -1,0 +1,46 @@
+{
+  "upstream_revision": "890ac1d94fdb80eb85f0eeb5be5e4352df987b2f",
+  "official_exporter_sha256": "24c6159bcf0087ecf86bfc9bad01a975e192abcf75005b248292d85a139c2055",
+  "source_files": {
+    "StandaloneSirTypeNamer.kt": "1c6b8856dae77322492fced876a785cce4bbf7416be11a11d65a3da69a22d72f",
+    "SirInitFromKtSymbol.kt": "be9085f28f4f359cd41526090b0692d48497f6596115fb91a4fd44bf52f70cff",
+    "RecursiveConstraint.swift": "272265f7675aebb2cebba73c536b485a3a520393ed427a8a5f729aa8bc4de363"
+  },
+  "actual_sir_model_sha256": "ef2941ae4e92a4c6dcea236d4ab49c9c2d07ffec8c5a9b5545fd02a3de48ff3a",
+  "actual_namer_disassembly_sha256": "9a01d8914be9ba8a1fe51baeb674b0712a0fdd92b620aafe1d9db631e8328cbb",
+  "swift_representation_session": 3613,
+  "swift_representation_exit": 1,
+  "swift_flags": [
+    "-c",
+    "-swift-version",
+    "6",
+    "-warnings-as-errors",
+    "-sdk MacOSX26.5.sdk",
+    "-target arm64-apple-macosx15.0"
+  ],
+  "swift_log_sha256": "9b29a0fdfc7d10bd8f4f7ae6313bfee4963930ec9c468aed17cd927fbb2a97c3",
+  "harness_history": {
+    "73435": "Sandbox permissionDenied before Swift compiler startup",
+    "47120": "Direct compiler could not load default-target standard library; explicit SDK/target supplied in3613"
+  },
+  "conclusions": [
+    "Actual function/class/callable model exposes no declaration generic-parameter list; this inspection does not rule out every possible future model extension",
+    "Actual emitted Swift loses shared B equality; independently erased Native inputs are not a common type witness",
+    "Pinned type namer replaces type parameters by upper-bound class names; constructor producer uses that PARAMETRIZED representation",
+    "Direct Swift recursive superclass constraint is rejected; no blanket claim that equivalent protocol encoding is impossible",
+    "A generic Native entry declaration alone would not establish a checked relationship between independently erased references"
+  ],
+  "required_repair_proof": [
+    "Represent original shared generic relation in the exported API without hidden declarations or weaker semantics",
+    "Establish a checked shared Native witness for all related parameters and constructors, including mismatched-pair rejection",
+    "Preserve allocation/construction bounds and genuine dynamic dispatch",
+    "Compile/link actual emitted Native bridge then execute strict Swift behaviors"
+  ],
+  "product_status": {
+    "native_candidate_session": 71898,
+    "native_errors": 5,
+    "swift_product_cases": 0,
+    "repaired": false
+  },
+  "publication_adoption_external_submission": "On hold; no action performed"
+}
