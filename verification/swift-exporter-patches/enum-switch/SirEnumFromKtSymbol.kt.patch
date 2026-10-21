@@ -27,3 +27,22 @@
              body = SirFunctionBody(
                  listOf(
                      """
+@@ -254,10 +254,14 @@
+         )
+         body = SirFunctionBody(
+             listOf(
+-                """
+-                    guard 0..<${cases.size} ~= rawValue else { return nil }
+-                    self = $name.allCases[Int(rawValue)]
+-                """.trimIndent()
++                if (cases.isEmpty()) {
++                    "return nil"
++                } else {
++                    """
++                        guard 0..<${cases.size} ~= rawValue else { return nil }
++                        self = $name.allCases[Int(rawValue)]
++                    """.trimIndent()
++                }
+             )
+         )
+     }.also { it.parent = this }

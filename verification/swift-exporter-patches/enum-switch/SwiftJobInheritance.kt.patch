@@ -1,0 +1,11 @@
+--- a/native/swift/swift-export-standalone/resources/swift/KotlinCoroutineSupport.kt
++++ b/native/swift/swift-export-standalone/resources/swift/KotlinCoroutineSupport.kt
+@@ -28,7 +28,7 @@
+  *
+  * This type is a manually bridged counterpart to KotlinTask type in Swift
+  */
+-@OptIn(InternalCoroutinesApi::class, kotlin.concurrent.atomics.ExperimentalAtomicApi::class)
++@OptIn(InternalCoroutinesApi::class, InternalForInheritanceCoroutinesApi::class, kotlin.concurrent.atomics.ExperimentalAtomicApi::class)
+ class SwiftJob private constructor() : Job by Job() {
+     private class PublishedResult(val value: Any?)
+     private val publishedResult = AtomicReference<PublishedResult?>(null)
