@@ -18,10 +18,11 @@ class ShebangTest {
         val item = assertIs<Item.Fn>(file.items.single())
         assertEquals("main", item.ident.toString())
         assertIs<Visibility.Inherited>(item.vis)
-        assertNull(item.sig.generics.ltToken)
-        assertTrue(item.sig.generics.params.isEmpty())
-        assertNull(item.sig.generics.gtToken)
-        assertNull(item.sig.generics.whereClause)
+        val generics = item.sig.generics
+        assertNull(generics.ltToken)
+        assertTrue(generics.params.isEmpty())
+        assertNull(generics.gtToken)
+        assertNull(generics.whereClause)
         assertIs<ReturnType.Default>(item.sig.output)
         assertTrue(assertNotNull(item.block).stmts.isEmpty())
     }
@@ -46,10 +47,11 @@ class ShebangTest {
         val item = assertIs<Item.Fn>(file.items.single())
         assertEquals("main", item.ident.toString())
         assertIs<Visibility.Inherited>(item.vis)
-        assertNull(item.sig.generics.ltToken)
-        assertTrue(item.sig.generics.params.isEmpty())
-        assertNull(item.sig.generics.gtToken)
-        assertNull(item.sig.generics.whereClause)
+        val generics = item.sig.generics
+        assertNull(generics.ltToken)
+        assertTrue(generics.params.isEmpty())
+        assertNull(generics.gtToken)
+        assertNull(generics.whereClause)
         assertIs<ReturnType.Default>(item.sig.output)
         assertTrue(assertNotNull(item.block).stmts.isEmpty())
     }
