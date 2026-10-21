@@ -1,0 +1,20 @@
+{
+  "upstream": "https://github.com/JetBrains/kotlin",
+  "version": "2.4.20",
+  "revision": "890ac1d94fdb80eb85f0eeb5be5e4352df987b2f",
+  "source_scope": [
+    "KotlinRuntimeSupport.swift immutable diagnostic/internal import/redundant cast corrections",
+    "SirAsSwiftSourcesPrinter.kt ONLY ImplementationOnly import spelling"
+  ],
+  "patches": {
+    "KotlinRuntimeSupport.swift.patch": "821a2b07daa8a5b8c105ba88ef7d45e3e3181e657702e601f1f25a9fa08cd464",
+    "SirAsSwiftSourcesPrinter.kt.patch": "deec4b2fd9bb53d97c1cef0ac65a7bb1c8b5be22287b40cabb7f05f84adb3c74"
+  },
+  "compiler_status": "The ordinary RuntimeSupport resource is fixture-verified within49851; this minimal printer-only component has not been compiled or packaged.",
+  "consumer_status": "ProcMacro2 actual published-toolchain Swift build fails before its three behavior cases; no isolated component injected",
+  "api_impact": "KotlinError.wrapped mutable KotlinBase property removed intentionally; wrapped initializer label retained with snapshot semantics, message:String added. This is not source/binary compatibility for clients using wrapped.",
+  "excluded": "No async ownership, Flow, callback transfer, caller-inheriting declaration or reverse-registration change",
+  "publication": "No coordinate allocated or publication authorized; official upstream source PR/accepted release or explicitly authorized compatible immutable producer route required",
+  "artifact_source": "automation-artifacts/2026-10-20-syn-isolated-library-validation/ordinary-runtime-minimal/SirAsSwiftSourcesPrinter.kt",
+  "artifact_source_sha256": "ca82359856633082785752a4c1d0d49b9c330914fe313cfcd92a5e7fbcb9b45c"
+}
