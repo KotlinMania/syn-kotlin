@@ -16,9 +16,14 @@ def fingerprint(path):
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def verify(repository, group, module, version, expected, android_modules=None):
-    android_modules = android_modules or {}
-    require(set(android_modules) <= set(expected), "Unexpected Android dependency mapping")
+def verify(repository, group, module, version, expected, pom_modules=None):
+    require(all(all(key) and pin and not any(c in pin for c in "+[](),") and
+                not pin.startswith("latest.") for key, pin in expected.items()),
+            "Expected exact declared dependency pins")
+    pom_modules = pom_modules or {}
+    require(set(pom_modules) <= set(expected), "POM mapping has no declared dependency")
+    mapped = [(g, pom_modules.get((g, m), m)) for g, m in expected]
+    require(len(mapped) == len(set(mapped)), "Ambiguous Android POM dependency mapping")
     directory = Path(group.replace(".", "/"))
     root = repository / directory / module / version / (module + "-" + version)
     target = repository / directory / (module + "-android") / version / (module + "-android-" + version)
@@ -72,7 +77,7 @@ def verify(repository, group, module, version, expected, android_modules=None):
         files = variant.get("files", [])
         require(len(files) == 1, "Expected the real Android AAR")
         aar = target.parent / files[0]["url"]
-        require(aar == Path(str(target) + ".aar") and aar.is_file(), "Wrong or missing Android AAR")
+        require(aar == Path(str(target) + ".aar") and aar.is_file() and not aar.is_symlink(), "Wrong or missing Android AAR")
         require(aar.stat().st_size == files[0]["size"] and fingerprint(aar) == files[0]["sha256"], "Android AAR fingerprint mismatch")
 
     ns = {"m": "http://maven.apache.org/POM/4.0.0"}
@@ -85,20 +90,21 @@ def verify(repository, group, module, version, expected, android_modules=None):
         for edge in pom.findall("m:dependencies/m:dependency", ns):
             edge_group = edge.findtext("m:groupId", namespaces=ns)
             edge_module = edge.findtext("m:artifactId", namespaces=ns)
-            key = next((k for k in expected if (edge_group, edge_module) in
-                        ([k, (k[0], k[1] + "-android"), android_modules.get(k)]
-                         if name == "android_pom" else [k])), None)
+            key = next((k for k in expected if k[0] == edge_group and edge_module in
+                        ([pom_modules.get(k, k[1])] if name == "android_pom" else [k[1]])), None)
             if key is None:
                 continue
             require(key not in found, "Duplicate POM dependency")
             actual = edge.findtext("m:version", namespaces=ns)
             require(actual == expected[key], "Wrong POM dependency pin: " + name + " " + str(key) + " " + str(actual))
             found[key] = {"module": edge_module, "version": actual, "scope": edge.findtext("m:scope", default="compile", namespaces=ns)}
-        require(set(found) == set(expected), "Missing POM dependencies: " + name)
+        require(set(found) == set(expected), "Missing POM dependencies: " + name +
+                "; declare actual target mapping with --pom-dependency when Android selects a target artifact")
         pom_pins[name] = {":".join(k): v for k, v in found.items()}
     return {"status": "passed", "coordinates": ":".join([group, module, version]),
             "files": {name: {"path": str(path), "sha256": fingerprint(path)} for name, path in paths.items()},
             "root_dependency_pins": root_pins, "android_dependency_pins": android_pins, "pom_dependency_pins": pom_pins,
+            "coverage": "Declared common API/implementation pins; target-specific dependencies require separate reviewed guards.",
             "api_scope_note": "Implementation dependencies may be absent from Android API metadata; runtime pins must match.",
             "independent_consumer": "Separate compilation/resolution required"}
 
@@ -110,7 +116,8 @@ def main():
     parser.add_argument("--module", required=True)
     parser.add_argument("--version", required=True)
     parser.add_argument("--dependency", action="append", required=True)
-    parser.add_argument("--android-module", action="append", default=[])
+    parser.add_argument("--pom-dependency", action="append", default=[],
+                        help="group:root-module:actual-Android-POM-module; defaults to root module")
     parser.add_argument("--receipt", type=Path, required=True)
     parser.add_argument("--source-head", required=True)
     args = parser.parse_args()
@@ -121,14 +128,13 @@ def main():
             group, module, version = value.split(":")
             require((group, module) not in expected, "Duplicate expected pin")
             expected[(group, module)] = version
-        android_modules = {}
-        for mapping in args.android_module:
-            source, target = mapping.split("=")
-            source_key, target_key = tuple(source.split(":")), tuple(target.split(":"))
-            require(len(source_key) == 2 and len(target_key) == 2 and source_key not in android_modules,
-                    "Invalid Android dependency mapping")
-            android_modules[source_key] = target_key
-        receipt = verify(args.repository, args.group, args.module, args.version, expected, android_modules)
+        mappings = {}
+        for value in args.pom_dependency:
+            group, root_module, target_module = value.split(":")
+            require(all([group, root_module, target_module]) and (group, root_module) not in mappings,
+                    "Invalid or duplicate Android POM mapping")
+            mappings[(group, root_module)] = target_module
+        receipt = verify(args.repository, args.group, args.module, args.version, expected, mappings)
         receipt["source_head"] = args.source_head
     except (ValueError, KeyError, OSError, ET.ParseError) as error:
         receipt = {"status": "failed", "error": str(error)}

@@ -1,5 +1,5 @@
 [versions]
-kotlin = "2.4.20"
+kotlin = "2.4.21"
 coroutines = "1.11.0"
 datetime = "0.8.0"
 collectionsImmutable = "0.5.2"
@@ -10,7 +10,7 @@ ktlintEngine = "1.8.0"
 kotlinxBenchmark = "0.5.0"
 procMacro2 = "0.1.7"
 quote = "0.2.5"
-unicodeIdent = "0.1.0"
+unicodeIdent = "0.1.1"
 anyhow = "0.1.1"
 
 [plugins]
@@ -37,4 +37,6 @@ syn-commonMain = [
   "kotlinx-datetime",
   "collections-immutable",
   "unicode-ident-kotlin",
+  "proc-macro2-kotlin",
+  "quote-kotlin",
 ]
