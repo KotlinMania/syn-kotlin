@@ -399,7 +399,7 @@ public sealed class Expr : ToTokens {
                 for ((i, arm) in arms.withIndex()) {
                     arm.toTokens(inner)
                     val isLast = i == arms.size - 1
-                    if (!isLast && Classify.requiresCommaToBeMatchArm(arm.body) && arm.comma == null) {
+                    if (!isLast && requires_comma_to_be_match_arm(arm.body) && arm.comma == null) {
                         io.github.kotlinmania.syn.token.Comma.default().toTokens(inner)
                     }
                 }
@@ -1600,7 +1600,7 @@ public object ArmParse {
         val fatArrowToken = FatArrowParse.parse(input).getOrElse { return SynResult.failure(it) }
         val body = parseWithEarlierBoundaryRule(input).getOrElse { return SynResult.failure(it) }
         val comma =
-            if (Classify.requiresCommaToBeMatchArm(body) && !input.isEmpty()) {
+            if (requires_comma_to_be_match_arm(body) && !input.isEmpty()) {
                 CommaParse.parse(input).getOrElse { return SynResult.failure(it) }
             } else {
                 CommaParse.parse(input).getOrNull()

@@ -35,6 +35,7 @@ internal fun parseExprWithEarlierBoundaryRuleImpl(input: ParseStream): SynResult
             input.peek(ForPeek) && !chooseGenericsOverQpathAfterKeyword(input) -> parseExprFor(input).getOrElse { return SynResult.failure(it) }
             input.peek(LoopPeek) -> parseExprLoop(input).getOrElse { return SynResult.failure(it) }
             input.peek(MatchPeek) -> parseExprMatch(input).getOrElse { return SynResult.failure(it) }
+            input.peek(TryPeek) && input.peek2(BracePeek) -> parseExprTryBlock(input).getOrElse { return SynResult.failure(it) }
             input.peek(UnsafePeek) -> parseExprUnsafe(input).getOrElse { return SynResult.failure(it) }
             input.peek(ConstPeek) && input.peek2(BracePeek) -> parseExprConst(input).getOrElse { return SynResult.failure(it) }
             input.peek(BracePeek) -> parseExprBlock(input).getOrElse { return SynResult.failure(it) }
@@ -494,6 +495,7 @@ internal fun atomExprImpl(input: ParseStream, allowStruct: Boolean): SynResult<E
     if (input.peek(LoopPeek)) return parseExprLoop(input)
     if (input.peek(MatchPeek)) return parseExprMatch(input)
     if (input.peek(AsyncPeek) && (input.peek2(BracePeek) || (input.peek2(MovePeek) && input.peek3(BracePeek)))) return parseExprAsync(input)
+    if (input.peek(TryPeek) && input.peek2(BracePeek)) return parseExprTryBlock(input)
     if (input.peek(UnsafePeek) && input.peek2(BracePeek)) return parseExprUnsafe(input)
     if (input.peek(ConstPeek) && input.peek2(BracePeek)) return parseExprConst(input)
     if (input.peek(BracePeek)) return parseExprBlock(input)
@@ -876,6 +878,13 @@ private fun parseExprAsync(input: ParseStream): SynResult<Expr> {
     val stmts = stmtsResult.getOrThrow()
     content.finishChildBuffer()
     return SynResult.success(Expr.Async(mutableListOf(), asyncToken, capture, Block(brace, stmts)))
+}
+
+// expr.rs:2510: ExprTryBlock uses the existing Block parser (no inner attrs).
+private fun parseExprTryBlock(input: ParseStream): SynResult<Expr> {
+    val tryToken = TryParse.parse(input).getOrElse { return SynResult.failure(it) }
+    val block = parseBlock(input).getOrElse { return SynResult.failure(it) }
+    return SynResult.success(Expr.TryBlock(emptyList(), tryToken, block))
 }
 
 private fun parseExprUnsafe(input: ParseStream): SynResult<Expr> {

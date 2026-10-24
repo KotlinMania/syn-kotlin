@@ -909,7 +909,7 @@ private fun parseReturnType(input: ParseStream, allowPlus: Boolean): SynResult<R
     return SynResult.success(ReturnType.TypeReturn(arrowResult.getOrThrow(), tyResult.getOrThrow()))
 }
 
-private fun parseBlock(input: ParseStream): SynResult<Block> {
+internal fun parseBlock(input: ParseStream): SynResult<Block> {
     val bracesResult = braced(input)
     if (bracesResult.isFailure) return asFailure(bracesResult)
     val bracesVal = bracesResult.getOrThrow()

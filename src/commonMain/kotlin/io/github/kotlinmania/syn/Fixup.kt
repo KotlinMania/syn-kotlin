@@ -138,9 +138,9 @@ public data class FixupContext(
     }
 
     public fun parenthesize(expr: Expr): Boolean =
-        (leftmostSubexpressionInStmt && !Classify.requiresSemiToBeStmt(expr)) ||
+        (leftmostSubexpressionInStmt && !requires_semi_to_be_stmt(expr)) ||
             ((stmt || leftmostSubexpressionInStmt) && expr is Expr.Let) ||
-            (leftmostSubexpressionInMatchArm && !Classify.requiresCommaToBeMatchArm(expr)) ||
+            (leftmostSubexpressionInMatchArm && !requires_comma_to_be_match_arm(expr)) ||
             (condition && expr is Expr.Struct) ||
             (
                 rightmostSubexpressionInCondition &&

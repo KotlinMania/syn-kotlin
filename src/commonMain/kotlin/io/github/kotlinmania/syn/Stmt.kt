@@ -204,7 +204,7 @@ public fun parseWithin(input: ParseStream): SynResult<List<Stmt>> {
 
 internal fun stmtRequiresSemicolon(stmt: Stmt): Boolean =
     when (stmt) {
-        is Stmt.ExprStmt -> stmt.semiToken == null && Classify.requiresSemiToBeStmt(stmt.expr)
+        is Stmt.ExprStmt -> stmt.semiToken == null && requires_semi_to_be_stmt(stmt.expr)
         is Stmt.MacroStmt -> stmt.semiToken == null && !stmt.mac.isBrace()
         else -> false
     }

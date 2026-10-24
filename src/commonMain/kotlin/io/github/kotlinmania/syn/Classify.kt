@@ -5,73 +5,75 @@ import io.github.kotlinmania.procmacro2.Delimiter
 import io.github.kotlinmania.procmacro2.TokenStream
 import io.github.kotlinmania.procmacro2.TokenTree
 
+// Generated classifiers: upstream classify.rs:16-68. Raw output and integration
+// receipt: rust-kotlin/tmp/syn-emission-06-txkhdd7f/adoption/.
+// Generated from Syn AST; exact original retained in input.rs.
+// Rust use resolved through explicit library bindings.
+internal fun `requires_semi_to_be_stmt`(`expr`: io.github.kotlinmania.syn.Expr): kotlin.Boolean =
+    (when (val __rtkValue0: io.github.kotlinmania.syn.Expr = `expr`) {
+        is io.github.kotlinmania.syn.Expr.Macro ->
+            kotlin.run {
+                val `expr__binding1`: io.github.kotlinmania.syn.Expr.Macro = __rtkValue0
+                (!kotlin.run {
+                    val __rtkValue2 = ((`expr__binding1`).`mac`).`delimiter`
+                    __rtkValue2 is io.github.kotlinmania.syn.MacroDelimiter.Brace
+                })
+            }
+        else -> `requires_comma_to_be_match_arm`(`expr`)
+    })
+
+internal fun `requires_comma_to_be_match_arm`(
+    `expr`: io.github.kotlinmania.syn.Expr,
+): kotlin.Boolean =
+    (when (val __rtkValue0: io.github.kotlinmania.syn.Expr = `expr`) {
+        is io.github.kotlinmania.syn.Expr.If,
+        is io.github.kotlinmania.syn.Expr.Match,
+        is io.github.kotlinmania.syn.Expr.BlockExpr,
+        is io.github.kotlinmania.syn.Expr.Unsafe // both under ExprKind::Block in rustc
+        ,
+        is io.github.kotlinmania.syn.Expr.While,
+        is io.github.kotlinmania.syn.Expr.Loop,
+        is io.github.kotlinmania.syn.Expr.ForLoop,
+        is io.github.kotlinmania.syn.Expr.TryBlock,
+        is io.github.kotlinmania.syn.Expr.Const -> false
+        is io.github.kotlinmania.syn.Expr.Array,
+        is io.github.kotlinmania.syn.Expr.Assign,
+        is io.github.kotlinmania.syn.Expr.Async,
+        is io.github.kotlinmania.syn.Expr.Await,
+        is io.github.kotlinmania.syn.Expr.Binary,
+        is io.github.kotlinmania.syn.Expr.Break,
+        is io.github.kotlinmania.syn.Expr.Call,
+        is io.github.kotlinmania.syn.Expr.Cast,
+        is io.github.kotlinmania.syn.Expr.Closure,
+        is io.github.kotlinmania.syn.Expr.Continue,
+        is io.github.kotlinmania.syn.Expr.Field,
+        is io.github.kotlinmania.syn.Expr.Group,
+        is io.github.kotlinmania.syn.Expr.Index,
+        is io.github.kotlinmania.syn.Expr.Infer,
+        is io.github.kotlinmania.syn.Expr.Let,
+        is io.github.kotlinmania.syn.Expr.Lit,
+        is io.github.kotlinmania.syn.Expr.Macro,
+        is io.github.kotlinmania.syn.Expr.MethodCall,
+        is io.github.kotlinmania.syn.Expr.Paren,
+        is io.github.kotlinmania.syn.Expr.Path,
+        is io.github.kotlinmania.syn.Expr.Range,
+        is io.github.kotlinmania.syn.Expr.RawAddr,
+        is io.github.kotlinmania.syn.Expr.Reference,
+        is io.github.kotlinmania.syn.Expr.Repeat,
+        is io.github.kotlinmania.syn.Expr.Return,
+        is io.github.kotlinmania.syn.Expr.Struct,
+        is io.github.kotlinmania.syn.Expr.Try,
+        is io.github.kotlinmania.syn.Expr.Tuple,
+        is io.github.kotlinmania.syn.Expr.Unary,
+        is io.github.kotlinmania.syn.Expr.Yield,
+        is io.github.kotlinmania.syn.Expr.Verbatim -> true
+    })
+// End generated classifiers. Remaining helpers await full-file generation.
+
 internal fun tokensTrailingBrace(tokens: TokenStream): Boolean =
     (tokens.lastOrNull() as? TokenTree.Group)?.value?.delimiter() == Delimiter.Brace
 
-/**
- * Classification helpers that determine whether an expression
- * requires a semicolon or comma to be unambiguously recognized
- * as a statement or pattern-matching arm.
- */
 internal object Classify {
-    /**
-     * Returns true when the expression requires a semicolon to be
-     * recognized as a statement.
-     */
-    internal fun requiresSemiToBeStmt(expr: Expr): Boolean =
-        when (expr) {
-            is Expr.Macro -> !expr.mac.delimiter.isBrace
-            else -> requiresCommaToBeMatchArm(expr)
-        }
-
-    /**
-     * Returns true when the expression requires a comma to be
-     * recognized as a pattern-matching arm.
-     */
-    internal fun requiresCommaToBeMatchArm(expr: Expr): Boolean =
-        when (expr) {
-            is Expr.If -> false
-            is Expr.Match -> false
-            is Expr.BlockExpr -> false
-            is Expr.Unsafe -> false
-            is Expr.While -> false
-            is Expr.Loop -> false
-            is Expr.ForLoop -> false
-            is Expr.TryBlock -> false
-            is Expr.Const -> false
-            is Expr.Array -> true
-            is Expr.Assign -> true
-            is Expr.Async -> true
-            is Expr.Await -> true
-            is Expr.Binary -> true
-            is Expr.Break -> true
-            is Expr.Call -> true
-            is Expr.Cast -> true
-            is Expr.Closure -> true
-            is Expr.Continue -> true
-            is Expr.Field -> true
-            is Expr.Group -> true
-            is Expr.Index -> true
-            is Expr.Infer -> true
-            is Expr.Let -> true
-            is Expr.Lit -> true
-            is Expr.Macro -> true
-            is Expr.MethodCall -> true
-            is Expr.Paren -> true
-            is Expr.Path -> true
-            is Expr.RawAddr -> true
-            is Expr.Range -> true
-            is Expr.Reference -> true
-            is Expr.Repeat -> true
-            is Expr.Return -> true
-            is Expr.Struct -> true
-            is Expr.Try -> true
-            is Expr.Tuple -> true
-            is Expr.Unary -> true
-            is Expr.Yield -> true
-            is Expr.Verbatim -> true
-        }
-
     internal fun trailingUnparameterizedPath(ty: SynType): Boolean {
         fun lastTypeInPath(path: Path): TypeTail =
             when (val args = path.segments.last()?.arguments) {
