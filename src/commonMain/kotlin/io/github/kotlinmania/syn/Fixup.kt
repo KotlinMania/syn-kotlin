@@ -197,7 +197,7 @@ public data class FixupContext(
         }
 
         if (nextOperatorCanBeginGenerics && expr is Expr.Cast) {
-            if (Classify.trailingUnparameterizedPath(expr.ty)) {
+            if (trailing_unparameterized_path(expr.ty)) {
                 return Precedence.MIN
             }
         }

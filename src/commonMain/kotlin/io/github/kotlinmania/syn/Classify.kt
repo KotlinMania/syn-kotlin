@@ -68,102 +68,285 @@ internal fun `requires_comma_to_be_match_arm`(
         is io.github.kotlinmania.syn.Expr.Yield,
         is io.github.kotlinmania.syn.Expr.Verbatim -> true
     })
+// Third generated classifier: unchanged input with printing:on/full:off.
+// Raw output, alpha-renaming/privacy/format integration patch and Rust receipt:
+// rust-kotlin/tmp/syn-emission-08-u6iwcz6i/adoption/.
+// Generated from Syn AST; exact original retained in input.rs.
+// Rust cfg item excluded by explicit configuration; original retained in input.rs.
+// Rust use resolved through explicit library bindings.
+// Rust use resolved through explicit library bindings.
+// Rust use resolved through explicit library bindings.
+// Rust use resolved through explicit library bindings.
+// Rust use resolved through explicit library bindings.
+// Rust cfg item excluded by explicit configuration; original retained in input.rs.
+// Rust cfg item excluded by explicit configuration; original retained in input.rs.
+// Rust cfg item excluded by explicit configuration; original retained in input.rs.
+internal fun `trailing_unparameterized_path`(
+    `ty`: io.github.kotlinmania.syn.SynType,
+): kotlin.Boolean {
+    kotlin.run {
+        var `ty__binding0`: io.github.kotlinmania.syn.SynType = `ty`
+        kotlin.run {
+            kotlin.run {
+                while (true) (when (
+                    val __rtkClassifyValue1: io.github.kotlinmania.syn.SynType = `ty__binding0`
+                ) {
+                    is io.github.kotlinmania.syn.SynType.BareFn ->
+                        kotlin.run {
+                            val `t`: io.github.kotlinmania.syn.SynType.BareFn = __rtkClassifyValue1
+                            (when (
+                                val __rtkClassifyValue2: io.github.kotlinmania.syn.ReturnType =
+                                    (`t`).`output`
+                            ) {
+                                io.github.kotlinmania.syn.ReturnType.Default -> return false
+                                is io.github.kotlinmania.syn.ReturnType.TypeReturn ->
+                                    kotlin.run {
+                                        val `ret`: io.github.kotlinmania.syn.SynType =
+                                            __rtkClassifyValue2.`ty`
+                                        kotlin.run {
+                                            val __rtkClassifyValue3:
+                                                io.github.kotlinmania.syn.SynType =
+                                                `ret`
+                                            `ty__binding0` = __rtkClassifyValue3
+                                        }
+                                    }
+                            })
+                        }
+                    is io.github.kotlinmania.syn.SynType.ImplTrait ->
+                        kotlin.run {
+                            val `t__binding4`: io.github.kotlinmania.syn.SynType.ImplTrait =
+                                __rtkClassifyValue1
+                            (when (
+                                val __rtkClassifyValue5:
+                                    __rtkClassifyControlFlow<
+                                        kotlin.Boolean,
+                                        io.github.kotlinmania.syn.SynType,
+                                    > =
+                                    `__rtkClassifyNested1_last_type_in_bounds`(
+                                        (`t__binding4`).`bounds`,
+                                    )
+                            ) {
+                                is __rtkClassifyControlFlow.Break ->
+                                    kotlin.run {
+                                        val `trailing_path`: kotlin.Boolean =
+                                            __rtkClassifyValue5.`value`
+                                        return `trailing_path`
+                                    }
+                                is __rtkClassifyControlFlow.Continue ->
+                                    kotlin.run {
+                                        val `t__binding6`: io.github.kotlinmania.syn.SynType =
+                                            __rtkClassifyValue5.`value`
+                                        kotlin.run {
+                                            val __rtkClassifyValue7:
+                                                io.github.kotlinmania.syn.SynType =
+                                                `t__binding6`
+                                            `ty__binding0` = __rtkClassifyValue7
+                                        }
+                                    }
+                            })
+                        }
+                    is io.github.kotlinmania.syn.SynType.Path ->
+                        kotlin.run {
+                            val `t__binding8`: io.github.kotlinmania.syn.SynType.Path =
+                                __rtkClassifyValue1
+                            (when (
+                                val __rtkClassifyValue9:
+                                    __rtkClassifyControlFlow<
+                                        kotlin.Boolean,
+                                        io.github.kotlinmania.syn.SynType,
+                                    > =
+                                    `__rtkClassifyNested0_last_type_in_path`((`t__binding8`).`path`)
+                            ) {
+                                is __rtkClassifyControlFlow.Break ->
+                                    kotlin.run {
+                                        val `trailing_path__binding10`: kotlin.Boolean =
+                                            __rtkClassifyValue9.`value`
+                                        return `trailing_path__binding10`
+                                    }
+                                is __rtkClassifyControlFlow.Continue ->
+                                    kotlin.run {
+                                        val `t__binding11`: io.github.kotlinmania.syn.SynType =
+                                            __rtkClassifyValue9.`value`
+                                        kotlin.run {
+                                            val __rtkClassifyValue12:
+                                                io.github.kotlinmania.syn.SynType =
+                                                `t__binding11`
+                                            `ty__binding0` = __rtkClassifyValue12
+                                        }
+                                    }
+                            })
+                        }
+                    is io.github.kotlinmania.syn.SynType.Ptr ->
+                        kotlin.run {
+                            val `t__binding13`: io.github.kotlinmania.syn.SynType.Ptr =
+                                __rtkClassifyValue1
+                            kotlin.run {
+                                val __rtkClassifyValue14: io.github.kotlinmania.syn.SynType =
+                                    (`t__binding13`).`elem`
+                                `ty__binding0` = __rtkClassifyValue14
+                            }
+                        }
+                    is io.github.kotlinmania.syn.SynType.Reference ->
+                        kotlin.run {
+                            val `t__binding15`: io.github.kotlinmania.syn.SynType.Reference =
+                                __rtkClassifyValue1
+                            kotlin.run {
+                                val __rtkClassifyValue16: io.github.kotlinmania.syn.SynType =
+                                    (`t__binding15`).`elem`
+                                `ty__binding0` = __rtkClassifyValue16
+                            }
+                        }
+                    is io.github.kotlinmania.syn.SynType.TraitObject ->
+                        kotlin.run {
+                            val `t__binding17`: io.github.kotlinmania.syn.SynType.TraitObject =
+                                __rtkClassifyValue1
+                            (when (
+                                val __rtkClassifyValue18:
+                                    __rtkClassifyControlFlow<
+                                        kotlin.Boolean,
+                                        io.github.kotlinmania.syn.SynType,
+                                    > =
+                                    `__rtkClassifyNested1_last_type_in_bounds`(
+                                        (`t__binding17`).`bounds`,
+                                    )
+                            ) {
+                                is __rtkClassifyControlFlow.Break ->
+                                    kotlin.run {
+                                        val `trailing_path__binding19`: kotlin.Boolean =
+                                            __rtkClassifyValue18.`value`
+                                        return `trailing_path__binding19`
+                                    }
+                                is __rtkClassifyControlFlow.Continue ->
+                                    kotlin.run {
+                                        val `t__binding20`: io.github.kotlinmania.syn.SynType =
+                                            __rtkClassifyValue18.`value`
+                                        kotlin.run {
+                                            val __rtkClassifyValue21:
+                                                io.github.kotlinmania.syn.SynType =
+                                                `t__binding20`
+                                            `ty__binding0` = __rtkClassifyValue21
+                                        }
+                                    }
+                            })
+                        }
+                    is io.github.kotlinmania.syn.SynType.Array,
+                    is io.github.kotlinmania.syn.SynType.Group,
+                    is io.github.kotlinmania.syn.SynType.Infer,
+                    is io.github.kotlinmania.syn.SynType.Macro,
+                    is io.github.kotlinmania.syn.SynType.Never,
+                    is io.github.kotlinmania.syn.SynType.Paren,
+                    is io.github.kotlinmania.syn.SynType.Slice,
+                    is io.github.kotlinmania.syn.SynType.Tuple,
+                    is io.github.kotlinmania.syn.SynType.Verbatim -> return false
+                })
+
+                kotlin.error("unreachable: Rust loop has no exiting break")
+            }
+            // Rust nested function last_type_in_path emitted at module scope as
+            // __rtkClassifyNested0_last_type_in_path.
+            // Rust nested function last_type_in_bounds emitted at module scope as
+            // __rtkClassifyNested1_last_type_in_bounds.
+        }
+    }
+}
+
+private fun `__rtkClassifyNested0_last_type_in_path`(
+    `path`: io.github.kotlinmania.syn.Path,
+): __rtkClassifyControlFlow<kotlin.Boolean, io.github.kotlinmania.syn.SynType> =
+    (when (
+        val __rtkClassifyValue1: io.github.kotlinmania.syn.PathArguments =
+            (__rtkClassifyUnwrap(
+                    kotlin.run {
+                        val __rtkClassifyValue0 = ((`path`).`segments`).last()
+                        if (__rtkClassifyValue0 == null) __rtkClassifyOption.None
+                        else __rtkClassifyOption.Some(__rtkClassifyValue0)
+                    },
+                ))
+                .`arguments`
+    ) {
+        io.github.kotlinmania.syn.PathArguments.None -> __rtkClassifyControlFlow.Break(true)
+        is io.github.kotlinmania.syn.PathArguments.AngleBracketed ->
+            __rtkClassifyControlFlow.Break(false)
+        is io.github.kotlinmania.syn.PathArguments.Parenthesized ->
+            kotlin.run {
+                val `arg`: io.github.kotlinmania.syn.PathArguments.Parenthesized =
+                    __rtkClassifyValue1
+                (when (
+                    val __rtkClassifyValue2: io.github.kotlinmania.syn.ReturnType = (`arg`).`output`
+                ) {
+                    io.github.kotlinmania.syn.ReturnType.Default ->
+                        __rtkClassifyControlFlow.Break(false)
+                    is io.github.kotlinmania.syn.ReturnType.TypeReturn ->
+                        kotlin.run {
+                            val `ret`: io.github.kotlinmania.syn.SynType = __rtkClassifyValue2.`ty`
+                            __rtkClassifyControlFlow.Continue(`ret`)
+                        }
+                })
+            }
+    })
+
+private fun `__rtkClassifyNested1_last_type_in_bounds`(
+    `bounds`: io.github.kotlinmania.syn.TypeParamBoundList,
+): __rtkClassifyControlFlow<kotlin.Boolean, io.github.kotlinmania.syn.SynType> =
+    (when (
+        val __rtkClassifyValue1: io.github.kotlinmania.syn.TypeParamBound =
+            __rtkClassifyUnwrap(
+                kotlin.run {
+                    val __rtkClassifyValue0 = (`bounds`).last()
+                    if (__rtkClassifyValue0 == null) __rtkClassifyOption.None
+                    else __rtkClassifyOption.Some(__rtkClassifyValue0)
+                },
+            )
+    ) {
+        is io.github.kotlinmania.syn.TypeParamBound.Trait ->
+            kotlin.run {
+                val `t`: io.github.kotlinmania.syn.TypeParamBound.Trait = __rtkClassifyValue1
+                `__rtkClassifyNested0_last_type_in_path`((`t`).`path`)
+            }
+        is io.github.kotlinmania.syn.TypeParamBound.LifetimeBound,
+        is io.github.kotlinmania.syn.TypeParamBound.PreciseCapture,
+        is io.github.kotlinmania.syn.TypeParamBound.Verbatim ->
+            __rtkClassifyControlFlow.Break(false)
+    })
+
+// Rust cfg item excluded by explicit configuration; original retained in input.rs.
+// Rust cfg item excluded by explicit configuration; original retained in input.rs.
+
+// Rust core::ops::ControlFlow<B, C>: continuation and break payloads stay distinct.
+private sealed class __rtkClassifyControlFlow<out B, out C> {
+    class Continue<C>(val value: C) : __rtkClassifyControlFlow<kotlin.Nothing, C>()
+
+    class Break<B>(val value: B) : __rtkClassifyControlFlow<B, kotlin.Nothing>()
+}
+
+// Tagged Rust Option; owned payloads require a checked fresh-value context.
+private sealed class __rtkClassifyOption<out T> {
+    data object None : __rtkClassifyOption<kotlin.Nothing>()
+
+    data class Some<T>(val value: T) : __rtkClassifyOption<T>()
+}
+
+private fun <T> __rtkClassifyUnwrapOr(value: __rtkClassifyOption<T>, fallback: T): T =
+    when (value) {
+        __rtkClassifyOption.None -> fallback
+        is __rtkClassifyOption.Some -> value.value
+    }
+
+private class __rtkClassifyPanic(message: String) : kotlin.RuntimeException(message)
+
+private fun <T> __rtkClassifyUnwrap(value: __rtkClassifyOption<T>): T =
+    when (value) {
+        is __rtkClassifyOption.Some -> value.value
+        __rtkClassifyOption.None ->
+            throw __rtkClassifyPanic("called `Option::unwrap()` on a `None` value")
+    }
+
 // End generated classifiers. Remaining helpers await full-file generation.
 
 internal fun tokensTrailingBrace(tokens: TokenStream): Boolean =
     (tokens.lastOrNull() as? TokenTree.Group)?.value?.delimiter() == Delimiter.Brace
 
 internal object Classify {
-    internal fun trailingUnparameterizedPath(ty: SynType): Boolean {
-        fun lastTypeInPath(path: Path): TypeTail =
-            when (val args = path.segments.last()?.arguments) {
-                PathArguments.None -> {
-                    TypeTail.Done(true)
-                }
-
-                is PathArguments.AngleBracketed -> {
-                    TypeTail.Done(false)
-                }
-
-                is PathArguments.Parenthesized -> {
-                    when (val output = args.output) {
-                        ReturnType.Default -> TypeTail.Done(false)
-                        is ReturnType.TypeReturn -> TypeTail.More(output.ty)
-                    }
-                }
-
-                null -> {
-                    TypeTail.Done(false)
-                }
-            }
-
-        fun lastTypeInBounds(bounds: TypeParamBoundList): TypeTail =
-            when (val bound = bounds.last()) {
-                is TypeParamBound.Trait -> lastTypeInPath(bound.path)
-
-                is TypeParamBound.LifetimeBound,
-                is TypeParamBound.PreciseCapture,
-                is TypeParamBound.Verbatim,
-                null,
-                -> TypeTail.Done(false)
-            }
-
-        var current = ty
-        while (true) {
-            current =
-                when (current) {
-                    is SynType.BareFn -> {
-                        when (val output = current.output) {
-                            ReturnType.Default -> return false
-                            is ReturnType.TypeReturn -> output.ty
-                        }
-                    }
-
-                    is SynType.ImplTrait -> {
-                        when (val next = lastTypeInBounds(current.bounds)) {
-                            is TypeTail.Done -> return next.value
-                            is TypeTail.More -> next.type
-                        }
-                    }
-
-                    is SynType.Path -> {
-                        when (val next = lastTypeInPath(current.path)) {
-                            is TypeTail.Done -> return next.value
-                            is TypeTail.More -> next.type
-                        }
-                    }
-
-                    is SynType.Ptr -> {
-                        current.elem
-                    }
-
-                    is SynType.Reference -> {
-                        current.elem
-                    }
-
-                    is SynType.TraitObject -> {
-                        when (val next = lastTypeInBounds(current.bounds)) {
-                            is TypeTail.Done -> return next.value
-                            is TypeTail.More -> next.type
-                        }
-                    }
-
-                    is SynType.Array,
-                    is SynType.Group,
-                    is SynType.Infer,
-                    is SynType.Macro,
-                    is SynType.Never,
-                    is SynType.Paren,
-                    is SynType.Slice,
-                    is SynType.Tuple,
-                    is SynType.Verbatim,
-                    -> {
-                        return false
-                    }
-                }
-        }
-    }
-
     internal fun exprLeadingLabel(expr: Expr): Boolean {
         var current = expr
         while (true) {

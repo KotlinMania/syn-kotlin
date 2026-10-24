@@ -11,8 +11,8 @@ This is a Kotlin Multiplatform line-by-line transliteration port of [`dtolnay/sy
 ### Porting status
 
 [Generated classifier adoption](docs/generated-classifiers-2026-10-24.md) records
-two Rust-validated machine-generated functions now used by five production call
-sites. The remaining classify.rs functions are still pending; this is partial
+three Rust-validated machine-generated functions now used by six production call
+sites. The remaining two classify.rs functions are still pending; this is partial
 adoption, not a complete-file equivalence claim.
 
 This is an **in-progress port**. The goal is feature parity with the upstream Rust crate while providing a native Kotlin Multiplatform API. Every Kotlin file carries a `// port-lint: source <path>` header naming its upstream Rust counterpart so the AST-distance tool can track provenance.
