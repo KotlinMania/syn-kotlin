@@ -29,16 +29,18 @@ public sealed class SynType : ToTokens {
     public data class Array(
         var elem: SynType,
         var len: Expr,
+        var bracketToken: Bracket = Bracket.default(),
+        var semiToken: Semi = Semi.default(),
     ) : SynType() {
         override fun toTokens(tokens: TokenStream) {
-            Bracket.default().surround(tokens) { inner ->
+            bracketToken.surround(tokens) { inner ->
                 elem.toTokens(inner)
-                Semi.default().toTokens(inner)
+                semiToken.toTokens(inner)
                 len.toTokens(inner)
             }
         }
 
-        override fun deepCopy(): Array = Array(elem.deepCopy(), len.deepCopy())
+        override fun deepCopy(): Array = Array(elem.deepCopy(), len.deepCopy(), Bracket.from(bracketToken.span), Semi.from(semiToken.span))
     }
 
     public data class BareFn(

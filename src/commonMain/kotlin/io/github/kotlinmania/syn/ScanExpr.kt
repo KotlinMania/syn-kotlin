@@ -1252,10 +1252,10 @@ private fun ambigTyImpl(
         val bracketsVal = brackets.getOrThrow()
         val elem = parseTypeFull(bracketsVal.content).getOrElse { return SynResult.failure(it) }
         if (bracketsVal.content.peek(SemiPeek)) {
-            SemiParse.parse(bracketsVal.content).getOrElse { return SynResult.failure(it) }
+            val semiToken = SemiParse.parse(bracketsVal.content).getOrElse { return SynResult.failure(it) }
             val len = parseExprFull(bracketsVal.content).getOrElse { return SynResult.failure(it) }
             bracketsVal.content.finishChildBuffer()
-            return SynResult.success(SynType.Array(elem, len))
+            return SynResult.success(SynType.Array(elem, len, bracketsVal.token, semiToken))
         }
         bracketsVal.content.finishChildBuffer()
         return SynResult.success(SynType.Slice(elem))
