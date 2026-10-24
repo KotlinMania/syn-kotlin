@@ -1070,6 +1070,8 @@ class ExprTest {
             emit(
                 Expr.Closure(
                     attrs = mutableListOf(),
+                    lifetimes = null,
+                    movability = null,
                     constness = null,
                     asyncness = null,
                     capture = null,

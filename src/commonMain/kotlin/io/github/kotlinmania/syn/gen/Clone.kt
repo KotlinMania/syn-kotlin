@@ -244,7 +244,7 @@ public fun Expr.Cast.clone(): Expr.Cast =
     Expr.Cast(attrs.cloneList(), expr.clone(), asToken, ty.clone())
 
 public fun Expr.Closure.clone(): Expr.Closure =
-    Expr.Closure(attrs.cloneList(), constness, asyncness, capture, or1Token, inputs.copy({ it.clone() }, { it }), or2Token, output.clone(), body.clone())
+    Expr.Closure(attrs.cloneList(), lifetimes?.clone(), constness, movability, asyncness, capture, or1Token, inputs.copy({ it.clone() }, { it }), or2Token, output.clone(), body.clone())
 
 public fun Expr.Const.clone(): Expr.Const =
     Expr.Const(attrs.cloneList(), constToken, block.clone())

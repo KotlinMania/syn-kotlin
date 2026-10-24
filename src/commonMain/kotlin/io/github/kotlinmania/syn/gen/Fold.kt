@@ -681,6 +681,7 @@ public open class Fold {
     public open fun foldExprClosure(expr: Expr.Closure): Expr.Closure =
         expr.copy(
             attrs = foldAttributes(expr.attrs),
+            lifetimes = expr.lifetimes?.let { foldBoundLifetimes(it) },
             inputs = expr.inputs.copy({ foldPat(it) }, { it }),
             output = foldReturnType(expr.output),
             body = foldExpr(expr.body),

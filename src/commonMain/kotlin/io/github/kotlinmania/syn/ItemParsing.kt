@@ -129,24 +129,32 @@ private fun parseRestOfItem(
         )
     }
     if (input.peek(ConstPeek)) {
-        val constToken = ConstParse.parse(input).getOrThrow()
-        val identResult = IdentParse.parse(input)
-        if (identResult.isFailure) return asFailure(identResult)
-        val colonResult = ColonParse.parse(input)
-        if (colonResult.isFailure) return asFailure(colonResult)
-        val ty = parseTypeFull(input)
-        if (ty.isFailure) return asFailure(ty)
-        val eqResult = EqParse.parse(input)
-        val eqToken = if (eqResult.isSuccess) eqResult.getOrThrow() else null
-        var expr: Expr? = null
-        if (eqToken != null) {
-            val exprResult = parseExprFull(input)
-            if (exprResult.isSuccess) expr = exprResult.getOrThrow()
+        val constToken = ConstParse.parse(input).getOrElse { return SynResult.failure(it) }
+        val lookahead = input.lookahead1()
+        if (!lookahead.peek(IdentPeek) && !lookahead.peek(UnderscorePeek)) {
+            return SynResult.failure(lookahead.error())
         }
-        val semi = SemiParse.parse(input).getOrThrow()
-        return SynResult.success(
-            Item.Const(attrs, vis, constToken, identResult.getOrThrow(), colonResult.getOrThrow(), ty.getOrThrow(), eqToken, expr, semi),
-        )
+        val ident = IdentExt.parseAny(input).getOrElse { return SynResult.failure(it) }
+        val generics = parseGenerics(input).getOrElse { return SynResult.failure(it) }
+        val colon = ColonParse.parse(input).getOrElse { return SynResult.failure(it) }
+        val ty = parseTypeFull(input).getOrElse { return SynResult.failure(it) }
+        val value =
+            if (input.peek(EqPeek)) {
+                val eq = EqParse.parse(input).getOrElse { return SynResult.failure(it) }
+                val expr = parseExprFull(input).getOrElse { return SynResult.failure(it) }
+                EqExpr(eq, expr)
+            } else {
+                null
+            }
+        generics.whereClause =
+            if (input.peek(WherePeek)) parseWhereClause(input).getOrElse { return SynResult.failure(it) } else null
+        val semi = SemiParse.parse(input).getOrElse { return SynResult.failure(it) }
+        return if (value != null && generics.ltToken == null && generics.whereClause == null) {
+            SynResult.success(Item.Const(attrs, vis, constToken, ident, colon, ty, value.eqToken, value.expr, semi))
+        } else {
+            // Rust Syn keeps accepted macro-DSL syntax that has no typed constant representation.
+            SynResult.success(Item.Verbatim(between(begin, input)))
+        }
     }
     if (input.peek(SynTypePeek)) {
         return parseItemType(begin, attrs, vis, input)
@@ -1324,36 +1332,69 @@ internal fun parseTraitItem(input: ParseStream): SynResult<TraitItem> {
 }
 
 internal fun parseImplItem(input: ParseStream): SynResult<ImplItem> {
-    if (peekImplItemFn(input)) {
-        val fnResult = parseImplItemFn(input, allowOmittedBody = false)
-        if (fnResult.isFailure) return asFailure(fnResult)
-        val itemFn = fnResult.getOrThrow() ?: return SynResult.failure(input.error("expected impl item function"))
-        return SynResult.success(itemFn)
+    val begin = input.fork()
+    val attrs = parseOuterAttributes(input).getOrElse { return SynResult.failure(it) }
+    val ahead = input.fork()
+    val vis = VisibilityParse.parse(ahead).getOrElse { return SynResult.failure(it) }
+    val defaultness =
+        if (ahead.peek(DefaultPeek) && !ahead.peek2(NotPeek)) {
+            DefaultParse.parse(ahead).getOrElse { return SynResult.failure(it) }
+        } else {
+            null
+        }
+
+    val item: ImplItem =
+        if (ahead.peek(FnPeek) || peekSignature(ahead)) {
+            // Like Rust Syn, preserve body-less methods as verbatim syntax for macro DSLs.
+            parseImplItemFn(input, allowOmittedBody = true).getOrElse { return SynResult.failure(it) }
+                ?: return SynResult.success(ImplItem.Verbatim(between(begin, input)))
+        } else if (ahead.peek(ConstPeek)) {
+            input.advanceTo(ahead)
+            val constToken = ConstParse.parse(input).getOrElse { return SynResult.failure(it) }
+            val lookahead = input.lookahead1()
+            if (!lookahead.peek(IdentPeek) && !lookahead.peek(UnderscorePeek)) {
+                return SynResult.failure(lookahead.error())
+            }
+            val ident = IdentExt.parseAny(input).getOrElse { return SynResult.failure(it) }
+            val generics = parseGenerics(input).getOrElse { return SynResult.failure(it) }
+            val colon = ColonParse.parse(input).getOrElse { return SynResult.failure(it) }
+            val ty = parseTypeFull(input).getOrElse { return SynResult.failure(it) }
+            val value =
+                if (input.peek(EqPeek)) {
+                    val eq = EqParse.parse(input).getOrElse { return SynResult.failure(it) }
+                    val expr = parseExprFull(input).getOrElse { return SynResult.failure(it) }
+                    EqExpr(eq, expr)
+                } else {
+                    null
+                }
+            generics.whereClause =
+                if (input.peek(WherePeek)) parseWhereClause(input).getOrElse { return SynResult.failure(it) } else null
+            val semi = SemiParse.parse(input).getOrElse { return SynResult.failure(it) }
+            return if (value != null && generics.ltToken == null && generics.whereClause == null) {
+                SynResult.success(ImplItem.Const(attrs, vis, defaultness, constToken, ident, generics, colon, ty, value.eqToken, value.expr, semi))
+            } else {
+                SynResult.success(ImplItem.Verbatim(between(begin, input)))
+            }
+        } else if (ahead.peek(SynTypePeek)) {
+            parseImplItemType(begin, input).getOrElse { return SynResult.failure(it) }
+        } else if (vis.isInherited() && defaultness == null &&
+            (ahead.peek(IdentPeek) || ahead.peek(SelfValuePeek) || ahead.peek(SuperPeek) || ahead.peek(CratePeek) || ahead.peek(PathSepPeek))
+        ) {
+            val mac = Macro.parse(input).getOrElse { return SynResult.failure(it) }
+            val semi = if (mac.isBrace()) null else SemiParse.parse(input).getOrElse { return SynResult.failure(it) }
+            ImplItem.Macro(emptyList(), mac, semi)
+        } else {
+            return SynResult.failure(ahead.error("expected impl item"))
+        }
+
+    when (item) {
+        is ImplItem.Const -> item.attrs = attrs + item.attrs
+        is ImplItem.Fn -> item.attrs = attrs + item.attrs
+        is ImplItem.AssocType -> item.attrs = attrs + item.attrs
+        is ImplItem.Macro -> item.attrs = attrs + item.attrs
+        is ImplItem.Verbatim -> Unit
     }
-    if (input.peek(ConstPeek)) {
-        val constToken = ConstParse.parse(input).getOrThrow()
-        val ident = IdentParse.parse(input).getOrThrow()
-        val colon = ColonParse.parse(input).getOrThrow()
-        val ty = parseTypeFull(input).getOrThrow()
-        val eq = EqParse.parse(input).getOrThrow()
-        val expr = parseExprFull(input).getOrThrow()
-        val semi = SemiParse.parse(input).getOrThrow()
-        return SynResult.success(ImplItem.Const(mutableListOf(), Visibility.Inherited, null, constToken, ident, Generics(), colon, ty, eq, expr, semi))
-    }
-    if (peekFlexibleItemType(input, TypeDefaultness.Optional)) {
-        val begin = input.fork()
-        return parseImplItemType(begin, input)
-    }
-    if (input.peek(SemiPeek)) {
-        SemiParse.parse(input).getOrThrow()
-        return SynResult.success(
-            ImplItem.Verbatim(
-                io.github.kotlinmania.procmacro2.TokenStream
-                    .new(),
-            ),
-        )
-    }
-    return SynResult.failure(input.error("expected impl item"))
+    return SynResult.success(item)
 }
 
 private fun parseTraitItemType(begin: ParseStream, input: ParseStream, attrs: List<Attribute>): SynResult<TraitItem> {
@@ -1406,14 +1447,6 @@ private fun parseImplItemType(begin: ParseStream, input: ParseStream): SynResult
             itemType.semiToken,
         ),
     )
-}
-
-private fun peekImplItemFn(input: ParseStream): Boolean {
-    val ahead = input.fork()
-    if (parseOuterAttributes(ahead).isFailure) return false
-    VisibilityParse.parse(ahead).getOrElse { return false }
-    DefaultParse.parse(ahead)
-    return peekSignature(ahead)
 }
 
 private fun parseImplItemFn(

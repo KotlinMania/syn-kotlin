@@ -20,8 +20,17 @@ internal fun parseExprFull(input: ParseStream): SynResult<Expr> =
     ambiguousExprImpl(input, allowStruct = true)
 
 internal fun parseExprWithEarlierBoundaryRuleImpl(input: ParseStream): SynResult<Expr> {
+    val attrs = exprAttrsImpl(input).getOrElse { return SynResult.failure(it) }
     var expr =
         when {
+            startsWithNoneGroup(input) -> {
+                val atom = parseExprGroupImpl(input).getOrElse { return SynResult.failure(it) }
+                if (continueParsingEarlyImpl(atom)) {
+                    trailerHelperImpl(input, atom, allowStruct = true).getOrElse { return SynResult.failure(it) }
+                } else {
+                    atom
+                }
+            }
             input.peek(IfPeek) -> parseExprIf(input).getOrElse { return SynResult.failure(it) }
             input.peek(WhilePeek) -> parseExprWhile(input).getOrElse { return SynResult.failure(it) }
             input.peek(LoopPeek) -> parseExprLoop(input).getOrElse { return SynResult.failure(it) }
@@ -34,22 +43,25 @@ internal fun parseExprWithEarlierBoundaryRuleImpl(input: ParseStream): SynResult
         }
 
     if (continueParsingEarlyImpl(expr)) {
-        return parseExprBinaryImpl(input, expr, allowStruct = true, base = Precedence.MIN)
+        return parseExprBinaryImpl(input, expr.withPrependedAttrs(attrs), allowStruct = true, base = Precedence.MIN)
     }
 
     if ((input.peek(DotPeek) && !input.peek(DotDotPeek)) || input.peek(QuestionPeek)) {
         val trailed = trailerHelperImpl(input, expr, allowStruct = true)
         if (trailed.isFailure) return SynResult.failure((trailed as SynResult.Failure).error)
         expr = trailed.getOrThrow()
-        return parseExprBinaryImpl(input, expr, allowStruct = true, base = Precedence.MIN)
+        return parseExprBinaryImpl(input, expr.withPrependedAttrs(attrs), allowStruct = true, base = Precedence.MIN)
     }
-    return SynResult.success(expr)
+    return SynResult.success(expr.withPrependedAttrs(attrs))
 }
 
 internal fun continueParsingEarlyImpl(expr: Expr): Boolean =
     when (expr) {
+        is Expr.Group -> continueParsingEarlyImpl(expr.expr)
         is Expr.If,
         is Expr.While,
+        is Expr.ForLoop,
+        is Expr.TryBlock,
         is Expr.Loop,
         is Expr.Match,
         is Expr.Unsafe,
@@ -490,7 +502,7 @@ internal fun atomExprImpl(input: ParseStream, allowStruct: Boolean): SynResult<E
         val retToken = ReturnParse.parse(input)
         if (retToken.isFailure) return retToken.asFailure()
         val expr =
-            if (peekExprStart(input, allowStruct = true)) {
+            if (peekExpr(input)) {
                 parseExprFull(input)
             } else {
                 SynResult.success(null)
@@ -502,7 +514,7 @@ internal fun atomExprImpl(input: ParseStream, allowStruct: Boolean): SynResult<E
         val yldToken = YieldParse.parse(input)
         if (yldToken.isFailure) return yldToken.asFailure()
         val expr =
-            if (peekExprStart(input, allowStruct = true)) {
+            if (peekExpr(input)) {
                 parseExprFull(input)
             } else {
                 SynResult.success(null)
@@ -517,7 +529,7 @@ internal fun atomExprImpl(input: ParseStream, allowStruct: Boolean): SynResult<E
         val labelResult = LifetimeParse.parse(input)
         val label = if (labelResult.isSuccess) labelResult.getOrThrow() else null
         val expr =
-            if (peekExprStart(input, allowStruct = true) && (allowStruct || !input.peek(BracePeek))) {
+            if (peekExpr(input) && (allowStruct || !input.peek(BracePeek))) {
                 parseExprFull(input)
             } else {
                 SynResult.success(null)
@@ -536,6 +548,8 @@ internal fun atomExprImpl(input: ParseStream, allowStruct: Boolean): SynResult<E
         return parseExprRange(input, null, allowStruct)
     }
     if (input.peek(MovePeek) ||
+        input.peek(StaticPeek) ||
+        (input.peek(ForPeek) && chooseGenericsOverQpathAfterKeyword(input)) ||
         input.peek(OrPeek) ||
         input.peek(OrOrPeek) ||
         (input.peek(ConstPeek) && !input.peek2(BracePeek)) ||
@@ -545,6 +559,7 @@ internal fun atomExprImpl(input: ParseStream, allowStruct: Boolean): SynResult<E
     }
     if (input.peek(IdentPeek) ||
         input.peek(PathSepPeek) ||
+        input.peek(LtPeek) ||
         input.peek(SelfValuePeek) ||
         input.peek(SelfTypePeek) ||
         input.peek(SuperPeek) ||
@@ -557,40 +572,6 @@ internal fun atomExprImpl(input: ParseStream, allowStruct: Boolean): SynResult<E
     }
     return SynResult.failure(input.error("expected an expression"))
 }
-
-private fun peekExprStart(input: ParseStream, allowStruct: Boolean): Boolean =
-    input.peek(LitPeek) ||
-        (input.peek(PoundPeek) && !input.peek2(NotPeek)) ||
-        input.peek(IfPeek) ||
-        input.peek(WhilePeek) ||
-        input.peek(LoopPeek) ||
-        input.peek(MatchPeek) ||
-        (input.peek(AsyncPeek) && (input.peek2(BracePeek) || input.peek2(OrPeek) || input.peek2(OrOrPeek) || input.peek2(MovePeek))) ||
-        (input.peek(UnsafePeek) && input.peek2(BracePeek)) ||
-        input.peek(ConstPeek) ||
-        (allowStruct && input.peek(BracePeek)) ||
-        input.peek(ParenPeek) ||
-        input.peek(BracketPeek) ||
-        input.peek(LifetimePeek) ||
-        input.peek(ReturnPeek) ||
-        input.peek(LetPeek) ||
-        input.peek(BreakPeek) ||
-        input.peek(ContinuePeek) ||
-        input.peek(DotDotPeek) ||
-        input.peek(DotDotEqPeek) ||
-        input.peek(MovePeek) ||
-        input.peek(OrPeek) ||
-        input.peek(OrOrPeek) ||
-        input.peek(AndPeek) ||
-        input.peek(NotPeek) ||
-        input.peek(StarPeek) ||
-        input.peek(MinusPeek) ||
-        input.peek(IdentPeek) ||
-        input.peek(PathSepPeek) ||
-        input.peek(SelfValuePeek) ||
-        input.peek(SelfTypePeek) ||
-        input.peek(SuperPeek) ||
-        input.peek(CratePeek)
 
 internal fun parseExprLetImpl(input: ParseStream, allowStruct: Boolean): SynResult<Expr.Let> {
     val letToken = LetParse.parse(input)
@@ -648,42 +629,8 @@ private fun parseLabeledLoopOrWhile(input: ParseStream): SynResult<Expr> {
 }
 
 internal fun pathOrMacroOrStructImpl(input: ParseStream, allowStruct: Boolean): SynResult<Expr> {
-    val qpathResult = qpath(input, exprStyle = true)
-    if (qpathResult.isFailure) return qpathResult.asFailure()
-    val (qself, path) = qpathResult.getOrThrow()
-    if (qself == null && input.peek(NotPeek) && !input.peek(NePeek) && path.isModStyle()) {
-        val bangResult = NotParse.parse(input)
-        if (bangResult.isFailure) return bangResult.asFailure()
-        val delimResult = parseDelimiter(input)
-        if (delimResult.isFailure) return delimResult.asFailure()
-        val delimPair = delimResult.getOrThrow()
-        return SynResult.success(
-            Expr.Macro(
-                mutableListOf(),
-                Macro(path, bangResult.getOrThrow(), delimPair.first, delimPair.second),
-            ),
-        )
-    }
-    if (allowStruct && input.peek(BracePeek)) {
-        val braceResult = braced(input)
-        if (braceResult.isFailure) return braceResult.asFailure()
-        val bracesVal = braceResult.getOrThrow()
-        val brace = bracesVal.token
-        val content = bracesVal.content
-        val fields = FieldValueList()
-        while (!content.isEmpty()) {
-            val fieldResult = parseFieldValue(content)
-            if (fieldResult.isFailure) return fieldResult.asFailure()
-            fields.pushValue(fieldResult.getOrThrow())
-            if (content.isEmpty()) break
-            val commaResult = CommaParse.parse(content)
-            if (commaResult.isFailure) break
-            fields.pushPunct(commaResult.getOrThrow())
-        }
-        content.finishChildBuffer()
-        return SynResult.success(Expr.Struct(mutableListOf(), qself, path, brace, fields, null, null))
-    }
-    return SynResult.success(Expr.Path(mutableListOf(), qself, path))
+    val (qself, path) = qpath(input, exprStyle = true).getOrElse { return SynResult.failure(it) }
+    return restOfPathOrMacroOrStruct(qself, path, input, allowStruct)
 }
 
 internal fun parseFieldValueImpl(input: ParseStream): SynResult<FieldValue> {
@@ -858,11 +805,12 @@ internal fun parseExprWhile(input: ParseStream, label: Label? = null): SynResult
     val bracesVal = braceResult.getOrThrow()
     val brace = bracesVal.token
     val content = bracesVal.content
+    val attrs = Attribute.parseInner(content).getOrElse { return SynResult.failure(it) }
     val stmtsResult = parseWithin(content)
     if (stmtsResult.isFailure) return stmtsResult.asFailure()
     val stmts = stmtsResult.getOrThrow()
     content.finishChildBuffer()
-    return SynResult.success(Expr.While(mutableListOf(), label, whileToken, cond.getOrThrow(), Block(brace, stmts)))
+    return SynResult.success(Expr.While(attrs, label, whileToken, cond.getOrThrow(), Block(brace, stmts)))
 }
 
 internal fun parseExprLoop(input: ParseStream, label: Label? = null): SynResult<Expr> {
@@ -872,11 +820,12 @@ internal fun parseExprLoop(input: ParseStream, label: Label? = null): SynResult<
     val bracesVal = braceResult.getOrThrow()
     val brace = bracesVal.token
     val content = bracesVal.content
+    val attrs = Attribute.parseInner(content).getOrElse { return SynResult.failure(it) }
     val stmtsResult = parseWithin(content)
     if (stmtsResult.isFailure) return stmtsResult.asFailure()
     val stmts = stmtsResult.getOrThrow()
     content.finishChildBuffer()
-    return SynResult.success(Expr.Loop(mutableListOf(), label, loopToken, Block(brace, stmts)))
+    return SynResult.success(Expr.Loop(attrs, label, loopToken, Block(brace, stmts)))
 }
 
 private fun parseExprMatch(input: ParseStream): SynResult<Expr> {
@@ -888,9 +837,10 @@ private fun parseExprMatch(input: ParseStream): SynResult<Expr> {
     val bracesVal = braceResult.getOrThrow()
     val brace = bracesVal.token
     val content = bracesVal.content
+    val attrs = Attribute.parseInner(content).getOrElse { return SynResult.failure(it) }
     val arms = parseMultipleArms(content).getOrElse { return SynResult.failure(it) }
     content.finishChildBuffer()
-    return SynResult.success(Expr.Match(mutableListOf(), matchToken, scrutinee.getOrThrow(), brace, arms))
+    return SynResult.success(Expr.Match(attrs, matchToken, scrutinee.getOrThrow(), brace, arms))
 }
 
 private fun parseExprAsync(input: ParseStream): SynResult<Expr> {
@@ -916,11 +866,12 @@ private fun parseExprUnsafe(input: ParseStream): SynResult<Expr> {
     val bracesVal = braceResult.getOrThrow()
     val brace = bracesVal.token
     val content = bracesVal.content
+    val attrs = Attribute.parseInner(content).getOrElse { return SynResult.failure(it) }
     val stmtsResult = parseWithin(content)
     if (stmtsResult.isFailure) return stmtsResult.asFailure()
     val stmts = stmtsResult.getOrThrow()
     content.finishChildBuffer()
-    return SynResult.success(Expr.Unsafe(mutableListOf(), unsafeToken, Block(brace, stmts)))
+    return SynResult.success(Expr.Unsafe(attrs, unsafeToken, Block(brace, stmts)))
 }
 
 private fun parseExprConst(input: ParseStream): SynResult<Expr> {
@@ -930,11 +881,12 @@ private fun parseExprConst(input: ParseStream): SynResult<Expr> {
     val bracesVal = braceResult.getOrThrow()
     val brace = bracesVal.token
     val content = bracesVal.content
+    val attrs = Attribute.parseInner(content).getOrElse { return SynResult.failure(it) }
     val stmtsResult = parseWithin(content)
     if (stmtsResult.isFailure) return stmtsResult.asFailure()
     val stmts = stmtsResult.getOrThrow()
     content.finishChildBuffer()
-    return SynResult.success(Expr.Const(mutableListOf(), constToken, Block(brace, stmts)))
+    return SynResult.success(Expr.Const(attrs, constToken, Block(brace, stmts)))
 }
 
 internal fun parseExprBlock(input: ParseStream): SynResult<Expr> {
@@ -943,63 +895,16 @@ internal fun parseExprBlock(input: ParseStream): SynResult<Expr> {
     val bracesVal = braceResult.getOrThrow()
     val brace = bracesVal.token
     val content = bracesVal.content
+    val attrs = Attribute.parseInner(content).getOrElse { return SynResult.failure(it) }
     val stmtsResult = parseWithin(content)
     if (stmtsResult.isFailure) return stmtsResult.asFailure()
     val stmts = stmtsResult.getOrThrow()
     content.finishChildBuffer()
-    return SynResult.success(Expr.BlockExpr(mutableListOf(), null, Block(brace, stmts)))
+    return SynResult.success(Expr.BlockExpr(attrs, null, Block(brace, stmts)))
 }
 
-private fun parseExprClosure(input: ParseStream, allowStruct: Boolean): SynResult<Expr> {
-    val constnessResult = ConstParse.parse(input)
-    val constness = if (constnessResult.isSuccess) constnessResult.getOrThrow() else null
-    val asyncnessResult = AsyncParse.parse(input)
-    val asyncness = if (asyncnessResult.isSuccess) asyncnessResult.getOrThrow() else null
-    val moveResult = MoveParse.parse(input)
-    val capture = if (moveResult.isSuccess) moveResult.getOrThrow() else null
-    val or1Result = parseClosureOr(input)
-    if (or1Result.isFailure) return or1Result.asFailure()
-    val inputs = PatList()
-    while (!input.isEmpty() && !input.peek(OrPeek)) {
-        val patResult = parsePatFull(input)
-        if (patResult.isFailure) return patResult.asFailure()
-        inputs.pushValue(patResult.getOrThrow())
-        if (input.isEmpty()) break
-        val commaResult = CommaParse.parse(input)
-        if (commaResult.isFailure) break
-        inputs.pushPunct(commaResult.getOrThrow())
-    }
-    val or2Result = parseClosureOr(input)
-    if (or2Result.isFailure) return or2Result.asFailure()
-    var output: ReturnType = ReturnType.Default
-    if (input.peek(RArrowPeek)) {
-        val arrowResult = RArrowParse.parse(input)
-        if (arrowResult.isFailure) return arrowResult.asFailure()
-        val tyResult = parseTypeFull(input)
-        if (tyResult.isFailure) return tyResult.asFailure()
-        output = ReturnType.TypeReturn(arrowResult.getOrThrow(), tyResult.getOrThrow())
-        val bodyResult = parseExprBlock(input)
-        if (bodyResult.isFailure) return bodyResult
-        return SynResult.success(Expr.Closure(mutableListOf(), constness, asyncness, capture, or1Result.getOrThrow(), inputs, or2Result.getOrThrow(), output, bodyResult.getOrThrow()))
-    }
-    val bodyResult = ambiguousExprImpl(input, allowStruct)
-    if (bodyResult.isFailure) return bodyResult
-    return SynResult.success(Expr.Closure(mutableListOf(), constness, asyncness, capture, or1Result.getOrThrow(), inputs, or2Result.getOrThrow(), output, bodyResult.getOrThrow()))
-}
-
-private fun parseClosureOr(input: ParseStream): SynResult<io.github.kotlinmania.syn.token.Or> =
-    input.step { cursor ->
-        val (punct, rest) =
-            cursor.punct()
-                ?: return@step SynResult.failure(cursor.error("expected `|`"))
-        if (punct.asChar() != '|') {
-            return@step SynResult.failure(cursor.error("expected `|`"))
-        }
-        SynResult.success(
-            io.github.kotlinmania.syn.token.Or
-                .from(punct.span()) to rest,
-        )
-    }
+private fun parseExprClosure(input: ParseStream, allowStruct: Boolean): SynResult<Expr> =
+    exprClosure(input, allowStruct)
 
 internal fun parseStmtFull(input: ParseStream): SynResult<Stmt> {
     // Parse outer attributes that may precede any statement kind.
@@ -1020,7 +925,7 @@ internal fun parseStmtFull(input: ParseStream): SynResult<Stmt> {
                 val eq = EqParse.parse(input).getOrThrow()
                 val e = parseExprFull(input)
                 if (e.isFailure) {
-                    null
+                    return e.asFailure()
                 } else {
                     val diverge =
                         if (!Classify.exprTrailingBrace(e.getOrThrow()) && input.peek(ElsePeek)) {

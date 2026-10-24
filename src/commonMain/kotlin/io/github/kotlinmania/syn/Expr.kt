@@ -9,855 +9,8 @@ import io.github.kotlinmania.quote.append
 import io.github.kotlinmania.quote.toTokens
 import kotlin.jvm.JvmInline
 
-private enum class ExprPosition {
-    LeftOperand,
-    RightOperand,
-    PostfixBase,
-    PrefixOperand,
-    Condition,
-}
-
-private fun Expr.toTokensWithParens(
-    tokens: TokenStream,
-    parentPrecedence: Precedence,
-    position: ExprPosition,
-) {
-    var needsParens = needsParens(parentPrecedence, position)
-    if (needsParens) {
-        io.github.kotlinmania.syn.token.Paren.default().surround(tokens) { inner ->
-            toTokens(inner)
-        }
-    } else if (position == ExprPosition.Condition) {
-        toTokensInCondition(tokens)
-    } else {
-        toTokens(tokens)
-    }
-}
-
 internal fun Expr.toTokensAsStmt(tokens: TokenStream) {
-    if (this is Expr.Let) {
-        io.github.kotlinmania.syn.token.Paren.default().surround(tokens) { inner ->
-            toTokens(inner)
-        }
-    } else {
-        toTokens(tokens)
-    }
-}
-
-private fun Expr.toTokensInCondition(tokens: TokenStream) {
-    when (this) {
-        is Expr.Assign -> toTokensAsCondition(tokens)
-        is Expr.Await -> toTokensAsCondition(tokens)
-        is Expr.Binary -> toTokensAsCondition(tokens)
-        is Expr.Break -> toTokensAsCondition(tokens)
-        is Expr.Call -> toTokensAsCondition(tokens)
-        is Expr.Closure -> toTokensAsCondition(tokens)
-        is Expr.Field -> toTokensAsCondition(tokens)
-        is Expr.Index -> toTokensAsCondition(tokens)
-        is Expr.MethodCall -> toTokensAsCondition(tokens)
-        is Expr.Let -> toTokensAsCondition(tokens)
-        is Expr.RawAddr -> toTokensAsCondition(tokens)
-        is Expr.Reference -> toTokensAsCondition(tokens)
-        is Expr.Range -> toTokensAsCondition(tokens)
-        is Expr.Return -> toTokensAsCondition(tokens)
-        is Expr.Try -> toTokensAsCondition(tokens)
-        is Expr.Unary -> toTokensAsCondition(tokens)
-        is Expr.Yield -> toTokensAsCondition(tokens)
-        else -> toTokens(tokens)
-    }
-}
-
-private fun Expr.toTokensAsRightmostCondition(tokens: TokenStream) {
-    if (this is Expr.BlockExpr && attrs.isEmpty() && label == null) {
-        io.github.kotlinmania.syn.token.Paren.default().surround(tokens) { inner ->
-            toTokens(inner)
-        }
-    } else {
-        toTokensWithParens(tokens, Precedence.MIN, ExprPosition.Condition)
-    }
-}
-
-private fun Expr.toTokensAsRightmostConditionOperand(
-    tokens: TokenStream,
-    parentPrecedence: Precedence,
-    position: ExprPosition,
-) {
-    if (needsParens(parentPrecedence, position)) {
-        io.github.kotlinmania.syn.token.Paren.default().surround(tokens) { inner ->
-            toTokens(inner)
-        }
-    } else {
-        toTokensAsRightmostCondition(tokens)
-    }
-}
-
-private fun Expr.toTokensAsConditionPostfixBase(tokens: TokenStream) {
-    if (Precedence.of(this) < Precedence.Unambiguous ||
-        this is Expr.Struct ||
-        this is Expr.BlockExpr &&
-        attrs.isEmpty() &&
-        label == null ||
-        this is Expr.Break &&
-        expr == null ||
-        this is Expr.Return &&
-        expr == null ||
-        this is Expr.Yield &&
-        expr == null
-    ) {
-        io.github.kotlinmania.syn.token.Paren.default().surround(tokens) { inner ->
-            toTokens(inner)
-        }
-    } else {
-        toTokensInCondition(tokens)
-    }
-}
-
-private fun Expr.toTokensAsConditionJumpValue(tokens: TokenStream) {
-    if (needsParensAsConditionJumpValue()) {
-        io.github.kotlinmania.syn.token.Paren.default().surround(tokens) { inner ->
-            toTokens(inner)
-        }
-    } else {
-        toTokensAsConditionTail(tokens)
-    }
-}
-
-private fun Expr.toTokensAsConditionBreakValue(tokens: TokenStream) {
-    if (needsParensAsConditionJumpValue()) {
-        io.github.kotlinmania.syn.token.Paren.default().surround(tokens) { inner ->
-            toTokens(inner)
-        }
-    } else {
-        toTokensAsConditionTail(tokens)
-    }
-}
-
-private fun Expr.toTokensAsOptionalOperand(tokens: TokenStream) {
-    when (this) {
-        is Expr.Await -> toTokensAsOptionalOperand(tokens)
-        is Expr.Call -> toTokensAsOptionalOperand(tokens)
-        is Expr.Closure -> toTokensAsOptionalOperand(tokens)
-        is Expr.Field -> toTokensAsOptionalOperand(tokens)
-        is Expr.Index -> toTokensAsOptionalOperand(tokens)
-        is Expr.MethodCall -> toTokensAsOptionalOperand(tokens)
-        is Expr.Try -> toTokensAsOptionalOperand(tokens)
-        else -> toTokens(tokens)
-    }
-}
-
-private fun Expr.toTokensAsOptionalOperandPostfixBase(tokens: TokenStream) {
-    if (Precedence.of(this) < Precedence.Unambiguous ||
-        this is Expr.BlockExpr &&
-        attrs.isEmpty() &&
-        label == null ||
-        this is Expr.Break &&
-        expr == null ||
-        this is Expr.Return &&
-        expr == null ||
-        this is Expr.Yield &&
-        expr == null
-    ) {
-        io.github.kotlinmania.syn.token.Paren.default().surround(tokens) { inner ->
-            toTokens(inner)
-        }
-    } else {
-        toTokens(tokens)
-    }
-}
-
-private fun Expr.toTokensAsConditionTail(tokens: TokenStream) {
-    if (this is Expr.Break &&
-        expr == null ||
-        this is Expr.Path ||
-        this is Expr.Range &&
-        end == null ||
-        this is Expr.Return &&
-        expr == null ||
-        this is Expr.Yield &&
-        expr == null
-    ) {
-        io.github.kotlinmania.syn.token.Paren.default().surround(tokens) { inner ->
-            toTokens(inner)
-        }
-        return
-    }
-
-    when (this) {
-        is Expr.Assign -> toTokensAsConditionTail(tokens)
-        is Expr.Await -> toTokensAsOptionalOperand(tokens)
-        is Expr.Binary -> toTokensAsConditionTail(tokens)
-        is Expr.Break -> toTokensAsConditionTail(tokens)
-        is Expr.Call -> toTokensAsOptionalOperand(tokens)
-        is Expr.Closure -> toTokensAsConditionTail(tokens)
-        is Expr.Field -> toTokensAsOptionalOperand(tokens)
-        is Expr.Index -> toTokensAsOptionalOperand(tokens)
-        is Expr.Let -> toTokensAsConditionTail(tokens)
-        is Expr.MethodCall -> toTokensAsOptionalOperand(tokens)
-        is Expr.Range -> toTokensAsConditionTail(tokens)
-        is Expr.RawAddr -> toTokensAsConditionTail(tokens)
-        is Expr.Reference -> toTokensAsConditionTail(tokens)
-        is Expr.Return -> toTokensAsConditionTail(tokens)
-        is Expr.Try -> toTokensAsOptionalOperand(tokens)
-        is Expr.Unary -> toTokensAsConditionTail(tokens)
-        is Expr.Yield -> toTokensAsConditionTail(tokens)
-        else -> toTokens(tokens)
-    }
-}
-
-private fun Expr.toTokensAsConditionTailOperand(
-    tokens: TokenStream,
-    parentPrecedence: Precedence,
-    position: ExprPosition,
-) {
-    if (needsParens(parentPrecedence, position)) {
-        io.github.kotlinmania.syn.token.Paren.default().surround(tokens) { inner ->
-            toTokens(inner)
-        }
-    } else {
-        toTokensAsConditionTail(tokens)
-    }
-}
-
-private fun Expr.toTokensAsCallee(tokens: TokenStream) {
-    if (this is Expr.Field && member is Member.Named) {
-        io.github.kotlinmania.syn.token.Paren.default().surround(tokens) { inner ->
-            toTokens(inner)
-        }
-    } else {
-        toTokensWithParens(tokens, Precedence.Unambiguous, ExprPosition.PostfixBase)
-    }
-}
-
-private fun Expr.toTokensAsConditionCallee(tokens: TokenStream) {
-    if (this is Expr.Field && member is Member.Named) {
-        io.github.kotlinmania.syn.token.Paren.default().surround(tokens) { inner ->
-            toTokens(inner)
-        }
-    } else {
-        toTokensAsConditionPostfixBase(tokens)
-    }
-}
-
-private fun Expr.toTokensAsOptionalOperandCallee(tokens: TokenStream) {
-    if (this is Expr.Field && member is Member.Named) {
-        io.github.kotlinmania.syn.token.Paren.default().surround(tokens) { inner ->
-            toTokens(inner)
-        }
-    } else {
-        toTokensAsOptionalOperandPostfixBase(tokens)
-    }
-}
-
-private fun Expr.toTokensAsRangeStart(tokens: TokenStream) {
-    if (Precedence.of(this).ordinal <= Precedence.Range.ordinal ||
-        endsWithRange() ||
-        this !is Expr.Binary &&
-        rightEdgeNeedsGroupBeforeRange()
-    ) {
-        io.github.kotlinmania.syn.token.Paren.default().surround(tokens) { inner ->
-            toTokens(inner)
-        }
-    } else if (this is Expr.Binary && attrs.isEmpty()) {
-        toTokensAsRangeStart(tokens)
-    } else {
-        toTokensWithParens(tokens, Precedence.Range, ExprPosition.LeftOperand)
-    }
-}
-
-private fun Expr.needsParensAsConditionJumpValue(): Boolean {
-    if (canConsumeTrailingBraceAsStruct()) return true
-    return when (this) {
-        is Expr.Assign -> {
-            true
-        }
-
-        is Expr.Binary -> {
-            true
-        }
-
-        is Expr.BlockExpr -> {
-            attrs.isEmpty() && label == null
-        }
-
-        is Expr.Break -> {
-            val e = expr
-            e !is Expr.BlockExpr || e.attrs.isNotEmpty() || label != null
-        }
-
-        is Expr.Let -> {
-            true
-        }
-
-        is Expr.Path -> {
-            true
-        }
-
-        is Expr.Range -> {
-            val e = end
-            e == null || e.canConsumeTrailingBraceAsStruct()
-        }
-
-        is Expr.Return -> {
-            expr == null
-        }
-
-        is Expr.Yield -> {
-            expr == null
-        }
-
-        else -> {
-            false
-        }
-    }
-}
-
-private fun Expr.canConsumeTrailingBraceAsStruct(): Boolean =
-    when (this) {
-        is Expr.Assign -> right.canConsumeTrailingBraceAsStruct()
-        is Expr.Binary -> right.canConsumeTrailingBraceAsStruct()
-        is Expr.Break -> expr?.canConsumeTrailingBraceAsStruct() == true
-        is Expr.Cast -> false
-        is Expr.Path -> true
-        is Expr.RawAddr -> expr.canConsumeTrailingBraceAsStruct()
-        is Expr.Reference -> expr.canConsumeTrailingBraceAsStruct()
-        is Expr.Range -> end?.canConsumeTrailingBraceAsStruct() == true
-        is Expr.Return -> expr?.canConsumeTrailingBraceAsStruct() == true
-        is Expr.Try -> expr.canConsumeTrailingBraceAsStruct()
-        is Expr.Unary -> expr.canConsumeTrailingBraceAsStruct()
-        is Expr.Yield -> expr?.canConsumeTrailingBraceAsStruct() == true
-        else -> false
-    }
-
-private fun Expr.Await.toTokensAsCondition(tokens: TokenStream) {
-    for (attr in attrs) attr.toTokens(tokens)
-    base.toTokensAsConditionPostfixBase(tokens)
-    dotToken.toTokens(tokens)
-    awaitToken.toTokens(tokens)
-}
-
-private fun Expr.Assign.toTokensAsCondition(tokens: TokenStream) {
-    for (attr in attrs) attr.toTokens(tokens)
-    var emit = { target: TokenStream ->
-        left.toTokensWithParens(target, Precedence.Assign, ExprPosition.LeftOperand)
-        eqToken.toTokens(target)
-        right.toTokensAsRightmostConditionOperand(target, Precedence.Assign, ExprPosition.RightOperand)
-    }
-    if (attrs.isNotEmpty()) {
-        io.github.kotlinmania.syn.token.Paren
-            .default()
-            .surround(tokens, emit)
-    } else {
-        emit(tokens)
-    }
-}
-
-private fun Expr.Assign.toTokensAsConditionTail(tokens: TokenStream) {
-    for (attr in attrs) attr.toTokens(tokens)
-    var emit = { target: TokenStream ->
-        left.toTokensWithParens(target, Precedence.Assign, ExprPosition.LeftOperand)
-        eqToken.toTokens(target)
-        right.toTokensAsConditionTailOperand(target, Precedence.Assign, ExprPosition.RightOperand)
-    }
-    if (attrs.isNotEmpty()) {
-        io.github.kotlinmania.syn.token.Paren
-            .default()
-            .surround(tokens, emit)
-    } else {
-        emit(tokens)
-    }
-}
-
-private fun Expr.Break.toTokensAsCondition(tokens: TokenStream) {
-    for (attr in attrs) attr.toTokens(tokens)
-    breakToken.toTokens(tokens)
-    label?.toTokens(tokens)
-    var e = expr
-    if (e != null) {
-        if (label == null && exprLeadingLabel(e)) {
-            io.github.kotlinmania.syn.token.Paren.default().surround(tokens) { inner ->
-                e.toTokens(inner)
-            }
-        } else {
-            e.toTokensAsConditionBreakValue(tokens)
-        }
-    }
-}
-
-private fun Expr.Break.toTokensAsConditionTail(tokens: TokenStream) {
-    for (attr in attrs) attr.toTokens(tokens)
-    breakToken.toTokens(tokens)
-    label?.toTokens(tokens)
-    var e = expr
-    if (e != null) {
-        if (label == null && exprLeadingLabel(e)) {
-            io.github.kotlinmania.syn.token.Paren.default().surround(tokens) { inner ->
-                e.toTokens(inner)
-            }
-        } else {
-            e.toTokensAsConditionTail(tokens)
-        }
-    }
-}
-
-private fun Expr.Binary.toTokensAsCondition(tokens: TokenStream) {
-    for (attr in attrs) attr.toTokens(tokens)
-    var emit = { target: TokenStream ->
-        var precedence = Precedence.ofBinop(op)
-        if (left.isValueLessJump() && binOpCanBeginExpr(op)) {
-            io.github.kotlinmania.syn.token.Paren.default().surround(target) { inner ->
-                left.toTokens(inner)
-            }
-        } else if (left.endsWithRange()) {
-            io.github.kotlinmania.syn.token.Paren.default().surround(target) { inner ->
-                left.toTokens(inner)
-            }
-        } else {
-            left.toTokensWithParens(target, precedence, ExprPosition.LeftOperand)
-        }
-        op.toTokens(target)
-        right.toTokensAsRightmostConditionOperand(target, precedence, ExprPosition.RightOperand)
-    }
-    if (attrs.isNotEmpty()) {
-        io.github.kotlinmania.syn.token.Paren
-            .default()
-            .surround(tokens, emit)
-    } else {
-        emit(tokens)
-    }
-}
-
-private fun Expr.Binary.toTokensAsConditionTail(tokens: TokenStream) {
-    for (attr in attrs) attr.toTokens(tokens)
-    var emit = { target: TokenStream ->
-        var precedence = Precedence.ofBinop(op)
-        if (left.isValueLessJump() && binOpCanBeginExpr(op)) {
-            io.github.kotlinmania.syn.token.Paren.default().surround(target) { inner ->
-                left.toTokens(inner)
-            }
-        } else if (left.endsWithRange()) {
-            io.github.kotlinmania.syn.token.Paren.default().surround(target) { inner ->
-                left.toTokens(inner)
-            }
-        } else {
-            left.toTokensWithParens(target, precedence, ExprPosition.LeftOperand)
-        }
-        op.toTokens(target)
-        right.toTokensAsConditionTailOperand(target, precedence, ExprPosition.RightOperand)
-    }
-    if (attrs.isNotEmpty()) {
-        io.github.kotlinmania.syn.token.Paren
-            .default()
-            .surround(tokens, emit)
-    } else {
-        emit(tokens)
-    }
-}
-
-private fun Expr.Call.toTokensAsCondition(tokens: TokenStream) {
-    for (attr in attrs) attr.toTokens(tokens)
-    func.toTokensAsConditionCallee(tokens)
-    parenToken.surround(tokens) { inner ->
-        args.toTokens(inner)
-    }
-}
-
-private fun Expr.Closure.toTokensAsCondition(tokens: TokenStream) {
-    for (attr in attrs) attr.toTokens(tokens)
-    constness?.toTokens(tokens)
-    asyncness?.toTokens(tokens)
-    capture?.toTokens(tokens)
-    or1Token.toTokens(tokens)
-    inputs.toTokens(tokens)
-    or2Token.toTokens(tokens)
-    output.toTokens(tokens)
-    body.toTokensWithParens(tokens, Precedence.MIN, ExprPosition.Condition)
-}
-
-private fun Expr.Closure.toTokensAsConditionTail(tokens: TokenStream) {
-    for (attr in attrs) attr.toTokens(tokens)
-    constness?.toTokens(tokens)
-    asyncness?.toTokens(tokens)
-    capture?.toTokens(tokens)
-    or1Token.toTokens(tokens)
-    inputs.toTokens(tokens)
-    or2Token.toTokens(tokens)
-    output.toTokens(tokens)
-    body.toTokensAsConditionTail(tokens)
-}
-
-private fun Expr.Closure.toTokensAsOptionalOperand(tokens: TokenStream) {
-    toTokensAsConditionTail(tokens)
-}
-
-private fun Expr.Await.toTokensAsOptionalOperand(tokens: TokenStream) {
-    for (attr in attrs) attr.toTokens(tokens)
-    base.toTokensAsOptionalOperandPostfixBase(tokens)
-    dotToken.toTokens(tokens)
-    awaitToken.toTokens(tokens)
-}
-
-private fun Expr.Call.toTokensAsOptionalOperand(tokens: TokenStream) {
-    for (attr in attrs) attr.toTokens(tokens)
-    func.toTokensAsOptionalOperandCallee(tokens)
-    parenToken.surround(tokens) { inner ->
-        args.toTokens(inner)
-    }
-}
-
-private fun Expr.Field.toTokensAsCondition(tokens: TokenStream) {
-    for (attr in attrs) attr.toTokens(tokens)
-    base.toTokensAsConditionPostfixBase(tokens)
-    dotToken.toTokens(tokens)
-    member.toTokens(tokens)
-}
-
-private fun Expr.Field.toTokensAsOptionalOperand(tokens: TokenStream) {
-    for (attr in attrs) attr.toTokens(tokens)
-    base.toTokensAsOptionalOperandPostfixBase(tokens)
-    dotToken.toTokens(tokens)
-    member.toTokens(tokens)
-}
-
-private fun Expr.Index.toTokensAsCondition(tokens: TokenStream) {
-    for (attr in attrs) attr.toTokens(tokens)
-    expr.toTokensAsConditionPostfixBase(tokens)
-    bracketToken.surround(tokens) { inner -> index.toTokens(inner) }
-}
-
-private fun Expr.Let.toTokensAsCondition(tokens: TokenStream) {
-    for (attr in attrs) attr.toTokens(tokens)
-    letToken.toTokens(tokens)
-    pat.toTokens(tokens)
-    eqToken.toTokens(tokens)
-    expr.toTokensAsRightmostConditionOperand(tokens, Precedence.Let, ExprPosition.RightOperand)
-}
-
-private fun Expr.Let.toTokensAsConditionTail(tokens: TokenStream) {
-    for (attr in attrs) attr.toTokens(tokens)
-    letToken.toTokens(tokens)
-    pat.toTokens(tokens)
-    eqToken.toTokens(tokens)
-    expr.toTokensAsConditionTailOperand(tokens, Precedence.Let, ExprPosition.RightOperand)
-}
-
-private fun Expr.Index.toTokensAsOptionalOperand(tokens: TokenStream) {
-    for (attr in attrs) attr.toTokens(tokens)
-    expr.toTokensAsOptionalOperandPostfixBase(tokens)
-    bracketToken.surround(tokens) { inner -> index.toTokens(inner) }
-}
-
-private fun Expr.MethodCall.toTokensAsCondition(tokens: TokenStream) {
-    for (attr in attrs) attr.toTokens(tokens)
-    receiver.toTokensAsConditionPostfixBase(tokens)
-    dotToken.toTokens(tokens)
-    method.toTokens(tokens)
-    turbofish?.toTokens(tokens)
-    parenToken.surround(tokens) { inner ->
-        args.toTokens(inner)
-    }
-}
-
-private fun Expr.MethodCall.toTokensAsOptionalOperand(tokens: TokenStream) {
-    for (attr in attrs) attr.toTokens(tokens)
-    receiver.toTokensAsOptionalOperandPostfixBase(tokens)
-    dotToken.toTokens(tokens)
-    method.toTokens(tokens)
-    turbofish?.toTokens(tokens)
-    parenToken.surround(tokens) { inner ->
-        args.toTokens(inner)
-    }
-}
-
-private fun Expr.Return.toTokensAsCondition(tokens: TokenStream) {
-    for (attr in attrs) attr.toTokens(tokens)
-    returnToken.toTokens(tokens)
-    expr?.toTokensAsConditionJumpValue(tokens)
-}
-
-private fun Expr.Range.toTokensAsCondition(tokens: TokenStream) {
-    for (attr in attrs) attr.toTokens(tokens)
-    start?.toTokensAsRangeStart(tokens)
-    limits.toTokens(tokens)
-    end?.toTokensAsRightmostConditionOperand(tokens, Precedence.Range, ExprPosition.RightOperand)
-}
-
-private fun Expr.Range.toTokensAsConditionTail(tokens: TokenStream) {
-    for (attr in attrs) attr.toTokens(tokens)
-    start?.toTokensAsRangeStart(tokens)
-    limits.toTokens(tokens)
-    end?.toTokensAsConditionTailOperand(tokens, Precedence.Range, ExprPosition.RightOperand)
-}
-
-private fun Expr.RawAddr.toTokensAsCondition(tokens: TokenStream) {
-    for (attr in attrs) attr.toTokens(tokens)
-    andToken.toTokens(tokens)
-    raw.toTokens(tokens)
-    mutability.toTokens(tokens)
-    expr.toTokensAsRightmostConditionOperand(tokens, Precedence.Prefix, ExprPosition.PrefixOperand)
-}
-
-private fun Expr.RawAddr.toTokensAsConditionTail(tokens: TokenStream) {
-    for (attr in attrs) attr.toTokens(tokens)
-    andToken.toTokens(tokens)
-    raw.toTokens(tokens)
-    mutability.toTokens(tokens)
-    expr.toTokensAsConditionTailOperand(tokens, Precedence.Prefix, ExprPosition.PrefixOperand)
-}
-
-private fun Expr.Reference.toTokensAsCondition(tokens: TokenStream) {
-    for (attr in attrs) attr.toTokens(tokens)
-    andToken.toTokens(tokens)
-    mutability?.toTokens(tokens)
-    expr.toTokensAsRightmostConditionOperand(tokens, Precedence.Prefix, ExprPosition.PrefixOperand)
-}
-
-private fun Expr.Reference.toTokensAsConditionTail(tokens: TokenStream) {
-    for (attr in attrs) attr.toTokens(tokens)
-    andToken.toTokens(tokens)
-    mutability?.toTokens(tokens)
-    expr.toTokensAsConditionTailOperand(tokens, Precedence.Prefix, ExprPosition.PrefixOperand)
-}
-
-private fun Expr.Try.toTokensAsCondition(tokens: TokenStream) {
-    for (attr in attrs) attr.toTokens(tokens)
-    expr.toTokensAsConditionPostfixBase(tokens)
-    questionToken.toTokens(tokens)
-}
-
-private fun Expr.Try.toTokensAsOptionalOperand(tokens: TokenStream) {
-    for (attr in attrs) attr.toTokens(tokens)
-    expr.toTokensAsOptionalOperandPostfixBase(tokens)
-    questionToken.toTokens(tokens)
-}
-
-private fun Expr.Yield.toTokensAsCondition(tokens: TokenStream) {
-    for (attr in attrs) attr.toTokens(tokens)
-    yieldToken.toTokens(tokens)
-    expr?.toTokensAsConditionJumpValue(tokens)
-}
-
-private fun Expr.Return.toTokensAsConditionTail(tokens: TokenStream) {
-    for (attr in attrs) attr.toTokens(tokens)
-    returnToken.toTokens(tokens)
-    expr?.toTokensAsConditionTail(tokens)
-}
-
-private fun Expr.Yield.toTokensAsConditionTail(tokens: TokenStream) {
-    for (attr in attrs) attr.toTokens(tokens)
-    yieldToken.toTokens(tokens)
-    expr?.toTokensAsConditionTail(tokens)
-}
-
-private fun Expr.Unary.toTokensAsCondition(tokens: TokenStream) {
-    for (attr in attrs) attr.toTokens(tokens)
-    op.toTokens(tokens)
-    expr.toTokensAsRightmostConditionOperand(tokens, Precedence.Prefix, ExprPosition.PrefixOperand)
-}
-
-private fun Expr.Unary.toTokensAsConditionTail(tokens: TokenStream) {
-    for (attr in attrs) attr.toTokens(tokens)
-    op.toTokens(tokens)
-    expr.toTokensAsConditionTailOperand(tokens, Precedence.Prefix, ExprPosition.PrefixOperand)
-}
-
-private fun Expr.Binary.toTokensAsRangeStart(tokens: TokenStream) {
-    var precedence = Precedence.ofBinop(op)
-    if (left.isValueLessJump() && binOpCanBeginExpr(op)) {
-        io.github.kotlinmania.syn.token.Paren.default().surround(tokens) { inner ->
-            left.toTokens(inner)
-        }
-    } else if (left.endsWithRange()) {
-        io.github.kotlinmania.syn.token.Paren.default().surround(tokens) { inner ->
-            left.toTokens(inner)
-        }
-    } else {
-        left.toTokensWithParens(tokens, precedence, ExprPosition.LeftOperand)
-    }
-    op.toTokens(tokens)
-    var r = right
-    if (r.isValueLessJump()) {
-        io.github.kotlinmania.syn.token.Paren.default().surround(tokens) { inner ->
-            r.toTokens(inner)
-        }
-    } else if (r is Expr.Binary &&
-        r.attrs.isEmpty() &&
-        !r.needsParens(precedence, ExprPosition.RightOperand)
-    ) {
-        r.toTokensAsRangeStart(tokens)
-    } else if (r.rightEdgeNeedsGroupBeforeRange()) {
-        io.github.kotlinmania.syn.token.Paren.default().surround(tokens) { inner ->
-            r.toTokens(inner)
-        }
-    } else {
-        r.toTokensWithParens(tokens, precedence, ExprPosition.RightOperand)
-    }
-}
-
-private fun Expr.needsParens(parentPrecedence: Precedence, position: ExprPosition): Boolean {
-    if (position == ExprPosition.Condition) {
-        return this is Expr.Struct ||
-            this is Expr.Return &&
-            expr == null ||
-            this is Expr.Yield &&
-            expr == null
-    }
-
-    if (position == ExprPosition.PostfixBase) {
-        return Precedence.of(this) < Precedence.Unambiguous ||
-            this is Expr.Break &&
-            expr == null ||
-            this is Expr.Return &&
-            expr == null ||
-            this is Expr.Yield &&
-            expr == null
-    }
-
-    if (position == ExprPosition.LeftOperand && parentPrecedence == Precedence.Assign && this is Expr.Range) {
-        return true
-    }
-
-    if (position == ExprPosition.LeftOperand && parentPrecedence == Precedence.Assign && this is Expr.Let) {
-        return true
-    }
-
-    if (position == ExprPosition.LeftOperand && parentPrecedence == Precedence.Range && this.isValueLessJump()) {
-        return true
-    }
-
-    if (position == ExprPosition.RightOperand &&
-        parentPrecedence == Precedence.Compare &&
-        this is Expr.Range &&
-        start == null
-    ) {
-        return false
-    }
-
-    if (position == ExprPosition.RightOperand &&
-        this is Expr.Range &&
-        start == null
-    ) {
-        return false
-    }
-
-    if (position == ExprPosition.RightOperand &&
-        parentPrecedence == Precedence.Range &&
-        (this is Expr.Return && expr == null || this is Expr.Yield && expr == null)
-    ) {
-        return false
-    }
-
-    if ((position == ExprPosition.LeftOperand || position == ExprPosition.RightOperand) &&
-        (
-            this is Expr.Assign ||
-                (this is Expr.BlockExpr && !(parentPrecedence == Precedence.Range && position == ExprPosition.RightOperand)) ||
-                this is Expr.Cast ||
-                this is Expr.Struct ||
-                (this is Expr.Macro && mac.isBrace())
-        )
-    ) {
-        return true
-    }
-
-    var childPrecedence = Precedence.of(this)
-    if (childPrecedence < parentPrecedence) return true
-    if (childPrecedence > parentPrecedence) return false
-
-    return when (position) {
-        ExprPosition.LeftOperand -> {
-            parentPrecedence == Precedence.Assign ||
-                parentPrecedence == Precedence.Range ||
-                parentPrecedence == Precedence.Compare
-        }
-
-        ExprPosition.RightOperand -> {
-            parentPrecedence != Precedence.Assign
-        }
-
-        ExprPosition.PrefixOperand -> {
-            childPrecedence <= Precedence.Prefix
-        }
-
-        ExprPosition.Condition -> {
-            false
-        }
-
-        ExprPosition.PostfixBase -> {
-            false
-        }
-    }
-}
-
-private fun binOpCanBeginExpr(op: BinOp): Boolean =
-    when (op) {
-        is BinOp.Sub,
-        is BinOp.Mul,
-        is BinOp.And,
-        is BinOp.Or,
-        is BinOp.BitAnd,
-        is BinOp.BitOr,
-        is BinOp.Shl,
-        is BinOp.Lt,
-        -> true
-
-        else -> false
-    }
-
-private fun Expr.isValueLessJump(): Boolean =
-    this is Expr.Break &&
-        expr == null ||
-        this is Expr.Return &&
-        expr == null ||
-        this is Expr.Yield &&
-        expr == null
-
-private fun Expr.endsWithRange(): Boolean =
-    when (this) {
-        is Expr.Assign -> right.endsWithRange()
-        is Expr.Binary -> right.endsWithRange()
-        is Expr.Cast -> expr.endsWithRange()
-        is Expr.Range -> true
-        else -> false
-    }
-
-private fun Expr.rightEdgeNeedsGroupBeforeRange(): Boolean =
-    when (this) {
-        is Expr.Assign -> right.rightEdgeNeedsGroupBeforeRange()
-        is Expr.Binary -> right.isValueLessJump() || right.rightEdgeNeedsGroupBeforeRange()
-        is Expr.Break -> expr?.rightEdgeNeedsGroupBeforeRange() ?: true
-        is Expr.Cast -> expr.rightEdgeNeedsGroupBeforeRange()
-        is Expr.Closure -> body.rightEdgeNeedsGroupBeforeRange()
-        is Expr.Let -> expr.rightEdgeNeedsGroupBeforeRange()
-        is Expr.RawAddr -> expr.rightEdgeNeedsGroupBeforeRange()
-        is Expr.Reference -> expr.rightEdgeNeedsGroupBeforeRange()
-        is Expr.Range -> true
-        is Expr.Return -> expr?.rightEdgeNeedsGroupBeforeRange() ?: true
-        is Expr.Try -> expr.rightEdgeNeedsGroupBeforeRange()
-        is Expr.Unary -> expr.rightEdgeNeedsGroupBeforeRange()
-        is Expr.Yield -> expr?.rightEdgeNeedsGroupBeforeRange() ?: true
-        else -> false
-    }
-
-private fun exprLeadingLabel(expr: Expr): Boolean {
-    var current = expr
-    while (true) {
-        when (current) {
-            is Expr.BlockExpr -> return current.label != null
-            is Expr.ForLoop -> return current.label != null
-            is Expr.Loop -> return current.label != null
-            is Expr.While -> return current.label != null
-            is Expr.Assign -> current = current.left
-            is Expr.Await -> current = current.base
-            is Expr.Binary -> current = current.left
-            is Expr.Call -> current = current.func
-            is Expr.Cast -> current = current.expr
-            is Expr.Field -> current = current.base
-            is Expr.Index -> current = current.expr
-            is Expr.MethodCall -> current = current.receiver
-            is Expr.Range -> current = current.start ?: return false
-            is Expr.Try -> current = current.expr
-            else -> return false
-        }
-    }
+    printExpr(this, tokens, FixupContext.newStmt())
 }
 
 /** An expression syntax tree node. */
@@ -869,7 +22,7 @@ public sealed class Expr : ToTokens {
         public var elems: ExprList,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
-            for (attr in attrs) attr.toTokens(tokens)
+            outerAttrsToTokens(attrs, tokens)
             bracketToken.surround(tokens) { inner ->
                 elems.toTokens(inner)
             }
@@ -886,19 +39,7 @@ public sealed class Expr : ToTokens {
         public var right: Expr,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
-            for (attr in attrs) attr.toTokens(tokens)
-            val emit = { target: TokenStream ->
-                left.toTokensWithParens(target, Precedence.Assign, ExprPosition.LeftOperand)
-                eqToken.toTokens(target)
-                right.toTokensWithParens(target, Precedence.Assign, ExprPosition.RightOperand)
-            }
-            if (attrs.isNotEmpty()) {
-                io.github.kotlinmania.syn.token.Paren
-                    .default()
-                    .surround(tokens, emit)
-            } else {
-                emit(tokens)
-            }
+            printExprAssign(this, tokens, FixupContext.NONE)
         }
 
         override fun deepCopy(): Assign = Assign(attrs.mapTo(mutableListOf()) { it.deepCopy() }, left.deepCopy(), eqToken, right.deepCopy())
@@ -912,7 +53,7 @@ public sealed class Expr : ToTokens {
         public var block: Block,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
-            for (attr in attrs) attr.toTokens(tokens)
+            outerAttrsToTokens(attrs, tokens)
             asyncToken.toTokens(tokens)
             capture?.toTokens(tokens)
             block.toTokens(tokens)
@@ -929,10 +70,7 @@ public sealed class Expr : ToTokens {
         public var awaitToken: io.github.kotlinmania.syn.token.Await,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
-            for (attr in attrs) attr.toTokens(tokens)
-            base.toTokensWithParens(tokens, Precedence.Unambiguous, ExprPosition.PostfixBase)
-            dotToken.toTokens(tokens)
-            awaitToken.toTokens(tokens)
+            printExprAwait(this, tokens, FixupContext.NONE)
         }
 
         override fun deepCopy(): Await = Await(attrs.mapTo(mutableListOf()) { it.deepCopy() }, base.deepCopy(), dotToken, awaitToken)
@@ -946,30 +84,7 @@ public sealed class Expr : ToTokens {
         public var right: Expr,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
-            for (attr in attrs) attr.toTokens(tokens)
-            val emit = { target: TokenStream ->
-                val precedence = Precedence.ofBinop(op)
-                if (left.isValueLessJump() && binOpCanBeginExpr(op)) {
-                    io.github.kotlinmania.syn.token.Paren.default().surround(target) { inner ->
-                        left.toTokens(inner)
-                    }
-                } else if (left.endsWithRange()) {
-                    io.github.kotlinmania.syn.token.Paren.default().surround(target) { inner ->
-                        left.toTokens(inner)
-                    }
-                } else {
-                    left.toTokensWithParens(target, precedence, ExprPosition.LeftOperand)
-                }
-                op.toTokens(target)
-                right.toTokensWithParens(target, precedence, ExprPosition.RightOperand)
-            }
-            if (attrs.isNotEmpty()) {
-                io.github.kotlinmania.syn.token.Paren
-                    .default()
-                    .surround(tokens, emit)
-            } else {
-                emit(tokens)
-            }
+            printExprBinary(this, tokens, FixupContext.NONE)
         }
 
         override fun deepCopy(): Binary = Binary(attrs.mapTo(mutableListOf()) { it.deepCopy() }, left.deepCopy(), op, right.deepCopy())
@@ -982,9 +97,12 @@ public sealed class Expr : ToTokens {
         public var block: Block,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
-            for (attr in attrs) attr.toTokens(tokens)
+            outerAttrsToTokens(attrs, tokens)
             label?.toTokens(tokens)
-            block.toTokens(tokens)
+            block.braceToken.surround(tokens) { inner ->
+                innerAttrsToTokens(attrs, inner)
+                for (stmt in block.stmts) stmt.toTokens(inner)
+            }
         }
 
         override fun deepCopy(): BlockExpr = BlockExpr(attrs.mapTo(mutableListOf()) { it.deepCopy() }, label?.deepCopy(), block.deepCopy())
@@ -998,19 +116,7 @@ public sealed class Expr : ToTokens {
         public var expr: Expr?,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
-            for (attr in attrs) attr.toTokens(tokens)
-            breakToken.toTokens(tokens)
-            label?.toTokens(tokens)
-            val e = expr
-            if (e != null) {
-                if ((label == null && exprLeadingLabel(e)) || (e is Break && e.expr == null)) {
-                    io.github.kotlinmania.syn.token.Paren.default().surround(tokens) { inner ->
-                        e.toTokens(inner)
-                    }
-                } else {
-                    e.toTokens(tokens)
-                }
-            }
+            printExprBreak(this, tokens, FixupContext.NONE)
         }
 
         override fun deepCopy(): Break = Break(attrs.mapTo(mutableListOf()) { it.deepCopy() }, breakToken, label?.deepCopy(), expr?.deepCopy())
@@ -1024,11 +130,7 @@ public sealed class Expr : ToTokens {
         public var args: ExprList,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
-            for (attr in attrs) attr.toTokens(tokens)
-            func.toTokensAsCallee(tokens)
-            parenToken.surround(tokens) { inner ->
-                args.toTokens(inner)
-            }
+            printExprCall(this, tokens, FixupContext.NONE)
         }
 
         override fun deepCopy(): Call = Call(attrs.mapTo(mutableListOf()) { it.deepCopy() }, func.deepCopy(), parenToken, args.copy({ it.deepCopy() }, { it }))
@@ -1042,19 +144,7 @@ public sealed class Expr : ToTokens {
         public var ty: SynType,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
-            for (attr in attrs) attr.toTokens(tokens)
-            val emit = { target: TokenStream ->
-                expr.toTokensWithParens(target, Precedence.Cast, ExprPosition.LeftOperand)
-                asToken.toTokens(target)
-                ty.toTokens(target)
-            }
-            if (attrs.isNotEmpty()) {
-                io.github.kotlinmania.syn.token.Paren
-                    .default()
-                    .surround(tokens, emit)
-            } else {
-                emit(tokens)
-            }
+            printExprCast(this, tokens, FixupContext.NONE)
         }
 
         override fun deepCopy(): Cast = Cast(attrs.mapTo(mutableListOf()) { it.deepCopy() }, expr.deepCopy(), asToken, ty.deepCopy())
@@ -1063,7 +153,9 @@ public sealed class Expr : ToTokens {
     /** A closure expression: `|a, b| a + b`. */
     public data class Closure(
         public var attrs: List<Attribute>,
+        public var lifetimes: BoundLifetimes?,
         public var constness: io.github.kotlinmania.syn.token.Const?,
+        public var movability: io.github.kotlinmania.syn.token.Static?,
         public var asyncness: io.github.kotlinmania.syn.token.Async?,
         public var capture: io.github.kotlinmania.syn.token.Move?,
         public var or1Token: io.github.kotlinmania.syn.token.Or,
@@ -1073,18 +165,10 @@ public sealed class Expr : ToTokens {
         public var body: Expr,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
-            for (attr in attrs) attr.toTokens(tokens)
-            constness?.toTokens(tokens)
-            asyncness?.toTokens(tokens)
-            capture?.toTokens(tokens)
-            or1Token.toTokens(tokens)
-            inputs.toTokens(tokens)
-            or2Token.toTokens(tokens)
-            output.toTokens(tokens)
-            body.toTokens(tokens)
+            printExprClosure(this, tokens, FixupContext.NONE)
         }
 
-        override fun deepCopy(): Closure = Closure(attrs.mapTo(mutableListOf()) { it.deepCopy() }, constness, asyncness, capture, or1Token, inputs.copy({ it.deepCopy() }, { it }), or2Token, output.deepCopy(), body.deepCopy())
+        override fun deepCopy(): Closure = Closure(attrs.mapTo(mutableListOf()) { it.deepCopy() }, lifetimes?.deepCopy(), constness, movability, asyncness, capture, or1Token, inputs.copy({ it.deepCopy() }, { it }), or2Token, output.deepCopy(), body.deepCopy())
     }
 
     /** A const block: `const { ... }`. */
@@ -1094,9 +178,12 @@ public sealed class Expr : ToTokens {
         public var block: Block,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
-            for (attr in attrs) attr.toTokens(tokens)
+            outerAttrsToTokens(attrs, tokens)
             constToken.toTokens(tokens)
-            block.toTokens(tokens)
+            block.braceToken.surround(tokens) { inner ->
+                innerAttrsToTokens(attrs, inner)
+                for (stmt in block.stmts) stmt.toTokens(inner)
+            }
         }
 
         override fun deepCopy(): Const = Const(attrs.mapTo(mutableListOf()) { it.deepCopy() }, constToken, block.deepCopy())
@@ -1109,7 +196,7 @@ public sealed class Expr : ToTokens {
         public var label: Lifetime?,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
-            for (attr in attrs) attr.toTokens(tokens)
+            outerAttrsToTokens(attrs, tokens)
             continueToken.toTokens(tokens)
             label?.toTokens(tokens)
         }
@@ -1125,10 +212,7 @@ public sealed class Expr : ToTokens {
         public var member: Member,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
-            for (attr in attrs) attr.toTokens(tokens)
-            base.toTokensWithParens(tokens, Precedence.Unambiguous, ExprPosition.PostfixBase)
-            dotToken.toTokens(tokens)
-            member.toTokens(tokens)
+            printExprField(this, tokens, FixupContext.NONE)
         }
 
         override fun deepCopy(): Field = Field(attrs.mapTo(mutableListOf()) { it.deepCopy() }, base.deepCopy(), dotToken, member)
@@ -1145,13 +229,16 @@ public sealed class Expr : ToTokens {
         public var body: Block,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
-            for (attr in attrs) attr.toTokens(tokens)
+            outerAttrsToTokens(attrs, tokens)
             label?.toTokens(tokens)
             forToken.toTokens(tokens)
             pat.toTokens(tokens)
             inToken.toTokens(tokens)
-            expr.toTokensWithParens(tokens, Precedence.Jump, ExprPosition.RightOperand)
-            body.toTokens(tokens)
+            printExpr(expr, tokens, FixupContext.newCondition())
+            body.braceToken.surround(tokens) { inner ->
+                innerAttrsToTokens(attrs, inner)
+                for (stmt in body.stmts) stmt.toTokens(inner)
+            }
         }
 
         override fun deepCopy(): ForLoop = ForLoop(attrs.mapTo(mutableListOf()) { it.deepCopy() }, label?.deepCopy(), forToken, pat.deepCopy(), inToken, expr.deepCopy(), body.deepCopy())
@@ -1164,7 +251,7 @@ public sealed class Expr : ToTokens {
         public var expr: Expr,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
-            for (attr in attrs) attr.toTokens(tokens)
+            outerAttrsToTokens(attrs, tokens)
             groupToken.surround(tokens) { inner -> expr.toTokens(inner) }
         }
 
@@ -1180,11 +267,28 @@ public sealed class Expr : ToTokens {
         public var elseBranch: ElseExpr?,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
-            for (attr in attrs) attr.toTokens(tokens)
-            ifToken.toTokens(tokens)
-            cond.toTokensWithParens(tokens, Precedence.MIN, ExprPosition.Condition)
-            thenBranch.toTokens(tokens)
-            elseBranch?.toTokens(tokens)
+            outerAttrsToTokens(attrs, tokens)
+            var expr = this
+            while (true) {
+                expr.ifToken.toTokens(tokens)
+                printExpr(expr.cond, tokens, FixupContext.newCondition())
+                expr.thenBranch.toTokens(tokens)
+                val elseBranch = expr.elseBranch ?: break
+                elseBranch.elseToken.toTokens(tokens)
+                when (val other = elseBranch.expr) {
+                    is If -> expr = other
+                    is BlockExpr -> {
+                        other.toTokens(tokens)
+                        break
+                    }
+                    else -> {
+                        io.github.kotlinmania.syn.token.Brace.default().surround(tokens) { inner ->
+                            printExpr(other, inner, FixupContext.newStmt())
+                        }
+                        break
+                    }
+                }
+            }
         }
 
         override fun deepCopy(): If = If(attrs.mapTo(mutableListOf()) { it.deepCopy() }, ifToken, cond.deepCopy(), thenBranch, elseBranch?.let { it.copy(expr = it.expr.deepCopy()) })
@@ -1198,9 +302,7 @@ public sealed class Expr : ToTokens {
         public var index: Expr,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
-            for (attr in attrs) attr.toTokens(tokens)
-            expr.toTokensWithParens(tokens, Precedence.Unambiguous, ExprPosition.PostfixBase)
-            bracketToken.surround(tokens) { inner -> index.toTokens(inner) }
+            printExprIndex(this, tokens, FixupContext.NONE)
         }
 
         override fun deepCopy(): Index = Index(attrs.mapTo(mutableListOf()) { it.deepCopy() }, expr.deepCopy(), bracketToken, index.deepCopy())
@@ -1212,7 +314,7 @@ public sealed class Expr : ToTokens {
         public var underscoreToken: io.github.kotlinmania.syn.token.Underscore,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
-            for (attr in attrs) attr.toTokens(tokens)
+            outerAttrsToTokens(attrs, tokens)
             underscoreToken.toTokens(tokens)
         }
 
@@ -1228,17 +330,7 @@ public sealed class Expr : ToTokens {
         public var expr: Expr,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
-            for (attr in attrs) attr.toTokens(tokens)
-            letToken.toTokens(tokens)
-            pat.toTokens(tokens)
-            eqToken.toTokens(tokens)
-            if (expr is Struct) {
-                io.github.kotlinmania.syn.token.Paren.default().surround(tokens) { inner ->
-                    expr.toTokens(inner)
-                }
-            } else {
-                expr.toTokensWithParens(tokens, Precedence.Let, ExprPosition.RightOperand)
-            }
+            printExprLet(this, tokens, FixupContext.NONE)
         }
 
         override fun deepCopy(): Let = Let(attrs.mapTo(mutableListOf()) { it.deepCopy() }, letToken, pat.deepCopy(), eqToken, expr.deepCopy())
@@ -1250,7 +342,7 @@ public sealed class Expr : ToTokens {
         var lit: io.github.kotlinmania.syn.Lit,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
-            for (attr in attrs) attr.toTokens(tokens)
+            outerAttrsToTokens(attrs, tokens)
             lit.toTokens(tokens)
         }
 
@@ -1265,10 +357,13 @@ public sealed class Expr : ToTokens {
         public var body: Block,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
-            for (attr in attrs) attr.toTokens(tokens)
+            outerAttrsToTokens(attrs, tokens)
             label?.toTokens(tokens)
             loopToken.toTokens(tokens)
-            body.toTokens(tokens)
+            body.braceToken.surround(tokens) { inner ->
+                innerAttrsToTokens(attrs, inner)
+                for (stmt in body.stmts) stmt.toTokens(inner)
+            }
         }
 
         override fun deepCopy(): Loop = Loop(attrs.mapTo(mutableListOf()) { it.deepCopy() }, label?.deepCopy(), loopToken, body.deepCopy())
@@ -1280,7 +375,7 @@ public sealed class Expr : ToTokens {
         var mac: io.github.kotlinmania.syn.Macro,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
-            for (attr in attrs) attr.toTokens(tokens)
+            outerAttrsToTokens(attrs, tokens)
             mac.toTokens(tokens)
         }
 
@@ -1296,11 +391,18 @@ public sealed class Expr : ToTokens {
         public var arms: List<Arm>,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
-            for (attr in attrs) attr.toTokens(tokens)
+            outerAttrsToTokens(attrs, tokens)
             matchToken.toTokens(tokens)
-            expr.toTokens(tokens)
+            printExpr(expr, tokens, FixupContext.newCondition())
             braceToken.surround(tokens) { inner ->
-                for (arm in arms) arm.toTokens(inner)
+                innerAttrsToTokens(attrs, inner)
+                for ((i, arm) in arms.withIndex()) {
+                    arm.toTokens(inner)
+                    val isLast = i == arms.size - 1
+                    if (!isLast && Classify.requiresCommaToBeMatchArm(arm.body) && arm.comma == null) {
+                        io.github.kotlinmania.syn.token.Comma.default().toTokens(inner)
+                    }
+                }
             }
         }
 
@@ -1318,14 +420,7 @@ public sealed class Expr : ToTokens {
         public var args: ExprList,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
-            for (attr in attrs) attr.toTokens(tokens)
-            receiver.toTokensWithParens(tokens, Precedence.Unambiguous, ExprPosition.PostfixBase)
-            dotToken.toTokens(tokens)
-            method.toTokens(tokens)
-            turbofish?.toTokens(tokens)
-            parenToken.surround(tokens) { inner ->
-                args.toTokens(inner)
-            }
+            printExprMethodCall(this, tokens, FixupContext.NONE)
         }
 
         override fun deepCopy(): MethodCall = MethodCall(attrs.mapTo(mutableListOf()) { it.deepCopy() }, receiver.deepCopy(), dotToken, method.copy(), turbofish?.deepCopy() as? PathArguments.AngleBracketed?, parenToken, args.copy({ it.deepCopy() }, { it }))
@@ -1338,7 +433,7 @@ public sealed class Expr : ToTokens {
         public var expr: Expr,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
-            for (attr in attrs) attr.toTokens(tokens)
+            outerAttrsToTokens(attrs, tokens)
             parenToken.surround(tokens) { inner -> expr.toTokens(inner) }
         }
 
@@ -1352,14 +447,8 @@ public sealed class Expr : ToTokens {
         var path: io.github.kotlinmania.syn.Path,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
-            for (attr in attrs) attr.toTokens(tokens)
-            qself?.let {
-                it.ltToken.toTokens(tokens)
-                it.ty.toTokens(tokens)
-                it.asToken?.toTokens(tokens)
-                it.gtToken.toTokens(tokens)
-            }
-            path.toTokens(tokens)
+            outerAttrsToTokens(attrs, tokens)
+            printQpath(tokens, qself, path, PathStyle.Expr)
         }
 
         override fun deepCopy(): Path = Path(attrs.mapTo(mutableListOf()) { it.deepCopy() }, qself, path.deepCopy())
@@ -1373,10 +462,7 @@ public sealed class Expr : ToTokens {
         public var end: Expr?,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
-            for (attr in attrs) attr.toTokens(tokens)
-            start?.toTokensAsRangeStart(tokens)
-            limits.toTokens(tokens)
-            end?.toTokensWithParens(tokens, Precedence.Range, ExprPosition.RightOperand)
+            printExprRange(this, tokens, FixupContext.NONE)
         }
 
         override fun deepCopy(): Range = Range(attrs.mapTo(mutableListOf()) { it.deepCopy() }, start?.deepCopy(), limits, end?.deepCopy())
@@ -1391,11 +477,7 @@ public sealed class Expr : ToTokens {
         public var expr: Expr,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
-            for (attr in attrs) attr.toTokens(tokens)
-            andToken.toTokens(tokens)
-            raw.toTokens(tokens)
-            mutability.toTokens(tokens)
-            expr.toTokensWithParens(tokens, Precedence.Prefix, ExprPosition.PrefixOperand)
+            printExprRawAddr(this, tokens, FixupContext.NONE)
         }
 
         override fun deepCopy(): RawAddr = RawAddr(attrs.mapTo(mutableListOf()) { it.deepCopy() }, andToken, raw, mutability, expr.deepCopy())
@@ -1409,10 +491,7 @@ public sealed class Expr : ToTokens {
         public var expr: Expr,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
-            for (attr in attrs) attr.toTokens(tokens)
-            andToken.toTokens(tokens)
-            mutability?.toTokens(tokens)
-            expr.toTokensWithParens(tokens, Precedence.Prefix, ExprPosition.PrefixOperand)
+            printExprReference(this, tokens, FixupContext.NONE)
         }
 
         override fun deepCopy(): Reference = Reference(attrs.mapTo(mutableListOf()) { it.deepCopy() }, andToken, mutability, expr.deepCopy())
@@ -1427,7 +506,7 @@ public sealed class Expr : ToTokens {
         public var len: Expr,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
-            for (attr in attrs) attr.toTokens(tokens)
+            outerAttrsToTokens(attrs, tokens)
             bracketToken.surround(tokens) { inner ->
                 expr.toTokens(inner)
                 semiToken.toTokens(inner)
@@ -1445,9 +524,7 @@ public sealed class Expr : ToTokens {
         public var expr: Expr?,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
-            for (attr in attrs) attr.toTokens(tokens)
-            returnToken.toTokens(tokens)
-            expr?.toTokens(tokens)
+            printExprReturn(this, tokens, FixupContext.NONE)
         }
 
         override fun deepCopy(): Return = Return(attrs.mapTo(mutableListOf()) { it.deepCopy() }, returnToken, expr?.deepCopy())
@@ -1464,17 +541,15 @@ public sealed class Expr : ToTokens {
         public var rest: Expr?,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
-            for (attr in attrs) attr.toTokens(tokens)
-            qself?.let {
-                it.ltToken.toTokens(tokens)
-                it.ty.toTokens(tokens)
-                it.asToken?.toTokens(tokens)
-                it.gtToken.toTokens(tokens)
-            }
-            path.toTokens(tokens)
+            outerAttrsToTokens(attrs, tokens)
+            printQpath(tokens, qself, path, PathStyle.Expr)
             braceToken.surround(tokens) { inner ->
                 fields.toTokens(inner)
-                dot2Token?.toTokens(inner)
+                if (dot2Token != null) {
+                    dot2Token?.toTokens(inner)
+                } else if (rest != null) {
+                    io.github.kotlinmania.syn.token.DotDot.default().toTokens(inner)
+                }
                 rest?.toTokens(inner)
             }
         }
@@ -1489,9 +564,7 @@ public sealed class Expr : ToTokens {
         public var questionToken: io.github.kotlinmania.syn.token.Question,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
-            for (attr in attrs) attr.toTokens(tokens)
-            expr.toTokensWithParens(tokens, Precedence.Unambiguous, ExprPosition.PostfixBase)
-            questionToken.toTokens(tokens)
+            printExprTry(this, tokens, FixupContext.NONE)
         }
 
         override fun deepCopy(): Try = Try(attrs.mapTo(mutableListOf()) { it.deepCopy() }, expr.deepCopy(), questionToken)
@@ -1504,7 +577,7 @@ public sealed class Expr : ToTokens {
         public var block: Block,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
-            for (attr in attrs) attr.toTokens(tokens)
+            outerAttrsToTokens(attrs, tokens)
             tryToken.toTokens(tokens)
             block.toTokens(tokens)
         }
@@ -1519,7 +592,7 @@ public sealed class Expr : ToTokens {
         public var elems: ExprList,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
-            for (attr in attrs) attr.toTokens(tokens)
+            outerAttrsToTokens(attrs, tokens)
             parenToken.surround(tokens) { inner ->
                 elems.toTokens(inner)
                 if (elems.len() == 1 && !elems.trailingPunct()) {
@@ -1540,9 +613,7 @@ public sealed class Expr : ToTokens {
         public var expr: Expr,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
-            for (attr in attrs) attr.toTokens(tokens)
-            op.toTokens(tokens)
-            expr.toTokensWithParens(tokens, Precedence.Prefix, ExprPosition.PrefixOperand)
+            printExprUnary(this, tokens, FixupContext.NONE)
         }
 
         override fun deepCopy(): Unary = Unary(attrs.mapTo(mutableListOf()) { it.deepCopy() }, op, expr.deepCopy())
@@ -1555,9 +626,12 @@ public sealed class Expr : ToTokens {
         public var block: Block,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
-            for (attr in attrs) attr.toTokens(tokens)
+            outerAttrsToTokens(attrs, tokens)
             unsafeToken.toTokens(tokens)
-            block.toTokens(tokens)
+            block.braceToken.surround(tokens) { inner ->
+                innerAttrsToTokens(attrs, inner)
+                for (stmt in block.stmts) stmt.toTokens(inner)
+            }
         }
 
         override fun deepCopy(): Unsafe = Unsafe(attrs.mapTo(mutableListOf()) { it.deepCopy() }, unsafeToken, block.deepCopy())
@@ -1572,11 +646,14 @@ public sealed class Expr : ToTokens {
         public var body: Block,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
-            for (attr in attrs) attr.toTokens(tokens)
+            outerAttrsToTokens(attrs, tokens)
             label?.toTokens(tokens)
             whileToken.toTokens(tokens)
-            cond.toTokensWithParens(tokens, Precedence.MIN, ExprPosition.Condition)
-            body.toTokens(tokens)
+            printExpr(cond, tokens, FixupContext.newCondition())
+            body.braceToken.surround(tokens) { inner ->
+                innerAttrsToTokens(attrs, inner)
+                for (stmt in body.stmts) stmt.toTokens(inner)
+            }
         }
 
         override fun deepCopy(): While = While(attrs.mapTo(mutableListOf()) { it.deepCopy() }, label?.deepCopy(), whileToken, cond.deepCopy(), body.deepCopy())
@@ -1589,9 +666,7 @@ public sealed class Expr : ToTokens {
         public var expr: Expr?,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
-            for (attr in attrs) attr.toTokens(tokens)
-            yieldToken.toTokens(tokens)
-            expr?.toTokens(tokens)
+            printExprYield(this, tokens, FixupContext.NONE)
         }
 
         override fun deepCopy(): Yield = Yield(attrs.mapTo(mutableListOf()) { it.deepCopy() }, yieldToken, expr?.deepCopy())
@@ -1658,7 +733,7 @@ public data class FieldValue(
     public var expr: Expr,
 ) : ToTokens {
     override fun toTokens(tokens: TokenStream) {
-        for (attr in attrs) attr.toTokens(tokens)
+        outerAttrsToTokens(attrs, tokens)
         member.toTokens(tokens)
         colonToken?.let { colon ->
             colon.toTokens(tokens)
@@ -1696,7 +771,7 @@ public data class Arm(
         pat.toTokens(tokens)
         guard?.toTokens(tokens)
         fatArrowToken.toTokens(tokens)
-        body.toTokens(tokens)
+        printExpr(body, tokens, FixupContext.newMatchArm())
         comma?.toTokens(tokens)
     }
 
@@ -1849,88 +924,289 @@ public fun Expr.isNamed(name: String): Boolean {
 
 public fun Expr.span(): io.github.kotlinmania.procmacro2.Span = spanOf(this)
 
-public fun printExpr(expr: Expr, tokens: TokenStream) {
-    expr.toTokens(tokens)
+public fun printSubexpression(
+    expr: Expr,
+    needsGroup: Boolean,
+    tokens: TokenStream,
+    fixup: FixupContext,
+) {
+    val context = if (needsGroup) FixupContext.NONE else fixup
+    val doPrintExpr = { output: TokenStream -> printExpr(expr, output, context) }
+    if (needsGroup) {
+        io.github.kotlinmania.syn.token.Paren.default().surround(tokens, doPrintExpr)
+    } else {
+        doPrintExpr(tokens)
+    }
 }
 
-public fun printSubexpression(expr: Expr, tokens: TokenStream) {
-    expr.toTokens(tokens)
+public fun printExpr(expr: Expr, tokens: TokenStream, fixup: FixupContext = FixupContext.NONE) {
+    val needsGroup = fixup.parenthesize(expr)
+    val context = if (needsGroup) FixupContext.NONE else fixup
+    val doPrintExpr = { output: TokenStream ->
+        when (expr) {
+            is Expr.Assign -> printExprAssign(expr, output, context)
+            is Expr.Await -> printExprAwait(expr, output, context)
+            is Expr.Binary -> printExprBinary(expr, output, context)
+            is Expr.Break -> printExprBreak(expr, output, context)
+            is Expr.Call -> printExprCall(expr, output, context)
+            is Expr.Cast -> printExprCast(expr, output, context)
+            is Expr.Closure -> printExprClosure(expr, output, context)
+            is Expr.Field -> printExprField(expr, output, context)
+            is Expr.Index -> printExprIndex(expr, output, context)
+            is Expr.Let -> printExprLet(expr, output, context)
+            is Expr.MethodCall -> printExprMethodCall(expr, output, context)
+            is Expr.Range -> printExprRange(expr, output, context)
+            is Expr.RawAddr -> printExprRawAddr(expr, output, context)
+            is Expr.Reference -> printExprReference(expr, output, context)
+            is Expr.Return -> printExprReturn(expr, output, context)
+            is Expr.Try -> printExprTry(expr, output, context)
+            is Expr.Unary -> printExprUnary(expr, output, context)
+            is Expr.Yield -> printExprYield(expr, output, context)
+            else -> expr.toTokens(output)
+        }
+    }
+    if (needsGroup) {
+        io.github.kotlinmania.syn.token.Paren.default().surround(tokens, doPrintExpr)
+    } else {
+        doPrintExpr(tokens)
+    }
 }
 
-public fun printExprAssign(e: Expr.Assign, tokens: TokenStream) {
-    e.toTokens(tokens)
+public fun printExprAssign(e: Expr.Assign, tokens: TokenStream, fixup: FixupContext = FixupContext.NONE) {
+    outerAttrsToTokens(e.attrs, tokens)
+    val needsGroup = e.attrs.isNotEmpty()
+    val context = if (needsGroup) FixupContext.NONE else fixup
+    val doPrintExpr = { output: TokenStream ->
+        val (leftPrec, leftFixup) = context.leftmostSubexpressionWithOperator(e.left, false, false, Precedence.Assign)
+        printSubexpression(e.left, leftPrec <= Precedence.Range, output, leftFixup)
+        e.eqToken.toTokens(output)
+        printExpr(e.right, output, context.rightmostSubexpressionFixup(false, false, Precedence.Assign))
+    }
+    if (needsGroup) {
+        io.github.kotlinmania.syn.token.Paren.default().surround(tokens, doPrintExpr)
+    } else {
+        doPrintExpr(tokens)
+    }
 }
 
-public fun printExprAwait(e: Expr.Await, tokens: TokenStream) {
-    e.toTokens(tokens)
+public fun printExprAwait(e: Expr.Await, tokens: TokenStream, fixup: FixupContext = FixupContext.NONE) {
+    outerAttrsToTokens(e.attrs, tokens)
+    val (leftPrec, leftFixup) = fixup.leftmostSubexpressionWithDot(e.base)
+    printSubexpression(e.base, leftPrec < Precedence.Unambiguous, tokens, leftFixup)
+    e.dotToken.toTokens(tokens)
+    e.awaitToken.toTokens(tokens)
 }
 
-public fun printExprBinary(e: Expr.Binary, tokens: TokenStream) {
-    e.toTokens(tokens)
+public fun printExprBinary(e: Expr.Binary, tokens: TokenStream, fixup: FixupContext = FixupContext.NONE) {
+    outerAttrsToTokens(e.attrs, tokens)
+    val needsGroup = e.attrs.isNotEmpty()
+    val context = if (needsGroup) FixupContext.NONE else fixup
+    val doPrintExpr = { output: TokenStream ->
+        val binopPrec = Precedence.ofBinop(e.op)
+        val (leftPrec, leftFixup) = context.leftmostSubexpressionWithOperator(
+            e.left,
+            when (e.op) {
+                is BinOp.Sub,
+                is BinOp.Mul,
+                is BinOp.And,
+                is BinOp.Or,
+                is BinOp.BitAnd,
+                is BinOp.BitOr,
+                is BinOp.Shl,
+                is BinOp.Lt,
+                -> true
+                else -> false
+            },
+            e.op is BinOp.Shl || e.op is BinOp.Lt,
+            binopPrec,
+        )
+        val leftNeedsGroup = when (binopPrec) {
+            Precedence.Assign -> leftPrec <= Precedence.Range
+            Precedence.Compare -> leftPrec <= binopPrec
+            else -> leftPrec < binopPrec
+        }
+        val rightFixup = context.rightmostSubexpressionFixup(false, false, binopPrec)
+        val rightNeedsGroup = binopPrec != Precedence.Assign &&
+            rightFixup.rightmostSubexpressionPrecedence(e.right) <= binopPrec
+        printSubexpression(e.left, leftNeedsGroup, output, leftFixup)
+        e.op.toTokens(output)
+        printSubexpression(e.right, rightNeedsGroup, output, rightFixup)
+    }
+    if (needsGroup) {
+        io.github.kotlinmania.syn.token.Paren.default().surround(tokens, doPrintExpr)
+    } else {
+        doPrintExpr(tokens)
+    }
 }
 
 public fun printExprBlock(e: Expr.BlockExpr, tokens: TokenStream) {
     e.toTokens(tokens)
 }
 
-public fun printExprBreak(e: Expr.Break, tokens: TokenStream) {
-    e.toTokens(tokens)
+public fun printExprBreak(e: Expr.Break, tokens: TokenStream, fixup: FixupContext = FixupContext.NONE) {
+    outerAttrsToTokens(e.attrs, tokens)
+    e.breakToken.toTokens(tokens)
+    e.label?.toTokens(tokens)
+    e.expr?.let { value ->
+        printSubexpression(
+            value,
+            e.label == null && Classify.exprLeadingLabel(value),
+            tokens,
+            fixup.rightmostSubexpressionFixup(true, true, Precedence.Jump),
+        )
+    }
 }
 
-public fun printExprCall(e: Expr.Call, tokens: TokenStream) {
-    e.toTokens(tokens)
+public fun printExprCall(e: Expr.Call, tokens: TokenStream, fixup: FixupContext = FixupContext.NONE) {
+    outerAttrsToTokens(e.attrs, tokens)
+    val (leftPrec, leftFixup) = fixup.leftmostSubexpressionWithOperator(e.func, true, false, Precedence.Unambiguous)
+    val func = e.func
+    val needsGroup = if (func is Expr.Field) func.member is Member.Named else leftPrec < Precedence.Unambiguous
+    printSubexpression(func, needsGroup, tokens, leftFixup)
+    e.parenToken.surround(tokens) { inner -> e.args.toTokens(inner) }
 }
 
-public fun printExprCast(e: Expr.Cast, tokens: TokenStream) {
-    e.toTokens(tokens)
+public fun printExprCast(e: Expr.Cast, tokens: TokenStream, fixup: FixupContext = FixupContext.NONE) {
+    outerAttrsToTokens(e.attrs, tokens)
+    val needsGroup = e.attrs.isNotEmpty()
+    val context = if (needsGroup) FixupContext.NONE else fixup
+    val doPrintExpr = { output: TokenStream ->
+        val (leftPrec, leftFixup) = context.leftmostSubexpressionWithOperator(e.expr, false, false, Precedence.Cast)
+        printSubexpression(e.expr, leftPrec < Precedence.Cast, output, leftFixup)
+        e.asToken.toTokens(output)
+        e.ty.toTokens(output)
+    }
+    if (needsGroup) {
+        io.github.kotlinmania.syn.token.Paren.default().surround(tokens, doPrintExpr)
+    } else {
+        doPrintExpr(tokens)
+    }
 }
 
-public fun printExprClosure(e: Expr.Closure, tokens: TokenStream) {
-    e.toTokens(tokens)
+internal fun printExprClosure(e: Expr.Closure, tokens: TokenStream, fixup: FixupContext) {
+    outerAttrsToTokens(e.attrs, tokens)
+    e.lifetimes?.toTokens(tokens)
+    e.constness?.toTokens(tokens)
+    e.movability?.toTokens(tokens)
+    e.asyncness?.toTokens(tokens)
+    e.capture?.toTokens(tokens)
+    e.or1Token.toTokens(tokens)
+    e.inputs.toTokens(tokens)
+    e.or2Token.toTokens(tokens)
+    e.output.toTokens(tokens)
+    if (e.output == ReturnType.Default ||
+        e.body.let { body -> body is Expr.BlockExpr && body.attrs.isEmpty() && body.label == null }
+    ) {
+        printExpr(
+            e.body,
+            tokens,
+            fixup.rightmostSubexpressionFixup(false, false, Precedence.Jump),
+        )
+    } else {
+        io.github.kotlinmania.syn.token.Brace.default().surround(tokens) { tokens ->
+            printExpr(e.body, tokens, FixupContext.newStmt())
+        }
+    }
 }
 
-public fun printExprField(e: Expr.Field, tokens: TokenStream) {
-    e.toTokens(tokens)
+public fun printExprField(e: Expr.Field, tokens: TokenStream, fixup: FixupContext = FixupContext.NONE) {
+    outerAttrsToTokens(e.attrs, tokens)
+    val (leftPrec, leftFixup) = fixup.leftmostSubexpressionWithDot(e.base)
+    printSubexpression(e.base, leftPrec < Precedence.Unambiguous, tokens, leftFixup)
+    e.dotToken.toTokens(tokens)
+    e.member.toTokens(tokens)
 }
 
-public fun printExprIndex(e: Expr.Index, tokens: TokenStream) {
-    e.toTokens(tokens)
+public fun printExprIndex(e: Expr.Index, tokens: TokenStream, fixup: FixupContext = FixupContext.NONE) {
+    outerAttrsToTokens(e.attrs, tokens)
+    val (leftPrec, leftFixup) = fixup.leftmostSubexpressionWithOperator(e.expr, true, false, Precedence.Unambiguous)
+    printSubexpression(e.expr, leftPrec < Precedence.Unambiguous, tokens, leftFixup)
+    e.bracketToken.surround(tokens) { inner -> e.index.toTokens(inner) }
 }
 
-public fun printExprLet(e: Expr.Let, tokens: TokenStream) {
-    e.toTokens(tokens)
+public fun printExprLet(e: Expr.Let, tokens: TokenStream, fixup: FixupContext = FixupContext.NONE) {
+    outerAttrsToTokens(e.attrs, tokens)
+    e.letToken.toTokens(tokens)
+    e.pat.toTokens(tokens)
+    e.eqToken.toTokens(tokens)
+    val (rightPrec, rightFixup) = fixup.rightmostSubexpression(e.expr, Precedence.Let)
+    printSubexpression(e.expr, rightPrec < Precedence.Let, tokens, rightFixup)
 }
 
-public fun printExprMethodCall(e: Expr.MethodCall, tokens: TokenStream) {
-    e.toTokens(tokens)
+public fun printExprMethodCall(e: Expr.MethodCall, tokens: TokenStream, fixup: FixupContext = FixupContext.NONE) {
+    outerAttrsToTokens(e.attrs, tokens)
+    val (leftPrec, leftFixup) = fixup.leftmostSubexpressionWithDot(e.receiver)
+    printSubexpression(e.receiver, leftPrec < Precedence.Unambiguous, tokens, leftFixup)
+    e.dotToken.toTokens(tokens)
+    e.method.toTokens(tokens)
+    e.turbofish?.let { printAngleBracketedGenericArguments(tokens, it, PathStyle.Expr) }
+    e.parenToken.surround(tokens) { inner -> e.args.toTokens(inner) }
 }
 
-public fun printExprRange(e: Expr.Range, tokens: TokenStream) {
-    e.toTokens(tokens)
+public fun printExprRange(e: Expr.Range, tokens: TokenStream, fixup: FixupContext = FixupContext.NONE) {
+    outerAttrsToTokens(e.attrs, tokens)
+    val needsGroup = e.attrs.isNotEmpty()
+    val context = if (needsGroup) FixupContext.NONE else fixup
+    val doPrintExpr: (TokenStream) -> Unit = { output ->
+        e.start?.let { start ->
+            val (leftPrec, leftFixup) = context.leftmostSubexpressionWithOperator(start, true, false, Precedence.Range)
+            printSubexpression(start, leftPrec <= Precedence.Range, output, leftFixup)
+        }
+        e.limits.toTokens(output)
+        e.end?.let { end ->
+            val rightFixup = context.rightmostSubexpressionFixup(false, true, Precedence.Range)
+            val rightPrec = rightFixup.rightmostSubexpressionPrecedence(end)
+            printSubexpression(end, rightPrec <= Precedence.Range, output, rightFixup)
+        }
+    }
+    if (needsGroup) {
+        io.github.kotlinmania.syn.token.Paren.default().surround(tokens, doPrintExpr)
+    } else {
+        doPrintExpr(tokens)
+    }
 }
 
-public fun printExprRawAddr(e: Expr.Reference, tokens: TokenStream) {
-    e.toTokens(tokens)
+public fun printExprRawAddr(e: Expr.RawAddr, tokens: TokenStream, fixup: FixupContext = FixupContext.NONE) {
+    outerAttrsToTokens(e.attrs, tokens)
+    e.andToken.toTokens(tokens)
+    e.raw.toTokens(tokens)
+    e.mutability.toTokens(tokens)
+    val (rightPrec, rightFixup) = fixup.rightmostSubexpression(e.expr, Precedence.Prefix)
+    printSubexpression(e.expr, rightPrec < Precedence.Prefix, tokens, rightFixup)
 }
 
-public fun printExprReference(e: Expr.Reference, tokens: TokenStream) {
-    e.toTokens(tokens)
+public fun printExprReference(e: Expr.Reference, tokens: TokenStream, fixup: FixupContext = FixupContext.NONE) {
+    outerAttrsToTokens(e.attrs, tokens)
+    e.andToken.toTokens(tokens)
+    e.mutability?.toTokens(tokens)
+    val (rightPrec, rightFixup) = fixup.rightmostSubexpression(e.expr, Precedence.Prefix)
+    printSubexpression(e.expr, rightPrec < Precedence.Prefix, tokens, rightFixup)
 }
 
-public fun printExprReturn(e: Expr.Return, tokens: TokenStream) {
-    e.toTokens(tokens)
+public fun printExprReturn(e: Expr.Return, tokens: TokenStream, fixup: FixupContext = FixupContext.NONE) {
+    outerAttrsToTokens(e.attrs, tokens)
+    e.returnToken.toTokens(tokens)
+    e.expr?.let { printExpr(it, tokens, fixup.rightmostSubexpressionFixup(true, false, Precedence.Jump)) }
 }
 
-public fun printExprTry(e: Expr.Try, tokens: TokenStream) {
-    e.toTokens(tokens)
+public fun printExprTry(e: Expr.Try, tokens: TokenStream, fixup: FixupContext = FixupContext.NONE) {
+    outerAttrsToTokens(e.attrs, tokens)
+    val (leftPrec, leftFixup) = fixup.leftmostSubexpressionWithDot(e.expr)
+    printSubexpression(e.expr, leftPrec < Precedence.Unambiguous, tokens, leftFixup)
+    e.questionToken.toTokens(tokens)
 }
 
-public fun printExprUnary(e: Expr.Unary, tokens: TokenStream) {
-    e.toTokens(tokens)
+public fun printExprUnary(e: Expr.Unary, tokens: TokenStream, fixup: FixupContext = FixupContext.NONE) {
+    outerAttrsToTokens(e.attrs, tokens)
+    e.op.toTokens(tokens)
+    val (rightPrec, rightFixup) = fixup.rightmostSubexpression(e.expr, Precedence.Prefix)
+    printSubexpression(e.expr, rightPrec < Precedence.Prefix, tokens, rightFixup)
 }
 
-public fun printExprYield(e: Expr.Yield, tokens: TokenStream) {
-    e.toTokens(tokens)
+public fun printExprYield(e: Expr.Yield, tokens: TokenStream, fixup: FixupContext = FixupContext.NONE) {
+    outerAttrsToTokens(e.attrs, tokens)
+    e.yieldToken.toTokens(tokens)
+    e.expr?.let { printExpr(it, tokens, fixup.rightmostSubexpressionFixup(true, false, Precedence.Jump)) }
 }
 
 public fun outerAttrsToTokens(attrs: List<Attribute>, tokens: TokenStream) {
@@ -2181,61 +1457,66 @@ public fun exprBecome(input: ParseStream): SynResult<Expr> {
     return SynResult.success(Expr.Verbatim(tokens))
 }
 
-public fun exprClosure(input: ParseStream, allowStruct: Boolean): SynResult<Expr.Closure> {
-    var lifetimes: BoundLifetimes? = null
-    var constnessResult = ConstParse.parse(input)
-    var constness = if (constnessResult.isSuccess) constnessResult.getOrThrow() else null
-    var movabilityResult = StaticParse.parse(input)
-    var movability = if (movabilityResult.isSuccess) movabilityResult.getOrThrow() else null
-    var asyncnessResult = AsyncParse.parse(input)
-    var asyncness = if (asyncnessResult.isSuccess) asyncnessResult.getOrThrow() else null
-    var captureResult = MoveParse.parse(input)
-    var capture = if (captureResult.isSuccess) captureResult.getOrThrow() else null
-    var or1Result = OrParse.parse(input)
-    if (or1Result.isFailure) return SynResult.failure((or1Result as SynResult.Failure).error)
-    var inputs = PatList()
+internal fun exprClosure(input: ParseStream, allowStruct: Boolean): SynResult<Expr.Closure> {
+    val lifetimes: BoundLifetimes? = BoundLifetimes.parseOptional(input).getOrElse { return SynResult.failure(it) }
+    val constness: io.github.kotlinmania.syn.token.Const? =
+        if (input.peek(ConstPeek)) ConstParse.parse(input).getOrElse { return SynResult.failure(it) } else null
+    val movability: io.github.kotlinmania.syn.token.Static? =
+        if (input.peek(StaticPeek)) StaticParse.parse(input).getOrElse { return SynResult.failure(it) } else null
+    val asyncness: io.github.kotlinmania.syn.token.Async? =
+        if (input.peek(AsyncPeek)) AsyncParse.parse(input).getOrElse { return SynResult.failure(it) } else null
+    val capture: io.github.kotlinmania.syn.token.Move? =
+        if (input.peek(MovePeek)) MoveParse.parse(input).getOrElse { return SynResult.failure(it) } else null
+    val or1Token: io.github.kotlinmania.syn.token.Or = OrParse.parse(input).getOrElse { return SynResult.failure(it) }
+
+    val inputs = PatList()
     while (true) {
-        if (input.peek(OrPeek)) break
-        var valueResult = closureArg(input)
-        if (valueResult.isFailure) return SynResult.failure((valueResult as SynResult.Failure).error)
-        inputs.pushValue(valueResult.getOrThrow())
-        if (input.peek(OrPeek)) break
-        var punctResult = CommaParse.parse(input)
-        if (punctResult.isFailure) return SynResult.failure((punctResult as SynResult.Failure).error)
-        inputs.pushPunct(punctResult.getOrThrow())
+        if (input.peek(OrPeek)) {
+            break
+        }
+        val value = closureArg(input).getOrElse { return SynResult.failure(it) }
+        inputs.pushValue(value)
+        if (input.peek(OrPeek)) {
+            break
+        }
+        val punct: io.github.kotlinmania.syn.token.Comma = CommaParse.parse(input).getOrElse { return SynResult.failure(it) }
+        inputs.pushPunct(punct)
     }
-    var or2Result = OrParse.parse(input)
-    if (or2Result.isFailure) return SynResult.failure((or2Result as SynResult.Failure).error)
-    var output: ReturnType
-    var body: Expr
-    if (input.peek(RArrowPeek)) {
-        var arrowResult = RArrowParse.parse(input)
-        if (arrowResult.isFailure) return SynResult.failure((arrowResult as SynResult.Failure).error)
-        var tyResult = parseTypeFull(input)
-        if (tyResult.isFailure) return SynResult.failure((tyResult as SynResult.Failure).error)
-        var blockResult = parseExprBlock(input)
-        if (blockResult.isFailure) return SynResult.failure((blockResult as SynResult.Failure).error)
-        output = ReturnType.TypeReturn(arrowResult.getOrThrow(), tyResult.getOrThrow())
-        body = blockResult.getOrThrow()
+
+    val or2Token: io.github.kotlinmania.syn.token.Or = OrParse.parse(input).getOrElse { return SynResult.failure(it) }
+
+    val (output, body) = if (input.peek(RArrowPeek)) {
+        val arrowToken: io.github.kotlinmania.syn.token.RArrow = RArrowParse.parse(input).getOrElse { return SynResult.failure(it) }
+        val ty: SynType = SynTypeParseExpr.parse(input).getOrElse { return SynResult.failure(it) }
+        val braces = braced(input).getOrElse { return SynResult.failure(it) }
+        val stmts = parseWithin(braces.content).getOrElse { return SynResult.failure(it) }
+        braces.content.finishChildBuffer()
+        val body = Block(braces.token, stmts)
+        val output = ReturnType.TypeReturn(arrowToken, ty)
+        val block = Expr.BlockExpr(
+            attrs = mutableListOf(),
+            label = null,
+            block = body,
+        )
+        Pair(output, block)
     } else {
-        var bodyResult = ambiguousExprImpl(input, allowStruct)
-        if (bodyResult.isFailure) return SynResult.failure((bodyResult as SynResult.Failure).error)
-        output = ReturnType.Default
-        body = bodyResult.getOrThrow()
+        val body = ambiguousExpr(input, allowStruct).getOrElse { return SynResult.failure(it) }
+        Pair(ReturnType.Default, body)
     }
-    return SynResult.success(
-        Expr.Closure(
-            mutableListOf(),
-            constness,
-            asyncness,
-            capture,
-            or1Result.getOrThrow(),
-            inputs,
-            or2Result.getOrThrow(),
-            output,
-            body,
-        ),
-    )
+
+    return SynResult.success(Expr.Closure(
+        attrs = mutableListOf(),
+        lifetimes = lifetimes,
+        constness = constness,
+        movability = movability,
+        asyncness = asyncness,
+        capture = capture,
+        or1Token = or1Token,
+        inputs = inputs,
+        or2Token = or2Token,
+        output = output,
+        body = body,
+    ))
 }
 
 public fun closureArg(input: ParseStream): SynResult<Pat> {
@@ -2317,7 +1598,7 @@ public object ArmParse {
                 null
             }
         val fatArrowToken = FatArrowParse.parse(input).getOrElse { return SynResult.failure(it) }
-        val body = parseExprFull(input).getOrElse { return SynResult.failure(it) }
+        val body = parseWithEarlierBoundaryRule(input).getOrElse { return SynResult.failure(it) }
         val comma =
             if (Classify.requiresCommaToBeMatchArm(body) && !input.isEmpty()) {
                 CommaParse.parse(input).getOrElse { return SynResult.failure(it) }
@@ -2351,6 +1632,17 @@ public fun parseRangeEnd(input: ParseStream, limits: RangeLimits, allowStruct: B
                     (!allowStruct && input.peek(BracePeek)) ||
                     input.peek(EqPeek) ||
                     input.peek(PlusPeek) ||
+                    input.peek(SlashPeek) ||
+                    input.peek(PercentPeek) ||
+                    input.peek(CaretPeek) ||
+                    input.peek(GtPeek) ||
+                    input.peek(LePeek) ||
+                    input.peek(NePeek) ||
+                    input.peek(MinusEqPeek) ||
+                    input.peek(StarEqPeek) ||
+                    input.peek(AndEqPeek) ||
+                    input.peek(OrEqPeek) ||
+                    input.peek(ShlEqPeek) ||
                     input.peek(AsPeek)
             )
     if (stop) {

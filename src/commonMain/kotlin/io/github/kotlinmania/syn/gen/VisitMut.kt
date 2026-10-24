@@ -191,6 +191,7 @@ public open class VisitMut {
 
     public open fun visitExprClosureMut(e: Expr.Closure) {
         visitAttributesMut(e.attrs)
+        e.lifetimes?.let { visitBoundLifetimesMut(it) }
         for (i in 0 until e.inputs.size) visitPatMut(e.inputs[i])
         visitReturnTypeMut(e.output)
         e.body = visitExprMut(e.body)

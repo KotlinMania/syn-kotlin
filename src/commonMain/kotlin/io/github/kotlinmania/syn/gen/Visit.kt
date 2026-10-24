@@ -191,6 +191,7 @@ public open class Visit {
 
     public open fun visitExprClosure(e: Expr.Closure) {
         e.attrs.forEach { visitAttribute(it) }
+        e.lifetimes?.let { visitBoundLifetimes(it) }
         e.inputs.toList().forEach { visitPat(it) }
         visitReturnType(e.output)
         visitExpr(e.body)
