@@ -16,6 +16,10 @@ adds the complete full/printing configuration of precedence.rs, fixes attributed
 continue precedence, and migrates six production calls. Its raw output matches
 88 Rust observations; 408 JVM and 406 macOS tests pass after integration.
 
+[Generated BigInt adoption](docs/generated-bigint-2026-10-24.md) replaces the complete
+decimal accumulator and migrates three literal-parser calls. Both Rust overflow
+profiles match raw output; 411 JVM and 409 macOS tests pass after adoption.
+
 This is an **in-progress port**. The goal is feature parity with the upstream Rust crate while providing a native Kotlin Multiplatform API. Every Kotlin file carries a `// port-lint: source <path>` header naming its upstream Rust counterpart so the AST-distance tool can track provenance.
 
 ---

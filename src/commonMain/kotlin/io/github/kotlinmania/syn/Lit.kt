@@ -1322,8 +1322,8 @@ private fun parseLitInt(s: String): DigitsLiteralParts? {
             }
         if (digit >= base) return null
         hasDigit = true
-        value.mulAssign(base)
-        value.addAssign(digit)
+        value.`__rtkBigIntMulAssign_mul_assign`(base.toUByte())
+        value.`__rtkBigIntAddAssign_add_assign`(digit.toUByte())
         index += 1
     }
     if (!hasDigit) return null
@@ -1332,7 +1332,7 @@ private fun parseLitInt(s: String): DigitsLiteralParts? {
     var digits =
         buildString {
             if (negative) append('-')
-            append(value.toString())
+            append(value.to_string())
         }
     return DigitsLiteralParts(digits, suffix)
 }
