@@ -1,7 +1,6 @@
 // port-lint: source scan_expr.rs
 package io.github.kotlinmania.syn
 
-import io.github.kotlinmania.procmacro2.Ident
 import io.github.kotlinmania.procmacro2.Span
 
 private fun <T, R> SynResult<T>.asFailure(): SynResult<R> =
@@ -33,6 +32,7 @@ internal fun parseExprWithEarlierBoundaryRuleImpl(input: ParseStream): SynResult
             }
             input.peek(IfPeek) -> parseExprIf(input).getOrElse { return SynResult.failure(it) }
             input.peek(WhilePeek) -> parseExprWhile(input).getOrElse { return SynResult.failure(it) }
+            input.peek(ForPeek) && !chooseGenericsOverQpathAfterKeyword(input) -> parseExprFor(input).getOrElse { return SynResult.failure(it) }
             input.peek(LoopPeek) -> parseExprLoop(input).getOrElse { return SynResult.failure(it) }
             input.peek(MatchPeek) -> parseExprMatch(input).getOrElse { return SynResult.failure(it) }
             input.peek(UnsafePeek) -> parseExprUnsafe(input).getOrElse { return SynResult.failure(it) }
@@ -479,6 +479,10 @@ internal fun atomExprImpl(input: ParseStream, allowStruct: Boolean): SynResult<E
     if (peekExprGroup(input, allowStruct)) {
         return parseExprGroupImpl(input)
     }
+    if (input.peek(UnderscorePeek)) {
+        val underscore = UnderscoreParse.parse(input).getOrElse { return SynResult.failure(it) }
+        return SynResult.success(Expr.Infer(mutableListOf(), underscore))
+    }
     if (input.peek(LitPeek)) {
         val lit = LitParse.parse(input)
         if (lit.isSuccess) return SynResult.success(Expr.Lit(mutableListOf(), lit.getOrThrow()))
@@ -486,6 +490,7 @@ internal fun atomExprImpl(input: ParseStream, allowStruct: Boolean): SynResult<E
     }
     if (input.peek(IfPeek)) return parseExprIf(input)
     if (input.peek(WhilePeek)) return parseExprWhile(input)
+    if (input.peek(ForPeek) && !chooseGenericsOverQpathAfterKeyword(input)) return parseExprFor(input)
     if (input.peek(LoopPeek)) return parseExprLoop(input)
     if (input.peek(MatchPeek)) return parseExprMatch(input)
     if (input.peek(AsyncPeek) && (input.peek2(BracePeek) || (input.peek2(MovePeek) && input.peek3(BracePeek)))) return parseExprAsync(input)
@@ -610,7 +615,7 @@ private fun parseLabeledLoopOrWhile(input: ParseStream): SynResult<Expr> {
     val ahead = input.fork()
     val lifetime = LifetimeParse.parse(ahead).getOrElse { return SynResult.failure(it) }
     val colon = ColonParse.parse(ahead).getOrElse { return SynResult.failure(it) }
-    if (!ahead.peek(LoopPeek) && !ahead.peek(WhilePeek) && !ahead.peek(BracePeek)) {
+    if (!ahead.peek(LoopPeek) && !ahead.peek(WhilePeek) && !ahead.peek(ForPeek) && !ahead.peek(BracePeek)) {
         return SynResult.failure(input.error("expected loop or block expression"))
     }
     input.advanceTo(ahead)
@@ -619,6 +624,8 @@ private fun parseLabeledLoopOrWhile(input: ParseStream): SynResult<Expr> {
         parseExprLoop(input, label)
     } else if (input.peek(WhilePeek)) {
         parseExprWhile(input, label)
+    } else if (input.peek(ForPeek)) {
+        parseExprFor(input, label)
     } else {
         val block = parseExprBlock(input)
         if (block.isFailure) return block
@@ -811,6 +818,18 @@ internal fun parseExprWhile(input: ParseStream, label: Label? = null): SynResult
     val stmts = stmtsResult.getOrThrow()
     content.finishChildBuffer()
     return SynResult.success(Expr.While(attrs, label, whileToken, cond.getOrThrow(), Block(brace, stmts)))
+}
+
+internal fun parseExprFor(input: ParseStream, label: Label? = null): SynResult<Expr> {
+    val forToken = ForParse.parse(input).getOrElse { return SynResult.failure(it) }
+    val pat = Pat.parseMultiWithLeadingVert(input).getOrElse { return SynResult.failure(it) }
+    val inToken = InParse.parse(input).getOrElse { return SynResult.failure(it) }
+    val expr = ambiguousExprImpl(input, allowStruct = false).getOrElse { return SynResult.failure(it) }
+    val braces = braced(input).getOrElse { return SynResult.failure(it) }
+    val attrs = Attribute.parseInner(braces.content).getOrElse { return SynResult.failure(it) }
+    val stmts = parseWithin(braces.content).getOrElse { return SynResult.failure(it) }
+    braces.content.finishChildBuffer()
+    return SynResult.success(Expr.ForLoop(attrs, label, forToken, pat, inToken, expr, Block(braces.token, stmts)))
 }
 
 internal fun parseExprLoop(input: ParseStream, label: Label? = null): SynResult<Expr> {
@@ -1046,310 +1065,9 @@ internal object PatParseImpl {
     fun parse(input: ParseStream): SynResult<Pat> = parsePatSingle(input)
 }
 
-internal fun parsePatSingle(input: ParseStream): SynResult<Pat> {
-    if (input.peek(UnderscorePeek)) {
-        val underscore = UnderscoreParse.parse(input).getOrThrow()
-        return SynResult.success(Pat.Wild(mutableListOf(), underscore))
-    }
-    if ((input.peek(DotDotPeek) || input.peek(DotDotEqPeek)) && !input.peek(DotDotDotPeek)) {
-        return parsePatRangeHalfOpen(input)
-    }
-    if (input.peek(BracketPeek)) {
-        return parsePatSlice(input).let { result ->
-            if (result.isFailure) result.asFailure() else SynResult.success(result.getOrThrow())
-        }
-    }
-    if (input.peek(AndPeek)) {
-        return parsePatReference(input).let { result ->
-            if (result.isFailure) result.asFailure() else SynResult.success(result.getOrThrow())
-        }
-    }
-    if (input.peek(ParenPeek)) {
-        return parsePatParenOrTuple(input)
-    }
-    if (input.peek(RefPeek) || input.peek(MutPeek)) {
-        return parsePatIdent(input).let { result ->
-            if (result.isFailure) result.asFailure() else SynResult.success(result.getOrThrow())
-        }
-    }
-    if (input.peek(LitPeek) || (input.peek(ConstPeek) && input.peek2(BracePeek))) {
-        return parsePatLitOrRange(input)
-    }
-    if (input.peek(IdentPeek) ||
-        input.peek(PathSepPeek) ||
-        input.peek(SelfValuePeek) ||
-        input.peek(SelfTypePeek) ||
-        input.peek(SuperPeek) ||
-        input.peek(CratePeek)
-    ) {
-        return parsePatPathOrMacroOrStructOrRange(input)
-    }
-    return SynResult.failure(input.error("unsupported pattern"))
-}
+internal fun parsePatSingle(input: ParseStream): SynResult<Pat> = Pat.parseSingle(input)
 
-internal fun parsePatMultiWithLeadingVert(input: ParseStream): SynResult<Pat> {
-    val leadingVert =
-        if (input.peek(OrPeek) && !input.peek(OrOrPeek) && !input.peek(OrEqPeek)) {
-            OrParse.parse(input).getOrElse { return SynResult.failure(it) }
-        } else {
-            null
-        }
-    return multiPatImpl(input, leadingVert)
-}
-
-private fun multiPatImpl(
-    input: ParseStream,
-    leadingVert: io.github.kotlinmania.syn.token.Or?,
-): SynResult<Pat> {
-    var pat = parsePatSingle(input).getOrElse { return SynResult.failure(it) }
-    if (leadingVert != null || (input.peek(OrPeek) && !input.peek(OrOrPeek) && !input.peek(OrEqPeek))) {
-        val cases = PatList()
-        cases.pushValue(pat)
-        while (input.peek(OrPeek) && !input.peek(OrOrPeek) && !input.peek(OrEqPeek)) {
-            cases.pushPunct(OrParse.parse(input).getOrElse { return SynResult.failure(it) })
-            cases.pushValue(parsePatSingle(input).getOrElse { return SynResult.failure(it) })
-        }
-        pat = Pat.Or(leadingVert, cases)
-    }
-    return SynResult.success(pat)
-}
-
-private fun parsePatPathOrMacroOrStructOrRange(input: ParseStream): SynResult<Pat> {
-    val path = parseModStylePath(input).getOrElse { return SynResult.failure(it) }
-    if (input.peek(NotPeek) && !input.peek(NePeek)) {
-        val bangToken = NotParse.parse(input).getOrElse { return SynResult.failure(it) }
-        val delimiter = parseDelimiter(input).getOrElse { return SynResult.failure(it) }
-        return SynResult.success(Pat.Macro(mutableListOf(), Macro(path, bangToken, delimiter.first, delimiter.second)))
-    }
-    if (input.peek(BracePeek)) {
-        return parsePatStruct(input, path).let { result ->
-            if (result.isFailure) result.asFailure() else SynResult.success(result.getOrThrow())
-        }
-    }
-    if (input.peek(ParenPeek)) {
-        return parsePatTupleStruct(input, path).let { result ->
-            if (result.isFailure) result.asFailure() else SynResult.success(result.getOrThrow())
-        }
-    }
-    if (input.peek(DotDotPeek) || input.peek(DotDotEqPeek) || input.peek(DotDotDotPeek)) {
-        return parsePatRange(input, Expr.Path(mutableListOf(), null, path))
-    }
-    val ident = path.getIdent()
-    if (ident != null) {
-        return SynResult.success(Pat.Ident(mutableListOf(), null, FieldMutability.None, ident, null, null))
-    }
-    return SynResult.success(Pat.Path(mutableListOf(), null, path))
-}
-
-private fun parsePatIdent(input: ParseStream): SynResult<Pat.Ident> {
-    val byRef = RefParse.parse(input).getOrNull()
-    val mutability =
-        MutParse.parse(input).getOrNull()?.let { FieldMutability.Mut(it) } ?: FieldMutability.None
-    val ident =
-        if (input.peek(SelfValuePeek)) {
-            identFromSelfValue(SelfValueParse.parse(input).getOrThrow())
-        } else {
-            IdentParse.parse(input).getOrElse { return SynResult.failure(it) }
-        }
-    val atToken = AtParse.parse(input).getOrNull()
-    val subpat =
-        if (atToken != null) {
-            parsePatSingle(input).getOrElse { return SynResult.failure(it) }
-        } else {
-            null
-        }
-    return SynResult.success(Pat.Ident(mutableListOf(), byRef, mutability, ident, atToken, subpat))
-}
-
-private fun parsePatTupleStruct(
-    input: ParseStream,
-    path: Path,
-): SynResult<Pat.TupleStruct> {
-    val parens = parenthesized(input).getOrElse { return SynResult.failure(it) }
-    val elems = PatList()
-    while (!parens.content.isEmpty()) {
-        elems.pushValue(parsePatMultiWithLeadingVert(parens.content).getOrElse { return SynResult.failure(it) })
-        if (parens.content.isEmpty()) break
-        elems.pushPunct(CommaParse.parse(parens.content).getOrElse { return SynResult.failure(it) })
-    }
-    parens.content.finishChildBuffer()
-    return SynResult.success(Pat.TupleStruct(mutableListOf(), null, path, parens.token, elems))
-}
-
-private fun parsePatStruct(
-    input: ParseStream,
-    path: Path,
-): SynResult<Pat.Struct> {
-    val braces = braced(input).getOrElse { return SynResult.failure(it) }
-    val fields = FieldPatList()
-    var rest: PatRest? = null
-    while (!braces.content.isEmpty()) {
-        parseOuterAttributes(braces.content).getOrElse { return SynResult.failure(it) }
-        if (braces.content.peek(DotDotPeek) && !braces.content.peek(DotDotDotPeek)) {
-            rest = PatRest(DotDotParse.parse(braces.content).getOrElse { return SynResult.failure(it) })
-            break
-        }
-        fields.pushValue(parseFieldPat(braces.content).getOrElse { return SynResult.failure(it) })
-        if (braces.content.isEmpty()) break
-        fields.pushPunct(CommaParse.parse(braces.content).getOrElse { return SynResult.failure(it) })
-    }
-    braces.content.finishChildBuffer()
-    return SynResult.success(Pat.Struct(null, path, braces.token, fields, rest, null))
-}
-
-private fun parseFieldPat(input: ParseStream): SynResult<FieldPat> {
-    val byRef = RefParse.parse(input).getOrNull()
-    val mutability =
-        MutParse.parse(input).getOrNull()?.let { FieldMutability.Mut(it) } ?: FieldMutability.None
-    val member = parseMemberImpl(input).getOrElse { return SynResult.failure(it) }
-    if ((byRef == null && mutability is FieldMutability.None && input.peek(ColonPeek)) || member is Member.Unnamed) {
-        val colon = ColonParse.parse(input).getOrElse { return SynResult.failure(it) }
-        val pat = parsePatMultiWithLeadingVert(input).getOrElse { return SynResult.failure(it) }
-        return SynResult.success(FieldPat(member, colon, pat))
-    }
-    val ident =
-        when (member) {
-            is Member.Named -> member.ident
-            is Member.Unnamed -> return SynResult.failure(input.error("expected named field"))
-        }
-    val pat = Pat.Ident(mutableListOf(), byRef, mutability, ident, null, null)
-    return SynResult.success(FieldPat(Member.Named(ident), null, pat))
-}
-
-private fun parsePatRange(
-    input: ParseStream,
-    start: Expr,
-): SynResult<Pat> {
-    val limits = parsePatRangeLimitsObsolete(input).getOrElse { return SynResult.failure(it) }
-    val end = parsePatRangeBound(input).getOrElse { return SynResult.failure(it) }
-    if (limits is RangeLimits.Closed && end == null) {
-        return SynResult.failure(input.error("expected range upper bound"))
-    }
-    return SynResult.success(Pat.Range(mutableListOf(), start, limits, end))
-}
-
-private fun parsePatRangeHalfOpen(input: ParseStream): SynResult<Pat> {
-    val limits = parsePatRangeLimitsObsolete(input).getOrElse { return SynResult.failure(it) }
-    val end = parsePatRangeBound(input).getOrElse { return SynResult.failure(it) }
-    if (end != null) {
-        return SynResult.success(Pat.Range(mutableListOf(), null, limits, end))
-    }
-    return when (limits) {
-        is RangeLimits.HalfOpen -> SynResult.success(Pat.Rest(mutableListOf(), limits.token))
-        is RangeLimits.Closed -> SynResult.failure(input.error("expected range upper bound"))
-    }
-}
-
-private fun parsePatLitOrRange(input: ParseStream): SynResult<Pat> {
-    val start =
-        parsePatRangeBound(input).getOrElse { return SynResult.failure(it) }
-            ?: return SynResult.failure(input.error("expected range bound"))
-    if (input.peek(DotDotPeek) || input.peek(DotDotEqPeek) || input.peek(DotDotDotPeek)) {
-        val limits = parsePatRangeLimitsObsolete(input).getOrElse { return SynResult.failure(it) }
-        val end = parsePatRangeBound(input).getOrElse { return SynResult.failure(it) }
-        if (limits is RangeLimits.Closed && end == null) {
-            return SynResult.failure(input.error("expected range upper bound"))
-        }
-        return SynResult.success(Pat.Range(mutableListOf(), start, limits, end))
-    }
-    return when (start) {
-        is Expr.Const -> SynResult.success(Pat.Const(start.attrs, start.constToken, start.block))
-        is Expr.Lit -> SynResult.success(Pat.Lit(start.attrs, start.lit))
-        is Expr.Path -> SynResult.success(Pat.Path(start.attrs, start.qself, start.path))
-        else -> SynResult.failure(input.error("expected literal, const block, or path pattern"))
-    }
-}
-
-private fun parsePatRangeLimitsObsolete(input: ParseStream): SynResult<RangeLimits> {
-    if (input.peek(DotDotDotPeek)) {
-        val dots = DotDotDotParse.parse(input).getOrElse { return SynResult.failure(it) }
-        return SynResult.success(
-            RangeLimits.Closed(
-                io.github.kotlinmania.syn.token.DotDotEq
-                    .from(dots.spans),
-            ),
-        )
-    }
-    return parseRangeLimits(input)
-}
-
-private fun parsePatRangeBound(input: ParseStream): SynResult<Expr?> {
-    if (input.isEmpty() ||
-        input.peek(OrPeek) ||
-        input.peek(EqPeek) ||
-        (input.peek(ColonPeek) && !input.peek(PathSepPeek)) ||
-        input.peek(CommaPeek) ||
-        input.peek(SemiPeek) ||
-        input.peek(IfPeek)
-    ) {
-        return SynResult.success(null)
-    }
-    if (input.peek(LitPeek)) {
-        val lit = LitParse.parse(input).getOrElse { return SynResult.failure(it) }
-        return SynResult.success(Expr.Lit(mutableListOf(), lit))
-    }
-    if (input.peek(ConstPeek) && input.peek2(BracePeek)) {
-        return parseExprConst(input).let { result ->
-            if (result.isFailure) result.asFailure() else SynResult.success(result.getOrThrow())
-        }
-    }
-    if (input.peek(IdentPeek) ||
-        input.peek(PathSepPeek) ||
-        input.peek(SelfValuePeek) ||
-        input.peek(SelfTypePeek) ||
-        input.peek(SuperPeek) ||
-        input.peek(CratePeek)
-    ) {
-        val path = parseModStylePath(input).getOrElse { return SynResult.failure(it) }
-        return SynResult.success(Expr.Path(mutableListOf(), null, path))
-    }
-    return SynResult.failure(input.error("expected range bound"))
-}
-
-private fun parsePatParenOrTuple(input: ParseStream): SynResult<Pat> {
-    val parens = parenthesized(input).getOrElse { return SynResult.failure(it) }
-    val content = parens.content
-    val elems = PatList()
-    while (!content.isEmpty()) {
-        val value = parsePatMultiWithLeadingVert(content).getOrElse { return SynResult.failure(it) }
-        if (content.isEmpty()) {
-            if (elems.isEmpty() && value !is Pat.Rest) {
-                content.finishChildBuffer()
-                return SynResult.success(Pat.PatParen(parens.token, value))
-            }
-            elems.pushValue(value)
-            break
-        }
-        elems.pushValue(value)
-        elems.pushPunct(CommaParse.parse(content).getOrElse { return SynResult.failure(it) })
-    }
-    content.finishChildBuffer()
-    return SynResult.success(Pat.Tuple(parens.token, elems))
-}
-
-private fun parsePatReference(input: ParseStream): SynResult<Pat.Reference> {
-    val andToken = AndParse.parse(input).getOrElse { return SynResult.failure(it) }
-    val mutability =
-        MutParse.parse(input).getOrNull()?.let { FieldMutability.Mut(it) } ?: FieldMutability.None
-    val pat = parsePatSingle(input).getOrElse { return SynResult.failure(it) }
-    return SynResult.success(Pat.Reference(andToken, mutability, pat))
-}
-
-private fun parsePatSlice(input: ParseStream): SynResult<Pat.Slice> {
-    val brackets = bracketed(input).getOrElse { return SynResult.failure(it) }
-    val elems = PatList()
-    while (!brackets.content.isEmpty()) {
-        val value = parsePatMultiWithLeadingVert(brackets.content).getOrElse { return SynResult.failure(it) }
-        if (value is Pat.Range && (value.start == null || value.end == null)) {
-            return SynResult.failure(brackets.content.error("range pattern is not allowed unparenthesized inside slice pattern"))
-        }
-        elems.pushValue(value)
-        if (brackets.content.isEmpty()) break
-        elems.pushPunct(CommaParse.parse(brackets.content).getOrElse { return SynResult.failure(it) })
-    }
-    brackets.content.finishChildBuffer()
-    return SynResult.success(Pat.Slice(brackets.token, elems))
-}
+internal fun parsePatMultiWithLeadingVert(input: ParseStream): SynResult<Pat> = Pat.parseMultiWithLeadingVert(input)
 
 internal object SynTypeParseExpr {
     fun parse(input: ParseStream): SynResult<SynType> =

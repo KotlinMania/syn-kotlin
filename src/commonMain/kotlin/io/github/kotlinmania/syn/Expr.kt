@@ -1320,7 +1320,7 @@ internal fun parseExprWhileLabeled(input: ParseStream): SynResult<Expr> =
     parseExprWhile(input)
 
 internal fun parseExprForLabeled(input: ParseStream): SynResult<Expr> =
-    parseExprFull(input)
+    parseExprFor(input)
 
 internal fun parseExprLoopLabeled(input: ParseStream): SynResult<Expr> =
     parseExprLoop(input)

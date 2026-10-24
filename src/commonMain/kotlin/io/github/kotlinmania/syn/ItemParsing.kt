@@ -163,24 +163,31 @@ private fun parseRestOfItem(
     }
     if (input.peek(ModPeek) || (input.peek(UnsafePeek) && input.peek2(ModPeek))) {
         val unsafety = UnsafeParse.parse(input).getOrNull()
-        val modToken = ModParse.parse(input).getOrThrow()
-        val ident = IdentParse.parse(input).getOrThrow()
-        val semiResult = SemiParse.parse(input)
-        if (semiResult.isSuccess) {
+        val modToken = ModParse.parse(input).getOrElse { return SynResult.failure(it) }
+        val ident =
+            if (input.peek(TryPeek)) {
+                IdentExt.parseAny(input).getOrElse { return SynResult.failure(it) }
+            } else {
+                IdentParse.parse(input).getOrElse { return SynResult.failure(it) }
+            }
+        val lookahead = input.lookahead1()
+        if (lookahead.peek(SemiPeek)) {
+            val semi = SemiParse.parse(input).getOrElse { return SynResult.failure(it) }
             return SynResult.success(
-                Item.Mod(attrs, vis, unsafety, modToken, ident, ModContent.Unnamed(semiResult.getOrThrow())),
+                Item.Mod(attrs, vis, unsafety, modToken, ident, ModContent.Unnamed(semi)),
             )
         }
-        val bracesVal = braced(input).getOrThrow()
+        if (!lookahead.peek(BracePeek)) return SynResult.failure(lookahead.error())
+        val bracesVal = braced(input).getOrElse { return SynResult.failure(it) }
+        val itemAttrs = attrs.toMutableList()
+        parseInner(bracesVal.content, itemAttrs).getOrElse { return SynResult.failure(it) }
         val items = mutableListOf<Item>()
         while (!bracesVal.content.isEmpty()) {
-            val i = ItemParse.parse(bracesVal.content)
-            if (i.isFailure) break
-            items.add(i.getOrThrow())
+            items.add(ItemParse.parse(bracesVal.content).getOrElse { return SynResult.failure(it) })
         }
         bracesVal.content.finishChildBuffer()
         return SynResult.success(
-            Item.Mod(attrs, vis, unsafety, modToken, ident, ModContent.Inline(bracesVal.token, items)),
+            Item.Mod(itemAttrs, vis, unsafety, modToken, ident, ModContent.Inline(bracesVal.token, items)),
         )
     }
     if (input.peek(MacroPeek)) {

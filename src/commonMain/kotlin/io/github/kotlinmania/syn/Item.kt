@@ -291,12 +291,18 @@ public sealed class Item : ToTokens {
         public var content: ModContent?,
     ) : Item() {
         override fun toTokens(tokens: TokenStream) {
-            for (attr in attrs) attr.toTokens(tokens)
+            for (attr in attrs) if (attr.style is AttrStyle.Outer) attr.toTokens(tokens)
             vis.toTokens(tokens)
             unsafety?.toTokens(tokens)
             modToken.toTokens(tokens)
             ident.toTokens(tokens)
-            content?.toTokens(tokens)
+            when (val body = content) {
+                is ModContent.Inline -> body.braceToken.surround(tokens) { inner ->
+                    for (attr in attrs) if (attr.style is AttrStyle.Inner) attr.toTokens(inner)
+                    for (item in body.items) item.toTokens(inner)
+                }
+                else -> body?.toTokens(tokens)
+            }
         }
     }
 
