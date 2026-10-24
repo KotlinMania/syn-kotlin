@@ -33,11 +33,11 @@ public data class Macro(
     override fun toTokens(tokens: TokenStream) {
         path.toTokens(tokens)
         bangToken.toTokens(tokens)
-        delimiter.surround(tokens, this.tokens)
+        delimiter.surround(tokens, this.tokens.clone())
     }
 
     public fun deepCopy(): Macro =
-        Macro(path.deepCopy(), bangToken, delimiter, tokens)
+        Macro(path.deepCopy(), bangToken, delimiter, tokens.clone())
 
     public fun span(): DelimSpan =
         when (val value = delimiter) {
@@ -85,7 +85,7 @@ public fun <T> Macro.parseBodyWith(parser: (ParseStream) -> SynResult<T>): SynRe
             is MacroDelimiter.Brace -> delimiter.token.span.close()
             is MacroDelimiter.Bracket -> delimiter.token.span.close()
         }
-    return parseScoped(parser, scope, tokens)
+    return parseScoped(parser, scope, tokens.clone())
 }
 
 /** Parses a delimiter from the input stream. */
@@ -98,9 +98,9 @@ public fun parseDelimiter(input: ParseStream): SynResult<Pair<MacroDelimiter, To
             val span = tt.value.delimSpan()
             val delimiter =
                 when (tt.value.delimiter()) {
-                    Delimiter.Parenthesis -> MacroDelimiter.Paren(Paren.from(span.open()))
-                    Delimiter.Brace -> MacroDelimiter.Brace(Brace.from(span.open()))
-                    Delimiter.Bracket -> MacroDelimiter.Bracket(Bracket.from(span.open()))
+                    Delimiter.Parenthesis -> MacroDelimiter.Paren(Paren.from(span))
+                    Delimiter.Brace -> MacroDelimiter.Brace(Brace.from(span))
+                    Delimiter.Bracket -> MacroDelimiter.Bracket(Bracket.from(span))
                     Delimiter.None -> return@step SynResult.failure(cursor.error("expected delimiter"))
                 }
             SynResult.success((delimiter to tt.value.stream()) to rest)
