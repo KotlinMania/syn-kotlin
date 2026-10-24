@@ -12,14 +12,7 @@ import io.github.kotlinmania.syn.token.Underscore
 import io.github.kotlinmania.unicodeident.isXidContinue
 import io.github.kotlinmania.unicodeident.isXidStart
 
-public fun Ident.copy(): Ident {
-    val spelling = toString()
-    return if (spelling.startsWith("r#")) {
-        Ident.newRaw(spelling.removePrefix("r#"), span())
-    } else {
-        Ident.new(spelling, span())
-    }
-}
+public fun Ident.copy(): Ident = cloneToken()
 
 public fun Ident.clone(): Ident = copy()
 

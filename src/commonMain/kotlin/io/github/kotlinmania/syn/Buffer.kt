@@ -214,7 +214,7 @@ public class Cursor internal constructor(
     public fun ident(): Pair<Ident, Cursor>? {
         val c = ignoreNone()
         return when (val e = c.entry()) {
-            is Entry.IdentEntry -> e.ident to c.bumpIgnoreGroup()
+            is Entry.IdentEntry -> e.ident.cloneToken() to c.bumpIgnoreGroup()
             else -> null
         }
     }
@@ -227,7 +227,7 @@ public class Cursor internal constructor(
         val c = ignoreNone()
         val e = c.entry()
         return if (e is Entry.PunctEntry && e.punct.asChar() != '\'') {
-            e.punct to c.bumpIgnoreGroup()
+            e.punct.cloneToken() to c.bumpIgnoreGroup()
         } else {
             null
         }
@@ -240,7 +240,7 @@ public class Cursor internal constructor(
     public fun literal(): Pair<Literal, Cursor>? {
         val c = ignoreNone()
         return when (val e = c.entry()) {
-            is Entry.LiteralEntry -> e.literal to c.bumpIgnoreGroup()
+            is Entry.LiteralEntry -> e.literal.cloneToken() to c.bumpIgnoreGroup()
             else -> null
         }
     }
@@ -305,7 +305,7 @@ public class Cursor internal constructor(
         if (e is Entry.GroupEntry) {
             val endOfGroup = index + e.endOffset
             val afterGroup = create(entries, endOfGroup, scope)
-            return e.group to afterGroup
+            return e.group.cloneToken() to afterGroup
         }
         return null
     }
@@ -340,22 +340,22 @@ public class Cursor internal constructor(
         val len: Int
         when (val e = entry()) {
             is Entry.GroupEntry -> {
-                tree = TokenTree.Group(e.group)
+                tree = TokenTree.Group(e.group.cloneToken())
                 len = e.endOffset
             }
 
             is Entry.LiteralEntry -> {
-                tree = TokenTree.Literal(e.literal)
+                tree = TokenTree.Literal(e.literal.cloneToken())
                 len = 1
             }
 
             is Entry.IdentEntry -> {
-                tree = TokenTree.Ident(e.ident)
+                tree = TokenTree.Ident(e.ident.cloneToken())
                 len = 1
             }
 
             is Entry.PunctEntry -> {
-                tree = TokenTree.Punct(e.punct)
+                tree = TokenTree.Punct(e.punct.cloneToken())
                 len = 1
             }
 
