@@ -1002,7 +1002,7 @@ public fun printExprBinary(e: Expr.Binary, tokens: TokenStream, fixup: FixupCont
     val needsGroup = e.attrs.isNotEmpty()
     val context = if (needsGroup) FixupContext.NONE else fixup
     val doPrintExpr = { output: TokenStream ->
-        val binopPrec = Precedence.ofBinop(e.op)
+        val binopPrec = Precedence.of_binop(e.op)
         val (leftPrec, leftFixup) = context.leftmostSubexpressionWithOperator(
             e.left,
             when (e.op) {

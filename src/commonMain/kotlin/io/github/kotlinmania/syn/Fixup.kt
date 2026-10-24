@@ -224,7 +224,7 @@ private fun scanLeft(expr: Expr, fixup: FixupContext): Boolean =
         }
 
         is Expr.Binary -> {
-            val binopPrec = Precedence.ofBinop(expr.op)
+            val binopPrec = Precedence.of_binop(expr.op)
             if (binopPrec == Precedence.Assign) {
                 fixup.previousOperator <= Precedence.Assign
             } else {
@@ -379,7 +379,7 @@ private fun scanRightBinary(
     ) {
         return Scan.Consume
     }
-    var binopPrec = Precedence.ofBinop(expr.op)
+    var binopPrec = Precedence.of_binop(expr.op)
     if (binopPrec == Precedence.Compare && fixup.nextOperator == Precedence.Compare) {
         return Scan.Consume
     }
