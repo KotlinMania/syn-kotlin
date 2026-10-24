@@ -956,7 +956,7 @@ internal fun parseStmtFull(input: ParseStream): SynResult<Stmt> {
                     return e.asFailure()
                 } else {
                     val diverge =
-                        if (!Classify.exprTrailingBrace(e.getOrThrow()) && input.peek(ElsePeek)) {
+                        if (!expr_trailing_brace(e.getOrThrow()) && input.peek(ElsePeek)) {
                             val elseToken = ElseParse.parse(input).getOrThrow()
                             val block = parseExprBlock(input)
                             if (block.isFailure) return block.asFailure()

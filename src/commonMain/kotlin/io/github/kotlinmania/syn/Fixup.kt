@@ -522,7 +522,7 @@ private fun scanRightBreak(
         }
 
         else -> {
-            if (bailoutOffset >= 1 || expr.label == null && Classify.exprLeadingLabel(value)) {
+            if (bailoutOffset >= 1 || expr.label == null && expr_leading_label(value)) {
                 return Scan.Consume
             }
             val rightFixup = fixup.rightmostSubexpressionFixup(true, true, Precedence.Jump)

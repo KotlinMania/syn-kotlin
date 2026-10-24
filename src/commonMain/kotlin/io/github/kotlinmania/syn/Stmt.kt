@@ -143,7 +143,7 @@ internal fun stmtLocal(input: ParseStream): SynResult<Stmt.Local> {
         val expr = parseExprFull(input).getOrElse { return SynResult.failure(it) }
 
         var diverge: ElseExpr? = null
-        if (!Classify.exprTrailingBrace(expr) && input.peek(ElsePeek)) {
+        if (!expr_trailing_brace(expr) && input.peek(ElsePeek)) {
             val elseToken = ElseParse.parse(input).getOrElse { return SynResult.failure(it) }
             val bracesResult = braced(input).getOrElse { return SynResult.failure(it) }
             val stmts = mutableListOf<Stmt>()

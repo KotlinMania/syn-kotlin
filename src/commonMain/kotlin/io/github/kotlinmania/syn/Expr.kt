@@ -1050,7 +1050,7 @@ public fun printExprBreak(e: Expr.Break, tokens: TokenStream, fixup: FixupContex
     e.expr?.let { value ->
         printSubexpression(
             value,
-            e.label == null && Classify.exprLeadingLabel(value),
+            e.label == null && expr_leading_label(value),
             tokens,
             fixup.rightmostSubexpressionFixup(true, true, Precedence.Jump),
         )
