@@ -2,6 +2,8 @@
 package io.github.kotlinmania.syn
 
 // Generated from Syn AST; exact original retained in input.rs.
+import io.github.kotlinmania.syn.appendTokenTree as __rtkVerbatimAppendTokenTree
+
 // Rust use resolved through explicit library bindings.
 // Rust use resolved through explicit library bindings.
 // Rust use resolved through explicit library bindings.
@@ -92,7 +94,7 @@ internal fun `between`(
                             })
                     })
             }
-            io.github.kotlinmania.syn.TokenStreamExt.append(`tokens`, `tt`)
+            (`tokens`).__rtkVerbatimAppendTokenTree(`tt`)
             kotlin.run {
                 val __rtkVerbatimValue6: io.github.kotlinmania.syn.Cursor = `next`
                 `cursor` = __rtkVerbatimValue6

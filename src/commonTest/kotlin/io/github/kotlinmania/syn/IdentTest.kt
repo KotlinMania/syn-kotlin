@@ -102,6 +102,6 @@ class IdentTest {
     fun identUnraw() {
         val raw = Ident.newRaw("move", Span.callSite())
         assertEquals("move", raw.unraw().toString())
-        assertEquals("move", IdentExt.unraw(raw).toString())
+        assertEquals("move", SynExtImpl0(raw).unraw().toString())
     }
 }
