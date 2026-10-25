@@ -37,9 +37,9 @@ interface `SynExtLibraryTrait2` {
 // sources.
 private interface `SynExtLibraryTrait3` {}
 
-// Dependency contract crate::sealed::lookahead::Sealed from sealed.rs:3; original retained in
-// library sources.
-private interface `SynExtLibraryTrait4` {}
+// Dependency marker crate::sealed::lookahead::Sealed from sealed.rs:3; reuses
+// io.github.kotlinmania.syn.SynSealedModule_lookahead_Sealed; Copy and sealing obligations checked
+// from source.
 
 private class `SynExtForward0`<`T`>(
     private val SynExtForward: `SynExtLibraryTrait2`.`SynExtStatic`<`T`>,
@@ -233,7 +233,8 @@ private object `SynExtImpl2` :
     override fun `display`(): kotlin.String = "identifier"
 }
 
-private class `SynExtImpl3`(receiver: `SynExtModule_private_PeekFn`) : `SynExtLibraryTrait4` {
+private class `SynExtImpl3`(receiver: `SynExtModule_private_PeekFn`) :
+    `io`.`github`.`kotlinmania`.`syn`.`SynSealedModule_lookahead_Sealed` {
     private val SynExtReceiver: `SynExtModule_private_PeekFn` = receiver
 }
 
