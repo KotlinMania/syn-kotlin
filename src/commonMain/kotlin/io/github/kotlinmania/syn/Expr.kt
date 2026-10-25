@@ -1337,7 +1337,7 @@ public fun exprBuiltin(input: ParseStream): SynResult<Expr> {
     if (parens.isFailure) return SynResult.failure((parens as SynResult.Failure).error)
     var parensVal = parens.getOrThrow()
     parensVal.content.finishChildBuffer()
-    var tokens = verbatimBetween(begin, input)
+    var tokens = between(begin, input)
     return SynResult.success(Expr.Verbatim(tokens))
 }
 
@@ -1453,7 +1453,7 @@ public fun exprBecome(input: ParseStream): SynResult<Expr> {
     if (becomeResult.isFailure) return SynResult.failure((becomeResult as SynResult.Failure).error)
     var exprResult = parseExprFull(input)
     if (exprResult.isFailure) return SynResult.failure((exprResult as SynResult.Failure).error)
-    var tokens = verbatimBetween(begin, input)
+    var tokens = between(begin, input)
     return SynResult.success(Expr.Verbatim(tokens))
 }
 
