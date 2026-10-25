@@ -12,7 +12,7 @@ import io.github.kotlinmania.procmacro2.TokenStream
 import io.github.kotlinmania.quote.ToTokens
 import io.github.kotlinmania.quote.append
 import io.github.kotlinmania.syn.Cursor
-import io.github.kotlinmania.syn.intoDelimSpan
+import io.github.kotlinmania.syn.__rtkImpl7
 import io.github.kotlinmania.procmacro2.Group as ProcMacroGroup
 
 /**
@@ -189,10 +189,10 @@ class Brace private constructor(
 ) : DelimiterToken(span, Delimiter.Brace) {
     companion object {
         fun default(): Brace =
-            Brace(Span.callSite().intoDelimSpan())
+            Brace(__rtkImpl7(Span.callSite()).into_spans())
 
         fun from(span: Span): Brace =
-            Brace(span.intoDelimSpan())
+            Brace(__rtkImpl7(span).into_spans())
 
         fun from(span: DelimSpan): Brace =
             Brace(span)
@@ -208,10 +208,10 @@ class Bracket private constructor(
 ) : DelimiterToken(span, Delimiter.Bracket) {
     companion object {
         fun default(): Bracket =
-            Bracket(Span.callSite().intoDelimSpan())
+            Bracket(__rtkImpl7(Span.callSite()).into_spans())
 
         fun from(span: Span): Bracket =
-            Bracket(span.intoDelimSpan())
+            Bracket(__rtkImpl7(span).into_spans())
 
         fun from(span: DelimSpan): Bracket =
             Bracket(span)
@@ -227,10 +227,10 @@ class Paren private constructor(
 ) : DelimiterToken(span, Delimiter.Parenthesis) {
     companion object {
         fun default(): Paren =
-            Paren(Span.callSite().intoDelimSpan())
+            Paren(__rtkImpl7(Span.callSite()).into_spans())
 
         fun from(span: Span): Paren =
-            Paren(span.intoDelimSpan())
+            Paren(__rtkImpl7(span).into_spans())
 
         fun from(span: DelimSpan): Paren =
             Paren(span)
