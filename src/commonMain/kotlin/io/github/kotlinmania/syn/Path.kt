@@ -397,7 +397,7 @@ public data class QSelf(
     public var gtToken: Gt,
 ) : Spanned {
     override fun span(): Span =
-        QSelfDelimiters(this).span()
+        SynSpannedImpl0(QSelfDelimiters(this), SynSpannedBound0.Case2()).span()
 }
 
 private class QSelfDelimiters(
