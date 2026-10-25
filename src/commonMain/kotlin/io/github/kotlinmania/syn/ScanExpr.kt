@@ -643,32 +643,15 @@ internal fun pathOrMacroOrStructImpl(input: ParseStream, allowStruct: Boolean): 
 }
 
 internal fun parseFieldValueImpl(input: ParseStream): SynResult<FieldValue> {
-    val identResult = IdentParse.parse(input)
-    if (identResult.isFailure) {
-        return identResult.map {
-            FieldValue(mutableListOf(), Member.Named(it), null, Expr.Path(mutableListOf(), null, Path.from(it)))
-        }
-    }
-    val ident = identResult.getOrThrow()
-    if (input.peek(ColonPeek)) {
-        val colonResult = ColonParse.parse(input)
-        if (colonResult.isFailure) {
-            return colonResult.map {
-                FieldValue(mutableListOf(), Member.Named(ident), it, Expr.Path(mutableListOf(), null, Path.from(ident)))
-            }
-        }
-        val exprResult = parseExprFull(input)
-        if (exprResult.isFailure) {
-            return exprResult.map {
-                FieldValue(mutableListOf(), Member.Named(ident), colonResult.getOrThrow(), it)
-            }
-        }
-        return SynResult.success(
-            FieldValue(mutableListOf(), Member.Named(ident), colonResult.getOrThrow(), exprResult.getOrThrow()),
-        )
+    val attrs = Attribute.parseOuter(input).getOrElse { return SynResult.failure(it) }
+    val member = parseMemberImpl(input).getOrElse { return SynResult.failure(it) }
+    if (input.peek(ColonPeek) || member !is Member.Named) {
+        val colon = ColonParse.parse(input).getOrElse { return SynResult.failure(it) }
+        val value = parseExprFull(input).getOrElse { return SynResult.failure(it) }
+        return SynResult.success(FieldValue(attrs, member, colon, value))
     }
     return SynResult.success(
-        FieldValue(mutableListOf(), Member.Named(ident), null, Expr.Path(mutableListOf(), null, Path.from(ident))),
+        FieldValue(attrs, member, null, Expr.Path(mutableListOf(), null, Path.from(member.ident.cloneToken()))),
     )
 }
 
