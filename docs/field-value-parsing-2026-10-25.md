@@ -36,6 +36,11 @@ including all three new regressions. No test was excluded or weakened. The log
 and source hashes are in `tmp/field-value-repair-20261025/tests-02.log` and
 `validation.json`. Normal `publishToMavenLocal` also succeeds for Syn 0.4.0
 (168 tasks, 48 seconds), with artifact hashes recorded in the same receipt.
-The Kotlin whole-file recognition check remains pending; Rust acceptance alone is
-not evidence of Kotlin acceptance. Other platform execution and full project
-translation remain separate.
+The rebuilt direct translator now accepts unchanged complete serde_json `de.rs`
+(58 items) and `value/de.rs` (61 items), including its AST/token correspondence
+checks. All 186 translator tests pass using normal local Maven dependencies,
+without the historical frozen-library init script. Its receipt is
+`rust-kotlin/tmp/foundation-publish-20261025/translator-normal-validation.json`.
+Serde derive's previously failing qualified-path tests also pass with the
+published parser: 275 JVM and 37 macOS tests, no source edits in Serde.
+Other platform execution and full project translation remain separate.
