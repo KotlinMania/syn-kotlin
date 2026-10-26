@@ -1,101 +1,45 @@
 // port-lint: source ident.rs
-
 package io.github.kotlinmania.syn
 
 import io.github.kotlinmania.procmacro2.Ident
-import io.github.kotlinmania.syn.token.Crate
-import io.github.kotlinmania.syn.token.Extern
-import io.github.kotlinmania.syn.token.SelfType
-import io.github.kotlinmania.syn.token.SelfValue
-import io.github.kotlinmania.syn.token.Super
-import io.github.kotlinmania.syn.token.Underscore
-import io.github.kotlinmania.unicodeident.isXidContinue
-import io.github.kotlinmania.unicodeident.isXidStart
+import io.github.kotlinmania.syn.token.*
+import io.github.kotlinmania.syn.generated.ident.xid_ok
+import io.github.kotlinmania.syn.generated.ident.__rtkImpl1
+import io.github.kotlinmania.syn.generated.ident.__rtkImpl2
+import io.github.kotlinmania.syn.generated.ident.__rtkImpl3
+import io.github.kotlinmania.syn.generated.ident.__rtkImpl4
+import io.github.kotlinmania.syn.generated.ident.__rtkImpl5
+import io.github.kotlinmania.syn.generated.ident.__rtkImpl6
+import io.github.kotlinmania.syn.generated.ident.__rtkImpl7
+import io.github.kotlinmania.syn.generated.ident.__rtkImpl8
 
+// Existing Kotlin API adapters; all translated behavior is in generated/ident.
 public fun Ident.copy(): Ident = cloneToken()
-
 public fun Ident.clone(): Ident = copy()
 
-public fun from(token: SelfValue): Ident = Ident.new("self", token.span)
+public fun Ident(marker: TokenMarker): Ident = io.github.kotlinmania.syn.generated.ident.Ident(marker)
 
-public fun from(token: SelfType): Ident = Ident.new("Self", token.span)
+public fun from(token: SelfValue): Ident = __rtkImpl1.from(token)
+public fun from(token: SelfType): Ident = __rtkImpl2.from(token)
+public fun from(token: Super): Ident = __rtkImpl3.from(token)
+public fun from(token: Crate): Ident = __rtkImpl4.from(token)
+public fun from(token: Extern): Ident = __rtkImpl5.from(token)
+public fun from(token: Underscore): Ident = __rtkImpl6.from(token)
 
-public fun from(token: Super): Ident = Ident.new("super", token.span)
-
-public fun from(token: Crate): Ident = Ident.new("crate", token.span)
-
-public fun from(token: Extern): Ident = Ident.new("extern", token.span)
-
-public fun from(token: Underscore): Ident = Ident.new("_", token.span)
-
-internal fun xidOk(symbol: String): Boolean {
-    val first = symbol.first()
-    if (first != '_' && !isXidStart(first)) {
-        return false
-    }
-    for (ch in symbol.drop(1)) {
-        if (!isXidContinue(ch)) {
-            return false
-        }
-    }
-    return true
-}
-
-internal fun acceptAsIdent(ident: Ident): Boolean {
-    val s = ident.toString()
-    return when (s) {
-        "_",
-        "abstract", "as", "async", "await", "become", "box", "break",
-        "const", "continue", "crate", "do", "dyn", "else", "enum",
-        "extern", "false", "final", "fn", "for", "if", "impl", "in",
-        "let", "loop", "macro", "match", "mod", "move", "mut",
-        "override", "priv", "pub", "ref", "return", "Self", "self",
-        "static", "struct", "super", "trait", "true", "try", "type",
-        "typeof", "unsafe", "unsized", "use", "virtual", "where",
-        "while", "yield",
-        -> false
-
-        else -> true
-    }
-}
+internal fun xidOk(symbol: String): Boolean = xid_ok(symbol)
 
 public object IdentParse {
-    fun parse(input: ParseStream): SynResult<Ident> =
-        input.step { cursor ->
-            val (ident, rest) =
-                cursor.ident()
-                    ?: return@step cursor.error("expected identifier").let { SynResult.failure(it) }
-            if (acceptAsIdent(ident)) {
-                SynResult.success(ident to rest)
-            } else {
-                SynResult.failure(cursor.error("expected identifier, found keyword `$ident`"))
-            }
-        }
+    public fun parse(input: ParseStream): SynResult<Ident> = __rtkImpl7.parse(input)
 }
 
 public object IdentPeek : Peek {
-    override fun peek(cursor: Cursor): Boolean {
-        val (ident, _) = cursor.ident() ?: return false
-        return acceptAsIdent(ident)
-    }
-
-    override fun display(): String = "identifier"
+    override fun peek(cursor: Cursor): Boolean = __rtkImpl8.peek(cursor)
+    override fun display(): String = __rtkImpl8.display()
 }
 
-public fun identFromSelfValue(token: SelfValue): Ident =
-    Ident.new("self", token.span)
-
-public fun identFromSelfType(token: SelfType): Ident =
-    Ident.new("Self", token.span)
-
-public fun identFromSuper(token: Super): Ident =
-    Ident.new("super", token.span)
-
-public fun identFromCrate(token: Crate): Ident =
-    Ident.new("crate", token.span)
-
-public fun identFromExtern(token: Extern): Ident =
-    Ident.new("extern", token.span)
-
-public fun identFromUnderscore(token: Underscore): Ident =
-    Ident.new("_", token.span)
+public fun identFromSelfValue(token: SelfValue): Ident = from(token)
+public fun identFromSelfType(token: SelfType): Ident = from(token)
+public fun identFromSuper(token: Super): Ident = from(token)
+public fun identFromCrate(token: Crate): Ident = from(token)
+public fun identFromExtern(token: Extern): Ident = from(token)
+public fun identFromUnderscore(token: Underscore): Ident = from(token)

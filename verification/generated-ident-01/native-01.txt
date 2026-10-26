@@ -1,0 +1,1792 @@
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/9.8.2/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+> Task :kmpPartiallyResolvedDependenciesChecker
+> Task :checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :downloadKotlinNativeDistribution UP-TO-DATE
+> Task :compileKotlinMacosArm64
+> Task :macosArm64ProcessResources NO-SOURCE
+> Task :macosArm64MainKlibrary
+> Task :compileTestKotlinMacosArm64
+> Task :validateLocalSwiftPMDependencies
+> Task :computeLocalPackageDependencyInputFiles UP-TO-DATE
+> Task :fingerprintSyntheticPackage UP-TO-DATE
+> Task :generateSyntheticLinkageSwiftPMImportProjectForCinteropsAndLdDump SKIPPED
+> Task :serializeSwiftPMDependenciesMetadataForLockFiles UP-TO-DATE
+> Task :generateUmbrellaPackageIdentifierBasedResolutionForDefault SKIPPED
+> Task :fetchUmbrellaPackageIdentifierForDefault SKIPPED
+> Task :syncPersistedPackageResolvedToSynthetic SKIPPED
+> Task :fetchSyntheticImportProjectPackages SKIPPED
+> Task :fingerprintXcodebuildMacosx UP-TO-DATE
+> Task :dumpXcodebuildArgsMacosx SKIPPED
+> Task :convertSyntheticImportProjectIntoDefFileMacosx UP-TO-DATE
+> Task :linkDebugTestMacosArm64
+
+io.github.kotlinmania.syn.ArraySourceSpanTest.arrayKeepsOriginalBracketAndSemicolonTokensAcrossCopies[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ArraySourceSpanTest.arrayKeepsOriginalBracketAndSemicolonTokensAcrossCopies[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ArraySourceSpanTest.nestedMultilineArraysRetainDistinctTypeSpans[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ArraySourceSpanTest.nestedMultilineArraysRetainDistinctTypeSpans[macosArm64] PASSED
+
+io.github.kotlinmania.syn.AssociatedItemRegressionTest.traitMethodAttributesPreserveAllItems[macosArm64] STARTED
+
+io.github.kotlinmania.syn.AssociatedItemRegressionTest.traitMethodAttributesPreserveAllItems[macosArm64] PASSED
+
+io.github.kotlinmania.syn.AssociatedItemRegressionTest.traitAssociatedItemsRetainOuterAttributes[macosArm64] STARTED
+
+io.github.kotlinmania.syn.AssociatedItemRegressionTest.traitAssociatedItemsRetainOuterAttributes[macosArm64] PASSED
+
+io.github.kotlinmania.syn.AssociatedItemRegressionTest.traitDefaultMethodRetainsInnerAndOuterAttributes[macosArm64] STARTED
+
+io.github.kotlinmania.syn.AssociatedItemRegressionTest.traitDefaultMethodRetainsInnerAndOuterAttributes[macosArm64] PASSED
+
+io.github.kotlinmania.syn.AssociatedItemRegressionTest.qualifiedSelectionMacroRetainsImplMethodAndTokens[macosArm64] STARTED
+
+io.github.kotlinmania.syn.AssociatedItemRegressionTest.qualifiedSelectionMacroRetainsImplMethodAndTokens[macosArm64] PASSED
+
+io.github.kotlinmania.syn.AssociatedItemRegressionTest.qualifiedMacroPreservesSurroundingImplMethods[macosArm64] STARTED
+
+io.github.kotlinmania.syn.AssociatedItemRegressionTest.qualifiedMacroPreservesSurroundingImplMethods[macosArm64] PASSED
+
+io.github.kotlinmania.syn.AssociatedItemRegressionTest.malformedMethodBodiesFailInsteadOfDroppingMethods[macosArm64] STARTED
+
+io.github.kotlinmania.syn.AssociatedItemRegressionTest.malformedMethodBodiesFailInsteadOfDroppingMethods[macosArm64] PASSED
+
+io.github.kotlinmania.syn.AssociatedItemRegressionTest.qualifiedMacroExpressionsAcceptAllDelimiters[macosArm64] STARTED
+
+io.github.kotlinmania.syn.AssociatedItemRegressionTest.qualifiedMacroExpressionsAcceptAllDelimiters[macosArm64] PASSED
+
+io.github.kotlinmania.syn.AssociatedItemRegressionTest.qualifiedPathInequalityRemainsABinaryExpression[macosArm64] STARTED
+
+io.github.kotlinmania.syn.AssociatedItemRegressionTest.qualifiedPathInequalityRemainsABinaryExpression[macosArm64] PASSED
+
+io.github.kotlinmania.syn.AssociatedItemRegressionTest.macroExpressionsRejectGenericAndQualifiedSelfPaths[macosArm64] STARTED
+
+io.github.kotlinmania.syn.AssociatedItemRegressionTest.macroExpressionsRejectGenericAndQualifiedSelfPaths[macosArm64] PASSED
+
+io.github.kotlinmania.syn.AsyncnessTest.testAsyncFn[macosArm64] STARTED
+
+io.github.kotlinmania.syn.AsyncnessTest.testAsyncFn[macosArm64] PASSED
+
+io.github.kotlinmania.syn.AsyncnessTest.testAsyncClosure[macosArm64] STARTED
+
+io.github.kotlinmania.syn.AsyncnessTest.testAsyncClosure[macosArm64] PASSED
+
+io.github.kotlinmania.syn.AttributeTest.testMetaItemWord[macosArm64] STARTED
+
+io.github.kotlinmania.syn.AttributeTest.testMetaItemWord[macosArm64] PASSED
+
+io.github.kotlinmania.syn.AttributeTest.testMetaItemNameValue[macosArm64] STARTED
+
+io.github.kotlinmania.syn.AttributeTest.testMetaItemNameValue[macosArm64] PASSED
+
+io.github.kotlinmania.syn.AttributeTest.testMetaItemBoolValue[macosArm64] STARTED
+
+io.github.kotlinmania.syn.AttributeTest.testMetaItemBoolValue[macosArm64] PASSED
+
+io.github.kotlinmania.syn.AttributeTest.testMetaItemListLit[macosArm64] STARTED
+
+io.github.kotlinmania.syn.AttributeTest.testMetaItemListLit[macosArm64] PASSED
+
+io.github.kotlinmania.syn.AttributeTest.testMetaItemListWord[macosArm64] STARTED
+
+io.github.kotlinmania.syn.AttributeTest.testMetaItemListWord[macosArm64] PASSED
+
+io.github.kotlinmania.syn.AttributeTest.testMetaItemListNameValue[macosArm64] STARTED
+
+io.github.kotlinmania.syn.AttributeTest.testMetaItemListNameValue[macosArm64] PASSED
+
+io.github.kotlinmania.syn.AttributeTest.testMetaItemListBoolValue[macosArm64] STARTED
+
+io.github.kotlinmania.syn.AttributeTest.testMetaItemListBoolValue[macosArm64] PASSED
+
+io.github.kotlinmania.syn.AttributeTest.testMetaItemMultiple[macosArm64] STARTED
+
+io.github.kotlinmania.syn.AttributeTest.testMetaItemMultiple[macosArm64] PASSED
+
+io.github.kotlinmania.syn.AttributeTest.testBoolLit[macosArm64] STARTED
+
+io.github.kotlinmania.syn.AttributeTest.testBoolLit[macosArm64] PASSED
+
+io.github.kotlinmania.syn.AttributeTest.testNegativeLit[macosArm64] STARTED
+
+io.github.kotlinmania.syn.AttributeTest.testNegativeLit[macosArm64] PASSED
+
+io.github.kotlinmania.syn.AttributeTest.testParseNestedMeta[macosArm64] STARTED
+
+io.github.kotlinmania.syn.AttributeTest.testParseNestedMeta[macosArm64] PASSED
+
+io.github.kotlinmania.syn.AttributeTest.testParseArgs[macosArm64] STARTED
+
+io.github.kotlinmania.syn.AttributeTest.testParseArgs[macosArm64] PASSED
+
+io.github.kotlinmania.syn.AttributeTest.testRequireMetaKinds[macosArm64] STARTED
+
+io.github.kotlinmania.syn.AttributeTest.testRequireMetaKinds[macosArm64] PASSED
+
+io.github.kotlinmania.syn.AttributeTest.testOutermostMetaPathKeywordRule[macosArm64] STARTED
+
+io.github.kotlinmania.syn.AttributeTest.testOutermostMetaPathKeywordRule[macosArm64] PASSED
+
+io.github.kotlinmania.syn.AttributeTest.testParseOuterRejectsInnerAttribute[macosArm64] STARTED
+
+io.github.kotlinmania.syn.AttributeTest.testParseOuterRejectsInnerAttribute[macosArm64] PASSED
+
+io.github.kotlinmania.syn.CloneTest.deriveInputCloneCopiesNestedMutableContainers[macosArm64] STARTED
+
+io.github.kotlinmania.syn.CloneTest.deriveInputCloneCopiesNestedMutableContainers[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ConcreteParseResultTest.parsesAConcreteFileWithItsShebangAndAttributes[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ConcreteParseResultTest.parsesAConcreteFileWithItsShebangAndAttributes[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ConcreteParseResultTest.malformedFileReturnsItsDiagnostic[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ConcreteParseResultTest.malformedFileReturnsItsDiagnostic[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ConcreteParseResultTest.concreteFailuresRetainDiagnosticIdentityAtTheKotlinThrowBoundary[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ConcreteParseResultTest.concreteFailuresRetainDiagnosticIdentityAtTheKotlinThrowBoundary[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ConcreteParseResultTest.adaptsTokenResultsWithoutCopyingTheirValueOrDiagnostic[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ConcreteParseResultTest.adaptsTokenResultsWithoutCopyingTheirValueOrDiagnostic[macosArm64] PASSED
+
+io.github.kotlinmania.syn.CursorTokenCopyTest.eachReturnedTokenIsIndependentOfItsBuffer[macosArm64] STARTED
+
+io.github.kotlinmania.syn.CursorTokenCopyTest.eachReturnedTokenIsIndependentOfItsBuffer[macosArm64] PASSED
+
+io.github.kotlinmania.syn.CursorTokenCopyTest.specializedAccessorsAndWholeStreamAlsoCopy[macosArm64] STARTED
+
+io.github.kotlinmania.syn.CursorTokenCopyTest.specializedAccessorsAndWholeStreamAlsoCopy[macosArm64] PASSED
+
+io.github.kotlinmania.syn.CursorTokenCopyTest.nestedAndTransparentGroupsRetainIndependentDataAndDelimiterSpans[macosArm64] STARTED
+
+io.github.kotlinmania.syn.CursorTokenCopyTest.nestedAndTransparentGroupsRetainIndependentDataAndDelimiterSpans[macosArm64] PASSED
+
+io.github.kotlinmania.syn.DebugTest.deriveInputDebugMatchesGeneratedFieldOrder[macosArm64] STARTED
+
+io.github.kotlinmania.syn.DebugTest.deriveInputDebugMatchesGeneratedFieldOrder[macosArm64] PASSED
+
+io.github.kotlinmania.syn.DebugTest.tokenFieldsIncludedWhereGeneratedDebugIncludesThem[macosArm64] STARTED
+
+io.github.kotlinmania.syn.DebugTest.tokenFieldsIncludedWhereGeneratedDebugIncludesThem[macosArm64] PASSED
+
+io.github.kotlinmania.syn.DebugTest.enumDebugUsesRustVariantPrefixes[macosArm64] STARTED
+
+io.github.kotlinmania.syn.DebugTest.enumDebugUsesRustVariantPrefixes[macosArm64] PASSED
+
+io.github.kotlinmania.syn.DeriveInputTest.testUnit[macosArm64] STARTED
+
+io.github.kotlinmania.syn.DeriveInputTest.testUnit[macosArm64] PASSED
+
+io.github.kotlinmania.syn.DeriveInputTest.testStruct[macosArm64] STARTED
+
+io.github.kotlinmania.syn.DeriveInputTest.testStruct[macosArm64] PASSED
+
+io.github.kotlinmania.syn.DeriveInputTest.testUnion[macosArm64] STARTED
+
+io.github.kotlinmania.syn.DeriveInputTest.testUnion[macosArm64] PASSED
+
+io.github.kotlinmania.syn.DeriveInputTest.testEnum[macosArm64] STARTED
+
+io.github.kotlinmania.syn.DeriveInputTest.testEnum[macosArm64] PASSED
+
+io.github.kotlinmania.syn.DeriveInputTest.testAttrWithNonModStylePath[macosArm64] STARTED
+
+io.github.kotlinmania.syn.DeriveInputTest.testAttrWithNonModStylePath[macosArm64] PASSED
+
+io.github.kotlinmania.syn.DeriveInputTest.testAttrWithModStylePathWithSelf[macosArm64] STARTED
+
+io.github.kotlinmania.syn.DeriveInputTest.testAttrWithModStylePathWithSelf[macosArm64] PASSED
+
+io.github.kotlinmania.syn.DeriveInputTest.testPubRestricted[macosArm64] STARTED
+
+io.github.kotlinmania.syn.DeriveInputTest.testPubRestricted[macosArm64] PASSED
+
+io.github.kotlinmania.syn.DeriveInputTest.testPubRestrictedCrate[macosArm64] STARTED
+
+io.github.kotlinmania.syn.DeriveInputTest.testPubRestrictedCrate[macosArm64] PASSED
+
+io.github.kotlinmania.syn.DeriveInputTest.testPubRestrictedSuper[macosArm64] STARTED
+
+io.github.kotlinmania.syn.DeriveInputTest.testPubRestrictedSuper[macosArm64] PASSED
+
+io.github.kotlinmania.syn.DeriveInputTest.testPubRestrictedInSuper[macosArm64] STARTED
+
+io.github.kotlinmania.syn.DeriveInputTest.testPubRestrictedInSuper[macosArm64] PASSED
+
+io.github.kotlinmania.syn.DeriveInputTest.testFieldsOnUnitStruct[macosArm64] STARTED
+
+io.github.kotlinmania.syn.DeriveInputTest.testFieldsOnUnitStruct[macosArm64] PASSED
+
+io.github.kotlinmania.syn.DeriveInputTest.testFieldsOnNamedStruct[macosArm64] STARTED
+
+io.github.kotlinmania.syn.DeriveInputTest.testFieldsOnNamedStruct[macosArm64] PASSED
+
+io.github.kotlinmania.syn.DeriveInputTest.testFieldsOnTupleStruct[macosArm64] STARTED
+
+io.github.kotlinmania.syn.DeriveInputTest.testFieldsOnTupleStruct[macosArm64] PASSED
+
+io.github.kotlinmania.syn.DeriveInputTest.testTupleStructWhereClauseAfterFields[macosArm64] STARTED
+
+io.github.kotlinmania.syn.DeriveInputTest.testTupleStructWhereClauseAfterFields[macosArm64] PASSED
+
+io.github.kotlinmania.syn.DeriveInputTest.testWhereClauseBeforeDataBody[macosArm64] STARTED
+
+io.github.kotlinmania.syn.DeriveInputTest.testWhereClauseBeforeDataBody[macosArm64] PASSED
+
+io.github.kotlinmania.syn.DeriveInputTest.testMalformedWhereClauseIsRejected[macosArm64] STARTED
+
+io.github.kotlinmania.syn.DeriveInputTest.testMalformedWhereClauseIsRejected[macosArm64] PASSED
+
+io.github.kotlinmania.syn.DeriveInputTest.testDeriveInputToTokens[macosArm64] STARTED
+
+io.github.kotlinmania.syn.DeriveInputTest.testDeriveInputToTokens[macosArm64] PASSED
+
+io.github.kotlinmania.syn.DeriveInputTest.deriveInputToTokensDefaultsMissingSemicolonForTupleAndUnitStructs[macosArm64] STARTED
+
+io.github.kotlinmania.syn.DeriveInputTest.deriveInputToTokensDefaultsMissingSemicolonForTupleAndUnitStructs[macosArm64] PASSED
+
+io.github.kotlinmania.syn.DeriveInputTest.testAmbiguousCrate[macosArm64] STARTED
+
+io.github.kotlinmania.syn.DeriveInputTest.testAmbiguousCrate[macosArm64] PASSED
+
+io.github.kotlinmania.syn.DeriveInputTest.fieldsMembersUseFieldTypeSpanForUnnamedFields[macosArm64] STARTED
+
+io.github.kotlinmania.syn.DeriveInputTest.fieldsMembersUseFieldTypeSpanForUnnamedFields[macosArm64] PASSED
+
+io.github.kotlinmania.syn.DeriveInputTest.tupleFieldWithLifetimeReference[macosArm64] STARTED
+
+io.github.kotlinmania.syn.DeriveInputTest.tupleFieldWithLifetimeReference[macosArm64] PASSED
+
+io.github.kotlinmania.syn.DiscouragedTest.speculativeAdvanceToPropagatesUnexpectedTokensFromFork[macosArm64] STARTED
+
+io.github.kotlinmania.syn.DiscouragedTest.speculativeAdvanceToPropagatesUnexpectedTokensFromFork[macosArm64] PASSED
+
+io.github.kotlinmania.syn.DiscouragedTest.anyDelimiterTraitParsesInvisibleGroup[macosArm64] STARTED
+
+io.github.kotlinmania.syn.DiscouragedTest.anyDelimiterTraitParsesInvisibleGroup[macosArm64] PASSED
+
+io.github.kotlinmania.syn.EqTest.deriveInputEqMatchesGeneratedFieldSet[macosArm64] STARTED
+
+io.github.kotlinmania.syn.EqTest.deriveInputEqMatchesGeneratedFieldSet[macosArm64] PASSED
+
+io.github.kotlinmania.syn.EqTest.attrStyleAndBinOpEqCompareVariants[macosArm64] STARTED
+
+io.github.kotlinmania.syn.EqTest.attrStyleAndBinOpEqCompareVariants[macosArm64] PASSED
+
+io.github.kotlinmania.syn.EqTest.dataEqDispatchesByVariant[macosArm64] STARTED
+
+io.github.kotlinmania.syn.EqTest.dataEqDispatchesByVariant[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ErrorTest.failedResultPreservesTheDiagnosticAtTheThrowBoundary[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ErrorTest.failedResultPreservesTheDiagnosticAtTheThrowBoundary[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ErrorTest.resultAndErrorUseSynTypes[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ErrorTest.resultAndErrorUseSynTypes[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ErrorTest.iterYieldsSeparateErrors[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ErrorTest.iterYieldsSeparateErrors[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ErrorTest.intoIterYieldsSeparateErrors[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ErrorTest.intoIterYieldsSeparateErrors[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ErrorTest.extendCombinesEachError[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ErrorTest.extendCombinesEachError[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ErrorTest.displayAndDebugFormattingFollowRustShape[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ErrorTest.displayAndDebugFormattingFollowRustShape[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ExprPrintingRegressionTest.nestedValuelessJumpsUseFollowingOperatorContext[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ExprPrintingRegressionTest.nestedValuelessJumpsUseFollowingOperatorContext[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ExprPrintingRegressionTest.typedClosureWrapsNonBlockBody[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ExprPrintingRegressionTest.typedClosureWrapsNonBlockBody[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ExprPrintingRegressionTest.elseBranchWrapsNonBlockExpression[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ExprPrintingRegressionTest.elseBranchWrapsNonBlockExpression[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ExprPrintingRegressionTest.matchPrintingRestoresRequiredComma[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ExprPrintingRegressionTest.matchPrintingRestoresRequiredComma[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ExprPrintingRegressionTest.blockAttributesKeepTheirOuterAndInnerLocations[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ExprPrintingRegressionTest.blockAttributesKeepTheirOuterAndInnerLocations[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ExprTest.testExprParse[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ExprTest.testExprParse[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ExprTest.testAwait[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ExprTest.testAwait[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ExprTest.testTupleMultiIndex[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ExprTest.testTupleMultiIndex[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ExprTest.testMacroVariableFunc[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ExprTest.testMacroVariableFunc[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ExprTest.testBlockLikeExpressionCanBeCallee[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ExprTest.testBlockLikeExpressionCanBeCallee[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ExprTest.testMacroVariableMacro[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ExprTest.testMacroVariableMacro[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ExprTest.testMacroVariableStruct[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ExprTest.testMacroVariableStruct[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ExprTest.testMacroVariableUnary[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ExprTest.testMacroVariableUnary[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ExprTest.testMacroVariableMatchArm[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ExprTest.testMacroVariableMatchArm[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ExprTest.testClosureVsRangefull[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ExprTest.testClosureVsRangefull[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ExprTest.testPostfixOperatorAfterCast[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ExprTest.testPostfixOperatorAfterCast[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ExprTest.testRangeKinds[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ExprTest.testRangeKinds[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ExprTest.testRangePrecedence[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ExprTest.testRangePrecedence[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ExprTest.testRangeAttrs[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ExprTest.testRangeAttrs[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ExprTest.testRangesBailout[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ExprTest.testRangesBailout[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ExprTest.testAmbiguousLabel[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ExprTest.testAmbiguousLabel[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ExprTest.testExtendedInterpolatedPath[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ExprTest.testExtendedInterpolatedPath[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ExprTest.testTupleComma[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ExprTest.testTupleComma[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ExprTest.testBinopAssociativity[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ExprTest.testBinopAssociativity[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ExprTest.testAssignRangePrecedence[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ExprTest.testAssignRangePrecedence[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ExprTest.testChainedComparison[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ExprTest.testChainedComparison[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ExprTest.testParseUnparenthesize[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ExprTest.testParseUnparenthesize[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ExprTest.testPermutations[macosArm64] STARTED
+> Task :macosArm64Test
+
+
+io.github.kotlinmania.syn.ExprTest.testPermutations[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ExpressionDispatchParityTest.forLoopsRetainLabelsPatternsIteratorAndInnerAttributes[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ExpressionDispatchParityTest.forLoopsRetainLabelsPatternsIteratorAndInnerAttributes[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ExpressionDispatchParityTest.forLoopMatchArmUsesEarlyBoundaryAndDoesNotStealHigherRankedClosures[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ExpressionDispatchParityTest.forLoopMatchArmUsesEarlyBoundaryAndDoesNotStealHigherRankedClosures[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ExpressionDispatchParityTest.bindingSubpatternsUseTheExistingCompletePatternParser[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ExpressionDispatchParityTest.bindingSubpatternsUseTheExistingCompletePatternParser[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ExpressionDispatchParityTest.placeholderExpressionsRetainDiscardAssignmentsAndTuplePositions[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ExpressionDispatchParityTest.placeholderExpressionsRetainDiscardAssignmentsAndTuplePositions[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ExpressionDispatchParityTest.malformedLoopsAndSubpatternsRejectWithoutLostTokens[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ExpressionDispatchParityTest.malformedLoopsAndSubpatternsRejectWithoutLostTokens[macosArm64] PASSED
+
+io.github.kotlinmania.syn.FieldValueParsingTest.outerAttributesAndAllMemberFormsRoundTrip[macosArm64] STARTED
+
+io.github.kotlinmania.syn.FieldValueParsingTest.outerAttributesAndAllMemberFormsRoundTrip[macosArm64] PASSED
+
+io.github.kotlinmania.syn.FieldValueParsingTest.jsonReaderInitializerKeepsConfiguredFields[macosArm64] STARTED
+
+io.github.kotlinmania.syn.FieldValueParsingTest.jsonReaderInitializerKeepsConfiguredFields[macosArm64] PASSED
+
+io.github.kotlinmania.syn.FieldValueParsingTest.numericMembersRequireValuesAndInvalidAttributesRemainErrors[macosArm64] STARTED
+
+io.github.kotlinmania.syn.FieldValueParsingTest.numericMembersRequireValuesAndInvalidAttributesRemainErrors[macosArm64] PASSED
+
+io.github.kotlinmania.syn.FoldTest.deriveInputFoldRecursesThroughDataAndGenerics[macosArm64] STARTED
+
+io.github.kotlinmania.syn.FoldTest.deriveInputFoldRecursesThroughDataAndGenerics[macosArm64] PASSED
+
+io.github.kotlinmania.syn.FoldTest.itemFoldRecursesThroughTraitImplModuleAndUseTrees[macosArm64] STARTED
+
+io.github.kotlinmania.syn.FoldTest.itemFoldRecursesThroughTraitImplModuleAndUseTrees[macosArm64] PASSED
+
+io.github.kotlinmania.syn.FoldTest.genericArgumentFoldDispatchesThroughNamedHelpers[macosArm64] STARTED
+
+io.github.kotlinmania.syn.FoldTest.genericArgumentFoldDispatchesThroughNamedHelpers[macosArm64] PASSED
+
+io.github.kotlinmania.syn.FoldTest.exprAndPatternFoldDispatchesThroughGeneratedHelpers[macosArm64] STARTED
+
+io.github.kotlinmania.syn.FoldTest.exprAndPatternFoldDispatchesThroughGeneratedHelpers[macosArm64] PASSED
+
+io.github.kotlinmania.syn.FoldTest.qselfAndCstrFoldDispatchThroughGeneratedHelpers[macosArm64] STARTED
+
+io.github.kotlinmania.syn.FoldTest.qselfAndCstrFoldDispatchThroughGeneratedHelpers[macosArm64] PASSED
+
+io.github.kotlinmania.syn.FoldTest.foldReturnsRewrittenTree[macosArm64] STARTED
+
+io.github.kotlinmania.syn.FoldTest.foldReturnsRewrittenTree[macosArm64] PASSED
+
+io.github.kotlinmania.syn.GeneratedBigIntTest.decimalCarryAndReturnedTextUseIndependentOwnedStorage[macosArm64] STARTED
+
+io.github.kotlinmania.syn.GeneratedBigIntTest.decimalCarryAndReturnedTextUseIndependentOwnedStorage[macosArm64] PASSED
+
+io.github.kotlinmania.syn.GeneratedBigIntTest.literalParserUsesGeneratedArithmeticBeyondMachineIntegerWidth[macosArm64] STARTED
+
+io.github.kotlinmania.syn.GeneratedBigIntTest.literalParserUsesGeneratedArithmeticBeyondMachineIntegerWidth[macosArm64] PASSED
+
+io.github.kotlinmania.syn.GeneratedBigIntTest.checkedByteFailurePreservesThePriorDecimalValue[macosArm64] STARTED
+
+io.github.kotlinmania.syn.GeneratedBigIntTest.checkedByteFailurePreservesThePriorDecimalValue[macosArm64] PASSED
+
+io.github.kotlinmania.syn.GeneratedClassifyTest.adoptedClassifiersMatchRustObservations[macosArm64] STARTED
+
+io.github.kotlinmania.syn.GeneratedClassifyTest.adoptedClassifiersMatchRustObservations[macosArm64] PASSED
+
+io.github.kotlinmania.syn.GeneratedClassifyTest.generatedTypeTraversalMatchesRust[macosArm64] STARTED
+
+io.github.kotlinmania.syn.GeneratedClassifyTest.generatedTypeTraversalMatchesRust[macosArm64] PASSED
+
+io.github.kotlinmania.syn.GeneratedClassifyTest.generatedTypeTraversalHandlesConstructedNodesAndTrailingPunctuation[macosArm64] STARTED
+
+io.github.kotlinmania.syn.GeneratedClassifyTest.generatedTypeTraversalHandlesConstructedNodesAndTrailingPunctuation[macosArm64] PASSED
+
+io.github.kotlinmania.syn.GeneratedClassifyTest.generatedTypeTraversalPreservesRustEmptySequencePanics[macosArm64] STARTED
+
+io.github.kotlinmania.syn.GeneratedClassifyTest.generatedTypeTraversalPreservesRustEmptySequencePanics[macosArm64] PASSED
+
+io.github.kotlinmania.syn.GeneratedClassifyTest.completeGeneratedExpressionTraversalMatchesRust[macosArm64] STARTED
+
+io.github.kotlinmania.syn.GeneratedClassifyTest.completeGeneratedExpressionTraversalMatchesRust[macosArm64] PASSED
+
+io.github.kotlinmania.syn.GeneratedClassifyTest.generatedTokenTraversalPreservesOuterGroupsAndOriginalStream[macosArm64] STARTED
+
+io.github.kotlinmania.syn.GeneratedClassifyTest.generatedTokenTraversalPreservesOuterGroupsAndOriginalStream[macosArm64] PASSED
+
+io.github.kotlinmania.syn.GeneratedClassifyTest.generatedCastTraversalPreservesRustEmptySequencePanics[macosArm64] STARTED
+
+io.github.kotlinmania.syn.GeneratedClassifyTest.generatedCastTraversalPreservesRustEmptySequencePanics[macosArm64] PASSED
+
+io.github.kotlinmania.syn.GeneratedExtTest.unrawKeepsOriginalTokenIndependent[macosArm64] STARTED
+
+io.github.kotlinmania.syn.GeneratedExtTest.unrawKeepsOriginalTokenIndependent[macosArm64] PASSED
+
+io.github.kotlinmania.syn.GeneratedExtTest.generatedParseAnyCommitsOnlyOnSuccess[macosArm64] STARTED
+
+io.github.kotlinmania.syn.GeneratedExtTest.generatedParseAnyCommitsOnlyOnSuccess[macosArm64] PASSED
+
+io.github.kotlinmania.syn.GeneratedExtTest.stepKeepsOriginalErrorAndCallsCallbackOnce[macosArm64] STARTED
+
+io.github.kotlinmania.syn.GeneratedExtTest.stepKeepsOriginalErrorAndCallsCallbackOnce[macosArm64] PASSED
+
+io.github.kotlinmania.syn.GeneratedExtTest.generatedAppendAndPunctuationKeepDataAndSpacing[macosArm64] STARTED
+
+io.github.kotlinmania.syn.GeneratedExtTest.generatedAppendAndPunctuationKeepDataAndSpacing[macosArm64] PASSED
+
+io.github.kotlinmania.syn.GeneratedIdentTest.productionMatchesCompleteRustIdent[macosArm64] STARTED
+
+io.github.kotlinmania.syn.GeneratedIdentTest.productionMatchesCompleteRustIdent[macosArm64] PASSED
+
+io.github.kotlinmania.syn.GeneratedIdentTest.conversionAliasesMatchRustIdent[macosArm64] STARTED
+
+io.github.kotlinmania.syn.GeneratedIdentTest.conversionAliasesMatchRustIdent[macosArm64] PASSED
+
+io.github.kotlinmania.syn.GeneratedPrintTest.productionAdapterMatchesNinetyRustObservations[macosArm64] STARTED
+
+io.github.kotlinmania.syn.GeneratedPrintTest.productionAdapterMatchesNinetyRustObservations[macosArm64] PASSED
+
+io.github.kotlinmania.syn.GeneratedSpanTest.byValueSpanConversionCopiesBeforeAndAfterInvocation[macosArm64] STARTED
+
+io.github.kotlinmania.syn.GeneratedSpanTest.byValueSpanConversionCopiesBeforeAndAfterInvocation[macosArm64] PASSED
+
+io.github.kotlinmania.syn.GeneratedSpanTest.repeatedArrayElementsAndArrayCopiesHaveIndependentWrappers[macosArm64] STARTED
+
+io.github.kotlinmania.syn.GeneratedSpanTest.repeatedArrayElementsAndArrayCopiesHaveIndependentWrappers[macosArm64] PASSED
+
+io.github.kotlinmania.syn.GeneratedSpanTest.delimiterConversionsAndMigratedConstructorsPreserveSourcePositions[macosArm64] STARTED
+
+io.github.kotlinmania.syn.GeneratedSpanTest.delimiterConversionsAndMigratedConstructorsPreserveSourcePositions[macosArm64] PASSED
+
+io.github.kotlinmania.syn.GeneratedSpannedTest.sharedBlanketDispatchForwardsToTokensWithoutCallingOwnedOverrides[macosArm64] STARTED
+
+io.github.kotlinmania.syn.GeneratedSpannedTest.sharedBlanketDispatchForwardsToTokensWithoutCallingOwnedOverrides[macosArm64] PASSED
+
+io.github.kotlinmania.syn.GeneratedSpannedTest.spanResultIsAnIndependentCopy[macosArm64] STARTED
+
+io.github.kotlinmania.syn.GeneratedSpannedTest.spanResultIsAnIndependentCopy[macosArm64] PASSED
+
+io.github.kotlinmania.syn.GeneratedSpannedTest.delimiterAndEmptySpanUseExistingEngineOperations[macosArm64] STARTED
+
+io.github.kotlinmania.syn.GeneratedSpannedTest.delimiterAndEmptySpanUseExistingEngineOperations[macosArm64] PASSED
+
+io.github.kotlinmania.syn.GeneratedSpannedTest.joiningSeparateSourceFilesFallsBackToFirstSpan[macosArm64] STARTED
+
+io.github.kotlinmania.syn.GeneratedSpannedTest.joiningSeparateSourceFilesFallsBackToFirstSpan[macosArm64] PASSED
+
+io.github.kotlinmania.syn.GeneratedVerbatimTest.copiesSelectedTokensWithoutAdvancingInputs[macosArm64] STARTED
+
+io.github.kotlinmania.syn.GeneratedVerbatimTest.copiesSelectedTokensWithoutAdvancingInputs[macosArm64] PASSED
+
+io.github.kotlinmania.syn.GeneratedVerbatimTest.entersTransparentGroupsOnlyWhenEndpointRequiresIt[macosArm64] STARTED
+
+io.github.kotlinmania.syn.GeneratedVerbatimTest.entersTransparentGroupsOnlyWhenEndpointRequiresIt[macosArm64] PASSED
+
+io.github.kotlinmania.syn.GeneratedVerbatimTest.rejectsCrossBufferAndInsideDelimitedEndpointsWithRustMessages[macosArm64] STARTED
+
+io.github.kotlinmania.syn.GeneratedVerbatimTest.rejectsCrossBufferAndInsideDelimitedEndpointsWithRustMessages[macosArm64] PASSED
+
+io.github.kotlinmania.syn.GeneratedVerbatimTest.reversedRangeStartingAtEndRetainsUnwrapPanic[macosArm64] STARTED
+
+io.github.kotlinmania.syn.GeneratedVerbatimTest.reversedRangeStartingAtEndRetainsUnwrapPanic[macosArm64] PASSED
+
+io.github.kotlinmania.syn.GeneratedVerbatimTest.outputRetainsSpansAndOwnsIndependentTokens[macosArm64] STARTED
+
+io.github.kotlinmania.syn.GeneratedVerbatimTest.outputRetainsSpansAndOwnsIndependentTokens[macosArm64] PASSED
+
+io.github.kotlinmania.syn.GenericsTest.testSplitForImpl[macosArm64] STARTED
+
+io.github.kotlinmania.syn.GenericsTest.testSplitForImpl[macosArm64] PASSED
+
+io.github.kotlinmania.syn.GenericsTest.testTypeParamBound[macosArm64] STARTED
+
+io.github.kotlinmania.syn.GenericsTest.testTypeParamBound[macosArm64] PASSED
+
+io.github.kotlinmania.syn.GenericsTest.testFnPrecedenceInWhereClause[macosArm64] STARTED
+
+io.github.kotlinmania.syn.GenericsTest.testFnPrecedenceInWhereClause[macosArm64] PASSED
+
+io.github.kotlinmania.syn.GenericsTest.testWhereClauseAtEndOfInput[macosArm64] STARTED
+
+io.github.kotlinmania.syn.GenericsTest.testWhereClauseAtEndOfInput[macosArm64] PASSED
+
+io.github.kotlinmania.syn.GenericsTest.whereClauseRejectsReservedGenericParameters[macosArm64] STARTED
+
+io.github.kotlinmania.syn.GenericsTest.whereClauseRejectsReservedGenericParameters[macosArm64] PASSED
+
+io.github.kotlinmania.syn.GenericsTest.whereTypePredicatePreservesBoundLifetimes[macosArm64] STARTED
+
+io.github.kotlinmania.syn.GenericsTest.whereTypePredicatePreservesBoundLifetimes[macosArm64] PASSED
+
+io.github.kotlinmania.syn.GenericsTest.whereLifetimePredicateRequiresColon[macosArm64] STARTED
+
+io.github.kotlinmania.syn.GenericsTest.whereLifetimePredicateRequiresColon[macosArm64] PASSED
+
+io.github.kotlinmania.syn.GenericsTest.noOpaqueDrop[macosArm64] STARTED
+
+io.github.kotlinmania.syn.GenericsTest.noOpaqueDrop[macosArm64] PASSED
+
+io.github.kotlinmania.syn.GenericsTest.typeParamWithColonAndNoBounds[macosArm64] STARTED
+
+io.github.kotlinmania.syn.GenericsTest.typeParamWithColonAndNoBounds[macosArm64] PASSED
+
+io.github.kotlinmania.syn.GenericsTest.genericParamToTokensPrintsDefaultsAndConstTypes[macosArm64] STARTED
+
+io.github.kotlinmania.syn.GenericsTest.genericParamToTokensPrintsDefaultsAndConstTypes[macosArm64] PASSED
+
+io.github.kotlinmania.syn.GenericsTest.genericsToTokensPrintsLifetimesFirst[macosArm64] STARTED
+
+io.github.kotlinmania.syn.GenericsTest.genericsToTokensPrintsLifetimesFirst[macosArm64] PASSED
+
+io.github.kotlinmania.syn.GroupTest.parseInvisibleGroupExposesTokenAndContent[macosArm64] STARTED
+
+io.github.kotlinmania.syn.GroupTest.parseInvisibleGroupExposesTokenAndContent[macosArm64] PASSED
+
+io.github.kotlinmania.syn.GroupTest.parseInvisibleGroupRejectsVisibleGroup[macosArm64] STARTED
+
+io.github.kotlinmania.syn.GroupTest.parseInvisibleGroupRejectsVisibleGroup[macosArm64] PASSED
+
+io.github.kotlinmania.syn.GroupTest.tokenGroupCloneCopiesGroupToken[macosArm64] STARTED
+
+io.github.kotlinmania.syn.GroupTest.tokenGroupCloneCopiesGroupToken[macosArm64] PASSED
+
+io.github.kotlinmania.syn.GroupTest.tokenGroupFactoryMatchesCompanionConstructor[macosArm64] STARTED
+
+io.github.kotlinmania.syn.GroupTest.tokenGroupFactoryMatchesCompanionConstructor[macosArm64] PASSED
+
+io.github.kotlinmania.syn.GroupingTest.testGrouping[macosArm64] STARTED
+
+io.github.kotlinmania.syn.GroupingTest.testGrouping[macosArm64] PASSED
+
+io.github.kotlinmania.syn.HashTest.deriveInputHashMatchesGeneratedFieldOrder[macosArm64] STARTED
+
+io.github.kotlinmania.syn.HashTest.deriveInputHashMatchesGeneratedFieldOrder[macosArm64] PASSED
+
+io.github.kotlinmania.syn.HashTest.variantHashesUseRustDiscriminants[macosArm64] STARTED
+
+io.github.kotlinmania.syn.HashTest.variantHashesUseRustDiscriminants[macosArm64] PASSED
+
+io.github.kotlinmania.syn.HashTest.dataHashIncludesVariantTag[macosArm64] STARTED
+
+io.github.kotlinmania.syn.HashTest.dataHashIncludesVariantTag[macosArm64] PASSED
+
+io.github.kotlinmania.syn.IdentTest.identParse[macosArm64] STARTED
+
+io.github.kotlinmania.syn.IdentTest.identParse[macosArm64] PASSED
+
+io.github.kotlinmania.syn.IdentTest.identParseKeyword[macosArm64] STARTED
+
+io.github.kotlinmania.syn.IdentTest.identParseKeyword[macosArm64] PASSED
+
+io.github.kotlinmania.syn.IdentTest.identParseEmpty[macosArm64] STARTED
+
+io.github.kotlinmania.syn.IdentTest.identParseEmpty[macosArm64] PASSED
+
+io.github.kotlinmania.syn.IdentTest.identParseLifetime[macosArm64] STARTED
+
+io.github.kotlinmania.syn.IdentTest.identParseLifetime[macosArm64] PASSED
+
+io.github.kotlinmania.syn.IdentTest.identParseUnderscore[macosArm64] STARTED
+
+io.github.kotlinmania.syn.IdentTest.identParseUnderscore[macosArm64] PASSED
+
+io.github.kotlinmania.syn.IdentTest.identParseNumber[macosArm64] STARTED
+
+io.github.kotlinmania.syn.IdentTest.identParseNumber[macosArm64] PASSED
+
+io.github.kotlinmania.syn.IdentTest.identParseInvalid[macosArm64] STARTED
+
+io.github.kotlinmania.syn.IdentTest.identParseInvalid[macosArm64] PASSED
+
+io.github.kotlinmania.syn.IdentTest.identNew[macosArm64] STARTED
+
+io.github.kotlinmania.syn.IdentTest.identNew[macosArm64] PASSED
+
+io.github.kotlinmania.syn.IdentTest.identNewKeyword[macosArm64] STARTED
+
+io.github.kotlinmania.syn.IdentTest.identNewKeyword[macosArm64] PASSED
+
+io.github.kotlinmania.syn.IdentTest.identNewEmpty[macosArm64] STARTED
+
+io.github.kotlinmania.syn.IdentTest.identNewEmpty[macosArm64] PASSED
+
+io.github.kotlinmania.syn.IdentTest.identNewLifetime[macosArm64] STARTED
+
+io.github.kotlinmania.syn.IdentTest.identNewLifetime[macosArm64] PASSED
+
+io.github.kotlinmania.syn.IdentTest.identNewUnderscore[macosArm64] STARTED
+
+io.github.kotlinmania.syn.IdentTest.identNewUnderscore[macosArm64] PASSED
+
+io.github.kotlinmania.syn.IdentTest.identNewNumber[macosArm64] STARTED
+
+io.github.kotlinmania.syn.IdentTest.identNewNumber[macosArm64] PASSED
+
+io.github.kotlinmania.syn.IdentTest.identNewInvalid[macosArm64] STARTED
+
+io.github.kotlinmania.syn.IdentTest.identNewInvalid[macosArm64] PASSED
+
+io.github.kotlinmania.syn.IdentTest.identUnraw[macosArm64] STARTED
+
+io.github.kotlinmania.syn.IdentTest.identUnraw[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ItemTest.testMacroVariableAttr[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ItemTest.testMacroVariableAttr[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ItemTest.testMacro2ItemFallsBackToVerbatim[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ItemTest.testMacro2ItemFallsBackToVerbatim[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ItemTest.testNegativeImpl[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ItemTest.testNegativeImpl[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ItemTest.testMacroVariableImpl[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ItemTest.testMacroVariableImpl[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ItemTest.testSupertraits[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ItemTest.testSupertraits[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ItemTest.testTraitAliasItem[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ItemTest.testTraitAliasItem[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ItemTest.testStaticItem[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ItemTest.testStaticItem[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ItemTest.testExternCrateItem[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ItemTest.testExternCrateItem[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ItemTest.testForeignModItem[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ItemTest.testForeignModItem[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ItemTest.testForeignItemsWithUnsupportedRustShapesFallBackToVerbatim[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ItemTest.testForeignItemsWithUnsupportedRustShapesFallBackToVerbatim[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ItemTest.testTypeEmptyBounds[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ItemTest.testTypeEmptyBounds[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ItemTest.testTraitAssociatedTypeWhereAfterDefault[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ItemTest.testTraitAssociatedTypeWhereAfterDefault[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ItemTest.testImplAssociatedTypeWhereAfterDefault[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ItemTest.testImplAssociatedTypeWhereAfterDefault[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ItemTest.testTypeAliasItem[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ItemTest.testTypeAliasItem[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ItemTest.testTypeAliasWithBoundsFallsBackToVerbatim[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ItemTest.testTypeAliasWithBoundsFallsBackToVerbatim[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ItemTest.testReplaceAttrs[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ItemTest.testReplaceAttrs[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ItemTest.testDeriveInputItemConversions[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ItemTest.testDeriveInputItemConversions[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ItemTest.testUseItemKeepsLeadingColonNestedTreeAndSemicolon[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ItemTest.testUseItemKeepsLeadingColonNestedTreeAndSemicolon[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ItemTest.testUseItemGroupCrateRootFallsBackToVerbatim[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ItemTest.testUseItemGroupCrateRootFallsBackToVerbatim[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ItemTest.testFunctionSignatureBareVariadic[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ItemTest.testFunctionSignatureBareVariadic[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ItemTest.testFunctionSignatureNamedVariadic[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ItemTest.testFunctionSignatureNamedVariadic[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ItemTest.testFunctionInnerAttributes[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ItemTest.testFunctionInnerAttributes[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ItemTest.testImplFunctionAttributesVisibilityAndDefaultness[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ItemTest.testImplFunctionAttributesVisibilityAndDefaultness[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ItemTest.testImplVisibility[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ItemTest.testImplVisibility[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ItemTest.testImplTypeParameterDefaults[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ItemTest.testImplTypeParameterDefaults[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ItemTest.testImplTraitTrailingPlus[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ItemTest.testImplTraitTrailingPlus[macosArm64] PASSED
+
+io.github.kotlinmania.syn.LitTest.strings[macosArm64] STARTED
+
+io.github.kotlinmania.syn.LitTest.strings[macosArm64] PASSED
+
+io.github.kotlinmania.syn.LitTest.byteStrings[macosArm64] STARTED
+
+io.github.kotlinmania.syn.LitTest.byteStrings[macosArm64] PASSED
+
+io.github.kotlinmania.syn.LitTest.cStrings[macosArm64] STARTED
+
+io.github.kotlinmania.syn.LitTest.cStrings[macosArm64] PASSED
+
+io.github.kotlinmania.syn.LitTest.bytes[macosArm64] STARTED
+
+io.github.kotlinmania.syn.LitTest.bytes[macosArm64] PASSED
+
+io.github.kotlinmania.syn.LitTest.chars[macosArm64] STARTED
+
+io.github.kotlinmania.syn.LitTest.chars[macosArm64] PASSED
+
+io.github.kotlinmania.syn.LitTest.ints[macosArm64] STARTED
+
+io.github.kotlinmania.syn.LitTest.ints[macosArm64] PASSED
+
+io.github.kotlinmania.syn.LitTest.floats[macosArm64] STARTED
+
+io.github.kotlinmania.syn.LitTest.floats[macosArm64] PASSED
+
+io.github.kotlinmania.syn.LitTest.negative[macosArm64] STARTED
+
+io.github.kotlinmania.syn.LitTest.negative[macosArm64] PASSED
+
+io.github.kotlinmania.syn.LitTest.suffix[macosArm64] STARTED
+
+io.github.kotlinmania.syn.LitTest.suffix[macosArm64] PASSED
+
+io.github.kotlinmania.syn.LitTest.testDeepGroupEmpty[macosArm64] STARTED
+
+io.github.kotlinmania.syn.LitTest.testDeepGroupEmpty[macosArm64] PASSED
+
+io.github.kotlinmania.syn.LitTest.litPeekAcceptsNegativeLiteral[macosArm64] STARTED
+
+io.github.kotlinmania.syn.LitTest.litPeekAcceptsNegativeLiteral[macosArm64] PASSED
+
+io.github.kotlinmania.syn.LitTest.testError[macosArm64] STARTED
+
+io.github.kotlinmania.syn.LitTest.testError[macosArm64] PASSED
+
+io.github.kotlinmania.syn.LitTest.litStrParseWith[macosArm64] STARTED
+
+io.github.kotlinmania.syn.LitTest.litStrParseWith[macosArm64] PASSED
+
+io.github.kotlinmania.syn.LitTest.setSpan[macosArm64] STARTED
+
+io.github.kotlinmania.syn.LitTest.setSpan[macosArm64] PASSED
+
+io.github.kotlinmania.syn.LiteralEqualityTest.independentlyParsedLiteralsIgnoreSpansAndWorkAsKeys[macosArm64] STARTED
+
+io.github.kotlinmania.syn.LiteralEqualityTest.independentlyParsedLiteralsIgnoreSpansAndWorkAsKeys[macosArm64] PASSED
+
+io.github.kotlinmania.syn.LiteralEqualityTest.differentTokenSpellingsRemainDistinct[macosArm64] STARTED
+
+io.github.kotlinmania.syn.LiteralEqualityTest.differentTokenSpellingsRemainDistinct[macosArm64] PASSED
+
+io.github.kotlinmania.syn.LiteralEqualityTest.verbatimEqualityPreservesTheLiteralVariant[macosArm64] STARTED
+
+io.github.kotlinmania.syn.LiteralEqualityTest.verbatimEqualityPreservesTheLiteralVariant[macosArm64] PASSED
+
+io.github.kotlinmania.syn.MacTest.parseMacroWithParenDelimiter[macosArm64] STARTED
+
+io.github.kotlinmania.syn.MacTest.parseMacroWithParenDelimiter[macosArm64] PASSED
+
+io.github.kotlinmania.syn.MacTest.parseMacroWithBracketDelimiter[macosArm64] STARTED
+
+io.github.kotlinmania.syn.MacTest.parseMacroWithBracketDelimiter[macosArm64] PASSED
+
+io.github.kotlinmania.syn.MacTest.parseMacroWithModStylePathAndBraceDelimiter[macosArm64] STARTED
+
+io.github.kotlinmania.syn.MacTest.parseMacroWithModStylePathAndBraceDelimiter[macosArm64] PASSED
+
+io.github.kotlinmania.syn.MacTest.parseMacroRequiresBangToken[macosArm64] STARTED
+
+io.github.kotlinmania.syn.MacTest.parseMacroRequiresBangToken[macosArm64] PASSED
+
+io.github.kotlinmania.syn.MacroBorrowedTokensTest.borrowedMacroOperationsPreserveTokensAndPositions[macosArm64] STARTED
+
+io.github.kotlinmania.syn.MacroBorrowedTokensTest.borrowedMacroOperationsPreserveTokensAndPositions[macosArm64] PASSED
+
+io.github.kotlinmania.syn.MacroBorrowedTokensTest.consumingCopiesDoesNotEmptyNestedMacroOriginal[macosArm64] STARTED
+
+io.github.kotlinmania.syn.MacroBorrowedTokensTest.consumingCopiesDoesNotEmptyNestedMacroOriginal[macosArm64] PASSED
+
+io.github.kotlinmania.syn.MacroBorrowedTokensTest.allMacroDelimiterFormsRetainOpeningAndClosingSpans[macosArm64] STARTED
+
+io.github.kotlinmania.syn.MacroBorrowedTokensTest.allMacroDelimiterFormsRetainOpeningAndClosingSpans[macosArm64] PASSED
+
+io.github.kotlinmania.syn.MetaTest.testParseMetaItemWord[macosArm64] STARTED
+
+io.github.kotlinmania.syn.MetaTest.testParseMetaItemWord[macosArm64] PASSED
+
+io.github.kotlinmania.syn.MetaTest.testParseMetaNameValue[macosArm64] STARTED
+
+io.github.kotlinmania.syn.MetaTest.testParseMetaNameValue[macosArm64] PASSED
+
+io.github.kotlinmania.syn.MetaTest.testParseMetaItemListLit[macosArm64] STARTED
+
+io.github.kotlinmania.syn.MetaTest.testParseMetaItemListLit[macosArm64] PASSED
+
+io.github.kotlinmania.syn.MetaTest.testParseMetaItemMultiple[macosArm64] STARTED
+
+io.github.kotlinmania.syn.MetaTest.testParseMetaItemMultiple[macosArm64] PASSED
+
+io.github.kotlinmania.syn.MetaTest.testParsePath[macosArm64] STARTED
+
+io.github.kotlinmania.syn.MetaTest.testParsePath[macosArm64] PASSED
+
+io.github.kotlinmania.syn.MetaTest.testParseKeywordPath[macosArm64] STARTED
+
+io.github.kotlinmania.syn.MetaTest.testParseKeywordPath[macosArm64] PASSED
+
+io.github.kotlinmania.syn.MetaTest.testParserConsumesValues[macosArm64] STARTED
+
+io.github.kotlinmania.syn.MetaTest.testParserConsumesValues[macosArm64] PASSED
+
+io.github.kotlinmania.syn.MetaTest.testFatArrowAfterMeta[macosArm64] STARTED
+
+io.github.kotlinmania.syn.MetaTest.testFatArrowAfterMeta[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ModuleParityTest.moduleErrorsRetainTheirOriginalLocationInsteadOfTheFollowingItem[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ModuleParityTest.moduleErrorsRetainTheirOriginalLocationInsteadOfTheFollowingItem[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ModuleParityTest.innerAttributesBelongToTheirModuleAndRoundTripInsideItsBraces[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ModuleParityTest.innerAttributesBelongToTheirModuleAndRoundTripInsideItsBraces[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ModuleParityTest.moduleFormsFollowRustSynAndMalformedBodiesReturnFailures[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ModuleParityTest.moduleFormsFollowRustSynAndMalformedBodiesReturnFailures[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ParseBufferTest.smuggledSpeculativeCursorBetweenSources[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ParseBufferTest.smuggledSpeculativeCursorBetweenSources[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ParseBufferTest.smuggledSpeculativeCursorBetweenBrackets[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ParseBufferTest.smuggledSpeculativeCursorBetweenBrackets[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ParseBufferTest.smuggledSpeculativeCursorIntoBrackets[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ParseBufferTest.smuggledSpeculativeCursorIntoBrackets[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ParseBufferTest.trailingEmptyNoneGroup[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ParseBufferTest.trailingEmptyNoneGroup[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ParseBufferTest.parseBufferDropPropagatesUnexpectedChildTokens[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ParseBufferTest.parseBufferDropPropagatesUnexpectedChildTokens[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ParseBufferTest.testUnwindSafe[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ParseBufferTest.testUnwindSafe[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ParseBufferTest.parseStreamIsEmptyAtEof[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ParseBufferTest.parseStreamIsEmptyAtEof[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ParseBufferTest.parseStreamIsNotEmptyForContent[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ParseBufferTest.parseStreamIsNotEmptyForContent[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ParseBufferTest.parseStreamCursorReturnsIdent[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ParseBufferTest.parseStreamCursorReturnsIdent[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ParseBufferTest.parseStreamCursorReturnsNullAtEof[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ParseBufferTest.parseStreamCursorReturnsNullAtEof[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ParseBufferTest.cursorCloneAndPartialCmpFollowBufferPosition[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ParseBufferTest.cursorCloneAndPartialCmpFollowBufferPosition[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ParseBufferTest.parseStreamForkDoesNotAdvanceParent[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ParseBufferTest.parseStreamForkDoesNotAdvanceParent[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ParseBufferTest.parseStreamPeekDoesNotAdvance[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ParseBufferTest.parseStreamPeekDoesNotAdvance[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ParseBufferTest.parseStreamStepAdvancesOnSuccess[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ParseBufferTest.parseStreamStepAdvancesOnSuccess[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ParseBufferTest.stepCursorDerefExposesCursor[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ParseBufferTest.stepCursorDerefExposesCursor[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ParseBufferTest.parseStreamStepDoesNotAdvanceOnFailure[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ParseBufferTest.parseStreamStepDoesNotAdvanceOnFailure[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ParseQuoteTest.testAttribute[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ParseQuoteTest.testAttribute[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ParseQuoteTest.testField[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ParseQuoteTest.testField[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ParseQuoteTest.testPat[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ParseQuoteTest.testPat[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ParseQuoteTest.testPunctuated[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ParseQuoteTest.testPunctuated[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ParseQuoteTest.testPunctuatedTrailing[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ParseQuoteTest.testPunctuatedTrailing[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ParseQuoteTest.testVecStmt[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ParseQuoteTest.testVecStmt[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ParseQuoteTest.testVecArm[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ParseQuoteTest.testVecArm[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ParseStreamTest.testPeekPunct[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ParseStreamTest.testPeekPunct[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ParseStreamTest.testPeekLifetime[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ParseStreamTest.testPeekLifetime[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ParseStreamTest.testPeekNotLifetime[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ParseStreamTest.testPeekNotLifetime[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ParseStreamTest.testPeekIdent[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ParseStreamTest.testPeekIdent[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ParseStreamTest.testParseAnyIdent[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ParseStreamTest.testParseAnyIdent[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ParseStreamTest.testPeekGroups[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ParseStreamTest.testPeekGroups[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ParseStreamTest.lookaheadEndUsesScopeCloseDelimiter[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ParseStreamTest.lookaheadEndUsesScopeCloseDelimiter[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ParseStreamTest.lookaheadFormatsManyExpectedTokens[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ParseStreamTest.lookaheadFormatsManyExpectedTokens[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ParseTest.nothingParsesOnlyEmptyInputAndPrintsNoTokens[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ParseTest.nothingParsesOnlyEmptyInputAndPrintsNoTokens[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ParserParityRegressionTest.associatedConstantPrefixesRetainVisibilityAndAttributes[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ParserParityRegressionTest.associatedConstantPrefixesRetainVisibilityAndAttributes[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ParserParityRegressionTest.associatedDispatchPreservesSourceOrderAndConstFunctions[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ParserParityRegressionTest.associatedDispatchPreservesSourceOrderAndConstFunctions[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ParserParityRegressionTest.associatedMacrosUseTheirRealDelimiterAndPrefixRules[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ParserParityRegressionTest.associatedMacrosUseTheirRealDelimiterAndPrefixRules[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ParserParityRegressionTest.syntacticallyAcceptedUnrepresentedItemsRetainAllTokens[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ParserParityRegressionTest.syntacticallyAcceptedUnrepresentedItemsRetainAllTokens[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ParserParityRegressionTest.malformedAssociatedConstantsPropagateErrors[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ParserParityRegressionTest.malformedAssociatedConstantsPropagateErrors[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ParserParityRegressionTest.malformedLetInitializersCannotDisappear[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ParserParityRegressionTest.malformedLetInitializersCannotDisappear[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ParserParityRegressionTest.absentAndPresentLetInitializersRemainDistinct[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ParserParityRegressionTest.absentAndPresentLetInitializersRemainDistinct[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ParserParityRegressionTest.topLevelConstantsFollowTheSameRequiredInitializerRule[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ParserParityRegressionTest.topLevelConstantsFollowTheSameRequiredInitializerRule[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ParserParityRegressionTest.closurePrefixesSurviveCopiesVisitorsAndFolds[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ParserParityRegressionTest.closurePrefixesSurviveCopiesVisitorsAndFolds[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ParserParityRegressionTest.bracedMatchArmCannotConsumeTheFollowingTuplePattern[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ParserParityRegressionTest.bracedMatchArmCannotConsumeTheFollowingTuplePattern[macosArm64] PASSED
+
+io.github.kotlinmania.syn.PatTest.testPatIdent[macosArm64] STARTED
+
+io.github.kotlinmania.syn.PatTest.testPatIdent[macosArm64] PASSED
+
+io.github.kotlinmania.syn.PatTest.testPatPath[macosArm64] STARTED
+
+io.github.kotlinmania.syn.PatTest.testPatPath[macosArm64] PASSED
+
+io.github.kotlinmania.syn.PatTest.testLeadingVert[macosArm64] STARTED
+
+io.github.kotlinmania.syn.PatTest.testLeadingVert[macosArm64] PASSED
+
+io.github.kotlinmania.syn.PatTest.testGroup[macosArm64] STARTED
+
+io.github.kotlinmania.syn.PatTest.testGroup[macosArm64] PASSED
+
+io.github.kotlinmania.syn.PatTest.testRanges[macosArm64] STARTED
+
+io.github.kotlinmania.syn.PatTest.testRanges[macosArm64] PASSED
+
+io.github.kotlinmania.syn.PatTest.testTupleComma[macosArm64] STARTED
+
+io.github.kotlinmania.syn.PatTest.testTupleComma[macosArm64] PASSED
+
+io.github.kotlinmania.syn.PathTest.parseInterpolatedLeadingComponent[macosArm64] STARTED
+
+io.github.kotlinmania.syn.PathTest.parseInterpolatedLeadingComponent[macosArm64] PASSED
+
+io.github.kotlinmania.syn.PathTest.parseParenthesizedPathArgumentsWithDisambiguator[macosArm64] STARTED
+
+io.github.kotlinmania.syn.PathTest.parseParenthesizedPathArgumentsWithDisambiguator[macosArm64] PASSED
+
+io.github.kotlinmania.syn.PathTest.printIncompleteQpath[macosArm64] STARTED
+
+io.github.kotlinmania.syn.PathTest.printIncompleteQpath[macosArm64] PASSED
+
+io.github.kotlinmania.syn.PathTest.qselfSpanUsesDelimiters[macosArm64] STARTED
+
+io.github.kotlinmania.syn.PathTest.qselfSpanUsesDelimiters[macosArm64] PASSED
+
+io.github.kotlinmania.syn.PathTest.parseSimplePath[macosArm64] STARTED
+
+io.github.kotlinmania.syn.PathTest.parseSimplePath[macosArm64] PASSED
+
+io.github.kotlinmania.syn.PathTest.parseLeadingColonPath[macosArm64] STARTED
+
+io.github.kotlinmania.syn.PathTest.parseLeadingColonPath[macosArm64] PASSED
+
+io.github.kotlinmania.syn.PathTest.parseSingleSegmentPath[macosArm64] STARTED
+
+io.github.kotlinmania.syn.PathTest.parseSingleSegmentPath[macosArm64] PASSED
+
+io.github.kotlinmania.syn.PathTest.pathIsIdent[macosArm64] STARTED
+
+io.github.kotlinmania.syn.PathTest.pathIsIdent[macosArm64] PASSED
+
+io.github.kotlinmania.syn.PathTest.pathIsIdentReturnsFalseForMultiSegment[macosArm64] STARTED
+
+io.github.kotlinmania.syn.PathTest.pathIsIdentReturnsFalseForMultiSegment[macosArm64] PASSED
+
+io.github.kotlinmania.syn.PathTest.pathGetIdentSingleSegment[macosArm64] STARTED
+
+io.github.kotlinmania.syn.PathTest.pathGetIdentSingleSegment[macosArm64] PASSED
+
+io.github.kotlinmania.syn.PathTest.pathGetIdentMultiSegmentReturnsNull[macosArm64] STARTED
+
+io.github.kotlinmania.syn.PathTest.pathGetIdentMultiSegmentReturnsNull[macosArm64] PASSED
+
+io.github.kotlinmania.syn.PathTest.pathGetIdentLeadingColonReturnsNull[macosArm64] STARTED
+
+io.github.kotlinmania.syn.PathTest.pathGetIdentLeadingColonReturnsNull[macosArm64] PASSED
+
+io.github.kotlinmania.syn.PathTest.pathToStringRoundtrips[macosArm64] STARTED
+
+io.github.kotlinmania.syn.PathTest.pathToStringRoundtrips[macosArm64] PASSED
+
+io.github.kotlinmania.syn.PathTest.pathToStringLeadingColon[macosArm64] STARTED
+
+io.github.kotlinmania.syn.PathTest.pathToStringLeadingColon[macosArm64] PASSED
+
+io.github.kotlinmania.syn.PathTest.pathFromSingleIdent[macosArm64] STARTED
+
+io.github.kotlinmania.syn.PathTest.pathFromSingleIdent[macosArm64] PASSED
+
+io.github.kotlinmania.syn.PathTest.pathDeepCopyIsEqual[macosArm64] STARTED
+
+io.github.kotlinmania.syn.PathTest.pathDeepCopyIsEqual[macosArm64] PASSED
+
+io.github.kotlinmania.syn.PathTest.pathParseFailureOnEmpty[macosArm64] STARTED
+
+io.github.kotlinmania.syn.PathTest.pathParseFailureOnEmpty[macosArm64] PASSED
+
+io.github.kotlinmania.syn.PathTest.pathParseFailureOnPunct[macosArm64] STARTED
+
+io.github.kotlinmania.syn.PathTest.pathParseFailureOnPunct[macosArm64] PASSED
+
+io.github.kotlinmania.syn.PrecedenceTest.testArithmeticBinopPrecedence[macosArm64] STARTED
+
+io.github.kotlinmania.syn.PrecedenceTest.testArithmeticBinopPrecedence[macosArm64] PASSED
+
+io.github.kotlinmania.syn.PrecedenceTest.testShiftBinopPrecedence[macosArm64] STARTED
+
+io.github.kotlinmania.syn.PrecedenceTest.testShiftBinopPrecedence[macosArm64] PASSED
+
+io.github.kotlinmania.syn.PrecedenceTest.testBitwiseBinopPrecedence[macosArm64] STARTED
+
+io.github.kotlinmania.syn.PrecedenceTest.testBitwiseBinopPrecedence[macosArm64] PASSED
+
+io.github.kotlinmania.syn.PrecedenceTest.testLogicalBinopPrecedence[macosArm64] STARTED
+
+io.github.kotlinmania.syn.PrecedenceTest.testLogicalBinopPrecedence[macosArm64] PASSED
+
+io.github.kotlinmania.syn.PrecedenceTest.testComparisonBinopPrecedence[macosArm64] STARTED
+
+io.github.kotlinmania.syn.PrecedenceTest.testComparisonBinopPrecedence[macosArm64] PASSED
+
+io.github.kotlinmania.syn.PrecedenceTest.testAssignBinopPrecedence[macosArm64] STARTED
+
+io.github.kotlinmania.syn.PrecedenceTest.testAssignBinopPrecedence[macosArm64] PASSED
+
+io.github.kotlinmania.syn.PrecedenceTest.testPrefixExprPrecedence[macosArm64] STARTED
+
+io.github.kotlinmania.syn.PrecedenceTest.testPrefixExprPrecedence[macosArm64] PASSED
+
+io.github.kotlinmania.syn.PrecedenceTest.testCastExprPrecedence[macosArm64] STARTED
+
+io.github.kotlinmania.syn.PrecedenceTest.testCastExprPrecedence[macosArm64] PASSED
+
+io.github.kotlinmania.syn.PrecedenceTest.testAssignExprPrecedence[macosArm64] STARTED
+
+io.github.kotlinmania.syn.PrecedenceTest.testAssignExprPrecedence[macosArm64] PASSED
+
+io.github.kotlinmania.syn.PrecedenceTest.testBinaryExprPrecedenceDelegatesToOp[macosArm64] STARTED
+
+io.github.kotlinmania.syn.PrecedenceTest.testBinaryExprPrecedenceDelegatesToOp[macosArm64] PASSED
+
+io.github.kotlinmania.syn.PrecedenceTest.testUnambiguousExprPrecedence[macosArm64] STARTED
+
+io.github.kotlinmania.syn.PrecedenceTest.testUnambiguousExprPrecedence[macosArm64] PASSED
+
+io.github.kotlinmania.syn.PrecedenceTest.testLetExprPrecedence[macosArm64] STARTED
+
+io.github.kotlinmania.syn.PrecedenceTest.testLetExprPrecedence[macosArm64] PASSED
+
+io.github.kotlinmania.syn.PrecedenceTest.testBreakExprPrecedence[macosArm64] STARTED
+
+io.github.kotlinmania.syn.PrecedenceTest.testBreakExprPrecedence[macosArm64] PASSED
+
+io.github.kotlinmania.syn.PrecedenceTest.testContinueExprPrecedence[macosArm64] STARTED
+
+io.github.kotlinmania.syn.PrecedenceTest.testContinueExprPrecedence[macosArm64] PASSED
+
+io.github.kotlinmania.syn.PrecedenceTest.testPrefixAttrsClassifiesOuterAttributeAsPrefix[macosArm64] STARTED
+
+io.github.kotlinmania.syn.PrecedenceTest.testPrefixAttrsClassifiesOuterAttributeAsPrefix[macosArm64] PASSED
+
+io.github.kotlinmania.syn.PrecedenceTest.testPrefixAttrsClassifiesInnerAttributeAsUnambiguous[macosArm64] STARTED
+
+io.github.kotlinmania.syn.PrecedenceTest.testPrefixAttrsClassifiesInnerAttributeAsUnambiguous[macosArm64] PASSED
+
+io.github.kotlinmania.syn.PrecedenceTest.testEmptyAttrsAreUnambiguous[macosArm64] STARTED
+
+io.github.kotlinmania.syn.PrecedenceTest.testEmptyAttrsAreUnambiguous[macosArm64] PASSED
+
+io.github.kotlinmania.syn.PrecedenceTest.testMinPrecedenceIsJump[macosArm64] STARTED
+
+io.github.kotlinmania.syn.PrecedenceTest.testMinPrecedenceIsJump[macosArm64] PASSED
+
+io.github.kotlinmania.syn.PrecedenceTest.testAttributedContinueMatchesRust[macosArm64] STARTED
+
+io.github.kotlinmania.syn.PrecedenceTest.testAttributedContinueMatchesRust[macosArm64] PASSED
+
+io.github.kotlinmania.syn.PrecedenceTest.testGeneratedTraitBodiesMatchRust[macosArm64] STARTED
+
+io.github.kotlinmania.syn.PrecedenceTest.testGeneratedTraitBodiesMatchRust[macosArm64] PASSED
+
+io.github.kotlinmania.syn.PunctuatedTest.pairs[macosArm64] STARTED
+
+io.github.kotlinmania.syn.PunctuatedTest.pairs[macosArm64] PASSED
+
+io.github.kotlinmania.syn.PunctuatedTest.extendPairs[macosArm64] STARTED
+
+io.github.kotlinmania.syn.PunctuatedTest.extendPairs[macosArm64] PASSED
+
+io.github.kotlinmania.syn.PunctuatedTest.extendPairSequence[macosArm64] STARTED
+
+io.github.kotlinmania.syn.PunctuatedTest.extendPairSequence[macosArm64] PASSED
+
+io.github.kotlinmania.syn.PunctuatedTest.fromIterAndDefault[macosArm64] STARTED
+
+io.github.kotlinmania.syn.PunctuatedTest.fromIterAndDefault[macosArm64] PASSED
+
+io.github.kotlinmania.syn.PunctuatedTest.fromPairsPanicsAfterEndPair[macosArm64] STARTED
+
+io.github.kotlinmania.syn.PunctuatedTest.fromPairsPanicsAfterEndPair[macosArm64] PASSED
+
+io.github.kotlinmania.syn.PunctuatedTest.iter[macosArm64] STARTED
+
+io.github.kotlinmania.syn.PunctuatedTest.iter[macosArm64] PASSED
+
+io.github.kotlinmania.syn.PunctuatedTest.ownedIteratorsCloneAtCurrentPosition[macosArm64] STARTED
+
+io.github.kotlinmania.syn.PunctuatedTest.ownedIteratorsCloneAtCurrentPosition[macosArm64] PASSED
+
+io.github.kotlinmania.syn.PunctuatedTest.emptyPunctuatedIterators[macosArm64] STARTED
+
+io.github.kotlinmania.syn.PunctuatedTest.emptyPunctuatedIterators[macosArm64] PASSED
+
+io.github.kotlinmania.syn.PunctuatedTest.toSynPunctuated[macosArm64] STARTED
+
+io.github.kotlinmania.syn.PunctuatedTest.toSynPunctuated[macosArm64] PASSED
+
+io.github.kotlinmania.syn.PunctuatedTest.mayDangle[macosArm64] STARTED
+
+io.github.kotlinmania.syn.PunctuatedTest.mayDangle[macosArm64] PASSED
+
+io.github.kotlinmania.syn.PunctuatedTest.indexOutOfBounds[macosArm64] STARTED
+
+io.github.kotlinmania.syn.PunctuatedTest.indexOutOfBounds[macosArm64] PASSED
+
+io.github.kotlinmania.syn.PunctuatedTest.concreteListIndexReturnsTrailingLastElement[macosArm64] STARTED
+
+io.github.kotlinmania.syn.PunctuatedTest.concreteListIndexReturnsTrailingLastElement[macosArm64] PASSED
+
+io.github.kotlinmania.syn.PunctuatedTest.insert[macosArm64] STARTED
+
+io.github.kotlinmania.syn.PunctuatedTest.insert[macosArm64] PASSED
+
+io.github.kotlinmania.syn.PunctuatedTest.insertOutOfBounds[macosArm64] STARTED
+
+io.github.kotlinmania.syn.PunctuatedTest.insertOutOfBounds[macosArm64] PASSED
+
+io.github.kotlinmania.syn.PunctuatedTest.mutableAccessorsReturnStoredElements[macosArm64] STARTED
+
+io.github.kotlinmania.syn.PunctuatedTest.mutableAccessorsReturnStoredElements[macosArm64] PASSED
+
+io.github.kotlinmania.syn.PunctuatedTest.equalityIncludesPunctuation[macosArm64] STARTED
+
+io.github.kotlinmania.syn.PunctuatedTest.equalityIncludesPunctuation[macosArm64] PASSED
+
+io.github.kotlinmania.syn.PunctuatedTest.cloneFromReplacesContents[macosArm64] STARTED
+
+io.github.kotlinmania.syn.PunctuatedTest.cloneFromReplacesContents[macosArm64] PASSED
+
+io.github.kotlinmania.syn.PunctuatedTest.cloneCopiesSequenceContents[macosArm64] STARTED
+
+io.github.kotlinmania.syn.PunctuatedTest.cloneCopiesSequenceContents[macosArm64] PASSED
+
+io.github.kotlinmania.syn.PunctuatedTest.parseTerminatedAcceptsTrailingPunctuation[macosArm64] STARTED
+
+io.github.kotlinmania.syn.PunctuatedTest.parseTerminatedAcceptsTrailingPunctuation[macosArm64] PASSED
+
+io.github.kotlinmania.syn.PunctuatedTest.parseSeparatedNonemptyStopsBeforeNonSeparator[macosArm64] STARTED
+
+io.github.kotlinmania.syn.PunctuatedTest.parseSeparatedNonemptyStopsBeforeNonSeparator[macosArm64] PASSED
+
+io.github.kotlinmania.syn.PunctuatedTest.parseSeparatedNonemptyRequiresOneElement[macosArm64] STARTED
+
+io.github.kotlinmania.syn.PunctuatedTest.parseSeparatedNonemptyRequiresOneElement[macosArm64] PASSED
+
+io.github.kotlinmania.syn.QualifiedPathRegressionTest.qualifiedPathPreservesTypeTraitAndSpans[macosArm64] STARTED
+
+io.github.kotlinmania.syn.QualifiedPathRegressionTest.qualifiedPathPreservesTypeTraitAndSpans[macosArm64] PASSED
+
+io.github.kotlinmania.syn.QualifiedPathRegressionTest.qualifiedPathWithoutTraitRetainsTheAssociatedType[macosArm64] STARTED
+
+io.github.kotlinmania.syn.QualifiedPathRegressionTest.qualifiedPathWithoutTraitRetainsTheAssociatedType[macosArm64] PASSED
+
+io.github.kotlinmania.syn.QualifiedPathRegressionTest.nestedQualifiedTypeParsesAndRoundTrips[macosArm64] STARTED
+
+io.github.kotlinmania.syn.QualifiedPathRegressionTest.nestedQualifiedTypeParsesAndRoundTrips[macosArm64] PASSED
+
+io.github.kotlinmania.syn.QualifiedPathRegressionTest.expressionPrintingUsesTheQualifiedTraitBoundary[macosArm64] STARTED
+
+io.github.kotlinmania.syn.QualifiedPathRegressionTest.expressionPrintingUsesTheQualifiedTraitBoundary[macosArm64] PASSED
+
+io.github.kotlinmania.syn.QualifiedPathRegressionTest.expressionPrintingInsertsRequiredTurbofish[macosArm64] STARTED
+
+io.github.kotlinmania.syn.QualifiedPathRegressionTest.expressionPrintingInsertsRequiredTurbofish[macosArm64] PASSED
+
+io.github.kotlinmania.syn.QualifiedPathRegressionTest.qualifiedStructPrintingUsesTheSamePathRules[macosArm64] STARTED
+
+io.github.kotlinmania.syn.QualifiedPathRegressionTest.qualifiedStructPrintingUsesTheSamePathRules[macosArm64] PASSED
+
+io.github.kotlinmania.syn.QualifiedPathRegressionTest.structPrintingRetainsRestWhenPunctuationIsDefaulted[macosArm64] STARTED
+
+io.github.kotlinmania.syn.QualifiedPathRegressionTest.structPrintingRetainsRestWhenPunctuationIsDefaulted[macosArm64] PASSED
+
+io.github.kotlinmania.syn.QualifiedPathRegressionTest.returnConsumesQualifiedPathAsItsValue[macosArm64] STARTED
+
+io.github.kotlinmania.syn.QualifiedPathRegressionTest.returnConsumesQualifiedPathAsItsValue[macosArm64] PASSED
+
+io.github.kotlinmania.syn.QualifiedPathRegressionTest.yieldConsumesQualifiedPathAsItsValue[macosArm64] STARTED
+
+io.github.kotlinmania.syn.QualifiedPathRegressionTest.yieldConsumesQualifiedPathAsItsValue[macosArm64] PASSED
+
+io.github.kotlinmania.syn.QualifiedPathRegressionTest.labeledBreakConsumesQualifiedPathAsItsValue[macosArm64] STARTED
+
+io.github.kotlinmania.syn.QualifiedPathRegressionTest.labeledBreakConsumesQualifiedPathAsItsValue[macosArm64] PASSED
+
+io.github.kotlinmania.syn.QualifiedPathRegressionTest.returnComparisonOperatorsDoNotStartQualifiedValues[macosArm64] STARTED
+
+io.github.kotlinmania.syn.QualifiedPathRegressionTest.returnComparisonOperatorsDoNotStartQualifiedValues[macosArm64] PASSED
+
+io.github.kotlinmania.syn.QualifiedPathRegressionTest.malformedQualifiedPathsRemainErrors[macosArm64] STARTED
+
+io.github.kotlinmania.syn.QualifiedPathRegressionTest.malformedQualifiedPathsRemainErrors[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ReceiverTest.testByValue[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ReceiverTest.testByValue[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ReceiverTest.testByMutValue[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ReceiverTest.testByMutValue[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ReceiverTest.testByRef[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ReceiverTest.testByRef[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ReceiverTest.testByBox[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ReceiverTest.testByBox[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ReceiverTest.testByPin[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ReceiverTest.testByPin[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ReceiverTest.testExplicitType[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ReceiverTest.testExplicitType[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ReceiverTest.testValueShorthand[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ReceiverTest.testValueShorthand[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ReceiverTest.testMutValueShorthand[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ReceiverTest.testMutValueShorthand[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ReceiverTest.testRefShorthand[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ReceiverTest.testRefShorthand[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ReceiverTest.testRefShorthandWithLifetime[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ReceiverTest.testRefShorthandWithLifetime[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ReceiverTest.testRefMutShorthand[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ReceiverTest.testRefMutShorthand[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ReceiverTest.testRefMutShorthandWithLifetime[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ReceiverTest.testRefMutShorthandWithLifetime[macosArm64] PASSED
+
+io.github.kotlinmania.syn.RegressionIssue1108Test.issue1108[macosArm64] STARTED
+
+io.github.kotlinmania.syn.RegressionIssue1108Test.issue1108[macosArm64] PASSED
+
+io.github.kotlinmania.syn.RegressionIssue1235Test.main[macosArm64] STARTED
+
+io.github.kotlinmania.syn.RegressionIssue1235Test.main[macosArm64] PASSED
+
+io.github.kotlinmania.syn.RoundTripTest.testRoundTrip[macosArm64] STARTED
+
+io.github.kotlinmania.syn.RoundTripTest.testRoundTrip[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ShebangTest.testBasic[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ShebangTest.testBasic[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ShebangTest.testComment[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ShebangTest.testComment[macosArm64] PASSED
+
+io.github.kotlinmania.syn.StmtTest.testRawOperator[macosArm64] STARTED
+
+io.github.kotlinmania.syn.StmtTest.testRawOperator[macosArm64] PASSED
+
+io.github.kotlinmania.syn.StmtTest.testRawVariable[macosArm64] STARTED
+
+io.github.kotlinmania.syn.StmtTest.testRawVariable[macosArm64] PASSED
+
+io.github.kotlinmania.syn.StmtTest.testRawInvalid[macosArm64] STARTED
+
+io.github.kotlinmania.syn.StmtTest.testRawInvalid[macosArm64] PASSED
+
+io.github.kotlinmania.syn.StmtTest.testNoneGroup[macosArm64] STARTED
+
+io.github.kotlinmania.syn.StmtTest.testNoneGroup[macosArm64] PASSED
+
+io.github.kotlinmania.syn.StmtTest.testNoneGroupLetWithin[macosArm64] STARTED
+
+io.github.kotlinmania.syn.StmtTest.testNoneGroupLetWithin[macosArm64] PASSED
+
+io.github.kotlinmania.syn.StmtTest.testLetDotDot[macosArm64] STARTED
+
+io.github.kotlinmania.syn.StmtTest.testLetDotDot[macosArm64] PASSED
+
+io.github.kotlinmania.syn.StmtTest.testLetElse[macosArm64] STARTED
+
+io.github.kotlinmania.syn.StmtTest.testLetElse[macosArm64] PASSED
+
+io.github.kotlinmania.syn.StmtTest.testMacros[macosArm64] STARTED
+
+io.github.kotlinmania.syn.StmtTest.testMacros[macosArm64] PASSED
+
+io.github.kotlinmania.syn.StmtTest.testEarlyParseLoop[macosArm64] STARTED
+
+io.github.kotlinmania.syn.StmtTest.testEarlyParseLoop[macosArm64] PASSED
+
+io.github.kotlinmania.syn.StmtTest.testStatementSemicolonRules[macosArm64] STARTED
+
+io.github.kotlinmania.syn.StmtTest.testStatementSemicolonRules[macosArm64] PASSED
+
+io.github.kotlinmania.syn.ThreadTest.threadBoundCloneCopiesWrapper[macosArm64] STARTED
+
+io.github.kotlinmania.syn.ThreadTest.threadBoundCloneCopiesWrapper[macosArm64] PASSED
+
+io.github.kotlinmania.syn.TokenTreesTest.testStruct[macosArm64] STARTED
+
+io.github.kotlinmania.syn.TokenTreesTest.testStruct[macosArm64] PASSED
+
+io.github.kotlinmania.syn.TokenTreesTest.testLiteralMangling[macosArm64] STARTED
+
+io.github.kotlinmania.syn.TokenTreesTest.testLiteralMangling[macosArm64] PASSED
+
+io.github.kotlinmania.syn.TokenTreesTest.tokenHelpersCompareStructure[macosArm64] STARTED
+
+io.github.kotlinmania.syn.TokenTreesTest.tokenHelpersCompareStructure[macosArm64] PASSED
+
+io.github.kotlinmania.syn.TraitItemParityTest.traitConstantsRetainUnderscoresAndOptionalDefaults[macosArm64] STARTED
+
+io.github.kotlinmania.syn.TraitItemParityTest.traitConstantsRetainUnderscoresAndOptionalDefaults[macosArm64] PASSED
+
+io.github.kotlinmania.syn.TraitItemParityTest.acceptedUnrepresentedTraitItemsPreserveAllTokens[macosArm64] STARTED
+
+io.github.kotlinmania.syn.TraitItemParityTest.acceptedUnrepresentedTraitItemsPreserveAllTokens[macosArm64] PASSED
+
+io.github.kotlinmania.syn.TraitItemParityTest.traitMacrosRetainDelimitersAttributesAndItemOrder[macosArm64] STARTED
+
+io.github.kotlinmania.syn.TraitItemParityTest.traitMacrosRetainDelimitersAttributesAndItemOrder[macosArm64] PASSED
+
+io.github.kotlinmania.syn.TraitItemParityTest.invalidTraitItemsReturnErrorsWithoutDroppingSyntax[macosArm64] STARTED
+
+io.github.kotlinmania.syn.TraitItemParityTest.invalidTraitItemsReturnErrorsWithoutDroppingSyntax[macosArm64] PASSED
+
+io.github.kotlinmania.syn.TraitItemParityTest.malformedRestrictedVisibilityCannotBecomeInherited[macosArm64] STARTED
+
+io.github.kotlinmania.syn.TraitItemParityTest.malformedRestrictedVisibilityCannotBecomeInherited[macosArm64] PASSED
+
+io.github.kotlinmania.syn.TransparentFnTest.acceptsLambdasFunctionValuesAndReferences[macosArm64] STARTED
+
+io.github.kotlinmania.syn.TransparentFnTest.acceptsLambdasFunctionValuesAndReferences[macosArm64] PASSED
+
+io.github.kotlinmania.syn.TransparentFnTest.acceptsAnExplicitTokenStreamTransform[macosArm64] STARTED
+
+io.github.kotlinmania.syn.TransparentFnTest.acceptsAnExplicitTokenStreamTransform[macosArm64] PASSED
+
+io.github.kotlinmania.syn.TransparentFnTest.preservesTheOriginalThrownException[macosArm64] STARTED
+
+io.github.kotlinmania.syn.TransparentFnTest.preservesTheOriginalThrownException[macosArm64] PASSED
+
+io.github.kotlinmania.syn.TryBlockParityTest.tryBlockUsesExistingBlockParserAndRetainsOuterAttributes[macosArm64] STARTED
+
+io.github.kotlinmania.syn.TryBlockParityTest.tryBlockUsesExistingBlockParserAndRetainsOuterAttributes[macosArm64] PASSED
+
+io.github.kotlinmania.syn.TryBlockParityTest.tryBlockMatchArmHonorsEarlierBoundary[macosArm64] STARTED
+
+io.github.kotlinmania.syn.TryBlockParityTest.tryBlockMatchArmHonorsEarlierBoundary[macosArm64] PASSED
+
+io.github.kotlinmania.syn.TryBlockParityTest.tryBlockRejectsInvalidContentsWithoutDroppingTokens[macosArm64] STARTED
+
+io.github.kotlinmania.syn.TryBlockParityTest.tryBlockRejectsInvalidContentsWithoutDroppingTokens[macosArm64] PASSED
+
+io.github.kotlinmania.syn.TyTest.testMutSelf[macosArm64] STARTED
+
+io.github.kotlinmania.syn.TyTest.testMutSelf[macosArm64] PASSED
+
+io.github.kotlinmania.syn.TyTest.testBareFnArgParse[macosArm64] STARTED
+
+io.github.kotlinmania.syn.TyTest.testBareFnArgParse[macosArm64] PASSED
+
+io.github.kotlinmania.syn.TyTest.testMacroVariableType[macosArm64] STARTED
+
+io.github.kotlinmania.syn.TyTest.testMacroVariableType[macosArm64] PASSED
+
+io.github.kotlinmania.syn.TyTest.testGroupAngleBrackets[macosArm64] STARTED
+
+io.github.kotlinmania.syn.TyTest.testGroupAngleBrackets[macosArm64] PASSED
+
+io.github.kotlinmania.syn.TyTest.testGroupColons[macosArm64] STARTED
+
+io.github.kotlinmania.syn.TyTest.testGroupColons[macosArm64] PASSED
+
+io.github.kotlinmania.syn.TyTest.testTraitObject[macosArm64] STARTED
+
+io.github.kotlinmania.syn.TyTest.testTraitObject[macosArm64] PASSED
+
+io.github.kotlinmania.syn.TyTest.arrayAndSlicePrintingPreservesDelimiters[macosArm64] STARTED
+
+io.github.kotlinmania.syn.TyTest.arrayAndSlicePrintingPreservesDelimiters[macosArm64] PASSED
+
+io.github.kotlinmania.syn.TyTest.testBareForBoundTraitObject[macosArm64] STARTED
+
+io.github.kotlinmania.syn.TyTest.testBareForBoundTraitObject[macosArm64] PASSED
+
+io.github.kotlinmania.syn.TyTest.testParenthesizedTraitObjectHead[macosArm64] STARTED
+
+io.github.kotlinmania.syn.TyTest.testParenthesizedTraitObjectHead[macosArm64] PASSED
+
+io.github.kotlinmania.syn.TyTest.testMacroType[macosArm64] STARTED
+
+io.github.kotlinmania.syn.TyTest.testMacroType[macosArm64] PASSED
+
+io.github.kotlinmania.syn.TyTest.testPointerTypeRequiresMutabilityKeyword[macosArm64] STARTED
+
+io.github.kotlinmania.syn.TyTest.testPointerTypeRequiresMutabilityKeyword[macosArm64] PASSED
+
+io.github.kotlinmania.syn.TyTest.testDynStarTraitObjectIsVerbatim[macosArm64] STARTED
+
+io.github.kotlinmania.syn.TyTest.testDynStarTraitObjectIsVerbatim[macosArm64] PASSED
+
+io.github.kotlinmania.syn.TyTest.testTrailingPlus[macosArm64] STARTED
+
+io.github.kotlinmania.syn.TyTest.testTrailingPlus[macosArm64] PASSED
+
+io.github.kotlinmania.syn.TyTest.testImplTraitRequiresTrait[macosArm64] STARTED
+
+io.github.kotlinmania.syn.TyTest.testImplTraitRequiresTrait[macosArm64] PASSED
+
+io.github.kotlinmania.syn.TyTest.testWithoutPlusParsers[macosArm64] STARTED
+
+io.github.kotlinmania.syn.TyTest.testWithoutPlusParsers[macosArm64] PASSED
+
+io.github.kotlinmania.syn.TyTest.testTupleComma[macosArm64] STARTED
+
+io.github.kotlinmania.syn.TyTest.testTupleComma[macosArm64] PASSED
+
+io.github.kotlinmania.syn.TyTest.testImplTraitUse[macosArm64] STARTED
+
+io.github.kotlinmania.syn.TyTest.testImplTraitUse[macosArm64] PASSED
+
+io.github.kotlinmania.syn.UnparenthesizeTest.testUnparenthesize[macosArm64] STARTED
+
+io.github.kotlinmania.syn.UnparenthesizeTest.testUnparenthesize[macosArm64] PASSED
+
+io.github.kotlinmania.syn.VisibilityTest.testPub[macosArm64] STARTED
+
+io.github.kotlinmania.syn.VisibilityTest.testPub[macosArm64] PASSED
+
+io.github.kotlinmania.syn.VisibilityTest.testInherited[macosArm64] STARTED
+
+io.github.kotlinmania.syn.VisibilityTest.testInherited[macosArm64] PASSED
+
+io.github.kotlinmania.syn.VisibilityTest.testIn[macosArm64] STARTED
+
+io.github.kotlinmania.syn.VisibilityTest.testIn[macosArm64] PASSED
+
+io.github.kotlinmania.syn.VisibilityTest.testPubCrate[macosArm64] STARTED
+
+io.github.kotlinmania.syn.VisibilityTest.testPubCrate[macosArm64] PASSED
+
+io.github.kotlinmania.syn.VisibilityTest.testPubSelf[macosArm64] STARTED
+
+io.github.kotlinmania.syn.VisibilityTest.testPubSelf[macosArm64] PASSED
+
+io.github.kotlinmania.syn.VisibilityTest.testPubSuper[macosArm64] STARTED
+
+io.github.kotlinmania.syn.VisibilityTest.testPubSuper[macosArm64] PASSED
+
+io.github.kotlinmania.syn.VisibilityTest.testMissingIn[macosArm64] STARTED
+
+io.github.kotlinmania.syn.VisibilityTest.testMissingIn[macosArm64] PASSED
+
+io.github.kotlinmania.syn.VisibilityTest.testMissingInPath[macosArm64] STARTED
+
+io.github.kotlinmania.syn.VisibilityTest.testMissingInPath[macosArm64] PASSED
+
+io.github.kotlinmania.syn.VisibilityTest.testCratePath[macosArm64] STARTED
+
+io.github.kotlinmania.syn.VisibilityTest.testCratePath[macosArm64] PASSED
+
+io.github.kotlinmania.syn.VisibilityTest.testJunkAfterIn[macosArm64] STARTED
+
+io.github.kotlinmania.syn.VisibilityTest.testJunkAfterIn[macosArm64] PASSED
+
+io.github.kotlinmania.syn.VisibilityTest.testInheritedVisNamedField[macosArm64] STARTED
+
+io.github.kotlinmania.syn.VisibilityTest.testInheritedVisNamedField[macosArm64] PASSED
+
+io.github.kotlinmania.syn.VisibilityTest.testInheritedVisUnnamedField[macosArm64] STARTED
+
+io.github.kotlinmania.syn.VisibilityTest.testInheritedVisUnnamedField[macosArm64] PASSED
+
+io.github.kotlinmania.syn.VisitMutTest.deriveInputVisitMutRecursesThroughDataAndGenerics[macosArm64] STARTED
+
+io.github.kotlinmania.syn.VisitMutTest.deriveInputVisitMutRecursesThroughDataAndGenerics[macosArm64] PASSED
+
+io.github.kotlinmania.syn.VisitMutTest.itemVisitMutRecursesThroughTraitImplModuleAndUseTrees[macosArm64] STARTED
+
+io.github.kotlinmania.syn.VisitMutTest.itemVisitMutRecursesThroughTraitImplModuleAndUseTrees[macosArm64] PASSED
+
+io.github.kotlinmania.syn.VisitMutTest.fileAndTypeVisitMutDispatchesThroughNamedHelpers[macosArm64] STARTED
+
+io.github.kotlinmania.syn.VisitMutTest.fileAndTypeVisitMutDispatchesThroughNamedHelpers[macosArm64] PASSED
+
+io.github.kotlinmania.syn.VisitMutTest.generatedVisitMutHooksAreReachedForGenericArgumentsAttrStyleAndBinOp[macosArm64] STARTED
+
+io.github.kotlinmania.syn.VisitMutTest.generatedVisitMutHooksAreReachedForGenericArgumentsAttrStyleAndBinOp[macosArm64] PASSED
+
+io.github.kotlinmania.syn.VisitMutTest.qselfAndCstrVisitMutDispatchThroughGeneratedHelpers[macosArm64] STARTED
+
+io.github.kotlinmania.syn.VisitMutTest.qselfAndCstrVisitMutDispatchThroughGeneratedHelpers[macosArm64] PASSED
+
+io.github.kotlinmania.syn.VisitTest.deriveInputVisitRecursesThroughDataAndGenerics[macosArm64] STARTED
+
+io.github.kotlinmania.syn.VisitTest.deriveInputVisitRecursesThroughDataAndGenerics[macosArm64] PASSED
+
+io.github.kotlinmania.syn.VisitTest.itemVisitRecursesThroughTraitImplModuleAndUseTrees[macosArm64] STARTED
+
+io.github.kotlinmania.syn.VisitTest.itemVisitRecursesThroughTraitImplModuleAndUseTrees[macosArm64] PASSED
+
+io.github.kotlinmania.syn.VisitTest.fileAndTypeVisitDispatchesThroughNamedHelpers[macosArm64] STARTED
+
+io.github.kotlinmania.syn.VisitTest.fileAndTypeVisitDispatchesThroughNamedHelpers[macosArm64] PASSED
+
+io.github.kotlinmania.syn.VisitTest.nonExprVisitHooksDispatchThroughGeneratedHelpers[macosArm64] STARTED
+
+io.github.kotlinmania.syn.VisitTest.nonExprVisitHooksDispatchThroughGeneratedHelpers[macosArm64] PASSED
+
+io.github.kotlinmania.syn.WhitespaceTranslationTest.matchesRetainedRustWhitespaceCorpus[macosArm64] STARTED
+
+io.github.kotlinmania.syn.WhitespaceTranslationTest.matchesRetainedRustWhitespaceCorpus[macosArm64] PASSED
+
+io.github.kotlinmania.syn.WhitespaceTranslationTest.nextLineWhitespaceBeforeInnerAttributeIsNotAShebang[macosArm64] STARTED
+
+io.github.kotlinmania.syn.WhitespaceTranslationTest.nextLineWhitespaceBeforeInnerAttributeIsNotAShebang[macosArm64] PASSED
+Kotlin build report is written to file:///Volumes/stuff/Projects/kotlinmania/syn-kotlin/build/reports/kotlin-build/syn-kotlin-build-2026-10-25-19-58-01-0.txt
+
+[Incubating] Problems report is available at: file:///Volumes/stuff/Projects/kotlinmania/syn-kotlin/build/reports/problems/problems-report.html
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 10.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/9.8.2/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD SUCCESSFUL in 1m 43s
+12 actionable tasks: 6 executed, 6 up-to-date
