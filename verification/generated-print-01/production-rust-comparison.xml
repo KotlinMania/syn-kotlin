@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="macosArm64Test.io.github.kotlinmania.syn.GeneratedPrintTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2026-10-26T01:10:43.869Z" hostname="EmberHarmony.local" time="0.0">
+  <properties/>
+  <testcase name="productionAdapterMatchesNinetyRustObservations[macosArm64]" classname="macosArm64Test.io.github.kotlinmania.syn.GeneratedPrintTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

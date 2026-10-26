@@ -20,6 +20,10 @@ continue precedence, and migrates six production calls. Its raw output matches
 decimal accumulator and migrates three literal-parser calls. Both Rust overflow
 profiles match raw output; 411 JVM and 409 macOS tests pass after adoption.
 
+[Generated Print adoption](docs/generated-print-2026-10-26.md) replaces the complete
+optional-token printer and connects six production calls. Its unchanged raw body
+and production adapter each match 90 Rust observations; 437 Native tests pass.
+
 This is an **in-progress port**. The goal is feature parity with the upstream Rust crate while providing a native Kotlin Multiplatform API. Every Kotlin file carries a `// port-lint: source <path>` header naming its upstream Rust counterpart so the AST-distance tool can track provenance.
 
 ---

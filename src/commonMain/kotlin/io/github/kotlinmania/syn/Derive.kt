@@ -37,12 +37,12 @@ public data class DeriveInput(
                     is Fields.Unnamed -> {
                         fields.toTokens(tokens)
                         generics.whereClause?.toTokens(tokens)
-                        TokensOrDefault(data.value.semiToken, Semi::default).toTokens(tokens)
+                        tokensOrDefault(data.value.semiToken, Semi::default).toTokens(tokens)
                     }
 
                     Fields.Unit -> {
                         generics.whereClause?.toTokens(tokens)
-                        TokensOrDefault(data.value.semiToken, Semi::default).toTokens(tokens)
+                        tokensOrDefault(data.value.semiToken, Semi::default).toTokens(tokens)
                     }
                 }
             }

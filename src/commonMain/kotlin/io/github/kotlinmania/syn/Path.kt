@@ -513,7 +513,7 @@ internal fun printQpath(
     var position = minOf(qself.position, path.segments.len())
     var segments = path.segments.pairsList()
     if (position > 0) {
-        TokensOrDefault(qself.asToken, io.github.kotlinmania.syn.token.As::default).toTokens(tokens)
+        tokensOrDefault(qself.asToken, io.github.kotlinmania.syn.token.As::default).toTokens(tokens)
         path.leadingColon?.toTokens(tokens)
         for (index in 0 until position) {
             val (segment, punct) = segments[index]
@@ -540,7 +540,7 @@ private fun conditionallyPrintTurbofish(
     when (style) {
         PathStyle.Expr,
         PathStyle.Recursion,
-        -> TokensOrDefault(colon2Token, PathSep::default).toTokens(tokens)
+        -> tokensOrDefault(colon2Token, PathSep::default).toTokens(tokens)
 
         PathStyle.Mod -> error("module-style paths do not print path arguments")
 

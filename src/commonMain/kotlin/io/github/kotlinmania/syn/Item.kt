@@ -250,12 +250,12 @@ public sealed class Item : ToTokens {
                 is Fields.Unnamed -> {
                     fields.toTokens(tokens)
                     generics.whereClause?.toTokens(tokens)
-                    TokensOrDefault(semiToken, Semi::default).toTokens(tokens)
+                    tokensOrDefault(semiToken, Semi::default).toTokens(tokens)
                 }
 
                 Fields.Unit -> {
                     generics.whereClause?.toTokens(tokens)
-                    TokensOrDefault(semiToken, Semi::default).toTokens(tokens)
+                    tokensOrDefault(semiToken, Semi::default).toTokens(tokens)
                 }
             }
         }

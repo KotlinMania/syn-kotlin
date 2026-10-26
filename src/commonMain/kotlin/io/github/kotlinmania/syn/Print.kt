@@ -1,29 +1,14 @@
-// port-lint: source print.rs
 package io.github.kotlinmania.syn
 
-import io.github.kotlinmania.procmacro2.TokenStream
 import io.github.kotlinmania.quote.ToTokens
+import io.github.kotlinmania.syn.generated.print.TokensOrDefault
+import io.github.kotlinmania.syn.generated.print.__rtkOption
 
-internal class TokensOrDefault(
-    private val value: ToTokens?,
-    private val default: DefaultTokens,
-) : ToTokens {
-    internal constructor(
-        value: ToTokens?,
-        default: () -> ToTokens,
-    ) : this(value, DefaultTokens(default))
-
-    override fun toTokens(tokens: TokenStream) {
-        when (val v = value) {
-            null -> default.value().toTokens(tokens)
-            else -> v.toTokens(tokens)
-        }
-    }
-}
-
-internal class DefaultTokens(
-    private val makeDefault: () -> ToTokens,
-) {
-    internal fun value(): ToTokens =
-        makeDefault()
-}
+/** Retains the optional value for the generated shared borrow and supplies the
+ * existing token provider plus a lazy default factory. */
+internal fun tokensOrDefault(value: ToTokens?, default: () -> ToTokens): ToTokens =
+    TokensOrDefault(
+        if (value == null) __rtkOption.None else __rtkOption.Some(value),
+        { token, output -> token.toTokens(output) },
+        default,
+    )
