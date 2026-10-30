@@ -1,6 +1,8 @@
 // port-lint: source precedence.rs
 // Generated from complete Rust precedence.rs (full + printing); integration recorded in
 // docs/generated-precedence-2026-10-24.md.
+@file:Suppress("ClassNaming")
+
 package io.github.kotlinmania.syn
 
 // Generated from Syn AST; exact original retained in input.rs.

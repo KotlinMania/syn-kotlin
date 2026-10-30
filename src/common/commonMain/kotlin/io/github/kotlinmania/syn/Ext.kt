@@ -1,5 +1,6 @@
 // port-lint: source ext.rs
 @file:kotlin.jvm.JvmName("GeneratedExtKt")
+@file:Suppress("ClassNaming", "UnusedPrivateClass")
 
 package io.github.kotlinmania.syn
 
@@ -35,7 +36,7 @@ internal interface `SynExtLibraryTrait2` {
 
 // Dependency contract crate::token::private::Sealed from token.rs:141; original retained in library
 // sources.
-private interface `SynExtLibraryTrait3` {}
+private interface `SynExtLibraryTrait3`
 
 // Dependency marker crate::sealed::lookahead::Sealed from sealed.rs:3; reuses
 // io.github.kotlinmania.syn.SynSealedModule_lookahead_Sealed; Copy and sealing obligations checked
@@ -43,7 +44,7 @@ private interface `SynExtLibraryTrait3` {}
 
 private class `SynExtForward0`<`T`>(
     private val SynExtForward: `SynExtLibraryTrait2`.`SynExtStatic`<`T`>,
-) : `SynExtLibraryTrait3` {}
+) : `SynExtLibraryTrait3`
 
 internal class `SynExtForward1`<`T`>(
     private val SynExtForward: `SynExtLibraryTrait2`.`SynExtStatic`<`T`>,
@@ -277,7 +278,7 @@ internal object `SynExtImpl5` : `PunctExt`.`SynExtStatic`<io.github.kotlinmania.
 
 // Rust private module private: declarations lifted with private visibility.
 // Rust use resolved through explicit library bindings.
-private interface `SynExtModule_private_Sealed` {}
+private interface `SynExtModule_private_Sealed`
 
 private class `SynExtImpl6`(receiver: io.github.kotlinmania.procmacro2.Ident) :
     `SynExtModule_private_Sealed` {

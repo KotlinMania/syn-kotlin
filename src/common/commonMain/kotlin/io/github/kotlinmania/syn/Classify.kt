@@ -1,4 +1,6 @@
 // port-lint: source classify.rs
+@file:Suppress("ClassNaming")
+
 package io.github.kotlinmania.syn
 
 // Complete generated classify.rs: full:on, printing:on; no items excluded.

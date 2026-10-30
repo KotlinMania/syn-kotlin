@@ -1,4 +1,6 @@
 // port-lint: source print.rs
+@file:Suppress("ClassNaming")
+
 package io.github.kotlinmania.syn.generated.print
 
 // Generated from Syn AST; complete original retained in input.rs.

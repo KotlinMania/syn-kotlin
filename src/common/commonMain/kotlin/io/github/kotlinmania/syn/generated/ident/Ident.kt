@@ -1,5 +1,7 @@
 // port-lint: source ident.rs
 // Complete generated body; original source and Native/Rust receipt retained in rust-kotlin.
+@file:Suppress("ClassNaming", "UnusedPrivateClass")
+
 package io.github.kotlinmania.syn.generated.ident
 
 // Generated from Syn AST; exact original retained in input.rs.
@@ -29,12 +31,10 @@ internal interface `__rtkLibraryTrait2` {
 }
 
 // Dependency contract crate::token::private::Sealed from token.rs:141; original retained in library sources.
-private interface `__rtkLibraryTrait3` {
-}
+private interface `__rtkLibraryTrait3`
 
 // Dependency contract crate::sealed::lookahead::Sealed from sealed.rs:3; original retained in library sources.
-private interface `__rtkLibraryTrait4` {
-}
+private interface `__rtkLibraryTrait4`
 
 // Dependency contract crate::parse::Parse from parse.rs:215; original retained in library sources.
 internal interface `__rtkLibraryTrait5` {
@@ -50,8 +50,7 @@ internal interface `__rtkLibraryTrait6`<`T`> {
     }
 }
 
-private class `__rtkForward0`<`T`>(private val __rtkForward: `__rtkLibraryTrait2`.`__rtkStatic`<`T`>) : `__rtkLibraryTrait3` {
-}
+private class `__rtkForward0`<`T`>(private val __rtkForward: `__rtkLibraryTrait2`.`__rtkStatic`<`T`>) : `__rtkLibraryTrait3`
 
 internal class `__rtkForward1`<`T`>(private val __rtkForward: `__rtkLibraryTrait2`.`__rtkStatic`<`T`>) : `__rtkLibraryTrait1`.`__rtkStatic`<`T`> {
     override fun `peek`(`cursor`: io.github.kotlinmania.syn.Cursor): kotlin.Boolean = __rtkForward.`peek`(`cursor`)

@@ -1,4 +1,5 @@
 // port-lint: source span.rs
+@file:Suppress("ClassNaming")
 
 package io.github.kotlinmania.syn
 

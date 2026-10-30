@@ -1,4 +1,6 @@
 // port-lint: source bigint.rs
+@file:Suppress("ClassNaming")
+
 package io.github.kotlinmania.syn
 
 // Generated from Syn AST; exact original retained in input.rs.
