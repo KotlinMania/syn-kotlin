@@ -1,6 +1,5 @@
 package io.github.kotlinmania.syn
 
-import io.github.kotlinmania.procmacro2.Ident
 import io.github.kotlinmania.procmacro2.Spacing
 import io.github.kotlinmania.procmacro2.Span
 import io.github.kotlinmania.procmacro2.TokenStream
