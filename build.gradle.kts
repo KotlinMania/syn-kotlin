@@ -520,13 +520,7 @@ kotlin {
                 browserTestExcludes.forEach { filter.excludeTestsMatching(it) }
             }
         }
-        nodejs {
-            testTask {
-                useMocha {
-                    timeout = "120s"
-                }
-            }
-        }
+        nodejs()
     }
 
     @OptIn(ExperimentalWasmDsl::class)

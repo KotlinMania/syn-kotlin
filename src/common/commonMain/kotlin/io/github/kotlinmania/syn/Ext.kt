@@ -7,7 +7,7 @@ package io.github.kotlinmania.syn
 // ! Extension traits to provide parsing methods on foreign types.
 // Dependency contract crate::lookahead::Peek from lookahead.rs:176; original retained in library
 // sources.
-sealed interface `SynExtLibraryTrait0`<`SynExtAssociated_Token`> {
+internal sealed interface `SynExtLibraryTrait0`<`SynExtAssociated_Token`> {
     sealed interface `SynExtStatic`<`SynExtSelf`, `SynExtAssociated_Token`> {
         val `SynExtAssociated_Token_0`:
             `SynExtLibraryTrait1`.`SynExtStatic`<`SynExtAssociated_Token`>
@@ -15,7 +15,7 @@ sealed interface `SynExtLibraryTrait0`<`SynExtAssociated_Token`> {
 }
 
 // Dependency contract crate::token::Token from token.rs:125; original retained in library sources.
-sealed interface `SynExtLibraryTrait1` {
+internal sealed interface `SynExtLibraryTrait1` {
     sealed interface `SynExtStatic`<`SynExtSelf`> {
         fun `peek`(`cursor`: io.github.kotlinmania.syn.Cursor): kotlin.Boolean
 
@@ -25,7 +25,7 @@ sealed interface `SynExtLibraryTrait1` {
 
 // Dependency contract crate::token::private::CustomToken from token.rs:154; original retained in
 // library sources.
-interface `SynExtLibraryTrait2` {
+internal interface `SynExtLibraryTrait2` {
     interface `SynExtStatic`<`SynExtSelf`> {
         fun `peek`(`cursor`: io.github.kotlinmania.syn.Cursor): kotlin.Boolean
 
@@ -45,8 +45,9 @@ private class `SynExtForward0`<`T`>(
     private val SynExtForward: `SynExtLibraryTrait2`.`SynExtStatic`<`T`>,
 ) : `SynExtLibraryTrait3` {}
 
-class `SynExtForward1`<`T`>(private val SynExtForward: `SynExtLibraryTrait2`.`SynExtStatic`<`T`>) :
-    `SynExtLibraryTrait1`.`SynExtStatic`<`T`> {
+internal class `SynExtForward1`<`T`>(
+    private val SynExtForward: `SynExtLibraryTrait2`.`SynExtStatic`<`T`>,
+) : `SynExtLibraryTrait1`.`SynExtStatic`<`T`> {
     override fun `peek`(`cursor`: io.github.kotlinmania.syn.Cursor): kotlin.Boolean =
         SynExtForward.`peek`(`cursor`)
 
