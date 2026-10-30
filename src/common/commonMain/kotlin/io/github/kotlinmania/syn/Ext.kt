@@ -1,6 +1,6 @@
 // port-lint: source ext.rs
 @file:kotlin.jvm.JvmName("GeneratedExtKt")
-@file:Suppress("ClassNaming", "UnusedPrivateClass")
+@file:Suppress("ClassNaming", "UnusedPrivateClass", "UnusedPrivateFunction")
 
 package io.github.kotlinmania.syn
 
@@ -270,7 +270,7 @@ internal object `SynExtImpl5` : `PunctExt`.`SynExtStatic`<io.github.kotlinmania.
         `spacing`: io.github.kotlinmania.procmacro2.Spacing,
         `span`: io.github.kotlinmania.procmacro2.Span,
     ): io.github.kotlinmania.procmacro2.Punct = kotlin.run {
-        var `punct`: io.github.kotlinmania.procmacro2.Punct = SynExtNewPunct(`ch`, `spacing`)
+        val `punct`: io.github.kotlinmania.procmacro2.Punct = SynExtNewPunct(`ch`, `spacing`)
         (`punct`).setSpan((`span`).`clone`())
         `punct`
     }

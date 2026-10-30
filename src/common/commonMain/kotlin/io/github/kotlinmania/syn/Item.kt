@@ -539,8 +539,8 @@ public sealed class FnArg : ToTokens {
             reference?.toTokens(tokens)
             mutability?.toTokens(tokens)
             selfToken.toTokens(tokens)
-            if (colonToken != null) {
-                colonToken.toTokens(tokens)
+            colonToken?.let { colon ->
+                colon.toTokens(tokens)
                 type.toTokens(tokens)
             }
         }
@@ -661,13 +661,13 @@ public data class Signature(
         generics.toTokens(tokens)
         parenToken.surround(tokens) { inner ->
             inputs.toTokens(inner)
-            if (variadic != null) {
+            variadic?.let { variadicArg ->
                 if (!inputs.isEmpty() && !inputs.trailingPunct()) {
                     io.github.kotlinmania.syn.token.Comma
                         .default()
                         .toTokens(inner)
                 }
-                variadic.toTokens(inner)
+                variadicArg.toTokens(inner)
             }
         }
         output.toTokens(tokens)
@@ -676,7 +676,7 @@ public data class Signature(
 
     /** A method's receiver, such as a reference receiver or an explicit receiver type. */
     public fun receiver(): FnArg.Receiver? {
-        var first = inputs.first() ?: return null
+        val first = inputs.first() ?: return null
         return first as? FnArg.Receiver
     }
 

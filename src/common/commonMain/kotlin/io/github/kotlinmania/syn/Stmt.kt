@@ -119,7 +119,7 @@ public fun parseStmt(input: ParseStream): SynResult<Stmt> =
     parseStmt(input, AllowNoSemi(false))
 
 private fun parseStmt(input: ParseStream, allowNoSemi: AllowNoSemi): SynResult<Stmt> {
-    var stmt = parseStmtFull(input).getOrElse { return SynResult.failure(it) }
+    val stmt = parseStmtFull(input).getOrElse { return SynResult.failure(it) }
     if (!allowNoSemi.value && stmtRequiresSemicolon(stmt)) {
         return SynResult.failure(input.error("expected semicolon"))
     }
@@ -166,34 +166,34 @@ internal fun stmtLocal(input: ParseStream): SynResult<Stmt.Local> {
 }
 
 internal fun stmtExpr(input: ParseStream): SynResult<Stmt.ExprStmt> {
-    var expr = parseExprFull(input)
+    val expr = parseExprFull(input)
     if (expr.isFailure) return expr.let { SynResult.failure((it as SynResult.Failure).error) }
-    var semi = if (input.peek(SemiPeek)) SemiParse.parse(input).getOrThrow() else null
+    val semi = if (input.peek(SemiPeek)) SemiParse.parse(input).getOrThrow() else null
     return SynResult.success(Stmt.ExprStmt(expr.getOrThrow(), semi))
 }
 
 internal fun stmtMac(input: ParseStream): SynResult<Stmt.MacroStmt> {
-    var pathResult = PathParse.parse(input)
+    val pathResult = PathParse.parse(input)
     if (pathResult.isFailure) return pathResult.let { SynResult.failure((it as SynResult.Failure).error) }
-    var bangResult = NotParse.parse(input)
+    val bangResult = NotParse.parse(input)
     if (bangResult.isFailure) return bangResult.let { SynResult.failure((it as SynResult.Failure).error) }
-    var delimResult = parseDelimiter(input)
+    val delimResult = parseDelimiter(input)
     if (delimResult.isFailure) return delimResult.let { SynResult.failure((it as SynResult.Failure).error) }
     var (delim, tokens) = delimResult.getOrThrow()
-    var mac = Macro(pathResult.getOrThrow(), bangResult.getOrThrow(), delim, tokens)
-    var semi = if (input.peek(SemiPeek)) SemiParse.parse(input).getOrThrow() else null
+    val mac = Macro(pathResult.getOrThrow(), bangResult.getOrThrow(), delim, tokens)
+    val semi = if (input.peek(SemiPeek)) SemiParse.parse(input).getOrThrow() else null
     return SynResult.success(Stmt.MacroStmt(mutableListOf(), mac, semi))
 }
 
 public fun parseWithin(input: ParseStream): SynResult<List<Stmt>> {
-    var stmts = mutableListOf<Stmt>()
+    val stmts = mutableListOf<Stmt>()
     while (!input.isEmpty()) {
         while (input.peek(SemiPeek)) {
             stmts.add(Stmt.ExprStmt(Expr.Verbatim(TokenStream.new()), SemiParse.parse(input).getOrThrow()))
         }
         if (input.isEmpty()) break
-        var stmt = parseStmt(input, AllowNoSemi(true)).getOrElse { return SynResult.failure(it) }
-        var requiresSemicolon = stmtRequiresSemicolon(stmt)
+        val stmt = parseStmt(input, AllowNoSemi(true)).getOrElse { return SynResult.failure(it) }
+        val requiresSemicolon = stmtRequiresSemicolon(stmt)
         stmts.add(stmt)
         if (!input.isEmpty() && requiresSemicolon) {
             return SynResult.failure(input.error("unexpected token, expected `;`"))

@@ -63,8 +63,8 @@ public sealed class FieldMutability : ToTokens {
 /** Strongly-typed parser for visibility. */
 public object VisibilityParse {
     fun parse(input: ParseStream): SynResult<Visibility> {
-        var emptyGroup = input.fork()
-        var group = parseGroup(emptyGroup)
+        val emptyGroup = input.fork()
+        val group = parseGroup(emptyGroup)
         if (group.isSuccess && group.getOrThrow().content.isEmpty()) {
             input.advanceTo(emptyGroup)
             return SynResult.success(Visibility.Inherited)
@@ -74,7 +74,7 @@ public object VisibilityParse {
             return SynResult.success(Visibility.Inherited)
         }
 
-        var pubToken = PubParse.parse(input).getOrThrow()
+        val pubToken = PubParse.parse(input).getOrThrow()
 
         if (input.peek(ParenPeek)) {
             val ahead = input.fork()

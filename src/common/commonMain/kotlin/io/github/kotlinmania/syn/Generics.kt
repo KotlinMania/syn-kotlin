@@ -271,7 +271,7 @@ public data class Turbofish(
 
 private inline fun <reified T : GenericParam> Iterator<GenericParam>.nextParamOfType(): T? {
     while (hasNext()) {
-        var value = next()
+        val value = next()
         if (value is T) return value
     }
     return null
@@ -297,7 +297,7 @@ internal fun chooseGenericsOverQpath(input: ParseStream): Boolean =
         )
 
 internal fun chooseGenericsOverQpathAfterKeyword(input: ParseStream): Boolean {
-    var fork = input.fork()
+    val fork = input.fork()
     identParseAny(fork).getOrElse { return false }
     return chooseGenericsOverQpath(fork)
 }
@@ -321,7 +321,7 @@ private object GenericsDisambiguationGtPeek : Peek {
 }
 
 private fun Generics.implGenerics(): Generics {
-    var implGenerics = Generics(ltToken, GenericParamList(), gtToken)
+    val implGenerics = Generics(ltToken, GenericParamList(), gtToken)
     for ((value, _) in params.pairsList()) {
         when (value) {
             is GenericParam.LifetimeParam -> {
@@ -351,7 +351,7 @@ private fun Generics.implGenerics(): Generics {
 }
 
 private fun Generics.typeGenerics(): Generics {
-    var typeGenerics = Generics(ltToken, GenericParamList(), gtToken)
+    val typeGenerics = Generics(ltToken, GenericParamList(), gtToken)
     for ((value, _) in params.pairsList()) {
         when (value) {
             is GenericParam.LifetimeParam -> {
@@ -392,7 +392,7 @@ private fun Generics.typeGenerics(): Generics {
 }
 
 private fun Generics.turbofishArguments(): GenericArgumentList {
-    var args = GenericArgumentList()
+    val args = GenericArgumentList()
     for ((value, _) in params.pairsList()) {
         if (value is GenericParam.LifetimeParam) {
             args.push(GenericArgument.LifetimeArg(value.lifetime.deepCopy())) { Comma(Span.callSite()) }
@@ -577,9 +577,9 @@ public sealed class GenericParam : ToTokens {
                 (colonToken ?: Colon.default()).toTokens(tokens)
                 bounds.toTokens(tokens)
             }
-            if (default != null) {
+            default?.let { defaultType ->
                 (eqToken ?: Eq.default()).toTokens(tokens)
-                default!!.toTokens(tokens)
+                defaultType.toTokens(tokens)
             }
         }
 
@@ -624,9 +624,9 @@ public sealed class GenericParam : ToTokens {
             ident.toTokens(tokens)
             colonToken.toTokens(tokens)
             ty.toTokens(tokens)
-            if (default != null) {
+            default?.let { defaultExpr ->
                 (eqToken ?: Eq.default()).toTokens(tokens)
-                printConstArgument(default!!, tokens)
+                printConstArgument(defaultExpr, tokens)
             }
         }
 

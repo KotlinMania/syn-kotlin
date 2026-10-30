@@ -43,12 +43,14 @@ public abstract class CustomPunctuation : ToTokens {
     public companion object {
         /** Creates a custom punctuation from a character sequence and spans. */
         public fun fromSpans(chars: String, spans: List<Span>): CustomPunctuation =
-            object : CustomPunctuation() {
-                override val spans: List<Span> = spans
-                override val chars: String = chars
-            }
+            ExplicitCustomPunctuation(chars, spans)
     }
 }
+
+private class ExplicitCustomPunctuation(
+    override val chars: String,
+    override val spans: List<Span>,
+) : CustomPunctuation()
 
 /**
  * Creates a Peek and parser pair for a custom multi-character punctuation
@@ -62,8 +64,8 @@ public abstract class CustomPunctuation : ToTokens {
  * @return A pair of [Peek] and concrete parser for this punctuation.
  */
 public fun customPunctuation(chars: String): Pair<Peek, CustomPunctuationParse> {
-    var peek = CustomPunctuationPeek(chars)
-    var parse = CustomPunctuationParse(chars)
+    val peek = CustomPunctuationPeek(chars)
+    val parse = CustomPunctuationParse(chars)
     return peek to parse
 }
 

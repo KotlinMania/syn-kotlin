@@ -96,9 +96,9 @@ public class Members internal constructor(
 
     override fun next(): Member {
         if (!hasNext()) throw NoSuchElementException()
-        var field = fields[position]
+        val field = fields[position]
         position += 1
-        var member =
+        val member =
             field.ident?.let(Member::Named)
                 ?: Member.Unnamed(Index(index, field.tySpan()))
         index += 1u
@@ -123,8 +123,8 @@ public data class FieldsNamed(
 
 public object FieldsNamedParse {
     fun parse(input: ParseStream): SynResult<FieldsNamed> {
-        var braces = braced(input).getOrElse { return SynResult.failure(it) }
-        var named = parseNamedFieldList(braces.content).getOrElse { return SynResult.failure(it) }
+        val braces = braced(input).getOrElse { return SynResult.failure(it) }
+        val named = parseNamedFieldList(braces.content).getOrElse { return SynResult.failure(it) }
         braces.content.finishChildBuffer()
         return SynResult.success(FieldsNamed(braces.token, named))
     }
@@ -144,8 +144,8 @@ public data class FieldsUnnamed(
 
 public object FieldsUnnamedParse {
     fun parse(input: ParseStream): SynResult<FieldsUnnamed> {
-        var parens = parenthesized(input).getOrElse { return SynResult.failure(it) }
-        var unnamed = parseUnnamedFieldList(parens.content).getOrElse { return SynResult.failure(it) }
+        val parens = parenthesized(input).getOrElse { return SynResult.failure(it) }
+        val unnamed = parseUnnamedFieldList(parens.content).getOrElse { return SynResult.failure(it) }
         parens.content.finishChildBuffer()
         return SynResult.success(FieldsUnnamed(parens.token, unnamed))
     }
@@ -216,16 +216,16 @@ private fun Field.tySpan(): io.github.kotlinmania.procmacro2.Span =
 
 public object VariantParse {
     fun parse(input: ParseStream): SynResult<Variant> {
-        var attrs = parseOuterAttributes(input).getOrElse { return SynResult.failure(it) }
+        val attrs = parseOuterAttributes(input).getOrElse { return SynResult.failure(it) }
         VisibilityParse.parse(input).getOrElse { return SynResult.failure(it) }
-        var ident = IdentParse.parse(input).getOrElse { return SynResult.failure(it) }
-        var fields =
+        val ident = IdentParse.parse(input).getOrElse { return SynResult.failure(it) }
+        val fields =
             when {
                 input.peek(BracePeek) -> Fields.Named(FieldsNamedParse.parse(input).getOrElse { return SynResult.failure(it) })
                 input.peek(ParenPeek) -> Fields.Unnamed(FieldsUnnamedParse.parse(input).getOrElse { return SynResult.failure(it) })
                 else -> Fields.Unit
             }
-        var discriminant =
+        val discriminant =
             if (input.peek(EqPeek)) {
                 val eq = EqParse.parse(input).getOrElse { return SynResult.failure(it) }
                 val expr = parseExprFull(input).getOrElse { return SynResult.failure(it) }

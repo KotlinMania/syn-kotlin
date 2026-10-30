@@ -132,7 +132,7 @@ class Group(
     }
 
     fun surround(tokens: TokenStream, f: (TokenStream) -> Unit) {
-        var inner = TokenStream.new()
+        val inner = TokenStream.new()
         f(inner)
         printingDelim(Delimiter.None, span, tokens, inner)
     }
@@ -168,7 +168,7 @@ sealed class DelimiterToken(
     private val delimiter: Delimiter,
 ) : Token {
     fun surround(tokens: TokenStream, f: (TokenStream) -> Unit) {
-        var inner = TokenStream.new()
+        val inner = TokenStream.new()
         f(inner)
         printingDelim(delimiter, span.join(), tokens, inner)
     }
@@ -1637,7 +1637,7 @@ class Tilde private constructor(
 private fun printingPunct(s: String, spans: List<Span>, tokens: TokenStream) {
     require(s.length == spans.size)
 
-    var chars = s.toList()
+    val chars = s.toList()
     for (index in 0 until chars.lastIndex) {
         tokens.append(Punct(chars[index], Spacing.Joint, spans[index]))
     }
@@ -1654,7 +1654,7 @@ private fun printingDelim(
     tokens: TokenStream,
     inner: TokenStream,
 ) {
-    var group = ProcMacroGroup(delim, inner)
+    val group = ProcMacroGroup(delim, inner)
     group.setSpan(span)
     tokens.append(group)
 }

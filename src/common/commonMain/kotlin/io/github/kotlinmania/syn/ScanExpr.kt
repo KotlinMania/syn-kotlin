@@ -141,7 +141,7 @@ internal fun parseBinopRhsImpl(
     allowStruct: Boolean,
     left: Precedence,
 ): SynResult<Expr> {
-    var rhs = unaryExprImpl(input, allowStruct)
+    val rhs = unaryExprImpl(input, allowStruct)
     if (rhs.isFailure) return rhs
     var rhsExpr = rhs.getOrThrow()
     while (true) {
@@ -1434,9 +1434,6 @@ internal fun parseTypeImplTrait(
     }
     return SynResult.success(SynType.ImplTrait(implToken, bounds))
 }
-
-private fun TypeParamBoundList.hasTraitBound(): Boolean =
-    toList().any { it is TypeParamBound.Trait }
 
 private fun TypeParamBoundList.hasTraitLikeImplBound(): Boolean =
     toList().any { it is TypeParamBound.Trait || it is TypeParamBound.Verbatim }

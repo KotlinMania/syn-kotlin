@@ -1,12 +1,10 @@
 // port-lint: source ident.rs
 // Complete generated body; original source and Native/Rust receipt retained in rust-kotlin.
-@file:Suppress("ClassNaming", "UnusedPrivateClass")
+@file:Suppress("ClassNaming", "UnusedPrivateClass", "UnusedPrivateFunction")
 
 package io.github.kotlinmania.syn.generated.ident
 
 // Generated from Syn AST; exact original retained in input.rs.
-import io.github.kotlinmania.quote.toTokens as __rtkBorrowedToTokens
-import io.github.kotlinmania.quote.append as __rtkQuoteAppend
 // Dependency contract crate::lookahead::Peek from lookahead.rs:176; original retained in library sources.
 internal sealed interface `__rtkLibraryTrait0`<`__rtkAssociated_Token`> {
     sealed interface `__rtkStatic`<`__rtkSelf`, `__rtkAssociated_Token`> {
@@ -102,7 +100,7 @@ internal object `__rtkImpl6` : `__rtkLibraryTrait6`.`__rtkStatic`<io.github.kotl
 
 internal fun `xid_ok`(`symbol`: kotlin.String): kotlin.Boolean {
     return kotlin.run {
-        var `chars`: __rtkChars = __rtkChars(`symbol`)
+        val `chars`: __rtkChars = __rtkChars(`symbol`)
         val `first`: __rtkChar = __rtkUnwrap((`chars`).next())
         kotlin.run { if ((!(((`first` == __rtkChar(95)) || `io`.`github`.`kotlinmania`.`unicodeident`.`isXidStartCodePoint`((`first`).codePoint))))) kotlin.run {
             return false
@@ -146,7 +144,6 @@ internal object `__rtkImpl8` : `__rtkLibraryTrait1`.`__rtkStatic`<io.github.kotl
         val __rtkValue1: __rtkOption<kotlin.Pair<io.github.kotlinmania.procmacro2.Ident, io.github.kotlinmania.syn.Cursor>> = kotlin.run { val __rtkValue0 = (`cursor`).ident(); if (__rtkValue0 == null) __rtkOption.None else __rtkOption.Some(__rtkValue0) }
         if (__rtkValue1 is __rtkOption.Some) kotlin.run {
         val `ident`: io.github.kotlinmania.procmacro2.Ident = (__rtkValue1.value).first
-        val `_rest`: io.github.kotlinmania.syn.Cursor = (__rtkValue1.value).second
         `__rtkModule_parsing_accept_as_ident`(`ident`)
     } else (false)
     }

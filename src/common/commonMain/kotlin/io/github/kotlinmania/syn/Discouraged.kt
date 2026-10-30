@@ -92,7 +92,7 @@ public interface AnyDelimiter {
  */
 internal fun ParseBuffer.parseAnyDelimiterImpl(): SynResult<AnyDelimiterResult> =
     step { cursor ->
-        var any = cursor.anyGroup()
+        val any = cursor.anyGroup()
         if (any != null) {
             val scope = any.delimSpan.close()
             val nested = advanceStepCursor(cursor, any.inside)

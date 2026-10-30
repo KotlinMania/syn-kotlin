@@ -63,7 +63,7 @@ public fun MacroDelimiter.surround(tokens: TokenStream, content: TokenStream) {
             is MacroDelimiter.Brace -> Delimiter.Brace to token.span
             is MacroDelimiter.Bracket -> Delimiter.Bracket to token.span
         }
-    var group = Group(delim, content)
+    val group = Group(delim, content)
     group.setSpan(span.join())
     tokens.append(TokenTree.Group(group))
 }
@@ -79,7 +79,7 @@ public fun <T> Macro.parseBody(parser: (ParseStream) -> SynResult<T>): SynResult
 /** Parse the tokens within the macro invocation's delimiters using the given parser. */
 public fun <T> Macro.parseBodyWith(parser: (ParseStream) -> SynResult<T>): SynResult<T> {
     val delimiter = this.delimiter
-    var scope =
+    val scope =
         when (delimiter) {
             is MacroDelimiter.Paren -> delimiter.token.span.close()
             is MacroDelimiter.Brace -> delimiter.token.span.close()

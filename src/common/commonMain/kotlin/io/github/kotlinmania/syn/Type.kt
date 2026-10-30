@@ -179,7 +179,8 @@ public sealed class SynType : ToTokens {
     ) : SynType() {
         override fun toTokens(tokens: TokenStream) {
             starToken.toTokens(tokens)
-            if (mutability != null) mutability.toTokens(tokens) else constToken?.toTokens(tokens)
+            val mutToken = mutability
+            if (mutToken != null) mutToken.toTokens(tokens) else constToken?.toTokens(tokens)
             elem.toTokens(tokens)
         }
 
@@ -378,7 +379,7 @@ internal fun parseBareFnArg(
     input: ParseStream,
     allowSelf: Boolean,
 ): SynResult<BareFnArg> {
-    var attrs = parseOuterAttributes(input).getOrElse { return SynResult.failure(it) }
+    val attrs = parseOuterAttributes(input).getOrElse { return SynResult.failure(it) }
     return parseBareFnArg(input, attrs, allowSelf)
 }
 
@@ -387,8 +388,8 @@ internal fun parseBareFnArg(
     attrs: List<Attribute>,
     allowSelf: Boolean,
 ): SynResult<BareFnArg> {
-    var begin = input.fork()
-    var hasMutSelf = allowSelf && input.peek(MutPeek) && input.peek2(SelfValuePeek)
+    val begin = input.fork()
+    val hasMutSelf = allowSelf && input.peek(MutPeek) && input.peek2(SelfValuePeek)
     if (hasMutSelf) {
         MutParse.parse(input).getOrElse { return SynResult.failure(it) }
     }
@@ -414,7 +415,7 @@ internal fun parseBareFnArg(
             null
         }
 
-    var parsedTy =
+    val parsedTy =
         if (allowSelf && !hasSelf && input.peek(MutPeek) && input.peek2(SelfValuePeek)) {
             MutParse.parse(input).getOrElse { return SynResult.failure(it) }
             SelfValueParse.parse(input).getOrElse { return SynResult.failure(it) }
@@ -426,7 +427,7 @@ internal fun parseBareFnArg(
             parseTypeFull(input).getOrElse { return SynResult.failure(it) }
         }
 
-    var ty =
+    val ty =
         if (parsedTy != null && !hasMutSelf) {
             parsedTy
         } else {
@@ -440,7 +441,7 @@ internal fun parseBareVariadic(
     input: ParseStream,
     attrs: List<Attribute>,
 ): SynResult<BareVariadic> {
-    var name =
+    val name =
         if (input.peek(IdentPeek) || input.peek(UnderscorePeek)) {
             val ident = parseBareFnName(input).getOrElse { return SynResult.failure(it) }
             val colon = ColonParse.parse(input).getOrElse { return SynResult.failure(it) }
@@ -448,14 +449,14 @@ internal fun parseBareVariadic(
         } else {
             null
         }
-    var dots = DotDotDotParse.parse(input).getOrElse { return SynResult.failure(it) }
-    var comma = CommaParse.parse(input).getOrNull()
+    val dots = DotDotDotParse.parse(input).getOrElse { return SynResult.failure(it) }
+    val comma = CommaParse.parse(input).getOrNull()
     return SynResult.success(BareVariadic(attrs, name, dots, comma))
 }
 
 private fun parseBareFnName(input: ParseStream): SynResult<Ident> {
     if (input.peek(UnderscorePeek)) {
-        var underscore = UnderscoreParse.parse(input).getOrElse { return SynResult.failure(it) }
+        val underscore = UnderscoreParse.parse(input).getOrElse { return SynResult.failure(it) }
         return SynResult.success(from(underscore))
     }
     return identParseAny(input)

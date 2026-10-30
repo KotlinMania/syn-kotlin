@@ -52,7 +52,7 @@ public data class FixupContext(
         nextOperatorCanBeginGenerics: Boolean,
         precedence: Precedence,
     ): Pair<Precedence, FixupContext> {
-        var fixup =
+        val fixup =
             copy(
                 nextOperator = precedence,
                 stmt = false,
@@ -68,7 +68,7 @@ public data class FixupContext(
     }
 
     public fun leftmostSubexpressionWithDot(expr: Expr): Pair<Precedence, FixupContext> {
-        var fixup =
+        val fixup =
             copy(
                 nextOperator = Precedence.Unambiguous,
                 stmt = stmt || leftmostSubexpressionInStmt,
@@ -98,7 +98,7 @@ public data class FixupContext(
         expr: Expr,
         precedence: Precedence,
     ): Pair<Precedence, FixupContext> {
-        var fixup = rightmostSubexpressionFixup(resetAllowStruct = false, optionalOperand = false, precedence)
+        val fixup = rightmostSubexpressionFixup(resetAllowStruct = false, optionalOperand = false, precedence)
         return fixup.rightmostSubexpressionPrecedence(expr) to fixup
     }
 
@@ -118,8 +118,8 @@ public data class FixupContext(
         )
 
     public fun rightmostSubexpressionPrecedence(expr: Expr): Precedence {
-        var defaultPrec = precedence(expr)
-        var needsScan =
+        val defaultPrec = precedence(expr)
+        val needsScan =
             when (previousOperator) {
                 Precedence.Assign, Precedence.Let, Precedence.Prefix -> defaultPrec < previousOperator
                 else -> defaultPrec <= previousOperator
@@ -252,7 +252,7 @@ private fun scanRight(
     failOffset: Int,
     bailoutOffset: Int,
 ): Scan {
-    var consumeByPrecedence =
+    val consumeByPrecedence =
         if ((
                 when (precedence) {
                     Precedence.Assign, Precedence.Compare -> precedence <= fixup.nextOperator
@@ -347,8 +347,8 @@ private fun scanRightAssign(
     ) {
         return Scan.Consume
     }
-    var rightFixup = fixup.rightmostSubexpressionFixup(false, false, Precedence.Assign)
-    var scan =
+    val rightFixup = fixup.rightmostSubexpressionFixup(false, false, Precedence.Assign)
+    val scan =
         scanRight(
             expr.right,
             rightFixup,
@@ -379,12 +379,12 @@ private fun scanRightBinary(
     ) {
         return Scan.Consume
     }
-    var binopPrec = Precedence.of_binop(expr.op)
+    val binopPrec = Precedence.of_binop(expr.op)
     if (binopPrec == Precedence.Compare && fixup.nextOperator == Precedence.Compare) {
         return Scan.Consume
     }
-    var rightFixup = fixup.rightmostSubexpressionFixup(false, false, binopPrec)
-    var scan =
+    val rightFixup = fixup.rightmostSubexpressionFixup(false, false, binopPrec)
+    val scan =
         scanRight(
             expr.right,
             rightFixup,
@@ -403,7 +403,7 @@ private fun scanRightBinary(
             return Scan.Consume
         }
     }
-    var rightNeedsGroup =
+    val rightNeedsGroup =
         binopPrec != Precedence.Assign &&
             rightFixup.rightmostSubexpressionPrecedence(expr.right) <= binopPrec
     return if (rightNeedsGroup) {
@@ -430,8 +430,8 @@ private fun scanRightPrefix(
     ) {
         return Scan.Consume
     }
-    var rightFixup = fixup.rightmostSubexpressionFixup(false, false, Precedence.Prefix)
-    var scan =
+    val rightFixup = fixup.rightmostSubexpressionFixup(false, false, Precedence.Prefix)
+    val scan =
         scanRight(
             expr,
             rightFixup,
@@ -593,8 +593,8 @@ private fun scanRightLet(
     if (bailoutOffset >= 1) {
         return Scan.Consume
     }
-    var rightFixup = fixup.rightmostSubexpressionFixup(false, false, Precedence.Let)
-    var scan =
+    val rightFixup = fixup.rightmostSubexpressionFixup(false, false, Precedence.Let)
+    val scan =
         scanRight(
             expr.expr,
             rightFixup,

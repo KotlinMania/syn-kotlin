@@ -66,7 +66,7 @@ class `__rtkImpl7`(receiver: io.github.kotlinmania.procmacro2.Span) :
     private val __rtkReceiver: io.github.kotlinmania.procmacro2.Span = (receiver).`clone`()
 
     override fun `into_spans`(): io.github.kotlinmania.procmacro2.DelimSpan = kotlin.run {
-        var `group`: io.github.kotlinmania.procmacro2.Group =
+        val `group`: io.github.kotlinmania.procmacro2.Group =
             io.github.kotlinmania.procmacro2.Group(
                 io.github.kotlinmania.procmacro2.Delimiter.None,
                 io.github.kotlinmania.procmacro2.TokenStream.new(),

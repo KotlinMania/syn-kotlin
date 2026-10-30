@@ -1,12 +1,12 @@
 // port-lint: source whitespace.rs
-@file:Suppress("ClassNaming")
+@file:Suppress("ClassNaming", "UnusedPrivateFunction")
 
 package io.github.kotlinmania.syn
 
 // Generated from Syn AST; exact original retained in input.rs.
 internal fun `skip`(`s`: kotlin.String): kotlin.String {
     return kotlin.run {
-        var `s__binding0`: kotlin.String = `s`
+        val `s__binding0`: kotlin.String = `s`
         kotlin.run {
             kotlin.run {
                 `skip`@ while ((!(`s__binding0`).isEmpty())) kotlin.run {
@@ -61,10 +61,10 @@ internal fun `skip`(`s`: kotlin.String): kotlin.String {
                                                 (!(`s__binding0`).startsWith("/*!")))
                                         )
                                             kotlin.run {
-                                                var `depth`: kotlin.Int = 0
+                                                val `depth`: kotlin.Int = 0
                                                 val `bytes`: __rtkBytes =
                                                     __rtkAsBytes(`s__binding0`)
-                                                var `i__binding4`: kotlin.ULong = 0uL
+                                                val `i__binding4`: kotlin.ULong = 0uL
                                                 val `upper`: kotlin.ULong =
                                                     __rtkSub((`bytes`).len(), 1uL)
                                                 kotlin.run {

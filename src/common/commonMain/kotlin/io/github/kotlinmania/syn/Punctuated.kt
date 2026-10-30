@@ -43,8 +43,7 @@ public sealed class SynPunctuated :
     }
 
     internal fun pushPunctRaw(punctuation: ToTokens) {
-        val value = last
-        require(value != null) { "cannot push punctuation if empty or already has trailing punctuation" }
+        val value = requireNotNull(last) { "cannot push punctuation if empty or already has trailing punctuation" }
         inner.add(value to punctuation)
         last = null
     }
@@ -124,9 +123,10 @@ public sealed class SynPunctuated :
     public fun indexMut(index: Int): ToTokens = index(index)
 
     internal fun setRaw(index: Int, value: ToTokens) {
+        val currentLast = last
         if (index < inner.size) {
             inner[index] = inner[index].copy(first = value)
-        } else if (index == inner.size && last != null) {
+        } else if (index == inner.size && currentLast != null) {
             last = value
         } else {
             throw IndexOutOfBoundsException("index: $index")
@@ -1280,8 +1280,7 @@ public class Punctuated private constructor(
     }
 
     public fun pushPunct(punctuation: ToTokens) {
-        val value = lastValue
-        require(value != null) { "cannot push punctuation if empty or already has trailing punctuation" }
+        val value = requireNotNull(lastValue) { "cannot push punctuation if empty or already has trailing punctuation" }
         innerList.add(value to punctuation)
         lastValue = null
     }
@@ -1356,9 +1355,10 @@ public class Punctuated private constructor(
     }
 
     public operator fun set(index: Int, value: ToTokens) {
+        val currentLast = lastValue
         if (index < innerList.size) {
             innerList[index] = innerList[index].copy(first = value)
-        } else if (index == innerList.size && lastValue != null) {
+        } else if (index == innerList.size && currentLast != null) {
             lastValue = value
         } else {
             throw IndexOutOfBoundsException("index: $index")

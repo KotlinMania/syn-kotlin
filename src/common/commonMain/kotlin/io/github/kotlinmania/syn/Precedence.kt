@@ -1,7 +1,7 @@
 // port-lint: source precedence.rs
 // Generated from complete Rust precedence.rs (full + printing); integration recorded in
 // docs/generated-precedence-2026-10-24.md.
-@file:Suppress("ClassNaming")
+@file:Suppress("ClassNaming", "UnusedPrivateFunction")
 
 package io.github.kotlinmania.syn
 
@@ -57,7 +57,7 @@ internal val `Precedence`.Companion.`MIN`: `Precedence`
 internal fun `Precedence`.Companion.`of_binop`(
     `op`: io.github.kotlinmania.syn.BinOp,
 ): `Precedence` =
-    (when (val __rtkPrecedenceValue0: io.github.kotlinmania.syn.BinOp = `op`) {
+    (when (`op`) {
         is io.github.kotlinmania.syn.BinOp.Add,
         is io.github.kotlinmania.syn.BinOp.Sub -> `Precedence`.`Sum`
         is io.github.kotlinmania.syn.BinOp.Mul,
@@ -97,10 +97,7 @@ internal fun `Precedence`.Companion.`of`(`e`: io.github.kotlinmania.syn.Expr): `
                 kotlin.run {
                     val `e__binding1`: io.github.kotlinmania.syn.Expr.Closure =
                         __rtkPrecedenceValue0
-                    (when (
-                        val __rtkPrecedenceValue2: io.github.kotlinmania.syn.ReturnType =
-                            (`e__binding1`).`output`
-                    ) {
+                    (when ((`e__binding1`).`output`) {
                         io.github.kotlinmania.syn.ReturnType.Default -> `Precedence`.`Jump`
                         is io.github.kotlinmania.syn.ReturnType.TypeReturn ->
                             `__rtkPrecedenceNested0_prefix_attrs`((`e__binding1`).`attrs`)
@@ -131,11 +128,7 @@ internal fun `Precedence`.Companion.`of`(`e`: io.github.kotlinmania.syn.Expr): `
                                     else __rtkPrecedenceOption.Some(__rtkPrecedenceValue5)
                                 }
                         }
-                    (when (
-                        val __rtkPrecedenceValue6:
-                            __rtkPrecedenceOption<io.github.kotlinmania.syn.Expr> =
-                            `expr`
-                    ) {
+                    (when (`expr`) {
                         is __rtkPrecedenceOption.Some -> `Precedence`.`Jump`
                         __rtkPrecedenceOption.None -> `Precedence`.`Unambiguous`
                     })

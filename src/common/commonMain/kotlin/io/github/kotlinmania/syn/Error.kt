@@ -203,7 +203,7 @@ public class SynError private constructor(
 
     /** The source location of the error. */
     public fun span(): Span {
-        var range = messages[0].span.get() as? SpanRange ?: return Span.callSite()
+        val range = messages[0].span.get() as? SpanRange ?: return Span.callSite()
         return range.start.join(range.end) ?: range.start
     }
 
@@ -214,7 +214,7 @@ public class SynError private constructor(
      * method correctly from a procedural-macro handler.
      */
     public fun toCompileError(): TokenStream {
-        var tokens = TokenStream.new()
+        val tokens = TokenStream.new()
         for (msg in messages) {
             msg.toCompileError(tokens)
         }
@@ -322,9 +322,9 @@ private data class ErrorMessage(
         debugString()
 
     fun toCompileError(tokens: TokenStream) {
-        var range = span.get() as? SpanRange
-        var start = range?.start ?: Span.callSite()
-        var end = range?.end ?: Span.callSite()
+        val range = span.get() as? SpanRange
+        val start = range?.start ?: Span.callSite()
+        val end = range?.end ?: Span.callSite()
 
         tokens.append(TokenTree.Punct(Punct(':', Spacing.Joint, start)))
         tokens.append(TokenTree.Punct(Punct(':', Spacing.Alone, start)))
@@ -334,9 +334,9 @@ private data class ErrorMessage(
         tokens.append(TokenTree.Ident(Ident.new("compile_error", start)))
         tokens.append(TokenTree.Punct(Punct('!', Spacing.Alone, start)))
 
-        var string = Literal.string(message)
+        val string = Literal.string(message)
         string.setSpan(end)
-        var group =
+        val group =
             Group(
                 Delimiter.Brace,
                 TokenStream.fromTokenTree(TokenTree.Literal(string)),
@@ -355,7 +355,7 @@ internal fun newAt(scope: Span, cursor: Cursor, message: String): SynError =
     if (cursor.eof()) {
         SynError.new(scope, "unexpected end of input, $message")
     } else {
-        var span = openSpanOfGroup(cursor)
+        val span = openSpanOfGroup(cursor)
         SynError.new(span, message)
     }
 

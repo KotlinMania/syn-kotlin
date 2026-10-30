@@ -752,18 +752,6 @@ private enum class WhereClauseLocation {
     Both,
 }
 
-private fun peekFlexibleItemType(
-    input: ParseStream,
-    allowDefaultness: TypeDefaultness,
-): Boolean {
-    val ahead = input.fork()
-    VisibilityParse.parse(ahead)
-    if (allowDefaultness == TypeDefaultness.Optional) {
-        DefaultParse.parse(ahead)
-    }
-    return ahead.peek(SynTypePeek)
-}
-
 private fun <T, R> asFailure(result: SynResult<T>): SynResult<R> =
     SynResult.failure((result as SynResult.Failure).error)
 
@@ -1110,16 +1098,12 @@ public object GenericParamParse {
         GenericParam.parse(input)
 }
 
-private fun parseGenericParam(input: ParseStream): SynResult<GenericParam> = GenericParam.parse(input)
-
 public object WhereClauseParse {
     fun parse(input: ParseStream): SynResult<WhereClause> =
         parseWhereClause(input)
 }
 
 internal fun parseWhereClause(input: ParseStream): SynResult<WhereClause> = WhereClause.parse(input)
-
-private fun parseWherePredicate(input: ParseStream): SynResult<WherePredicate> = WherePredicate.parse(input)
 
 internal fun parseTypeParamBounds(
     input: ParseStream,
@@ -1162,10 +1146,6 @@ public object TypeParamBoundParse {
     fun parse(input: ParseStream): SynResult<TypeParamBound> =
         TypeParamBound.parse(input)
 }
-
-private fun parsePreciseCapture(input: ParseStream): SynResult<TypeParamBound.PreciseCapture> = TypeParamBound.PreciseCapture.parse(input)
-
-private fun parseCapturedParam(input: ParseStream): SynResult<CapturedParam> = CapturedParam.parse(input)
 
 internal fun parseNamedFieldList(input: ParseStream): SynResult<FieldList> {
     val fields = FieldList()

@@ -105,7 +105,7 @@ public class Path(
         if (leadingColon != null || segments.len() != 1) {
             return null
         }
-        var segment = segments.first() ?: return null
+        val segment = segments.first() ?: return null
         return if (segment.arguments.isNone()) segment.ident else null
     }
 
@@ -121,8 +121,8 @@ public class Path(
     }
 
     public fun span(): Span {
-        var first = segments.first()?.ident?.span() ?: Span.callSite()
-        var last = segments.last()?.ident?.span() ?: first
+        val first = segments.first()?.ident?.span() ?: Span.callSite()
+        val last = segments.last()?.ident?.span() ?: first
         return first.join(last) ?: first
     }
 
@@ -509,8 +509,8 @@ internal fun printQpath(
     qself.ltToken.toTokens(tokens)
     qself.ty.toTokens(tokens)
 
-    var position = minOf(qself.position, path.segments.len())
-    var segments = path.segments.pairsList()
+    val position = minOf(qself.position, path.segments.len())
+    val segments = path.segments.pairsList()
     if (position > 0) {
         tokensOrDefault(qself.asToken, io.github.kotlinmania.syn.token.As::default).toTokens(tokens)
         path.leadingColon?.toTokens(tokens)
@@ -574,7 +574,7 @@ public object GenericArgumentParse {
             return constArgument(input).map(GenericArgument::ConstArg)
         }
 
-        var argument = parseTypeFull(input).getOrElse { return SynResult.failure(it) }
+        val argument = parseTypeFull(input).getOrElse { return SynResult.failure(it) }
         if (argument is SynType.Path &&
             argument.qself == null &&
             argument.path.leadingColon == null &&
@@ -627,13 +627,13 @@ public object GenericArgumentParse {
 }
 
 internal fun constArgument(input: ParseStream): SynResult<Expr> {
-    var lookahead = input.lookahead1()
+    val lookahead = input.lookahead1()
     if (input.peek(LitPeek)) {
-        var lit = LitParse.parse(input).getOrElse { return SynResult.failure(it) }
+        val lit = LitParse.parse(input).getOrElse { return SynResult.failure(it) }
         return SynResult.success(Expr.Lit(mutableListOf(), lit))
     }
     if (input.peek(IdentPeek)) {
-        var ident = IdentParse.parse(input).getOrElse { return SynResult.failure(it) }
+        val ident = IdentParse.parse(input).getOrElse { return SynResult.failure(it) }
         return SynResult.success(Expr.Path(mutableListOf(), null, Path.from(ident)))
     }
     if (input.peek(BracePeek)) {
@@ -661,25 +661,25 @@ private fun parseGenericLt(input: ParseStream): SynResult<Lt> =
     }
 
 internal fun parseParenthesizedPathArguments(input: ParseStream): SynResult<PathArguments.Parenthesized> {
-    var parens = parenthesized(input).getOrElse { return SynResult.failure(it) }
-    var inputs = SynTypeList()
+    val parens = parenthesized(input).getOrElse { return SynResult.failure(it) }
+    val inputs = SynTypeList()
     while (!parens.content.isEmpty()) {
-        var ty = parseTypeFull(parens.content).getOrElse { return SynResult.failure(it) }
+        val ty = parseTypeFull(parens.content).getOrElse { return SynResult.failure(it) }
         inputs.pushValue(ty)
         if (parens.content.isEmpty()) break
-        var comma = CommaParse.parse(parens.content).getOrElse { return SynResult.failure(it) }
+        val comma = CommaParse.parse(parens.content).getOrElse { return SynResult.failure(it) }
         inputs.pushPunct(comma)
     }
     parens.content.finishChildBuffer()
-    var output = parseReturnTypeWithoutPlus(input).getOrElse { return SynResult.failure(it) }
+    val output = parseReturnTypeWithoutPlus(input).getOrElse { return SynResult.failure(it) }
     return SynResult.success(PathArguments.Parenthesized(parens.token, inputs, output))
 }
 
 internal fun qpath(input: ParseStream, exprStyle: Boolean): SynResult<Pair<QSelf?, Path>> {
     if (input.peek(LtPeek)) {
-        var ltToken = LtParse.parse(input).getOrElse { return SynResult.failure(it) }
-        var thisTy = parseTypeFull(input).getOrElse { return SynResult.failure(it) }
-        var pathAndAs =
+        val ltToken = LtParse.parse(input).getOrElse { return SynResult.failure(it) }
+        val thisTy = parseTypeFull(input).getOrElse { return SynResult.failure(it) }
+        val pathAndAs =
             if (input.peek(AsPeek)) {
                 val asToken = AsParse.parse(input).getOrElse { return SynResult.failure(it) }
                 val path = PathParse.parse(input).getOrElse { return SynResult.failure(it) }
@@ -687,9 +687,9 @@ internal fun qpath(input: ParseStream, exprStyle: Boolean): SynResult<Pair<QSelf
             } else {
                 null
             }
-        var gtToken = GenericsGtParse.parse(input).getOrElse { return SynResult.failure(it) }
-        var colon2Token = PathSepParse.parse(input).getOrElse { return SynResult.failure(it) }
-        var rest = PathSegmentList()
+        val gtToken = GenericsGtParse.parse(input).getOrElse { return SynResult.failure(it) }
+        val colon2Token = PathSepParse.parse(input).getOrElse { return SynResult.failure(it) }
+        val rest = PathSegmentList()
         while (true) {
             val segment = PathSegment.parseHelper(input, exprStyle).getOrElse { return SynResult.failure(it) }
             rest.pushValue(segment)
@@ -710,11 +710,11 @@ internal fun qpath(input: ParseStream, exprStyle: Boolean): SynResult<Pair<QSelf
             } else {
                 Triple(0, null, Path(colon2Token, rest))
             }
-        var qself = QSelf(ltToken, thisTy, position, asToken, gtToken)
+        val qself = QSelf(ltToken, thisTy, position, asToken, gtToken)
         return SynResult.success(qself to path)
     }
 
-    var path = Path.parseHelper(input, exprStyle).getOrElse { return SynResult.failure(it) }
+    val path = Path.parseHelper(input, exprStyle).getOrElse { return SynResult.failure(it) }
     return SynResult.success(null to path)
 }
 

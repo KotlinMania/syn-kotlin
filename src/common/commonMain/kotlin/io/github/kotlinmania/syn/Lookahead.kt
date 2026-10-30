@@ -194,6 +194,7 @@ public object BraceParse {
             val nested = advanceStepCursor(cursor, content)
             val unexpected = getUnexpected(input)
             val nestedBuffer = newParseBuffer(scope, nested, unexpected)
+            nestedBuffer.finishChildBuffer()
             SynResult.success(Brace.from(span) to rest)
         }
 }
@@ -209,6 +210,7 @@ public object BracketParse {
             val nested = advanceStepCursor(cursor, content)
             val unexpected = getUnexpected(input)
             val nestedBuffer = newParseBuffer(scope, nested, unexpected)
+            nestedBuffer.finishChildBuffer()
             SynResult.success(Bracket.from(span) to rest)
         }
 }
@@ -224,6 +226,7 @@ public object ParenParse {
             val nested = advanceStepCursor(cursor, content)
             val unexpected = getUnexpected(input)
             val nestedBuffer = newParseBuffer(scope, nested, unexpected)
+            nestedBuffer.finishChildBuffer()
             SynResult.success(Paren.from(span) to rest)
         }
 }

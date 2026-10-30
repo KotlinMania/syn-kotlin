@@ -1,5 +1,5 @@
 // port-lint: source classify.rs
-@file:Suppress("ClassNaming")
+@file:Suppress("ClassNaming", "UnusedPrivateFunction")
 
 package io.github.kotlinmania.syn
 
@@ -30,7 +30,7 @@ internal fun `requires_semi_to_be_stmt`(`expr`: io.github.kotlinmania.syn.Expr):
 internal fun `requires_comma_to_be_match_arm`(
     `expr`: io.github.kotlinmania.syn.Expr,
 ): kotlin.Boolean =
-    (when (val __rtkClassifyValue0: io.github.kotlinmania.syn.Expr = `expr`) {
+    (when (`expr`) {
         is io.github.kotlinmania.syn.Expr.If,
         is io.github.kotlinmania.syn.Expr.Match,
         is io.github.kotlinmania.syn.Expr.BlockExpr,
@@ -78,7 +78,7 @@ internal fun `trailing_unparameterized_path`(
     `ty`: io.github.kotlinmania.syn.SynType,
 ): kotlin.Boolean {
     kotlin.run {
-        var `ty__binding0`: io.github.kotlinmania.syn.SynType = `ty`
+        val `ty__binding0`: io.github.kotlinmania.syn.SynType = `ty`
         kotlin.run {
             kotlin.run {
                 while (true) (when (
@@ -232,8 +232,6 @@ internal fun `trailing_unparameterized_path`(
                     is io.github.kotlinmania.syn.SynType.Tuple,
                     is io.github.kotlinmania.syn.SynType.Verbatim -> return false
                 })
-
-                kotlin.error("unreachable: Rust loop has no exiting break")
             }
             // Rust nested function last_type_in_path emitted at module scope as
             // __rtkClassifyNested0_last_type_in_path.
@@ -305,7 +303,7 @@ private fun `__rtkClassifyNested1_last_type_in_bounds`(
 /// Whether the expression's first token is the label of a loop/block.
 internal fun `expr_leading_label`(`expr`: io.github.kotlinmania.syn.Expr): kotlin.Boolean {
     kotlin.run {
-        var `expr__binding0`: io.github.kotlinmania.syn.Expr = `expr`
+        val `expr__binding0`: io.github.kotlinmania.syn.Expr = `expr`
         kotlin.run {
             while (true) (when (
                 val __rtkClassifyValue1: io.github.kotlinmania.syn.Expr = `expr__binding0`
@@ -490,8 +488,6 @@ internal fun `expr_leading_label`(`expr`: io.github.kotlinmania.syn.Expr): kotli
                 is io.github.kotlinmania.syn.Expr.Verbatim,
                 is io.github.kotlinmania.syn.Expr.Yield -> return false
             })
-
-            kotlin.error("unreachable: Rust loop has no exiting break")
         }
     }
 }
@@ -499,7 +495,7 @@ internal fun `expr_leading_label`(`expr`: io.github.kotlinmania.syn.Expr): kotli
 /// Whether the expression's last token is `}`.
 internal fun `expr_trailing_brace`(`expr`: io.github.kotlinmania.syn.Expr): kotlin.Boolean {
     kotlin.run {
-        var `expr__binding0`: io.github.kotlinmania.syn.Expr = `expr`
+        val `expr__binding0`: io.github.kotlinmania.syn.Expr = `expr`
         kotlin.run {
             kotlin.run {
                 while (true) (when (
@@ -731,8 +727,6 @@ internal fun `expr_trailing_brace`(`expr`: io.github.kotlinmania.syn.Expr): kotl
                     is io.github.kotlinmania.syn.Expr.Try,
                     is io.github.kotlinmania.syn.Expr.Tuple -> return false
                 })
-
-                kotlin.error("unreachable: Rust loop has no exiting break")
             }
             // Rust nested function type_trailing_brace emitted at module scope as
             // __rtkClassifyNested2_type_trailing_brace.
@@ -750,7 +744,7 @@ private fun `__rtkClassifyNested2_type_trailing_brace`(
     `ty`: io.github.kotlinmania.syn.SynType,
 ): kotlin.Boolean {
     kotlin.run {
-        var `ty__binding0`: io.github.kotlinmania.syn.SynType = `ty`
+        val `ty__binding0`: io.github.kotlinmania.syn.SynType = `ty`
         kotlin.run {
             while (true) (when (
                 val __rtkClassifyValue1: io.github.kotlinmania.syn.SynType = `ty__binding0`
@@ -904,8 +898,6 @@ private fun `__rtkClassifyNested2_type_trailing_brace`(
                 is io.github.kotlinmania.syn.SynType.Slice,
                 is io.github.kotlinmania.syn.SynType.Tuple -> return false
             })
-
-            kotlin.error("unreachable: Rust loop has no exiting break")
         }
     }
 }

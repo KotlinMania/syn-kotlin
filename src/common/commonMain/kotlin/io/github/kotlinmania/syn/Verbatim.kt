@@ -1,5 +1,5 @@
 // port-lint: source verbatim.rs
-@file:Suppress("ClassNaming")
+@file:Suppress("ClassNaming", "UnusedPrivateFunction")
 
 package io.github.kotlinmania.syn
 
@@ -15,12 +15,12 @@ internal fun `between`(
     `end`: io.github.kotlinmania.syn.ParseBuffer,
 ): io.github.kotlinmania.procmacro2.TokenStream = kotlin.run {
     val `end__binding0`: io.github.kotlinmania.syn.Cursor = (`end`).`cursor`()
-    var `cursor`: io.github.kotlinmania.syn.Cursor = (`begin`).`cursor`()
+    val `cursor`: io.github.kotlinmania.syn.Cursor = (`begin`).`cursor`()
     kotlin.run {
         if (!(io.github.kotlinmania.syn.sameBuffer(`end__binding0`, `cursor`)))
             throw __rtkVerbatimPanic("assertion failed: crate::buffer::same_buffer(end, cursor)")
     }
-    var `tokens`: io.github.kotlinmania.procmacro2.TokenStream =
+    val `tokens`: io.github.kotlinmania.procmacro2.TokenStream =
         io.github.kotlinmania.procmacro2.TokenStream.new()
     kotlin.run {
         while ((`cursor` != `end__binding0`)) kotlin.run {
@@ -69,8 +69,6 @@ internal fun `between`(
                             kotlin.run {
                                 val `inside`: io.github.kotlinmania.syn.Cursor =
                                     (__rtkVerbatimValue4.value).first
-                                val `_span`: io.github.kotlinmania.procmacro2.DelimSpan =
-                                    (__rtkVerbatimValue4.value).second
                                 val `after`: io.github.kotlinmania.syn.Cursor =
                                     (__rtkVerbatimValue4.value).third
                                 kotlin.run {
