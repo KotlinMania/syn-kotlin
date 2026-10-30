@@ -1,5 +1,27 @@
 pluginManagement {
+    val mavenProperties =
+        java.util.Properties().apply {
+            val source = settingsDir.resolve("maven.properties")
+            require(source.isFile) { "Missing Maven mode configuration: $source" }
+            source.inputStream().use { load(it) }
+        }
+    val localMaven = mavenProperties.getProperty("maven.local")?.trim()?.toBooleanStrictOrNull()
+    require(localMaven != null) { "maven.properties must set maven.local=true or false" }
+    val localRepository =
+        mavenProperties
+            .getProperty("maven.localRepository")
+            ?.trim()
+            ?.takeIf { it.isNotEmpty() }
+            ?.let { File(it) }
+            ?: File(System.getProperty("user.home"), ".m2/repository")
+    require(localRepository.isAbsolute) { "maven.localRepository must be an absolute path" }
+
+    // Gradle's Maven resolver and publishToMavenLocal use this same location.
+    System.setProperty("maven.repo.local", localRepository.absolutePath)
+    settings.extra["mavenLocalEnabled"] = localMaven
+
     repositories {
+        if (localMaven) mavenLocal()
         google()
         mavenCentral()
         gradlePluginPortal()
@@ -8,50 +30,33 @@ pluginManagement {
 
 plugins { id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0" }
 
-val localMavenValidation =
-    providers.gradleProperty("project.repositories.mavenLocal")
-        .map { it.trim().toBooleanStrict() }
-        .getOrElse(false)
+val localMavenEnabled = extra["mavenLocalEnabled"] as Boolean
 
 dependencyResolutionManagement {
-    if (localMavenValidation) {
-        val localMavenPath = providers.systemProperty("maven.repo.local").orNull
-        require(localMavenPath != null && File(localMavenPath).isAbsolute) {
-            "Local Maven validation requires -Dmaven.repo.local=/absolute/path/to/isolated-repository"
-        }
-        // The Kotlin/JS plugin always adds its own Node.js/Yarn distribution
-        // repositories from plugin code; FAIL_ON_PROJECT_REPOS rejects those as
-        // "added by unknown code" and breaks kotlinNodeJsSetup. PREFER_SETTINGS
-        // keeps every dependency resolution routed through the settings repos
-        // below while ignoring project-level additions instead of failing.
-        repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
-    }
+    // Kotlin tool setup temporarily adds and removes its Node/Yarn Ivy repositories.
+    repositoriesMode.set(RepositoriesMode.PREFER_PROJECT)
     repositories {
-        if (localMavenValidation) {
-            exclusiveContent {
-                forRepository {
-                    mavenLocal { name = "kotlinManiaLocalValidation" }
-                }
-                filter { includeGroup("io.github.kotlinmania") }
-            }
-        }
+        if (localMavenEnabled) mavenLocal()
         google()
         mavenCentral()
-        // Declared here (rather than by the Kotlin/JS plugin as a project-level
-        // repository) so the build works with PREFER_SETTINGS above.
-        ivy("https://nodejs.org/dist") {
-            name = "Node Distributions"
-            patternLayout { artifact("v[revision]/[artifact](-v[revision]-[classifier]).[ext]") }
-            metadataSources { artifact() }
-            content { includeModule("org.nodejs", "node") }
-        }
-        ivy("https://github.com/yarnpkg/yarn/releases/download") {
-            name = "Yarn Distributions"
-            patternLayout { artifact("v[revision]/[artifact]-v[revision].[ext]") }
-            metadataSources { artifact() }
-            content { includeModule("com.yarnpkg", "yarn") }
-        }
     }
 }
 
-rootProject.name = "syn-kotlin"
+// Apply the same order to every project's build and buildscript dependencies.
+gradle.beforeProject {
+    repositories {
+        if (localMavenEnabled) mavenLocal()
+        google()
+        mavenCentral()
+    }
+    buildscript.repositories {
+        if (localMavenEnabled) mavenLocal()
+        google()
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+
+// The repo name lives in gradle.properties (project.name); scaffolds must not
+// hand-edit this file to rename the project.
+rootProject.name = providers.gradleProperty("project.name").get()

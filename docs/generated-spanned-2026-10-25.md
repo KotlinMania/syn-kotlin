@@ -1,4 +1,7 @@
-# Generated spanned.rs adoption
+# Historical generated spanned.rs adoption
+
+The adoption record below describes the 2026-10-25 implementation. The current
+source correction is described after that record.
 
 Spanned.kt is the complete raw rust-kotlin output after adding this package/header
 and running ktfmt. No body is hand-patched. Source: tmp/syn/src/spanned.rs, all five
@@ -37,3 +40,28 @@ Full provenance, raw/ordinary diffs, dependency hashes, configuration and bootst
 receipt are in ../rust-kotlin/docs/syn-emission-20.md and its validation JSON.
 Current supported bound representations are Span, DelimSpan and Kotlin ToTokens;
 primitive/Option/Box representation coverage is not implied.
+
+## Source correction
+
+Upstream `spanned.rs` declares `Spanned::span`, its blanket implementation, and
+private sealing. It has no named implementation adapters or bound-case enum.
+The Kotlin file now contains the sealed `Spanned` interface and the existing
+span extensions. The generated implementation classes, bound cases, import
+alias, and separate binding file have been removed. Its comments describe the
+upstream behavior using Kotlin names and prose.
+
+Kotlin extensions express the blanket implementation for the existing
+`ToTokens`, `Span`, and `DelimSpan` representations. The anonymous `ToTokens`
+implementation preserves the borrowed dispatch from Quote's `ToTokens for &T`:
+only `toTokens` is forwarded, so receiver overrides of `toTokenStream` and
+`intoTokenStream` cannot replace the borrowed conversion. Span results retain
+their independent value semantics. `Expr.span` retains its concrete signature,
+and `QSelf.span` calls its upstream `QSelfDelimiters` representation directly.
+
+The three extension signatures still use the natural `SpannedKt` JVM facade.
+Removing the synthetic classes is a Kotlin API change: direct callers must
+use the public span operations. No upstream public Rust type is removed.
+The four existing regression tests now use only those public operations and
+retain checks for borrowed dispatch, span copies, delimiter joining, empty
+streams, and the cross-source fallback. Historical test counts above do not
+validate this correction.

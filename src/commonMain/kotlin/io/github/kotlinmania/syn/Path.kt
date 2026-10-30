@@ -396,8 +396,7 @@ public data class QSelf(
     public var asToken: io.github.kotlinmania.syn.token.As?,
     public var gtToken: Gt,
 ) : Spanned {
-    override fun span(): Span =
-        SynSpannedImpl0(QSelfDelimiters(this), SynSpannedBound0.Case2()).span()
+    override fun span(): Span = QSelfDelimiters(this).span()
 }
 
 private class QSelfDelimiters(

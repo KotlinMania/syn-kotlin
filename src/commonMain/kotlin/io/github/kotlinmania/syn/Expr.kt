@@ -923,7 +923,7 @@ public fun Expr.isNamed(name: String): Boolean {
 }
 
 public fun Expr.span(): io.github.kotlinmania.procmacro2.Span =
-    SynSpannedImpl0(this, SynSpannedBound0.Case2<Expr>()).span()
+    (this as ToTokens).span()
 
 public fun printSubexpression(
     expr: Expr,
