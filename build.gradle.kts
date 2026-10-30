@@ -218,14 +218,20 @@ fun parseSwiftExportModuleSpec(rawEntry: String): SwiftExportModuleSpec {
             }
 
             else -> {
-                versionCatalog
-                    .findLibrary(rawDep)
-                    .orElseThrow {
-                        GradleException(
-                            "Unknown Swift Export library alias '$rawDep' in libs.versions.toml " +
-                                "(use a catalog alias, 'group:artifact:version', or ':subproject')",
-                        )
-                    }.get()
+                val dep =
+                    versionCatalog
+                        .findLibrary(rawDep)
+                        .orElseThrow {
+                            GradleException(
+                                "Unknown Swift Export library alias '$rawDep' in libs.versions.toml " +
+                                    "(use a catalog alias, 'group:artifact:version', or ':subproject')",
+                            )
+                        }.get()
+                listOfNotNull(
+                    dep.module.group,
+                    dep.module.name,
+                    dep.versionConstraint.requiredVersion.takeIf { it.isNotEmpty() },
+                ).joinToString(":")
             }
         }
     val explicitVisibility =
@@ -276,10 +282,16 @@ val swiftExportModuleExports: List<SwiftExportModuleSpec> =
                     val isHidden = coordKey in swiftExportHiddenDependencies || artifactKey in swiftExportHiddenDependencies
                     val derivedModule = deriveSwiftModuleName(artifactKey)
                     val derivedPackage = "${dep.module.group}.${artifactKey.removeSuffix("-kotlin").replace("-", "").replace("_", "")}"
+                    val coordinate =
+                        listOfNotNull(
+                            dep.module.group,
+                            dep.module.name,
+                            dep.versionConstraint.requiredVersion.takeIf { it.isNotEmpty() },
+                        ).joinToString(":")
                     explicitSpecs[coordKey] =
                         SwiftExportModuleSpec(
                             key = coordKey,
-                            dependency = dep,
+                            dependency = coordinate,
                             moduleName = derivedModule,
                             rootPackage = derivedPackage,
                             visibility = if (isHidden) SwiftExportModuleVisibility.HIDDEN else SwiftExportModuleVisibility.EXPOSED,
@@ -508,7 +520,13 @@ kotlin {
                 browserTestExcludes.forEach { filter.excludeTestsMatching(it) }
             }
         }
-        nodejs()
+        nodejs {
+            testTask {
+                useMocha {
+                    timeout = "120s"
+                }
+            }
+        }
     }
 
     @OptIn(ExperimentalWasmDsl::class)
@@ -627,7 +645,13 @@ kotlin {
             implementation(kotlin("test"))
             commonTestDependencyBundle?.let { bundle ->
                 bundle.get().forEach { dep ->
-                    implementation(dep) {
+                    val coordinate =
+                        listOfNotNull(
+                            dep.module.group,
+                            dep.module.name,
+                            dep.versionConstraint.requiredVersion.takeIf { it.isNotEmpty() },
+                        ).joinToString(":")
+                    implementation(coordinate) {
                         exclude(group = project.group.toString(), module = publishProjectName)
                     }
                 }
