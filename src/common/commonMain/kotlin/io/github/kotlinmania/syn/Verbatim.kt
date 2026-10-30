@@ -1,5 +1,5 @@
 // port-lint: source verbatim.rs
-@file:Suppress("ClassNaming", "UnusedPrivateFunction")
+@file:Suppress("ClassNaming", "UnusedPrivateFunction", "VarCouldBeVal")
 
 package io.github.kotlinmania.syn
 
@@ -16,7 +16,7 @@ internal fun `between`(
 ): io.github.kotlinmania.procmacro2.TokenStream =
     kotlin.run {
         val `end__binding0`: io.github.kotlinmania.syn.Cursor = (`end`).`cursor`()
-        val `cursor`: io.github.kotlinmania.syn.Cursor = (`begin`).`cursor`()
+        var `cursor`: io.github.kotlinmania.syn.Cursor = (`begin`).`cursor`()
         kotlin.run {
             if (!(
                     io.github.kotlinmania.syn

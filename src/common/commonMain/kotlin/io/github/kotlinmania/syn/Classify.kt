@@ -1,5 +1,5 @@
 // port-lint: source classify.rs
-@file:Suppress("ClassNaming", "UnusedPrivateFunction")
+@file:Suppress("ClassNaming", "UnusedPrivateFunction", "VarCouldBeVal")
 
 package io.github.kotlinmania.syn
 
@@ -85,7 +85,7 @@ internal fun `trailing_unparameterized_path`(
     `ty`: io.github.kotlinmania.syn.SynType,
 ): kotlin.Boolean {
     kotlin.run {
-        val `ty__binding0`: io.github.kotlinmania.syn.SynType = `ty`
+        var `ty__binding0`: io.github.kotlinmania.syn.SynType = `ty`
         kotlin.run {
             kotlin.run {
                 while (true) {
@@ -337,7 +337,7 @@ private fun `__rtkClassifyNested1_last_type_in_bounds`(
 // / Whether the expression's first token is the label of a loop/block.
 internal fun `expr_leading_label`(`expr`: io.github.kotlinmania.syn.Expr): kotlin.Boolean {
     kotlin.run {
-        val `expr__binding0`: io.github.kotlinmania.syn.Expr = `expr`
+        var `expr__binding0`: io.github.kotlinmania.syn.Expr = `expr`
         kotlin.run {
             while (true) {
                 (
@@ -559,7 +559,7 @@ internal fun `expr_leading_label`(`expr`: io.github.kotlinmania.syn.Expr): kotli
 // / Whether the expression's last token is `}`.
 internal fun `expr_trailing_brace`(`expr`: io.github.kotlinmania.syn.Expr): kotlin.Boolean {
     kotlin.run {
-        val `expr__binding0`: io.github.kotlinmania.syn.Expr = `expr`
+        var `expr__binding0`: io.github.kotlinmania.syn.Expr = `expr`
         kotlin.run {
             kotlin.run {
                 while (true) {
@@ -834,7 +834,7 @@ private fun `__rtkClassifyNested2_type_trailing_brace`(
     `ty`: io.github.kotlinmania.syn.SynType,
 ): kotlin.Boolean {
     kotlin.run {
-        val `ty__binding0`: io.github.kotlinmania.syn.SynType = `ty`
+        var `ty__binding0`: io.github.kotlinmania.syn.SynType = `ty`
         kotlin.run {
             while (true) {
                 (

@@ -1,5 +1,5 @@
 // port-lint: source bigint.rs
-@file:Suppress("ClassNaming")
+@file:Suppress("ClassNaming", "VarCouldBeVal")
 
 package io.github.kotlinmania.syn
 
@@ -27,7 +27,7 @@ internal fun `BigInt`.`to_string`(): kotlin.text.StringBuilder =
     kotlin.run {
         val `repr`: kotlin.text.StringBuilder =
             __rtkBigIntStringWithCapacity(((this).`digits`).size.toULong())
-        val `has_nonzero`: kotlin.Boolean = false
+        var `has_nonzero`: kotlin.Boolean = false
         kotlin.run {
             val __rtkBigIntValue0 = ((this).`digits`).asReversed()
             for (`digit` in __rtkBigIntValue0) {
@@ -111,10 +111,10 @@ private fun `BigInt`.`reserve_two_digits`(): kotlin.Unit =
 // Assumes increment <16.
 internal fun `BigInt`.`__rtkBigIntAddAssign_add_assign`(`increment`: kotlin.UByte): kotlin.Unit =
     kotlin.run {
-        val `increment__binding0`: kotlin.UByte = `increment`
+        var `increment__binding0`: kotlin.UByte = `increment`
         kotlin.run {
             (this).`reserve_two_digits`()
-            val `i`: kotlin.ULong = 0uL
+            var `i`: kotlin.ULong = 0uL
             kotlin.run {
                 while ((`increment__binding0` > 0u.toUByte())) {
                     kotlin.run {
@@ -146,7 +146,7 @@ internal fun `BigInt`.`__rtkBigIntAddAssign_add_assign`(`increment`: kotlin.UByt
 internal fun `BigInt`.`__rtkBigIntMulAssign_mul_assign`(`base`: kotlin.UByte): kotlin.Unit =
     kotlin.run {
         (this).`reserve_two_digits`()
-        val `carry`: kotlin.UByte = 0u.toUByte()
+        var `carry`: kotlin.UByte = 0u.toUByte()
         kotlin.run {
             val __rtkBigIntValue0 = (this).`digits`
             for (__rtkBigIntValue1 in __rtkBigIntValue0.indices) {
