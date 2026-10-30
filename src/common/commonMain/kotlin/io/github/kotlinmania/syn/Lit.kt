@@ -844,7 +844,7 @@ private fun parseLitByteStr(s: String): ByteStringLiteralParts? {
 private fun parseLitByteStrCooked(s: String): ByteStringLiteralParts? {
     if (!s.startsWith("b\"")) return null
     var index = 2
-    var content = mutableListOf<UByte>()
+    val content = mutableListOf<UByte>()
     outer@ while (true) {
         val ch = s.getOrNull(index) ?: return null
         when (ch) {
@@ -867,9 +867,9 @@ private fun parseLitByteStrCooked(s: String): ByteStringLiteralParts? {
                 val value =
                     when (escaped) {
                         'x' -> {
-                            val (value, next) = backslashX(s, index) ?: return null
+                            val (hexValue, next) = backslashX(s, index) ?: return null
                             index = next
-                            value
+                            hexValue
                         }
 
                         'n' -> {
@@ -946,7 +946,7 @@ private fun parseLitCStr(s: String): CStringLiteralParts? {
 private fun parseLitCStrCooked(s: String): CStringLiteralParts? {
     if (!s.startsWith("c\"")) return null
     var index = 2
-    var content = mutableListOf<Byte>()
+    val content = mutableListOf<Byte>()
     outer@ while (true) {
         val ch = s.getOrNull(index) ?: return null
         when (ch) {
