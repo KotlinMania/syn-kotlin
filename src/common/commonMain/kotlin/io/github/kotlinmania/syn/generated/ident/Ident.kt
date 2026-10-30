@@ -6,14 +6,14 @@ package io.github.kotlinmania.syn.generated.ident
 import io.github.kotlinmania.quote.toTokens as __rtkBorrowedToTokens
 import io.github.kotlinmania.quote.append as __rtkQuoteAppend
 // Dependency contract crate::lookahead::Peek from lookahead.rs:176; original retained in library sources.
-sealed interface `__rtkLibraryTrait0`<`__rtkAssociated_Token`> {
+internal sealed interface `__rtkLibraryTrait0`<`__rtkAssociated_Token`> {
     sealed interface `__rtkStatic`<`__rtkSelf`, `__rtkAssociated_Token`> {
         val `__rtkAssociated_Token_0`: `__rtkLibraryTrait1`.`__rtkStatic`<`__rtkAssociated_Token`>
     }
 }
 
 // Dependency contract crate::token::Token from token.rs:125; original retained in library sources.
-sealed interface `__rtkLibraryTrait1` {
+internal sealed interface `__rtkLibraryTrait1` {
     sealed interface `__rtkStatic`<`__rtkSelf`> {
         fun `peek`(`cursor`: io.github.kotlinmania.syn.Cursor): kotlin.Boolean
         fun `display`(): kotlin.String
@@ -21,7 +21,7 @@ sealed interface `__rtkLibraryTrait1` {
 }
 
 // Dependency contract crate::token::private::CustomToken from token.rs:154; original retained in library sources.
-interface `__rtkLibraryTrait2` {
+internal interface `__rtkLibraryTrait2` {
     interface `__rtkStatic`<`__rtkSelf`> {
         fun `peek`(`cursor`: io.github.kotlinmania.syn.Cursor): kotlin.Boolean
         fun `display`(): kotlin.String
@@ -37,14 +37,14 @@ private interface `__rtkLibraryTrait4` {
 }
 
 // Dependency contract crate::parse::Parse from parse.rs:215; original retained in library sources.
-interface `__rtkLibraryTrait5` {
+internal interface `__rtkLibraryTrait5` {
     interface `__rtkStatic`<`__rtkSelf`> {
         fun `parse`(`input`: io.github.kotlinmania.syn.ParseBuffer): io.github.kotlinmania.syn.SynResult<`__rtkSelf`>
     }
 }
 
 // Dependency contract core::convert::From from Rust core convert::From (non-const contract):1; original retained in library sources.
-interface `__rtkLibraryTrait6`<`T`> {
+internal interface `__rtkLibraryTrait6`<`T`> {
     interface `__rtkStatic`<`__rtkSelf`, `T`> {
         fun `from`(`value`: `T`): `__rtkSelf`
     }
@@ -53,7 +53,7 @@ interface `__rtkLibraryTrait6`<`T`> {
 private class `__rtkForward0`<`T`>(private val __rtkForward: `__rtkLibraryTrait2`.`__rtkStatic`<`T`>) : `__rtkLibraryTrait3` {
 }
 
-class `__rtkForward1`<`T`>(private val __rtkForward: `__rtkLibraryTrait2`.`__rtkStatic`<`T`>) : `__rtkLibraryTrait1`.`__rtkStatic`<`T`> {
+internal class `__rtkForward1`<`T`>(private val __rtkForward: `__rtkLibraryTrait2`.`__rtkStatic`<`T`>) : `__rtkLibraryTrait1`.`__rtkStatic`<`T`> {
     override fun `peek`(`cursor`: io.github.kotlinmania.syn.Cursor): kotlin.Boolean = __rtkForward.`peek`(`cursor`)
     override fun `display`(): kotlin.String = __rtkForward.`display`()
 }
@@ -63,40 +63,40 @@ class `__rtkForward1`<`T`>(private val __rtkForward: `__rtkLibraryTrait2`.`__rtk
 // Rust source macro pub_if_not_doc: checked declaration forwarding; original retained in input.rs.
 // Rust #[doc(hidden)]: omitted from source API documentation.
 // Source naming lint: no runtime effect.
-fun `Ident`(`marker`: io.github.kotlinmania.syn.TokenMarker): io.github.kotlinmania.procmacro2.Ident = kotlin.run { __rtkDiscard(`marker`); kotlin.error("uninhabited source enum reached") }
+internal fun `Ident`(`marker`: io.github.kotlinmania.syn.TokenMarker): io.github.kotlinmania.procmacro2.Ident = kotlin.run { __rtkDiscard(`marker`); kotlin.error("uninhabited source enum reached") }
 
 // Rust source macro ident_from_token: checked declaration forwarding; original retained in input.rs.
 // Rust source macro ident_from_token: checked declaration forwarding; original retained in input.rs.
-object `__rtkImpl1` : `__rtkLibraryTrait6`.`__rtkStatic`<io.github.kotlinmania.procmacro2.Ident, io.github.kotlinmania.syn.token.SelfValue> {
+internal object `__rtkImpl1` : `__rtkLibraryTrait6`.`__rtkStatic`<io.github.kotlinmania.procmacro2.Ident, io.github.kotlinmania.syn.token.SelfValue> {
     override fun `from`(`value`: io.github.kotlinmania.syn.token.SelfValue): io.github.kotlinmania.procmacro2.Ident = __rtkNewIdent("self", ((`value`).`span`).`clone`())
 
 }
 
 // Rust source macro ident_from_token: checked declaration forwarding; original retained in input.rs.
-object `__rtkImpl2` : `__rtkLibraryTrait6`.`__rtkStatic`<io.github.kotlinmania.procmacro2.Ident, io.github.kotlinmania.syn.token.SelfType> {
+internal object `__rtkImpl2` : `__rtkLibraryTrait6`.`__rtkStatic`<io.github.kotlinmania.procmacro2.Ident, io.github.kotlinmania.syn.token.SelfType> {
     override fun `from`(`value`: io.github.kotlinmania.syn.token.SelfType): io.github.kotlinmania.procmacro2.Ident = __rtkNewIdent("Self", ((`value`).`span`).`clone`())
 
 }
 
 // Rust source macro ident_from_token: checked declaration forwarding; original retained in input.rs.
-object `__rtkImpl3` : `__rtkLibraryTrait6`.`__rtkStatic`<io.github.kotlinmania.procmacro2.Ident, io.github.kotlinmania.syn.token.Super> {
+internal object `__rtkImpl3` : `__rtkLibraryTrait6`.`__rtkStatic`<io.github.kotlinmania.procmacro2.Ident, io.github.kotlinmania.syn.token.Super> {
     override fun `from`(`value`: io.github.kotlinmania.syn.token.Super): io.github.kotlinmania.procmacro2.Ident = __rtkNewIdent("super", ((`value`).`span`).`clone`())
 
 }
 
 // Rust source macro ident_from_token: checked declaration forwarding; original retained in input.rs.
-object `__rtkImpl4` : `__rtkLibraryTrait6`.`__rtkStatic`<io.github.kotlinmania.procmacro2.Ident, io.github.kotlinmania.syn.token.Crate> {
+internal object `__rtkImpl4` : `__rtkLibraryTrait6`.`__rtkStatic`<io.github.kotlinmania.procmacro2.Ident, io.github.kotlinmania.syn.token.Crate> {
     override fun `from`(`value`: io.github.kotlinmania.syn.token.Crate): io.github.kotlinmania.procmacro2.Ident = __rtkNewIdent("crate", ((`value`).`span`).`clone`())
 
 }
 
 // Rust source macro ident_from_token: checked declaration forwarding; original retained in input.rs.
-object `__rtkImpl5` : `__rtkLibraryTrait6`.`__rtkStatic`<io.github.kotlinmania.procmacro2.Ident, io.github.kotlinmania.syn.token.Extern> {
+internal object `__rtkImpl5` : `__rtkLibraryTrait6`.`__rtkStatic`<io.github.kotlinmania.procmacro2.Ident, io.github.kotlinmania.syn.token.Extern> {
     override fun `from`(`value`: io.github.kotlinmania.syn.token.Extern): io.github.kotlinmania.procmacro2.Ident = __rtkNewIdent("extern", ((`value`).`span`).`clone`())
 
 }
 
-object `__rtkImpl6` : `__rtkLibraryTrait6`.`__rtkStatic`<io.github.kotlinmania.procmacro2.Ident, io.github.kotlinmania.syn.token.Underscore> {
+internal object `__rtkImpl6` : `__rtkLibraryTrait6`.`__rtkStatic`<io.github.kotlinmania.procmacro2.Ident, io.github.kotlinmania.syn.token.Underscore> {
     override fun `from`(`value`: io.github.kotlinmania.syn.token.Underscore): io.github.kotlinmania.procmacro2.Ident = __rtkNewIdent("_", ((`value`).`span`).`clone`())
 
 }
@@ -130,7 +130,7 @@ private fun `__rtkModule_parsing_accept_as_ident`(`ident`: io.github.kotlinmania
     else -> true
 } }
 
-object `__rtkImpl7` : `__rtkLibraryTrait5`.`__rtkStatic`<io.github.kotlinmania.procmacro2.Ident> {
+internal object `__rtkImpl7` : `__rtkLibraryTrait5`.`__rtkStatic`<io.github.kotlinmania.procmacro2.Ident> {
     override fun `parse`(`input`: io.github.kotlinmania.syn.ParseBuffer): io.github.kotlinmania.syn.SynResult<io.github.kotlinmania.procmacro2.Ident> = (`input`).`step` { `cursor`: io.github.kotlinmania.syn.StepCursor -> (kotlin.run {
         val __rtkValue1: __rtkOption<kotlin.Pair<io.github.kotlinmania.procmacro2.Ident, io.github.kotlinmania.syn.Cursor>> = kotlin.run { val __rtkValue0 = (`cursor`).ident(); if (__rtkValue0 == null) __rtkOption.None else __rtkOption.Some(__rtkValue0) }
         if (__rtkValue1 is __rtkOption.Some) kotlin.run {
@@ -142,7 +142,7 @@ object `__rtkImpl7` : `__rtkLibraryTrait5`.`__rtkStatic`<io.github.kotlinmania.p
 
 }
 
-object `__rtkImpl8` : `__rtkLibraryTrait1`.`__rtkStatic`<io.github.kotlinmania.procmacro2.Ident> {
+internal object `__rtkImpl8` : `__rtkLibraryTrait1`.`__rtkStatic`<io.github.kotlinmania.procmacro2.Ident> {
     override fun `peek`(`cursor`: io.github.kotlinmania.syn.Cursor): kotlin.Boolean = kotlin.run {
         val __rtkValue1: __rtkOption<kotlin.Pair<io.github.kotlinmania.procmacro2.Ident, io.github.kotlinmania.syn.Cursor>> = kotlin.run { val __rtkValue0 = (`cursor`).ident(); if (__rtkValue0 == null) __rtkOption.None else __rtkOption.Some(__rtkValue0) }
         if (__rtkValue1 is __rtkOption.Some) kotlin.run {
@@ -157,7 +157,7 @@ object `__rtkImpl8` : `__rtkLibraryTrait1`.`__rtkStatic`<io.github.kotlinmania.p
 }
 
 // Tagged Rust Option; owned payloads require a checked fresh-value context.
-sealed class __rtkOption<out T> {
+internal sealed class __rtkOption<out T> {
     data object None : __rtkOption<kotlin.Nothing>()
     data class Some<T>(val value: T) : __rtkOption<T>()
 }
@@ -166,7 +166,7 @@ private fun <T> __rtkUnwrapOr(value: __rtkOption<T>, fallback: T): T = when (val
     is __rtkOption.Some -> value.value
 }
 
-class __rtkPanic(message: String) : kotlin.RuntimeException(message)
+internal class __rtkPanic(message: String) : kotlin.RuntimeException(message)
 private fun <T> __rtkUnwrap(value: __rtkOption<T>): T = when (value) {
     is __rtkOption.Some -> value.value
     __rtkOption.None -> throw __rtkPanic("called `Option::unwrap()` on a `None` value")
@@ -175,14 +175,14 @@ private fun <T> __rtkUnwrap(value: __rtkOption<T>): T = when (value) {
 
 // Rust 1.99 UTF-8 and Unicode scalar adapters. Input domain: valid Rust str/char.
 // Copies of immutable string/byte storage do not expose pointer identity in admitted operations.
-data class __rtkChar(val codePoint: Int) {
+internal data class __rtkChar(val codePoint: Int) {
     init { require(codePoint in 0..0x10ffff && codePoint !in 0xd800..0xdfff) }
     fun lenUtf8(): ULong = scalarString().encodeToByteArray(throwOnInvalidSequence = true).size.toULong()
     fun scalarString(): String = if (codePoint < 0x10000) codePoint.toChar().toString() else
         (0xd800 + ((codePoint - 0x10000) shr 10)).toChar().toString() +
             (0xdc00 + ((codePoint - 0x10000) and 1023)).toChar()
 }
-class __rtkBytes internal constructor(private val bytes: ByteArray, private val start: Int = 0) {
+internal class __rtkBytes internal constructor(private val bytes: ByteArray, private val start: Int = 0) {
     fun len(): ULong = (bytes.size - start).toULong()
     fun iter(): __rtkByteIter = __rtkByteIter(bytes, start)
     fun at(index: ULong): UByte {
@@ -190,8 +190,8 @@ class __rtkBytes internal constructor(private val bytes: ByteArray, private val 
         return bytes[start + index.toInt()].toUByte()
     }
 }
-class __rtkByteRef internal constructor(val value: UByte)
-class __rtkByteIter internal constructor(private val bytes: ByteArray, private var offset: Int) {
+internal class __rtkByteRef internal constructor(val value: UByte)
+internal class __rtkByteIter internal constructor(private val bytes: ByteArray, private var offset: Int) {
     private val iterator: ByteIterator = bytes.copyOfRange(offset, bytes.size).iterator()
     fun next(): __rtkOption<__rtkByteRef> {
         if (!iterator.hasNext()) return __rtkOption.None
@@ -208,7 +208,7 @@ private fun __rtkReadScalar(iterator: CharIterator): __rtkChar {
     return __rtkChar(if (first.isHighSurrogate())
         0x10000 + ((first.code - 0xd800) shl 10) + (iterator.nextChar().code - 0xdc00) else first.code)
 }
-class __rtkChars internal constructor(private val source: String) {
+internal class __rtkChars internal constructor(private val source: String) {
     private var offset: Int = 0
     private val iterator: CharIterator = source.iterator()
     init { source.encodeToByteArray(throwOnInvalidSequence = true).let { kotlin.Unit } }

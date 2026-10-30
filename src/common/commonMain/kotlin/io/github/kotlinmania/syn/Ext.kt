@@ -68,7 +68,7 @@ internal class `SynExtForward1`<`T`>(
 /// This trait is sealed and cannot be implemented for types outside of Syn. It
 /// is implemented only for `proc_macro2::Ident`.
 sealed interface `IdentExt` {
-    sealed interface `SynExtStatic`<`SynExtSelf`> {
+    interface `SynExtStatic`<`SynExtSelf`> {
         /// Parses any identifier including keywords.
         ///
         /// This is useful when parsing macro input which allows Rust keywords as
@@ -142,7 +142,7 @@ sealed interface `IdentExt` {
     fun `unraw`(): io.github.kotlinmania.procmacro2.Ident
 }
 
-class `SynExtImpl0`(receiver: io.github.kotlinmania.procmacro2.Ident) : `IdentExt` {
+internal class `SynExtImpl0`(receiver: io.github.kotlinmania.procmacro2.Ident) : `IdentExt` {
     private val SynExtReceiver: io.github.kotlinmania.procmacro2.Ident = receiver
 
     companion object : `IdentExt`.`SynExtStatic`<io.github.kotlinmania.procmacro2.Ident> {
@@ -297,7 +297,7 @@ private fun `SynExtModule_private_PeekFn`.`SynExtClone_clone`(): `SynExtModule_p
     this
 
 // Tagged Rust Option; owned payloads require a checked fresh-value context.
-sealed class SynExtOption<out T> {
+internal sealed class SynExtOption<out T> {
     data object None : SynExtOption<kotlin.Nothing>()
 
     data class Some<T>(val value: T) : SynExtOption<T>()
@@ -309,11 +309,11 @@ private fun <T> SynExtUnwrapOr(value: SynExtOption<T>, fallback: T): T =
         is SynExtOption.Some -> value.value
     }
 
-class SynExtPanic(message: String) : kotlin.RuntimeException(message)
+internal class SynExtPanic(message: String) : kotlin.RuntimeException(message)
 
 // Rust 1.99 UTF-8 and Unicode scalar adapters. Input domain: valid Rust str/char.
 // Copies of immutable string/byte storage do not expose pointer identity in admitted operations.
-data class SynExtChar(val codePoint: Int) {
+internal data class SynExtChar(val codePoint: Int) {
     init {
         require(codePoint in 0..0x10ffff && codePoint !in 0xd800..0xdfff)
     }
@@ -328,7 +328,10 @@ data class SynExtChar(val codePoint: Int) {
                 (0xdc00 + ((codePoint - 0x10000) and 1023)).toChar()
 }
 
-class SynExtBytes internal constructor(private val bytes: ByteArray, private val start: Int = 0) {
+internal class SynExtBytes internal constructor(
+    private val bytes: ByteArray,
+    private val start: Int = 0,
+) {
     fun len(): ULong = (bytes.size - start).toULong()
 
     fun iter(): SynExtByteIter = SynExtByteIter(bytes, start)
@@ -342,9 +345,12 @@ class SynExtBytes internal constructor(private val bytes: ByteArray, private val
     }
 }
 
-class SynExtByteRef internal constructor(val value: UByte)
+internal class SynExtByteRef internal constructor(val value: UByte)
 
-class SynExtByteIter internal constructor(private val bytes: ByteArray, private var offset: Int) {
+internal class SynExtByteIter internal constructor(
+    private val bytes: ByteArray,
+    private var offset: Int,
+) {
     private val iterator: ByteIterator = bytes.copyOfRange(offset, bytes.size).iterator()
 
     fun next(): SynExtOption<SynExtByteRef> {
@@ -372,7 +378,7 @@ private fun SynExtReadScalar(iterator: CharIterator): SynExtChar {
     )
 }
 
-class SynExtChars internal constructor(private val source: String) {
+internal class SynExtChars internal constructor(private val source: String) {
     private var offset: Int = 0
     private val iterator: CharIterator = source.iterator()
 
