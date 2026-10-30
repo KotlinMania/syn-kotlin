@@ -30,7 +30,15 @@ class ModuleParityTest {
         val content = assertIs<ModContent.Inline>(module.content)
         assertEquals(2, content.items.size)
         assertIs<Item.Fn>(content.items[0])
-        assertEquals("nested", assertIs<Item.Mod>(content.items[1]).attrs.single().path().getIdent().toString())
+        assertEquals(
+            "nested",
+            assertIs<Item.Mod>(content.items[1])
+                .attrs
+                .single()
+                .path()
+                .getIdent()
+                .toString(),
+        )
         assertEquals(shape(TokenStream.fromString(source).getOrThrow()), shape(file.toTokenStream()))
     }
 
@@ -46,16 +54,19 @@ class ModuleParityTest {
         }
     }
 
-    private fun shape(tokens: TokenStream): List<String> = buildList {
-        for (token in tokens) when (token) {
-            is TokenTree.Group -> {
-                add("open:${token.value.delimiter()}")
-                addAll(shape(token.value.stream()))
-                add("close:${token.value.delimiter()}")
+    private fun shape(tokens: TokenStream): List<String> =
+        buildList {
+            for (token in tokens) {
+                when (token) {
+                    is TokenTree.Group -> {
+                        add("open:${token.value.delimiter()}")
+                        addAll(shape(token.value.stream()))
+                        add("close:${token.value.delimiter()}")
+                    }
+                    is TokenTree.Ident -> add("ident:${token.value}")
+                    is TokenTree.Punct -> add("punct:${token.value.asChar()}")
+                    is TokenTree.Literal -> add("literal:${token.value}")
+                }
             }
-            is TokenTree.Ident -> add("ident:${token.value}")
-            is TokenTree.Punct -> add("punct:${token.value.asChar()}")
-            is TokenTree.Literal -> add("literal:${token.value}")
         }
-    }
 }

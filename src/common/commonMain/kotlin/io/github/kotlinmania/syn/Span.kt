@@ -11,28 +11,35 @@ interface `IntoSpans`<`S`> {
     fun `into_spans`(): `S`
 }
 
-class `__rtkImpl0`(receiver: io.github.kotlinmania.procmacro2.Span) :
-    `IntoSpans`<io.github.kotlinmania.procmacro2.Span> {
+class `__rtkImpl0`(
+    receiver: io.github.kotlinmania.procmacro2.Span,
+) : `IntoSpans`<io.github.kotlinmania.procmacro2.Span> {
     private val __rtkReceiver: io.github.kotlinmania.procmacro2.Span = (receiver).`clone`()
 
     override fun `into_spans`(): io.github.kotlinmania.procmacro2.Span =
         (this.__rtkReceiver).`clone`()
 }
 
-class `__rtkImpl1`(receiver: io.github.kotlinmania.procmacro2.Span) : `IntoSpans`<__rtkArray0> {
+class `__rtkImpl1`(
+    receiver: io.github.kotlinmania.procmacro2.Span,
+) : `IntoSpans`<__rtkArray0> {
     private val __rtkReceiver: io.github.kotlinmania.procmacro2.Span = (receiver).`clone`()
 
     override fun `into_spans`(): __rtkArray0 = __rtkArray0((this.__rtkReceiver).`clone`())
 }
 
-class `__rtkImpl2`(receiver: io.github.kotlinmania.procmacro2.Span) : `IntoSpans`<__rtkArray1> {
+class `__rtkImpl2`(
+    receiver: io.github.kotlinmania.procmacro2.Span,
+) : `IntoSpans`<__rtkArray1> {
     private val __rtkReceiver: io.github.kotlinmania.procmacro2.Span = (receiver).`clone`()
 
     override fun `into_spans`(): __rtkArray1 =
         __rtkArray1((this.__rtkReceiver).`clone`(), (this.__rtkReceiver).`clone`())
 }
 
-class `__rtkImpl3`(receiver: io.github.kotlinmania.procmacro2.Span) : `IntoSpans`<__rtkArray2> {
+class `__rtkImpl3`(
+    receiver: io.github.kotlinmania.procmacro2.Span,
+) : `IntoSpans`<__rtkArray2> {
     private val __rtkReceiver: io.github.kotlinmania.procmacro2.Span = (receiver).`clone`()
 
     override fun `into_spans`(): __rtkArray2 =
@@ -43,48 +50,60 @@ class `__rtkImpl3`(receiver: io.github.kotlinmania.procmacro2.Span) : `IntoSpans
         )
 }
 
-class `__rtkImpl4`(receiver: __rtkArray0) : `IntoSpans`<__rtkArray0> {
+class `__rtkImpl4`(
+    receiver: __rtkArray0,
+) : `IntoSpans`<__rtkArray0> {
     private val __rtkReceiver: __rtkArray0 = (receiver).copyValue()
 
     override fun `into_spans`(): __rtkArray0 = (this.__rtkReceiver).copyValue()
 }
 
-class `__rtkImpl5`(receiver: __rtkArray1) : `IntoSpans`<__rtkArray1> {
+class `__rtkImpl5`(
+    receiver: __rtkArray1,
+) : `IntoSpans`<__rtkArray1> {
     private val __rtkReceiver: __rtkArray1 = (receiver).copyValue()
 
     override fun `into_spans`(): __rtkArray1 = (this.__rtkReceiver).copyValue()
 }
 
-class `__rtkImpl6`(receiver: __rtkArray2) : `IntoSpans`<__rtkArray2> {
+class `__rtkImpl6`(
+    receiver: __rtkArray2,
+) : `IntoSpans`<__rtkArray2> {
     private val __rtkReceiver: __rtkArray2 = (receiver).copyValue()
 
     override fun `into_spans`(): __rtkArray2 = (this.__rtkReceiver).copyValue()
 }
 
-class `__rtkImpl7`(receiver: io.github.kotlinmania.procmacro2.Span) :
-    `IntoSpans`<io.github.kotlinmania.procmacro2.DelimSpan> {
+class `__rtkImpl7`(
+    receiver: io.github.kotlinmania.procmacro2.Span,
+) : `IntoSpans`<io.github.kotlinmania.procmacro2.DelimSpan> {
     private val __rtkReceiver: io.github.kotlinmania.procmacro2.Span = (receiver).`clone`()
 
-    override fun `into_spans`(): io.github.kotlinmania.procmacro2.DelimSpan = kotlin.run {
-        val `group`: io.github.kotlinmania.procmacro2.Group =
-            io.github.kotlinmania.procmacro2.Group(
-                io.github.kotlinmania.procmacro2.Delimiter.None,
-                io.github.kotlinmania.procmacro2.TokenStream.new(),
-            )
-        (`group`).setSpan((this.__rtkReceiver).`clone`())
-        (`group`).delimSpan()
-    }
+    override fun `into_spans`(): io.github.kotlinmania.procmacro2.DelimSpan =
+        kotlin.run {
+            val `group`: io.github.kotlinmania.procmacro2.Group =
+                io.github.kotlinmania.procmacro2.Group(
+                    io.github.kotlinmania.procmacro2.Delimiter.None,
+                    io.github.kotlinmania.procmacro2.TokenStream
+                        .new(),
+                )
+            (`group`).setSpan((this.__rtkReceiver).`clone`())
+            (`group`).delimSpan()
+        }
 }
 
-class `__rtkImpl8`(receiver: io.github.kotlinmania.procmacro2.DelimSpan) :
-    `IntoSpans`<io.github.kotlinmania.procmacro2.DelimSpan> {
+class `__rtkImpl8`(
+    receiver: io.github.kotlinmania.procmacro2.DelimSpan,
+) : `IntoSpans`<io.github.kotlinmania.procmacro2.DelimSpan> {
     private val __rtkReceiver: io.github.kotlinmania.procmacro2.DelimSpan = receiver
 
     override fun `into_spans`(): io.github.kotlinmania.procmacro2.DelimSpan = this.__rtkReceiver
 }
 
 // Rust fixed array with 1 Copy elements; length is part of the type.
-class __rtkArray0(element0: io.github.kotlinmania.procmacro2.Span) {
+class __rtkArray0(
+    element0: io.github.kotlinmania.procmacro2.Span,
+) {
     private val stored0: io.github.kotlinmania.procmacro2.Span = (element0).`clone`()
     val element0: io.github.kotlinmania.procmacro2.Span
         get() = (stored0).`clone`()

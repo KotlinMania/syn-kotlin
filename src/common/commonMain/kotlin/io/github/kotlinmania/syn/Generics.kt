@@ -283,15 +283,13 @@ internal fun chooseGenericsOverQpath(input: ParseStream): Boolean =
             input.peek2(GenericsDisambiguationGtPeek) ||
                 input.peek2(PoundPeek) ||
                 (
-                    input.peek2(LifetimePeek) ||
-                        input.peek2(IdentPeekAny)
-                ) &&
-                (
-                    input.peek3(GenericsDisambiguationGtPeek) ||
-                        input.peek3(CommaPeek) ||
-                        input.peek3(ColonPeek) &&
-                        !input.peek3(PathSepPeek) ||
-                        input.peek3(EqPeek)
+                    (input.peek2(LifetimePeek) || input.peek2(IdentPeekAny)) &&
+                        (
+                            input.peek3(GenericsDisambiguationGtPeek) ||
+                                input.peek3(CommaPeek) ||
+                                (input.peek3(ColonPeek) && !input.peek3(PathSepPeek)) ||
+                                input.peek3(EqPeek)
+                        )
                 ) ||
                 input.peek2(ConstPeek)
         )
@@ -858,8 +856,7 @@ public sealed class TypeParamBound : ToTokens {
                             input.peek(QuestionPeek) ||
                             input.peek(LifetimePeek) ||
                             input.peek(ParenPeek) ||
-                            allowConst &&
-                            (input.peek(BracketPeek) || input.peek(ConstPeek))
+                            (allowConst && (input.peek(BracketPeek) || input.peek(ConstPeek)))
                     )
                 ) {
                     break

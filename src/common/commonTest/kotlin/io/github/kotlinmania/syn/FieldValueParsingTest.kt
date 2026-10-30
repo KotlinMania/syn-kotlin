@@ -16,11 +16,31 @@ class FieldValueParsingTest {
         val expr = assertIs<Expr.Struct>(parse2(ExprParse::parse, original.clone()).getOrThrow())
         val fields = expr.fields.toList()
         assertEquals(3, fields.size)
-        assertEquals(listOf("cfg", "allow", "cfg"), fields.map { it.attrs.single().path().segments.toList().single().ident.toString() })
+        assertEquals(
+            listOf("cfg", "allow", "cfg"),
+            fields.map {
+                it.attrs
+                    .single()
+                    .path()
+                    .segments
+                    .toList()
+                    .single()
+                    .ident
+                    .toString()
+            },
+        )
         assertEquals("named", assertIs<Member.Named>(fields[0].member).ident.toString())
         assertNotNull(fields[0].colonToken)
         assertNull(fields[1].colonToken)
-        assertEquals("shorthand", assertIs<Expr.Path>(fields[1].expr).path.segments.toList().single().ident.toString())
+        assertEquals(
+            "shorthand",
+            assertIs<Expr.Path>(fields[1].expr)
+                .path.segments
+                .toList()
+                .single()
+                .ident
+                .toString(),
+        )
         assertEquals(0u, assertIs<Member.Unnamed>(fields[2].member).index.index)
         assertEquals(":", assertNotNull(fields[2].colonToken).span.sourceText())
         for (value in listOf(expr, expr.deepCopy())) {

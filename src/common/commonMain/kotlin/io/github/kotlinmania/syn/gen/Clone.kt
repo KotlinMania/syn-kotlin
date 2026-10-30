@@ -737,7 +737,14 @@ public fun SynType.clone(): SynType =
     }
 
 public fun SynType.Array.clone(): SynType.Array =
-    SynType.Array(elem.clone(), len.clone(), io.github.kotlinmania.syn.token.Bracket.from(bracketToken.span), io.github.kotlinmania.syn.token.Semi.from(semiToken.span))
+    SynType.Array(
+        elem.clone(),
+        len.clone(),
+        io.github.kotlinmania.syn.token.Bracket
+            .from(bracketToken.span),
+        io.github.kotlinmania.syn.token.Semi
+            .from(semiToken.span),
+    )
 
 public fun SynType.BareFn.clone(): SynType.BareFn =
     SynType.BareFn(lifetimes?.clone(), unsafety, abi?.clone(), fnToken, parenToken, inputs.copy({ it.clone() }, { it }), variadic?.clone(), output.clone())

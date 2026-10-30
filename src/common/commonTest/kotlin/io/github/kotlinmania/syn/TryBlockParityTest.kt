@@ -12,7 +12,14 @@ class TryBlockParityTest {
     fun tryBlockUsesExistingBlockParserAndRetainsOuterAttributes() {
         val source = "#[outer] try { let value = nested()?; value }"
         val expr = assertIs<Expr.TryBlock>(parseStr(::parseExpr, source).getOrThrow())
-        assertEquals("outer", expr.attrs.single().path().getIdent().toString())
+        assertEquals(
+            "outer",
+            expr.attrs
+                .single()
+                .path()
+                .getIdent()
+                .toString(),
+        )
         assertEquals(2, expr.block.stmts.size)
         assertIs<Expr.Try>(assertIs<Stmt.Local>(expr.block.stmts.first()).init!!.expr)
         assertEquals(shape(TokenStream.fromString(source).getOrThrow()), shape(expr.toTokenStream()))
@@ -39,16 +46,19 @@ class TryBlockParityTest {
 
     // Display spacing between '?' and ';' is not Rust syntax identity. Compare
     // existing token-tree kinds, delimiters and contents as the parity suite does.
-    private fun shape(tokens: TokenStream): List<String> = buildList {
-        for (token in tokens) when (token) {
-            is TokenTree.Group -> {
-                add("open:${token.value.delimiter()}")
-                addAll(shape(token.value.stream()))
-                add("close:${token.value.delimiter()}")
+    private fun shape(tokens: TokenStream): List<String> =
+        buildList {
+            for (token in tokens) {
+                when (token) {
+                    is TokenTree.Group -> {
+                        add("open:${token.value.delimiter()}")
+                        addAll(shape(token.value.stream()))
+                        add("close:${token.value.delimiter()}")
+                    }
+                    is TokenTree.Ident -> add("ident:${token.value}")
+                    is TokenTree.Punct -> add("punct:${token.value.asChar()}")
+                    is TokenTree.Literal -> add("literal:${token.value}")
+                }
             }
-            is TokenTree.Ident -> add("ident:${token.value}")
-            is TokenTree.Punct -> add("punct:${token.value.asChar()}")
-            is TokenTree.Literal -> add("literal:${token.value}")
         }
-    }
 }

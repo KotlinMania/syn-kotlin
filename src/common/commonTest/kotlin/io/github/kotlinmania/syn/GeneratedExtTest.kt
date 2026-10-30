@@ -28,52 +28,57 @@ class GeneratedExtTest {
     fun generatedParseAnyCommitsOnlyOnSuccess() {
         for (source in listOf("impl rest", "r#type rest", "+ rest", "")) {
             parse2(
-                    { input ->
-                        val before = input.cursor()
-                        val peek = input.peek(IdentPeekAny)
-                        val result = SynExtImpl0.parse_any(input)
-                        assertEquals(peek, result.isSuccess)
-                        if (result.isSuccess) {
-                            assertEquals("rest", input.cursor().tokenStream().toString())
-                            result.getOrThrow().setSpan(Span.callSite())
-                            assertTrue(before.ident()!!.first.span().end().column > 0)
-                        } else {
-                            assertEquals(before, input.cursor())
-                            assertTrue(
-                                result.exceptionOrNull().toString().contains("expected ident"),
-                            )
-                        }
-                        TokenStreamParse.parse(input).getOrThrow()
-                        SynResult.success(Unit)
-                    },
-                    TokenStream.fromString(source).getOrThrow(),
-                )
-                .getOrThrow()
+                { input ->
+                    val before = input.cursor()
+                    val peek = input.peek(IdentPeekAny)
+                    val result = SynExtImpl0.parse_any(input)
+                    assertEquals(peek, result.isSuccess)
+                    if (result.isSuccess) {
+                        assertEquals("rest", input.cursor().tokenStream().toString())
+                        result.getOrThrow().setSpan(Span.callSite())
+                        assertTrue(
+                            before
+                                .ident()!!
+                                .first
+                                .span()
+                                .end()
+                                .column > 0,
+                        )
+                    } else {
+                        assertEquals(before, input.cursor())
+                        assertTrue(
+                            result.exceptionOrNull().toString().contains("expected ident"),
+                        )
+                    }
+                    TokenStreamParse.parse(input).getOrThrow()
+                    SynResult.success(Unit)
+                },
+                TokenStream.fromString(source).getOrThrow(),
+            ).getOrThrow()
         }
     }
 
     @Test
     fun stepKeepsOriginalErrorAndCallsCallbackOnce() {
         parse2(
-                { input ->
-                    val before = input.cursor()
-                    val error = input.error("chosen")
-                    var calls = 0
-                    val result =
-                        input.step<Unit> { cursor ->
-                            calls++
-                            assertTrue(cursor.ident() != null)
-                            SynResult.failure(error)
-                        }
-                    assertSame(error, result.exceptionOrNull())
-                    assertEquals(1, calls)
-                    assertEquals(before, input.cursor())
-                    TokenStreamParse.parse(input).getOrThrow()
-                    SynResult.success(Unit)
-                },
-                TokenStream.fromString("token").getOrThrow(),
-            )
-            .getOrThrow()
+            { input ->
+                val before = input.cursor()
+                val error = input.error("chosen")
+                var calls = 0
+                val result =
+                    input.step<Unit> { cursor ->
+                        calls++
+                        assertTrue(cursor.ident() != null)
+                        SynResult.failure(error)
+                    }
+                assertSame(error, result.exceptionOrNull())
+                assertEquals(1, calls)
+                assertEquals(before, input.cursor())
+                TokenStreamParse.parse(input).getOrThrow()
+                SynResult.success(Unit)
+            },
+            TokenStream.fromString("token").getOrThrow(),
+        ).getOrThrow()
     }
 
     @Test

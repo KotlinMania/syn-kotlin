@@ -273,12 +273,14 @@ class PrecedenceTest {
         assertEquals(first, first.__rtkPrecedenceClone_clone())
         assertEquals(true, first.__rtkPrecedencePartialEq_eq(first))
         assertEquals(false, first.__rtkPrecedencePartialEq_eq(last))
-        for ((left, right, expected) in
-            listOf(
-                Triple(first, first, __rtkPrecedenceOrdering.Equal),
-                Triple(first, last, __rtkPrecedenceOrdering.Less),
-                Triple(last, first, __rtkPrecedenceOrdering.Greater),
-            )) {
+        for (
+        (left, right, expected) in
+        listOf(
+            Triple(first, first, __rtkPrecedenceOrdering.Equal),
+            Triple(first, last, __rtkPrecedenceOrdering.Less),
+            Triple(last, first, __rtkPrecedenceOrdering.Greater),
+        )
+        ) {
             val comparison = left.__rtkPrecedencePartialOrd_partial_cmp(right)
             assertEquals(expected, (comparison as __rtkPrecedenceOption.Some).value)
         }

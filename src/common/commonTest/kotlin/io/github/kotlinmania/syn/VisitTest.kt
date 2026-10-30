@@ -1,6 +1,5 @@
 package io.github.kotlinmania.syn
 
-
 import io.github.kotlinmania.procmacro2.Span
 import io.github.kotlinmania.syn.gen.Visit
 import kotlin.test.Test

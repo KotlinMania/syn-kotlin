@@ -25,7 +25,12 @@ class TraitItemParityTest {
         val items = trait(source).items
         val unnamed = assertIs<TraitItem.Const>(items[0])
         assertEquals("_", unnamed.ident.toString())
-        assertTrue(unnamed.attrs.single().path().isIdent("kept"))
+        assertTrue(
+            unnamed.attrs
+                .single()
+                .path()
+                .isIdent("kept"),
+        )
         assertEquals(null, unnamed.default)
         assertNotNull(assertIs<TraitItem.Const>(items[1]).default)
         assertRoundTrip(source)
@@ -53,7 +58,12 @@ class TraitItemParityTest {
         for (invocation in listOf("m!(x);", "crate::m! { x }", "self::m![x];", "::m!{}")) {
             val source = "trait T { #[kept] $invocation }"
             val item = assertIs<TraitItem.Macro>(trait(source).items.single())
-            assertTrue(item.attrs.single().path().isIdent("kept"))
+            assertTrue(
+                item.attrs
+                    .single()
+                    .path()
+                    .isIdent("kept"),
+            )
             assertRoundTrip(source)
         }
         val source = "trait T { const X: u8; #[kept] const fn f() { #![inner] x(); } m!{} type Output; }"
@@ -86,17 +96,19 @@ class TraitItemParityTest {
     }
 
     // ToTokens can separate # and !; retain every token and grouped delimiter.
-    private fun tokenShape(tokens: TokenStream): List<String> = buildList {
-        for (token in tokens) when (token) {
-            is TokenTree.Group -> {
-                add("open:${token.value.delimiter()}")
-                addAll(tokenShape(token.value.stream()))
-                add("close:${token.value.delimiter()}")
+    private fun tokenShape(tokens: TokenStream): List<String> =
+        buildList {
+            for (token in tokens) {
+                when (token) {
+                    is TokenTree.Group -> {
+                        add("open:${token.value.delimiter()}")
+                        addAll(tokenShape(token.value.stream()))
+                        add("close:${token.value.delimiter()}")
+                    }
+                    is TokenTree.Ident -> add("ident:${token.value}")
+                    is TokenTree.Punct -> add("punct:${token.value.asChar()}")
+                    is TokenTree.Literal -> add("literal:${token.value}")
+                }
             }
-            is TokenTree.Ident -> add("ident:${token.value}")
-            is TokenTree.Punct -> add("punct:${token.value.asChar()}")
-            is TokenTree.Literal -> add("literal:${token.value}")
         }
-    }
-
 }

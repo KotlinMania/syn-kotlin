@@ -144,17 +144,15 @@ public data class FixupContext(
             (condition && expr is Expr.Struct) ||
             (
                 rightmostSubexpressionInCondition &&
-                    (expr is Expr.Return && expr.expr == null || expr is Expr.Yield && expr.expr == null)
+                    ((expr is Expr.Return && expr.expr == null) || (expr is Expr.Yield && expr.expr == null))
             ) ||
             (
                 rightmostSubexpressionInCondition &&
                     !condition &&
                     (
-                        expr is Expr.Break &&
-                            expr.expr == null ||
+                        (expr is Expr.Break && expr.expr == null) ||
                             expr is Expr.Path ||
-                            expr is Expr.Range &&
-                            expr.end == null
+                            (expr is Expr.Range && expr.end == null)
                     )
             ) ||
             (
@@ -166,12 +164,10 @@ public data class FixupContext(
 
     public fun precedence(expr: Expr): Precedence {
         if (nextOperatorCanBeginExpr) {
-            if (expr is Expr.Break &&
-                expr.expr == null ||
-                expr is Expr.Return &&
-                expr.expr == null ||
-                expr is Expr.Yield &&
-                expr.expr == null
+            if (
+                (expr is Expr.Break && expr.expr == null) ||
+                (expr is Expr.Return && expr.expr == null) ||
+                (expr is Expr.Yield && expr.expr == null)
             ) {
                 return Precedence.Jump
             }
@@ -522,7 +518,7 @@ private fun scanRightBreak(
         }
 
         else -> {
-            if (bailoutOffset >= 1 || expr.label == null && expr_leading_label(value)) {
+            if (bailoutOffset >= 1 || (expr.label == null && expr_leading_label(value))) {
                 return Scan.Consume
             }
             val rightFixup = fixup.rightmostSubexpressionFixup(true, true, Precedence.Jump)
@@ -566,10 +562,9 @@ private fun scanRightClosure(
     bailoutOffset: Int,
 ): Scan {
     val body = expr.body
-    return if (expr.output == ReturnType.Default ||
-        body is Expr.BlockExpr &&
-        body.attrs.isEmpty() &&
-        body.label == null
+    return if (
+        expr.output == ReturnType.Default ||
+        (body is Expr.BlockExpr && body.attrs.isEmpty() && body.label == null)
     ) {
         if (bailoutOffset >= 1) {
             Scan.Consume

@@ -64,86 +64,88 @@ internal class `SynExtForward1`<`T`>(
 // Rust use resolved through explicit library bindings.
 // Rust use resolved through explicit library bindings.
 // Rust use resolved through explicit library bindings.
-/// Additional methods for `Ident` not provided by proc-macro2 or libproc_macro.
-///
-/// This trait is sealed and cannot be implemented for types outside of Syn. It
-/// is implemented only for `proc_macro2::Ident`.
+// / Additional methods for `Ident` not provided by proc-macro2 or libproc_macro.
+// /
+// / This trait is sealed and cannot be implemented for types outside of Syn. It
+// / is implemented only for `proc_macro2::Ident`.
 sealed interface `IdentExt` {
     interface `SynExtStatic`<`SynExtSelf`> {
-        /// Parses any identifier including keywords.
-        ///
-        /// This is useful when parsing macro input which allows Rust keywords as
-        /// identifiers.
-        ///
-        /// # Example
-        ///
-        /// ```
-        /// use syn::{Error, Ident, Result, Token};
-        /// use syn::ext::IdentExt;
-        /// use syn::parse::ParseStream;
-        ///
-        /// mod kw {
-        ///     syn::custom_keyword!(name);
-        /// }
-        ///
-        /// // Parses input that looks like `name = NAME` where `NAME` can be
-        /// // any identifier.
-        /// //
-        /// // Examples:
-        /// //
-        /// //     name = anything
-        /// //     name = impl
-        /// fn parse_dsl(input: ParseStream) -> Result<Ident> {
-        ///     input.parse::<kw::name>()?;
-        ///     input.parse::<Token![=]>()?;
-        ///     let name = input.call(Ident::parse_any)?;
-        ///     Ok(name)
-        /// }
-        /// ```
+        // / Parses any identifier including keywords.
+        // /
+        // / This is useful when parsing macro input which allows Rust keywords as
+        // / identifiers.
+        // /
+        // / # Example
+        // /
+        // / ```
+        // / use syn::{Error, Ident, Result, Token};
+        // / use syn::ext::IdentExt;
+        // / use syn::parse::ParseStream;
+        // /
+        // / mod kw {
+        // /     syn::custom_keyword!(name);
+        // / }
+        // /
+        // / // Parses input that looks like `name = NAME` where `NAME` can be
+        // / // any identifier.
+        // / //
+        // / // Examples:
+        // / //
+        // / //     name = anything
+        // / //     name = impl
+        // / fn parse_dsl(input: ParseStream) -> Result<Ident> {
+        // /     input.parse::<kw::name>()?;
+        // /     input.parse::<Token![=]>()?;
+        // /     let name = input.call(Ident::parse_any)?;
+        // /     Ok(name)
+        // / }
+        // / ```
         fun `parse_any`(
             `input`: io.github.kotlinmania.syn.ParseBuffer,
         ): io.github.kotlinmania.syn.SynResult<`SynExtSelf`>
 
-        /// Peeks any identifier including keywords. Usage:
-        /// `input.peek(Ident::peek_any)`
-        ///
-        /// This is different from `input.peek(Ident)` which only returns true in
-        /// the case of an ident which is not a Rust keyword.
+        // / Peeks any identifier including keywords. Usage:
+        // / `input.peek(Ident::peek_any)`
+        // /
+        // / This is different from `input.peek(Ident)` which only returns true in
+        // / the case of an ident which is not a Rust keyword.
         val `peek_any`: `SynExtModule_private_PeekFn`
             get() = `SynExtModule_private_PeekFn_SynExtValue`()
     }
 
-    /// Strips the raw marker `r#`, if any, from the beginning of an ident.
-    ///
-    ///   - unraw(`x`) = `x`
-    ///   - unraw(`move`) = `move`
-    ///   - unraw(`r#move`) = `move`
-    ///
-    /// # Example
-    ///
-    /// In the case of interop with other languages like Python that have a
-    /// different set of keywords than Rust, we might come across macro input
-    /// that involves raw identifiers to refer to ordinary variables in the
-    /// other language with a name that happens to be a Rust keyword.
-    ///
-    /// The function below appends an identifier from the caller's input onto a
-    /// fixed prefix. Without using `unraw()`, this would tend to produce
-    /// invalid identifiers like `__pyo3_get_r#move`.
-    ///
-    /// ```
-    /// use proc_macro2::Span;
-    /// use syn::Ident;
-    /// use syn::ext::IdentExt;
-    ///
-    /// fn ident_for_getter(variable: &Ident) -> Ident {
-    ///     let getter = format!("__pyo3_get_{}", variable.unraw());
-    ///     Ident::new(&getter, Span::call_site())
-    /// }
-    /// ```
+    // / Strips the raw marker `r#`, if any, from the beginning of an ident.
+    // /
+    // /   - unraw(`x`) = `x`
+    // /   - unraw(`move`) = `move`
+    // /   - unraw(`r#move`) = `move`
+    // /
+    // / # Example
+    // /
+    // / In the case of interop with other languages like Python that have a
+    // / different set of keywords than Rust, we might come across macro input
+    // / that involves raw identifiers to refer to ordinary variables in the
+    // / other language with a name that happens to be a Rust keyword.
+    // /
+    // / The function below appends an identifier from the caller's input onto a
+    // / fixed prefix. Without using `unraw()`, this would tend to produce
+    // / invalid identifiers like `__pyo3_get_r#move`.
+    // /
+    // / ```
+    // / use proc_macro2::Span;
+    // / use syn::Ident;
+    // / use syn::ext::IdentExt;
+    // /
+    // / fn ident_for_getter(variable: &Ident) -> Ident {
+    // /     let getter = format!("__pyo3_get_{}", variable.unraw());
+    // /     Ident::new(&getter, Span::call_site())
+    // / }
+    // / ```
     fun `unraw`(): io.github.kotlinmania.procmacro2.Ident
 }
 
-internal class `SynExtImpl0`(receiver: io.github.kotlinmania.procmacro2.Ident) : `IdentExt` {
+internal class `SynExtImpl0`(
+    receiver: io.github.kotlinmania.procmacro2.Ident,
+) : `IdentExt` {
     private val SynExtReceiver: io.github.kotlinmania.procmacro2.Ident = receiver
 
     companion object : `IdentExt`.`SynExtStatic`<io.github.kotlinmania.procmacro2.Ident> {
@@ -151,67 +153,78 @@ internal class `SynExtImpl0`(receiver: io.github.kotlinmania.procmacro2.Ident) :
             `input`: io.github.kotlinmania.syn.ParseBuffer,
         ): io.github.kotlinmania.syn.SynResult<io.github.kotlinmania.procmacro2.Ident> =
             (`input`).`step` { `cursor`: io.github.kotlinmania.syn.StepCursor ->
-                (when (
-                    val SynExtValue1:
-                        SynExtOption<
-                            kotlin.Pair<
-                                io.github.kotlinmania.procmacro2.Ident,
-                                io.github.kotlinmania.syn.Cursor,
-                            >,
-                        > =
-                        kotlin.run {
-                            val SynExtValue0 = (`cursor`).ident()
-                            if (SynExtValue0 == null) SynExtOption.None
-                            else SynExtOption.Some(SynExtValue0)
-                        }
-                ) {
-                    is SynExtOption.Some ->
-                        kotlin.run {
-                            val `ident`: io.github.kotlinmania.procmacro2.Ident =
-                                (SynExtValue1.`value`).first
-                            val `rest`: io.github.kotlinmania.syn.Cursor =
-                                (SynExtValue1.`value`).second
-                            io.github.kotlinmania.syn.SynResult.Success<
+                (
+                    when (
+                        val SynExtValue1:
+                            SynExtOption<
+                                kotlin.Pair<
+                                    io.github.kotlinmania.procmacro2.Ident,
+                                    io.github.kotlinmania.syn.Cursor,
+                                >,
+                            > =
+                            kotlin.run {
+                                val SynExtValue0 = (`cursor`).ident()
+                                if (SynExtValue0 == null) {
+                                    SynExtOption.None
+                                } else {
+                                    SynExtOption.Some(SynExtValue0)
+                                }
+                            }
+                    ) {
+                        is SynExtOption.Some ->
+                            kotlin.run {
+                                val `ident`: io.github.kotlinmania.procmacro2.Ident =
+                                    (SynExtValue1.`value`).first
+                                val `rest`: io.github.kotlinmania.syn.Cursor =
+                                    (SynExtValue1.`value`).second
+                                io.github.kotlinmania.syn.SynResult.Success<
+                                    kotlin.Pair<
+                                        io.github.kotlinmania.procmacro2.Ident,
+                                        io.github.kotlinmania.syn.Cursor,
+                                    >,
+                                >(
+                                    kotlin.Pair(`ident`, `rest`),
+                                )
+                            }
+                        SynExtOption.None ->
+                            io.github.kotlinmania.syn.SynResult.Failure<
                                 kotlin.Pair<
                                     io.github.kotlinmania.procmacro2.Ident,
                                     io.github.kotlinmania.syn.Cursor,
                                 >,
                             >(
-                                kotlin.Pair(`ident`, `rest`),
+                                (`cursor`).error("expected ident"),
                             )
-                        }
-                    SynExtOption.None ->
-                        io.github.kotlinmania.syn.SynResult.Failure<
-                            kotlin.Pair<
-                                io.github.kotlinmania.procmacro2.Ident,
-                                io.github.kotlinmania.syn.Cursor,
-                            >,
-                        >(
-                            (`cursor`).error("expected ident"),
-                        )
-                })
+                    }
+                )
             }
     }
 
-    override fun `unraw`(): io.github.kotlinmania.procmacro2.Ident = kotlin.run {
-        val `string`: kotlin.text.StringBuilder =
-            kotlin.text.StringBuilder((this.SynExtReceiver).toString())
+    override fun `unraw`(): io.github.kotlinmania.procmacro2.Ident =
         kotlin.run {
-            val SynExtValue2: SynExtOption<kotlin.String> = kotlin.run {
-                val SynExtValue0 = (`string`).toString()
-                val SynExtValue1 = "r#"
-                if (SynExtValue0.startsWith(SynExtValue1))
-                    SynExtOption.Some(SynExtValue0.substring(SynExtValue1.length))
-                else SynExtOption.None
-            }
-            if (SynExtValue2 is SynExtOption.Some)
-                kotlin.run {
-                    val `string__binding3`: kotlin.String = SynExtValue2.value
-                    SynExtNewIdent(`string__binding3`, ((this.SynExtReceiver).span()).`clone`())
+            val `string`: kotlin.text.StringBuilder =
+                kotlin.text.StringBuilder((this.SynExtReceiver).toString())
+            kotlin.run {
+                val SynExtValue2: SynExtOption<kotlin.String> =
+                    kotlin.run {
+                        val SynExtValue0 = (`string`).toString()
+                        val SynExtValue1 = "r#"
+                        if (SynExtValue0.startsWith(SynExtValue1)) {
+                            SynExtOption.Some(SynExtValue0.substring(SynExtValue1.length))
+                        } else {
+                            SynExtOption.None
+                        }
+                    }
+                if (SynExtValue2 is SynExtOption.Some) {
+                    kotlin.run {
+                        val `string__binding3`: kotlin.String = SynExtValue2.value
+                        SynExtNewIdent(`string__binding3`, ((this.SynExtReceiver).span()).`clone`())
+                    }
+                } else {
+                    ((this.SynExtReceiver).cloneToken())
                 }
-            else ((this.SynExtReceiver).cloneToken())
+            }
         }
-    }
 }
 
 private object `SynExtImpl1` :
@@ -227,16 +240,19 @@ private object `SynExtImpl1` :
 private object `SynExtImpl2` :
     `SynExtLibraryTrait2`.`SynExtStatic`<`SynExtModule_private_IdentAny`> {
     override fun `peek`(`cursor`: io.github.kotlinmania.syn.Cursor): kotlin.Boolean =
-        (kotlin.run {
-            val SynExtValue0 = (`cursor`).ident()
-            if (SynExtValue0 == null) SynExtOption.None else SynExtOption.Some(SynExtValue0)
-        } is SynExtOption.Some)
+        (
+            kotlin.run {
+                val SynExtValue0 = (`cursor`).ident()
+                if (SynExtValue0 == null) SynExtOption.None else SynExtOption.Some(SynExtValue0)
+            } is SynExtOption.Some
+        )
 
     override fun `display`(): kotlin.String = "identifier"
 }
 
-private class `SynExtImpl3`(receiver: `SynExtModule_private_PeekFn`) :
-    `io`.`github`.`kotlinmania`.`syn`.`SynSealedModule_lookahead_Sealed` {
+private class `SynExtImpl3`(
+    receiver: `SynExtModule_private_PeekFn`,
+) : `io`.`github`.`kotlinmania`.`syn`.`SynSealedModule_lookahead_Sealed` {
     private val SynExtReceiver: `SynExtModule_private_PeekFn` = receiver
 }
 
@@ -244,8 +260,9 @@ internal interface `TokenStreamExt` {
     fun `append`(`token`: io.github.kotlinmania.procmacro2.TokenTree): kotlin.Unit
 }
 
-internal class `SynExtImpl4`(receiver: io.github.kotlinmania.procmacro2.TokenStream) :
-    `TokenStreamExt` {
+internal class `SynExtImpl4`(
+    receiver: io.github.kotlinmania.procmacro2.TokenStream,
+) : `TokenStreamExt` {
     private val SynExtReceiver: io.github.kotlinmania.procmacro2.TokenStream = receiver
 
     override fun `append`(`token`: io.github.kotlinmania.procmacro2.TokenTree): kotlin.Unit =
@@ -269,19 +286,21 @@ internal object `SynExtImpl5` : `PunctExt`.`SynExtStatic`<io.github.kotlinmania.
         `ch`: SynExtChar,
         `spacing`: io.github.kotlinmania.procmacro2.Spacing,
         `span`: io.github.kotlinmania.procmacro2.Span,
-    ): io.github.kotlinmania.procmacro2.Punct = kotlin.run {
-        val `punct`: io.github.kotlinmania.procmacro2.Punct = SynExtNewPunct(`ch`, `spacing`)
-        (`punct`).setSpan((`span`).`clone`())
-        `punct`
-    }
+    ): io.github.kotlinmania.procmacro2.Punct =
+        kotlin.run {
+            val `punct`: io.github.kotlinmania.procmacro2.Punct = SynExtNewPunct(`ch`, `spacing`)
+            (`punct`).setSpan((`span`).`clone`())
+            `punct`
+        }
 }
 
 // Rust private module private: declarations lifted with private visibility.
 // Rust use resolved through explicit library bindings.
 private interface `SynExtModule_private_Sealed`
 
-private class `SynExtImpl6`(receiver: io.github.kotlinmania.procmacro2.Ident) :
-    `SynExtModule_private_Sealed` {
+private class `SynExtImpl6`(
+    receiver: io.github.kotlinmania.procmacro2.Ident,
+) : `SynExtModule_private_Sealed` {
     private val SynExtReceiver: io.github.kotlinmania.procmacro2.Ident = receiver
 }
 
@@ -301,7 +320,9 @@ private fun `SynExtModule_private_PeekFn`.`SynExtClone_clone`(): `SynExtModule_p
 internal sealed class SynExtOption<out T> {
     data object None : SynExtOption<kotlin.Nothing>()
 
-    data class Some<T>(val value: T) : SynExtOption<T>()
+    data class Some<T>(
+        val value: T,
+    ) : SynExtOption<T>()
 }
 
 private fun <T> SynExtUnwrapOr(value: SynExtOption<T>, fallback: T): T =
@@ -310,11 +331,15 @@ private fun <T> SynExtUnwrapOr(value: SynExtOption<T>, fallback: T): T =
         is SynExtOption.Some -> value.value
     }
 
-internal class SynExtPanic(message: String) : kotlin.RuntimeException(message)
+internal class SynExtPanic(
+    message: String,
+) : kotlin.RuntimeException(message)
 
 // Rust 1.99 UTF-8 and Unicode scalar adapters. Input domain: valid Rust str/char.
 // Copies of immutable string/byte storage do not expose pointer identity in admitted operations.
-internal data class SynExtChar(val codePoint: Int) {
+internal data class SynExtChar(
+    val codePoint: Int,
+) {
     init {
         require(codePoint in 0..0x10ffff && codePoint !in 0xd800..0xdfff)
     }
@@ -323,10 +348,12 @@ internal data class SynExtChar(val codePoint: Int) {
         scalarString().encodeToByteArray(throwOnInvalidSequence = true).size.toULong()
 
     fun scalarString(): String =
-        if (codePoint < 0x10000) codePoint.toChar().toString()
-        else
+        if (codePoint < 0x10000) {
+            codePoint.toChar().toString()
+        } else {
             (0xd800 + ((codePoint - 0x10000) shr 10)).toChar().toString() +
                 (0xdc00 + ((codePoint - 0x10000) and 1023)).toChar()
+        }
 }
 
 internal class SynExtBytes internal constructor(
@@ -338,15 +365,18 @@ internal class SynExtBytes internal constructor(
     fun iter(): SynExtByteIter = SynExtByteIter(bytes, start)
 
     fun at(index: ULong): UByte {
-        if (index >= len())
+        if (index >= len()) {
             throw SynExtPanic(
                 "index out of bounds: the len is " + len() + " but the index is " + index,
             )
+        }
         return bytes[start + index.toInt()].toUByte()
     }
 }
 
-internal class SynExtByteRef internal constructor(val value: UByte)
+internal class SynExtByteRef internal constructor(
+    val value: UByte,
+)
 
 internal class SynExtByteIter internal constructor(
     private val bytes: ByteArray,
@@ -373,13 +403,17 @@ private fun SynExtByteLen(source: String): ULong =
 private fun SynExtReadScalar(iterator: CharIterator): SynExtChar {
     val first = iterator.nextChar()
     return SynExtChar(
-        if (first.isHighSurrogate())
+        if (first.isHighSurrogate()) {
             0x10000 + ((first.code - 0xd800) shl 10) + (iterator.nextChar().code - 0xdc00)
-        else first.code,
+        } else {
+            first.code
+        },
     )
 }
 
-internal class SynExtChars internal constructor(private val source: String) {
+internal class SynExtChars internal constructor(
+    private val source: String,
+) {
     private var offset: Int = 0
     private val iterator: CharIterator = source.iterator()
 
@@ -417,7 +451,7 @@ private fun SynExtCharBoundary(source: String, position: ULong, label: String): 
     while (bytes < position) {
         val value = SynExtReadScalar(iterator)
         val end = bytes + value.lenUtf8()
-        if (position < end)
+        if (position < end) {
             throw SynExtPanic(
                 label +
                     " byte index " +
@@ -430,6 +464,7 @@ private fun SynExtCharBoundary(source: String, position: ULong, label: String): 
                     end +
                     " of string)",
             )
+        }
         bytes = end
         index += if (value.codePoint < 0x10000) 1 else 2
     }
@@ -439,14 +474,16 @@ private fun SynExtCharBoundary(source: String, position: ULong, label: String): 
 private fun SynExtSliceRange(source: String, begin: ULong, end: ULong): String {
     val length = SynExtByteLen(source)
     // Rust core::str::slice_error_fail_rt validation order.
-    if (begin > length)
+    if (begin > length) {
         throw SynExtPanic(
             "start byte index " + begin + " is out of bounds for string of length " + length,
         )
-    if (end > length)
+    }
+    if (end > length) {
         throw SynExtPanic(
             "end byte index " + end + " is out of bounds for string of length " + length,
         )
+    }
     if (begin > end) throw SynExtPanic("byte range starts at " + begin + " but ends at " + end)
     val from = SynExtCharBoundary(source, begin, "start")
     val to = SynExtCharBoundary(source, end, "end")
@@ -473,9 +510,13 @@ private fun SynExtDebugChar(value: SynExtChar): String {
     var high = SynExtCharDebugEscapes.size / 2
     while (low < high) {
         val middle = (low + high) / 2
-        if (point < SynExtCharDebugEscapes[2 * middle]) high = middle
-        else if (point > SynExtCharDebugEscapes[2 * middle + 1]) low = middle + 1
-        else return "'\\u{" + point.toString(16) + "}'"
+        if (point < SynExtCharDebugEscapes[2 * middle]) {
+            high = middle
+        } else if (point > SynExtCharDebugEscapes[2 * middle + 1]) {
+            low = middle + 1
+        } else {
+            return "'\\u{" + point.toString(16) + "}'"
+        }
     }
     return "'" + value.scalarString() + "'"
 }
@@ -512,13 +553,14 @@ private fun SynExtDebugAssertOptionChar(
     if (!enabled) return
     val a = left()
     val b = right()
-    if (a != b)
+    if (a != b) {
         throw SynExtPanic(
             "assertion `left == right` failed\n  left: " +
                 SynExtDebugOptionChar(a) +
                 "\n right: " +
                 SynExtDebugOptionChar(b),
         )
+    }
 }
 
 private val SynExtCharDebugEscapes =
@@ -2352,7 +2394,8 @@ private fun SynExtNewIdent(
     span: io.github.kotlinmania.procmacro2.Span,
 ): io.github.kotlinmania.procmacro2.Ident {
     try {
-        return io.github.kotlinmania.procmacro2.Ident.new(spelling, span)
+        return io.github.kotlinmania.procmacro2.Ident
+            .new(spelling, span)
     } catch (error: kotlin.IllegalArgumentException) {
         val message =
             when (error.message) {
@@ -2372,16 +2415,19 @@ private fun SynExtNewPunct(
     spacing: io.github.kotlinmania.procmacro2.Spacing,
 ): io.github.kotlinmania.procmacro2.Punct {
     // Never truncate a supplementary scalar into an accepted BMP punctuation.
-    if (character.codePoint > 0xffff)
+    if (character.codePoint > 0xffff) {
         throw SynExtPanic(
             "unsupported proc macro punctuation character " + SynExtDebugChar(character),
         )
+    }
     val ch = character.codePoint.toChar()
     try {
-        return io.github.kotlinmania.procmacro2.Punct(ch, spacing)
+        return io.github.kotlinmania.procmacro2
+            .Punct(ch, spacing)
     } catch (error: kotlin.IllegalArgumentException) {
-        if (error.message != "unsupported proc macro punctuation character '" + ch + "'")
+        if (error.message != "unsupported proc macro punctuation character '" + ch + "'") {
             throw error
+        }
         throw SynExtPanic(
             "unsupported proc macro punctuation character " + SynExtDebugChar(character),
         )

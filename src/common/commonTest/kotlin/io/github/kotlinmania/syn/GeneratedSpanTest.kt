@@ -77,13 +77,17 @@ class GeneratedSpanTest {
             (TokenStream.fromString("alpha\n  βeta (z)").getOrThrow().last() as TokenTree.Group)
                 .value
         assertEquals(expected, positions(__rtkImpl8(group.delimSpan()).into_spans()))
-        for (token in listOf(Brace(span), Bracket(span), Paren(span))) assertEquals(
-            expected,
-            positions(token.span),
-        )
-        for (token in listOf(Brace.default(), Bracket.default(), Paren.default())) assertEquals(
-            pos(Span.callSite()),
-            pos(token.span.join()),
-        )
+        for (token in listOf(Brace(span), Bracket(span), Paren(span))) {
+            assertEquals(
+                expected,
+                positions(token.span),
+            )
+        }
+        for (token in listOf(Brace.default(), Bracket.default(), Paren.default())) {
+            assertEquals(
+                pos(Span.callSite()),
+                pos(token.span.join()),
+            )
+        }
     }
 }

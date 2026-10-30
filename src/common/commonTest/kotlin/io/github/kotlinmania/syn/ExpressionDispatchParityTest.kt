@@ -14,7 +14,13 @@ class ExpressionDispatchParityTest {
     fun forLoopsRetainLabelsPatternsIteratorAndInnerAttributes() {
         val source = "#[outer] 'rows: for (x, y) in values { #![inner] consume(x, y); }"
         val loop = assertIs<Expr.ForLoop>(expression(source))
-        assertEquals("rows", loop.label?.name?.ident.toString())
+        assertEquals(
+            "rows",
+            loop.label
+                ?.name
+                ?.ident
+                .toString(),
+        )
         assertIs<Pat.Tuple>(loop.pat)
         assertIs<Expr.Path>(loop.expr)
         assertEquals(listOf("outer", "inner"), loop.attrs.map { it.path().getIdent().toString() })
@@ -67,16 +73,19 @@ class ExpressionDispatchParityTest {
         assertTrue(parseFile("fn f(A | B: T) {}").isFailure)
     }
 
-    private fun shape(tokens: TokenStream): List<String> = buildList {
-        for (token in tokens) when (token) {
-            is TokenTree.Group -> {
-                add("open:${token.value.delimiter()}")
-                addAll(shape(token.value.stream()))
-                add("close:${token.value.delimiter()}")
+    private fun shape(tokens: TokenStream): List<String> =
+        buildList {
+            for (token in tokens) {
+                when (token) {
+                    is TokenTree.Group -> {
+                        add("open:${token.value.delimiter()}")
+                        addAll(shape(token.value.stream()))
+                        add("close:${token.value.delimiter()}")
+                    }
+                    is TokenTree.Ident -> add("ident:${token.value}")
+                    is TokenTree.Punct -> add("punct:${token.value.asChar()}")
+                    is TokenTree.Literal -> add("literal:${token.value}")
+                }
             }
-            is TokenTree.Ident -> add("ident:${token.value}")
-            is TokenTree.Punct -> add("punct:${token.value.asChar()}")
-            is TokenTree.Literal -> add("literal:${token.value}")
         }
-    }
 }

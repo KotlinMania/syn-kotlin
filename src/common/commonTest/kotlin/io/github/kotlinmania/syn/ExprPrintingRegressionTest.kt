@@ -47,11 +47,12 @@ class ExprPrintingRegressionTest {
 
     @Test
     fun blockAttributesKeepTheirOuterAndInnerLocations() {
-        val cases = listOf(
-            "#[outer] { #![inner] value }" to "# [outer] { # ! [inner] value }",
-            "#[outer] loop { #![inner] break }" to "# [outer] loop { # ! [inner] break }",
-            "#[outer] unsafe { #![inner] value }" to "# [outer] unsafe { # ! [inner] value }",
-        )
+        val cases =
+            listOf(
+                "#[outer] { #![inner] value }" to "# [outer] { # ! [inner] value }",
+                "#[outer] loop { #![inner] break }" to "# [outer] loop { # ! [inner] break }",
+                "#[outer] unsafe { #![inner] value }" to "# [outer] unsafe { # ! [inner] value }",
+            )
         for ((source, expected) in cases) {
             val expr = expression(source)
             assertEquals(expected, tokens(expr))

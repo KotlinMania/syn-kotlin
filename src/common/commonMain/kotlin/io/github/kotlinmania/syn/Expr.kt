@@ -400,7 +400,9 @@ public sealed class Expr : ToTokens {
                     arm.toTokens(inner)
                     val isLast = i == arms.size - 1
                     if (!isLast && requires_comma_to_be_match_arm(arm.body) && arm.comma == null) {
-                        io.github.kotlinmania.syn.token.Comma.default().toTokens(inner)
+                        io.github.kotlinmania.syn.token.Comma
+                            .default()
+                            .toTokens(inner)
                     }
                 }
             }
@@ -550,7 +552,9 @@ public sealed class Expr : ToTokens {
                 if (dot2 != null) {
                     dot2.toTokens(inner)
                 } else if (restExpr != null) {
-                    io.github.kotlinmania.syn.token.DotDot.default().toTokens(inner)
+                    io.github.kotlinmania.syn.token.DotDot
+                        .default()
+                        .toTokens(inner)
                 }
                 restExpr?.toTokens(inner)
             }
@@ -936,7 +940,9 @@ public fun printSubexpression(
     val context = if (needsGroup) FixupContext.NONE else fixup
     val doPrintExpr = { output: TokenStream -> printExpr(expr, output, context) }
     if (needsGroup) {
-        io.github.kotlinmania.syn.token.Paren.default().surround(tokens, doPrintExpr)
+        io.github.kotlinmania.syn.token.Paren
+            .default()
+            .surround(tokens, doPrintExpr)
     } else {
         doPrintExpr(tokens)
     }
@@ -969,7 +975,9 @@ public fun printExpr(expr: Expr, tokens: TokenStream, fixup: FixupContext = Fixu
         }
     }
     if (needsGroup) {
-        io.github.kotlinmania.syn.token.Paren.default().surround(tokens, doPrintExpr)
+        io.github.kotlinmania.syn.token.Paren
+            .default()
+            .surround(tokens, doPrintExpr)
     } else {
         doPrintExpr(tokens)
     }
@@ -986,7 +994,9 @@ public fun printExprAssign(e: Expr.Assign, tokens: TokenStream, fixup: FixupCont
         printExpr(e.right, output, context.rightmostSubexpressionFixup(false, false, Precedence.Assign))
     }
     if (needsGroup) {
-        io.github.kotlinmania.syn.token.Paren.default().surround(tokens, doPrintExpr)
+        io.github.kotlinmania.syn.token.Paren
+            .default()
+            .surround(tokens, doPrintExpr)
     } else {
         doPrintExpr(tokens)
     }
@@ -1006,37 +1016,42 @@ public fun printExprBinary(e: Expr.Binary, tokens: TokenStream, fixup: FixupCont
     val context = if (needsGroup) FixupContext.NONE else fixup
     val doPrintExpr = { output: TokenStream ->
         val binopPrec = Precedence.of_binop(e.op)
-        val (leftPrec, leftFixup) = context.leftmostSubexpressionWithOperator(
-            e.left,
-            when (e.op) {
-                is BinOp.Sub,
-                is BinOp.Mul,
-                is BinOp.And,
-                is BinOp.Or,
-                is BinOp.BitAnd,
-                is BinOp.BitOr,
-                is BinOp.Shl,
-                is BinOp.Lt,
-                -> true
-                else -> false
-            },
-            e.op is BinOp.Shl || e.op is BinOp.Lt,
-            binopPrec,
-        )
-        val leftNeedsGroup = when (binopPrec) {
-            Precedence.Assign -> leftPrec <= Precedence.Range
-            Precedence.Compare -> leftPrec <= binopPrec
-            else -> leftPrec < binopPrec
-        }
+        val (leftPrec, leftFixup) =
+            context.leftmostSubexpressionWithOperator(
+                e.left,
+                when (e.op) {
+                    is BinOp.Sub,
+                    is BinOp.Mul,
+                    is BinOp.And,
+                    is BinOp.Or,
+                    is BinOp.BitAnd,
+                    is BinOp.BitOr,
+                    is BinOp.Shl,
+                    is BinOp.Lt,
+                    -> true
+                    else -> false
+                },
+                e.op is BinOp.Shl || e.op is BinOp.Lt,
+                binopPrec,
+            )
+        val leftNeedsGroup =
+            when (binopPrec) {
+                Precedence.Assign -> leftPrec <= Precedence.Range
+                Precedence.Compare -> leftPrec <= binopPrec
+                else -> leftPrec < binopPrec
+            }
         val rightFixup = context.rightmostSubexpressionFixup(false, false, binopPrec)
-        val rightNeedsGroup = binopPrec != Precedence.Assign &&
-            rightFixup.rightmostSubexpressionPrecedence(e.right) <= binopPrec
+        val rightNeedsGroup =
+            binopPrec != Precedence.Assign &&
+                rightFixup.rightmostSubexpressionPrecedence(e.right) <= binopPrec
         printSubexpression(e.left, leftNeedsGroup, output, leftFixup)
         e.op.toTokens(output)
         printSubexpression(e.right, rightNeedsGroup, output, rightFixup)
     }
     if (needsGroup) {
-        io.github.kotlinmania.syn.token.Paren.default().surround(tokens, doPrintExpr)
+        io.github.kotlinmania.syn.token.Paren
+            .default()
+            .surround(tokens, doPrintExpr)
     } else {
         doPrintExpr(tokens)
     }
@@ -1080,7 +1095,9 @@ public fun printExprCast(e: Expr.Cast, tokens: TokenStream, fixup: FixupContext 
         e.ty.toTokens(output)
     }
     if (needsGroup) {
-        io.github.kotlinmania.syn.token.Paren.default().surround(tokens, doPrintExpr)
+        io.github.kotlinmania.syn.token.Paren
+            .default()
+            .surround(tokens, doPrintExpr)
     } else {
         doPrintExpr(tokens)
     }
@@ -1163,7 +1180,9 @@ public fun printExprRange(e: Expr.Range, tokens: TokenStream, fixup: FixupContex
         }
     }
     if (needsGroup) {
-        io.github.kotlinmania.syn.token.Paren.default().surround(tokens, doPrintExpr)
+        io.github.kotlinmania.syn.token.Paren
+            .default()
+            .surround(tokens, doPrintExpr)
     } else {
         doPrintExpr(tokens)
     }
@@ -1229,27 +1248,18 @@ public fun innerAttrsToTokens(attrs: List<Attribute>, tokens: TokenStream) {
 }
 
 public fun peekExpr(input: ParseStream): Boolean =
-    input.peek(IdentPeekAny) &&
-        !input.peek(AsPeek) ||
+    (input.peek(IdentPeekAny) && !input.peek(AsPeek)) ||
         input.peek(ParenPeek) ||
         input.peek(BracketPeek) ||
         input.peek(BracePeek) ||
         input.peek(LitPeek) ||
-        input.peek(NotPeek) &&
-        !input.peek(NePeek) ||
-        input.peek(MinusPeek) &&
-        !input.peek(MinusEqPeek) &&
-        !input.peek(RArrowPeek) ||
-        input.peek(StarPeek) &&
-        !input.peek(StarEqPeek) ||
-        input.peek(OrPeek) &&
-        !input.peek(OrEqPeek) ||
-        input.peek(AndPeek) &&
-        !input.peek(AndEqPeek) ||
+        (input.peek(NotPeek) && !input.peek(NePeek)) ||
+        (input.peek(MinusPeek) && !input.peek(MinusEqPeek) && !input.peek(RArrowPeek)) ||
+        (input.peek(StarPeek) && !input.peek(StarEqPeek)) ||
+        (input.peek(OrPeek) && !input.peek(OrEqPeek)) ||
+        (input.peek(AndPeek) && !input.peek(AndEqPeek)) ||
         input.peek(DotDotPeek) ||
-        input.peek(LtPeek) &&
-        !input.peek(LePeek) &&
-        !input.peek(ShlEqPeek) ||
+        (input.peek(LtPeek) && !input.peek(LePeek) && !input.peek(ShlEqPeek)) ||
         input.peek(PathSepPeek) ||
         input.peek(LifetimePeek) ||
         input.peek(PoundPeek)
@@ -1488,38 +1498,42 @@ internal fun exprClosure(input: ParseStream, allowStruct: Boolean): SynResult<Ex
 
     val or2Token: io.github.kotlinmania.syn.token.Or = OrParse.parse(input).getOrElse { return SynResult.failure(it) }
 
-    val (output, body) = if (input.peek(RArrowPeek)) {
-        val arrowToken: io.github.kotlinmania.syn.token.RArrow = RArrowParse.parse(input).getOrElse { return SynResult.failure(it) }
-        val ty: SynType = SynTypeParseExpr.parse(input).getOrElse { return SynResult.failure(it) }
-        val braces = braced(input).getOrElse { return SynResult.failure(it) }
-        val stmts = parseWithin(braces.content).getOrElse { return SynResult.failure(it) }
-        braces.content.finishChildBuffer()
-        val body = Block(braces.token, stmts)
-        val output = ReturnType.TypeReturn(arrowToken, ty)
-        val block = Expr.BlockExpr(
-            attrs = mutableListOf(),
-            label = null,
-            block = body,
-        )
-        Pair(output, block)
-    } else {
-        val body = ambiguousExpr(input, allowStruct).getOrElse { return SynResult.failure(it) }
-        Pair(ReturnType.Default, body)
-    }
+    val (output, body) =
+        if (input.peek(RArrowPeek)) {
+            val arrowToken: io.github.kotlinmania.syn.token.RArrow = RArrowParse.parse(input).getOrElse { return SynResult.failure(it) }
+            val ty: SynType = SynTypeParseExpr.parse(input).getOrElse { return SynResult.failure(it) }
+            val braces = braced(input).getOrElse { return SynResult.failure(it) }
+            val stmts = parseWithin(braces.content).getOrElse { return SynResult.failure(it) }
+            braces.content.finishChildBuffer()
+            val body = Block(braces.token, stmts)
+            val output = ReturnType.TypeReturn(arrowToken, ty)
+            val block =
+                Expr.BlockExpr(
+                    attrs = mutableListOf(),
+                    label = null,
+                    block = body,
+                )
+            Pair(output, block)
+        } else {
+            val body = ambiguousExpr(input, allowStruct).getOrElse { return SynResult.failure(it) }
+            Pair(ReturnType.Default, body)
+        }
 
-    return SynResult.success(Expr.Closure(
-        attrs = mutableListOf(),
-        lifetimes = lifetimes,
-        constness = constness,
-        movability = movability,
-        asyncness = asyncness,
-        capture = capture,
-        or1Token = or1Token,
-        inputs = inputs,
-        or2Token = or2Token,
-        output = output,
-        body = body,
-    ))
+    return SynResult.success(
+        Expr.Closure(
+            attrs = mutableListOf(),
+            lifetimes = lifetimes,
+            constness = constness,
+            movability = movability,
+            asyncness = asyncness,
+            capture = capture,
+            or1Token = or1Token,
+            inputs = inputs,
+            or2Token = or2Token,
+            output = output,
+            body = body,
+        ),
+    )
 }
 
 public fun closureArg(input: ParseStream): SynResult<Pat> {
@@ -1669,7 +1683,10 @@ public fun parseObsoleteRangeLimits(input: ParseStream): SynResult<RangeLimits> 
         val result = DotDotDotParse.parse(input)
         if (result.isFailure) return SynResult.failure((result as SynResult.Failure).error)
         return SynResult.success(
-            RangeLimits.Closed(io.github.kotlinmania.syn.token.DotDotEq.from(result.getOrThrow().spans)),
+            RangeLimits.Closed(
+                io.github.kotlinmania.syn.token.DotDotEq
+                    .from(result.getOrThrow().spans),
+            ),
         )
     }
     if (dotDot) {

@@ -989,41 +989,43 @@ private fun peekItemStatement(input: ParseStream): Boolean {
     val ahead = input.fork()
     if (Attribute.parseOuter(ahead).isFailure) return false
     return ahead.peek(PubPeek) ||
-        ahead.peek(CratePeek) &&
-        !ahead.peek2(PathSepPeek) ||
+        (ahead.peek(CratePeek) && !ahead.peek2(PathSepPeek)) ||
         ahead.peek(ExternPeek) ||
         ahead.peek(UsePeek) ||
-        ahead.peek(StaticPeek) &&
         (
-            ahead.peek2(MutPeek) ||
-                ahead.peek2(IdentPeek) &&
-                !(ahead.peek2(AsyncPeek) && (ahead.peek3(MovePeek) || ahead.peek3(OrPeek)))
+            ahead.peek(StaticPeek) &&
+                (
+                    ahead.peek2(MutPeek) ||
+                        (
+                            ahead.peek2(IdentPeek) &&
+                                !(ahead.peek2(AsyncPeek) && (ahead.peek3(MovePeek) || ahead.peek3(OrPeek)))
+                        )
+                )
         ) ||
-        ahead.peek(ConstPeek) &&
-        !(
-            ahead.peek2(BracePeek) ||
-                ahead.peek2(StaticPeek) ||
-                ahead.peek2(AsyncPeek) &&
-                !(ahead.peek3(UnsafePeek) || ahead.peek3(ExternPeek) || ahead.peek3(FnPeek)) ||
-                ahead.peek2(MovePeek) ||
-                ahead.peek2(OrPeek)
+        (
+            ahead.peek(ConstPeek) &&
+                !(
+                    ahead.peek2(BracePeek) ||
+                        ahead.peek2(StaticPeek) ||
+                        (
+                            ahead.peek2(AsyncPeek) &&
+                                !(ahead.peek3(UnsafePeek) || ahead.peek3(ExternPeek) || ahead.peek3(FnPeek))
+                        ) ||
+                        ahead.peek2(MovePeek) ||
+                        ahead.peek2(OrPeek)
+                )
         ) ||
-        ahead.peek(UnsafePeek) &&
-        !ahead.peek2(BracePeek) ||
-        ahead.peek(AsyncPeek) &&
-        (ahead.peek2(UnsafePeek) || ahead.peek2(ExternPeek) || ahead.peek2(FnPeek)) ||
+        (ahead.peek(UnsafePeek) && !ahead.peek2(BracePeek)) ||
+        (ahead.peek(AsyncPeek) && (ahead.peek2(UnsafePeek) || ahead.peek2(ExternPeek) || ahead.peek2(FnPeek))) ||
         ahead.peek(FnPeek) ||
         ahead.peek(ModPeek) ||
         ahead.peek(SynTypePeek) ||
         ahead.peek(StructPeek) ||
         ahead.peek(EnumPeek) ||
-        ahead.peek(UnionPeek) &&
-        ahead.peek2(IdentPeek) ||
-        ahead.peek(AutoPeek) &&
-        ahead.peek2(TraitPeek) ||
+        (ahead.peek(UnionPeek) && ahead.peek2(IdentPeek)) ||
+        (ahead.peek(AutoPeek) && ahead.peek2(TraitPeek)) ||
         ahead.peek(TraitPeek) ||
-        ahead.peek(DefaultPeek) &&
-        (ahead.peek2(UnsafePeek) || ahead.peek2(ImplPeek)) ||
+        (ahead.peek(DefaultPeek) && (ahead.peek2(UnsafePeek) || ahead.peek2(ImplPeek))) ||
         ahead.peek(ImplPeek) ||
         ahead.peek(MacroPeek) ||
         peekItemMacro(ahead)
@@ -1209,7 +1211,7 @@ private fun ambigTyImpl(
             val delimiter = parseDelimiter(input).getOrElse { return SynResult.failure(it) }
             return SynResult.success(SynType.Macro(Macro(path, bang, delimiter.first, delimiter.second)))
         }
-        if (lifetimes != null || allowPlus && input.peek(PlusPeek)) {
+        if (lifetimes != null || (allowPlus && input.peek(PlusPeek))) {
             val bounds = TypeParamBoundList()
             bounds.pushValue(TypeParamBound.Trait(null, TraitBoundModifier.None, lifetimes, path))
             parseOuterTraitObjectBounds(input, bounds, allowPlus).getOrElse { return SynResult.failure(it) }
@@ -1382,8 +1384,7 @@ private fun canStartTypeParamBound(
         input.peek(QuestionPeek) ||
         input.peek(LifetimePeek) ||
         input.peek(ParenPeek) ||
-        allowConst &&
-        (input.peek(BracketPeek) || input.peek(ConstPeek))
+        (allowConst && (input.peek(BracketPeek) || input.peek(ConstPeek)))
 
 private fun appendTypeParamBounds(
     target: TypeParamBoundList,
@@ -1459,9 +1460,11 @@ private fun parseBareFnType(
         if (inputs.emptyOrTrailing() &&
             (
                 args.peek(DotDotDotPeek) ||
-                    (args.peek(IdentPeek) || args.peek(UnderscorePeek)) &&
-                    args.peek2(ColonPeek) &&
-                    args.peek3(DotDotDotPeek)
+                    (
+                        (args.peek(IdentPeek) || args.peek(UnderscorePeek)) &&
+                            args.peek2(ColonPeek) &&
+                            args.peek3(DotDotDotPeek)
+                    )
             )
         ) {
             variadic = parseBareVariadic(args, attrs).getOrElse { return SynResult.failure(it) }

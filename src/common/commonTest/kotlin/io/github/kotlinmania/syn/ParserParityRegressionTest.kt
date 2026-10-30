@@ -34,7 +34,12 @@ class ParserParityRegressionTest {
         assertRoundTrip(source)
         val documented = assertIs<ImplItem.Const>(impl("impl S { /// Kept with VALUE.\n pub const VALUE: bool = true; }").items.single())
         assertIs<Visibility.Public>(documented.vis)
-        assertTrue(documented.attrs.single().path().isIdent("doc"))
+        assertTrue(
+            documented.attrs
+                .single()
+                .path()
+                .isIdent("doc"),
+        )
     }
 
     @Test
@@ -45,8 +50,19 @@ class ParserParityRegressionTest {
         assertIs<ImplItem.Const>(items[0])
         val method = assertIs<ImplItem.Fn>(items[1])
         assertNotNull(method.sig.constness)
-        assertTrue(method.attrs.single().path().isIdent("method"))
-        assertTrue(assertIs<ImplItem.AssocType>(items[2]).attrs.single().path().isIdent("kind"))
+        assertTrue(
+            method.attrs
+                .single()
+                .path()
+                .isIdent("method"),
+        )
+        assertTrue(
+            assertIs<ImplItem.AssocType>(items[2])
+                .attrs
+                .single()
+                .path()
+                .isIdent("kind"),
+        )
         assertEquals("_", assertIs<ImplItem.Const>(items[3]).ident.toString())
         assertRoundTrip(source)
     }
@@ -126,7 +142,6 @@ class ParserParityRegressionTest {
         }
     }
 
-
     @Test
     fun closurePrefixesSurviveCopiesVisitorsAndFolds() {
         val source = "for<'a> static move || -> u8 { 1 }"
@@ -139,25 +154,29 @@ class ParserParityRegressionTest {
         }
         val seen = mutableListOf<String>()
         object : Visit() {
-            override fun visitLifetime(lt: Lifetime) { seen.add(lt.toString()) }
+            override fun visitLifetime(lt: Lifetime) {
+                seen.add(lt.toString())
+            }
         }.visitExpr(closure)
         assertEquals(listOf("'a"), seen)
         var mutations = 0
         object : VisitMut() {
-            override fun visitBoundLifetimesMut(boundLifetimes: BoundLifetimes) { mutations++ }
+            override fun visitBoundLifetimesMut(boundLifetimes: BoundLifetimes) {
+                mutations++
+            }
         }.visitExprClosureMut(closure)
         assertEquals(1, mutations)
         var folds = 0
-        val folded = object : Fold() {
-            override fun foldBoundLifetimes(boundLifetimes: BoundLifetimes): BoundLifetimes {
-                folds++
-                return super.foldBoundLifetimes(boundLifetimes)
-            }
-        }.foldExprClosure(closure)
+        val folded =
+            object : Fold() {
+                override fun foldBoundLifetimes(boundLifetimes: BoundLifetimes): BoundLifetimes {
+                    folds++
+                    return super.foldBoundLifetimes(boundLifetimes)
+                }
+            }.foldExprClosure(closure)
         assertEquals(1, folds)
         assertEquals(expected, tokenShape(folded.toTokenStream()))
     }
-
 
     @Test
     fun bracedMatchArmCannotConsumeTheFollowingTuplePattern() {
@@ -171,17 +190,19 @@ class ParserParityRegressionTest {
     }
 
     // Token spacing can change in ToTokens (e.g. the two closure bars); syntax must not.
-    private fun tokenShape(tokens: TokenStream): List<String> = buildList {
-        for (token in tokens) when (token) {
-            is TokenTree.Group -> {
-                add("open:${token.value.delimiter()}")
-                addAll(tokenShape(token.value.stream()))
-                add("close:${token.value.delimiter()}")
+    private fun tokenShape(tokens: TokenStream): List<String> =
+        buildList {
+            for (token in tokens) {
+                when (token) {
+                    is TokenTree.Group -> {
+                        add("open:${token.value.delimiter()}")
+                        addAll(tokenShape(token.value.stream()))
+                        add("close:${token.value.delimiter()}")
+                    }
+                    is TokenTree.Ident -> add("ident:${token.value}")
+                    is TokenTree.Punct -> add("punct:${token.value.asChar()}")
+                    is TokenTree.Literal -> add("literal:${token.value}")
+                }
             }
-            is TokenTree.Ident -> add("ident:${token.value}")
-            is TokenTree.Punct -> add("punct:${token.value.asChar()}")
-            is TokenTree.Literal -> add("literal:${token.value}")
         }
-    }
-
 }

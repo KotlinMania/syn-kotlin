@@ -19,9 +19,27 @@ class QualifiedPathRegressionTest {
         assertEquals("as", assertNotNull(qself.asToken).span.sourceText())
         assertEquals("<", qself.ltToken.span.sourceText())
         assertEquals(">", qself.gtToken.span.sourceText())
-        assertEquals(listOf("a", "b", "Trait", "serialize"), expr.path.segments.toList().map { it.ident.toString() })
-        assertEquals("serialize", expr.path.segments.toList().last().ident.span().sourceText())
-        assertIs<PathArguments.AngleBracketed>(expr.path.segments.toList().last().arguments)
+        assertEquals(
+            listOf("a", "b", "Trait", "serialize"),
+            expr.path.segments
+                .toList()
+                .map { it.ident.toString() },
+        )
+        assertEquals(
+            "serialize",
+            expr.path.segments
+                .toList()
+                .last()
+                .ident
+                .span()
+                .sourceText(),
+        )
+        assertIs<PathArguments.AngleBracketed>(
+            expr.path.segments
+                .toList()
+                .last()
+                .arguments,
+        )
     }
 
     @Test

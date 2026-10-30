@@ -9,199 +9,254 @@ internal fun `skip`(`s`: kotlin.String): kotlin.String {
         val `s__binding0`: kotlin.String = `s`
         kotlin.run {
             kotlin.run {
-                `skip`@ while ((!(`s__binding0`).isEmpty())) kotlin.run {
-                    val `byte`: kotlin.UByte = (__rtkAsBytes(`s__binding0`)).at(0uL)
+                `skip`@ while ((!(`s__binding0`).isEmpty())) {
                     kotlin.run {
-                        if ((`byte` == 47u.toUByte()))
-                            (if (
-                                (((`s__binding0`).startsWith("//") &&
-                                    (((!(`s__binding0`).startsWith("///")) ||
-                                        (`s__binding0`).startsWith("////")))) &&
-                                    (!(`s__binding0`).startsWith("//!")))
-                            )
-                                kotlin.run {
-                                    val __rtkValue1: __rtkOption<kotlin.ULong> =
-                                        __rtkFind(`s__binding0`, (__rtkChar(10)).scalarString())
-                                    if (__rtkValue1 is __rtkOption.Some)
-                                        kotlin.run {
-                                            val `i`: kotlin.ULong = __rtkValue1.value
-                                            kotlin.run {
-                                                kotlin.run {
-                                                    val __rtkValue2: kotlin.String =
-                                                        __rtkSliceFrom(
-                                                            `s__binding0`,
-                                                            __rtkAddUsize(`i`, 1uL),
+                        val `byte`: kotlin.UByte = (__rtkAsBytes(`s__binding0`)).at(0uL)
+                        kotlin.run {
+                            if ((`byte` == 47u.toUByte())) {
+                                (
+                                    if (
+                                        (
+                                            (
+                                                (`s__binding0`).startsWith("//") &&
+                                                    (
+                                                        (
+                                                            (!(`s__binding0`).startsWith("///")) ||
+                                                                (`s__binding0`).startsWith("////")
                                                         )
-                                                    `s__binding0` = __rtkValue2
+                                                    )
+                                            ) &&
+                                                (!(`s__binding0`).startsWith("//!"))
+                                        )
+                                    ) {
+                                        kotlin.run {
+                                            val __rtkValue1: __rtkOption<kotlin.ULong> =
+                                                __rtkFind(`s__binding0`, (__rtkChar(10)).scalarString())
+                                            if (__rtkValue1 is __rtkOption.Some) {
+                                                kotlin.run {
+                                                    val `i`: kotlin.ULong = __rtkValue1.value
+                                                    kotlin.run {
+                                                        kotlin.run {
+                                                            val __rtkValue2: kotlin.String =
+                                                                __rtkSliceFrom(
+                                                                    `s__binding0`,
+                                                                    __rtkAddUsize(`i`, 1uL),
+                                                                )
+                                                            `s__binding0` = __rtkValue2
+                                                        }
+                                                        continue
+                                                    }
                                                 }
-                                                continue
+                                            } else {
+                                                (
+                                                    kotlin.run {
+                                                        return ""
+                                                    }
+                                                )
                                             }
                                         }
-                                    else
-                                        (kotlin.run {
-                                            return ""
-                                        })
-                                }
-                            else
-                                (if ((`s__binding0`).startsWith("/**/"))
-                                    kotlin.run {
-                                        kotlin.run {
-                                            val __rtkValue3: kotlin.String =
-                                                __rtkSliceFrom(`s__binding0`, 4uL)
-                                            `s__binding0` = __rtkValue3
-                                        }
-                                        continue
-                                    }
-                                else
-                                    kotlin.run {
-                                        if (
-                                            (((`s__binding0`).startsWith("/*") &&
-                                                (((!(`s__binding0`).startsWith("/**")) ||
-                                                    (`s__binding0`).startsWith("/***")))) &&
-                                                (!(`s__binding0`).startsWith("/*!")))
-                                        )
-                                            kotlin.run {
-                                                val `depth`: kotlin.Int = 0
-                                                val `bytes`: __rtkBytes =
-                                                    __rtkAsBytes(`s__binding0`)
-                                                val `i__binding4`: kotlin.ULong = 0uL
-                                                val `upper`: kotlin.ULong =
-                                                    __rtkSub((`bytes`).len(), 1uL)
+                                    } else {
+                                        (
+                                            if ((`s__binding0`).startsWith("/**/")) {
                                                 kotlin.run {
-                                                    while ((`i__binding4` < `upper`)) kotlin.run {
-                                                        (if (
-                                                            (((`bytes`).at(`i__binding4`) ==
-                                                                47u.toUByte()) &&
-                                                                ((`bytes`).at(
-                                                                    __rtkAddUsize(
-                                                                        `i__binding4`,
-                                                                        1uL,
-                                                                    ),
-                                                                ) == 42u.toUByte()))
+                                                    kotlin.run {
+                                                        val __rtkValue3: kotlin.String =
+                                                            __rtkSliceFrom(`s__binding0`, 4uL)
+                                                        `s__binding0` = __rtkValue3
+                                                    }
+                                                    continue
+                                                }
+                                            } else {
+                                                kotlin.run {
+                                                    if (
+                                                        (
+                                                            (
+                                                                (`s__binding0`).startsWith("/*") &&
+                                                                    (
+                                                                        (
+                                                                            (!(`s__binding0`).startsWith("/**")) ||
+                                                                                (`s__binding0`).startsWith("/***")
+                                                                        )
+                                                                    )
+                                                            ) &&
+                                                                (!(`s__binding0`).startsWith("/*!"))
                                                         )
+                                                    ) {
+                                                        kotlin.run {
+                                                            val `depth`: kotlin.Int = 0
+                                                            val `bytes`: __rtkBytes =
+                                                                __rtkAsBytes(`s__binding0`)
+                                                            val `i__binding4`: kotlin.ULong = 0uL
+                                                            val `upper`: kotlin.ULong =
+                                                                __rtkSub((`bytes`).len(), 1uL)
                                                             kotlin.run {
-                                                                kotlin.run {
-                                                                    val __rtkValue5: kotlin.Int = 1
-                                                                    `depth` =
-                                                                        __rtkAdd(
-                                                                            `depth`,
-                                                                            __rtkValue5,
-                                                                        )
-                                                                }
-                                                                kotlin.run {
-                                                                    val __rtkValue6: kotlin.ULong =
-                                                                        1uL
-                                                                    `i__binding4` =
-                                                                        __rtkAddUsize(
-                                                                            `i__binding4`,
-                                                                            __rtkValue6,
-                                                                        )
-                                                                } // eat '*'
-                                                            }
-                                                        else
-                                                            kotlin.run {
-                                                                if (
-                                                                    (((`bytes`).at(`i__binding4`) ==
-                                                                        42u.toUByte()) &&
-                                                                        ((`bytes`).at(
-                                                                            __rtkAddUsize(
-                                                                                `i__binding4`,
-                                                                                1uL,
-                                                                            ),
-                                                                        ) == 47u.toUByte()))
-                                                                )
+                                                                while ((`i__binding4` < `upper`)) {
                                                                     kotlin.run {
-                                                                        kotlin.run {
-                                                                            val __rtkValue7:
-                                                                                kotlin.Int =
-                                                                                1
-                                                                            `depth` =
-                                                                                __rtkSubI32(
-                                                                                    `depth`,
-                                                                                    __rtkValue7,
-                                                                                )
-                                                                        }
-                                                                        kotlin.run {
-                                                                            if ((`depth` == 0))
-                                                                                kotlin.run {
-                                                                                    kotlin.run {
-                                                                                        val __rtkValue8:
-                                                                                            kotlin.String =
-                                                                                            __rtkSliceFrom(
-                                                                                                `s__binding0`,
+                                                                        (
+                                                                            if (
+                                                                                (
+                                                                                    (
+                                                                                        (`bytes`).at(`i__binding4`) ==
+                                                                                            47u.toUByte()
+                                                                                    ) &&
+                                                                                        (
+                                                                                            (`bytes`).at(
                                                                                                 __rtkAddUsize(
                                                                                                     `i__binding4`,
-                                                                                                    2uL,
+                                                                                                    1uL,
                                                                                                 ),
+                                                                                            ) == 42u.toUByte()
+                                                                                        )
+                                                                                )
+                                                                            ) {
+                                                                                kotlin.run {
+                                                                                    kotlin.run {
+                                                                                        val __rtkValue5: kotlin.Int = 1
+                                                                                        `depth` =
+                                                                                            __rtkAdd(
+                                                                                                `depth`,
+                                                                                                __rtkValue5,
                                                                                             )
-                                                                                        `s__binding0` =
-                                                                                            __rtkValue8
                                                                                     }
-                                                                                    continue@`skip`
+                                                                                    kotlin.run {
+                                                                                        val __rtkValue6: kotlin.ULong =
+                                                                                            1uL
+                                                                                        `i__binding4` =
+                                                                                            __rtkAddUsize(
+                                                                                                `i__binding4`,
+                                                                                                __rtkValue6,
+                                                                                            )
+                                                                                    } // eat '*'
                                                                                 }
-                                                                        }
+                                                                            } else {
+                                                                                kotlin.run {
+                                                                                    if (
+                                                                                        (
+                                                                                            (
+                                                                                                (`bytes`).at(`i__binding4`) ==
+                                                                                                    42u.toUByte()
+                                                                                            ) &&
+                                                                                                (
+                                                                                                    (`bytes`).at(
+                                                                                                        __rtkAddUsize(
+                                                                                                            `i__binding4`,
+                                                                                                            1uL,
+                                                                                                        ),
+                                                                                                    ) == 47u.toUByte()
+                                                                                                )
+                                                                                        )
+                                                                                    ) {
+                                                                                        kotlin.run {
+                                                                                            kotlin.run {
+                                                                                                val __rtkValue7:
+                                                                                                    kotlin.Int =
+                                                                                                    1
+                                                                                                `depth` =
+                                                                                                    __rtkSubI32(
+                                                                                                        `depth`,
+                                                                                                        __rtkValue7,
+                                                                                                    )
+                                                                                            }
+                                                                                            kotlin.run {
+                                                                                                if ((`depth` == 0)) {
+                                                                                                    kotlin.run {
+                                                                                                        kotlin.run {
+                                                                                                            val __rtkValue8:
+                                                                                                                kotlin.String =
+                                                                                                                __rtkSliceFrom(
+                                                                                                                    `s__binding0`,
+                                                                                                                    __rtkAddUsize(
+                                                                                                                        `i__binding4`,
+                                                                                                                        2uL,
+                                                                                                                    ),
+                                                                                                                )
+                                                                                                            `s__binding0` =
+                                                                                                                __rtkValue8
+                                                                                                        }
+                                                                                                        continue@`skip`
+                                                                                                    }
+                                                                                                }
+                                                                                            }
+                                                                                            kotlin.run {
+                                                                                                val __rtkValue9:
+                                                                                                    kotlin.ULong =
+                                                                                                    1uL
+                                                                                                `i__binding4` =
+                                                                                                    __rtkAddUsize(
+                                                                                                        `i__binding4`,
+                                                                                                        __rtkValue9,
+                                                                                                    )
+                                                                                            } // eat '/'
+                                                                                        }
+                                                                                    }
+                                                                                }
+                                                                            }
+                                                                        )
                                                                         kotlin.run {
-                                                                            val __rtkValue9:
-                                                                                kotlin.ULong =
-                                                                                1uL
+                                                                            val __rtkValue10: kotlin.ULong = 1uL
                                                                             `i__binding4` =
                                                                                 __rtkAddUsize(
                                                                                     `i__binding4`,
-                                                                                    __rtkValue9,
+                                                                                    __rtkValue10,
                                                                                 )
-                                                                        } // eat '/'
+                                                                        }
                                                                     }
-                                                            })
-                                                        kotlin.run {
-                                                            val __rtkValue10: kotlin.ULong = 1uL
-                                                            `i__binding4` =
-                                                                __rtkAddUsize(
-                                                                    `i__binding4`,
-                                                                    __rtkValue10,
-                                                                )
+                                                                }
+                                                            }
+                                                            return `s__binding0`
                                                         }
                                                     }
                                                 }
-                                                return `s__binding0`
                                             }
-                                    }))
-                    }
-                    kotlin.run {
-                        val __rtkValue11: kotlin.UByte = `byte`
-                        when {
-                            ((__rtkValue11 == 32u.toUByte()) ||
-                                (__rtkValue11 >= 9u.toUByte() && __rtkValue11 <= 13u.toUByte())) ->
-                                (kotlin.run {
-                                    kotlin.run {
-                                        val __rtkValue12: kotlin.String =
-                                            __rtkSliceFrom(`s__binding0`, 1uL)
-                                        `s__binding0` = __rtkValue12
+                                        )
                                     }
-                                    continue
-                                })
-                            (true && ((`__rtkValue11` <= 127u.toUByte()))) -> (kotlin.Unit)
-                            else ->
-                                (kotlin.run {
-                                    val `ch`: __rtkChar =
-                                        __rtkUnwrap((__rtkChars(`s__binding0`)).next())
-                                    kotlin.run {
-                                        if (`is_whitespace`(`ch`))
-                                            kotlin.run {
-                                                kotlin.run {
-                                                    val __rtkValue13: kotlin.String =
-                                                        __rtkSliceFrom(
-                                                            `s__binding0`,
-                                                            (`ch`).lenUtf8(),
-                                                        )
-                                                    `s__binding0` = __rtkValue13
-                                                }
-                                                continue
-                                            }
-                                    }
-                                })
+                                )
+                            }
                         }
+                        kotlin.run {
+                            val __rtkValue11: kotlin.UByte = `byte`
+                            when {
+                                (
+                                    (__rtkValue11 == 32u.toUByte()) ||
+                                        (__rtkValue11 >= 9u.toUByte() && __rtkValue11 <= 13u.toUByte())
+                                ) ->
+                                    (
+                                        kotlin.run {
+                                            kotlin.run {
+                                                val __rtkValue12: kotlin.String =
+                                                    __rtkSliceFrom(`s__binding0`, 1uL)
+                                                `s__binding0` = __rtkValue12
+                                            }
+                                            continue
+                                        }
+                                    )
+                                (true && ((`__rtkValue11` <= 127u.toUByte()))) -> (kotlin.Unit)
+                                else ->
+                                    (
+                                        kotlin.run {
+                                            val `ch`: __rtkChar =
+                                                __rtkUnwrap((__rtkChars(`s__binding0`)).next())
+                                            kotlin.run {
+                                                if (`is_whitespace`(`ch`)) {
+                                                    kotlin.run {
+                                                        kotlin.run {
+                                                            val __rtkValue13: kotlin.String =
+                                                                __rtkSliceFrom(
+                                                                    `s__binding0`,
+                                                                    (`ch`).lenUtf8(),
+                                                                )
+                                                            `s__binding0` = __rtkValue13
+                                                        }
+                                                        continue
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    )
+                            }
+                        }
+                        return `s__binding0`
                     }
-                    return `s__binding0`
                 }
             }
             `s__binding0`
@@ -211,13 +266,16 @@ internal fun `skip`(`s`: kotlin.String): kotlin.String {
 
 private fun `is_whitespace`(`ch`: __rtkChar): kotlin.Boolean =
     ( // Rust treats left-to-right mark and right-to-left mark as whitespace
-    ((__rtkIsWhitespace(`ch`) || (`ch` == __rtkChar(8206))) || (`ch` == __rtkChar(8207))))
+        ((__rtkIsWhitespace(`ch`) || (`ch` == __rtkChar(8206))) || (`ch` == __rtkChar(8207)))
+    )
 
 // Tagged Rust Option; owned payloads require a checked fresh-value context.
 private sealed class __rtkOption<out T> {
     data object None : __rtkOption<kotlin.Nothing>()
 
-    data class Some<T>(val value: T) : __rtkOption<T>()
+    data class Some<T>(
+        val value: T,
+    ) : __rtkOption<T>()
 }
 
 private fun <T> __rtkUnwrapOr(value: __rtkOption<T>, fallback: T): T =
@@ -226,7 +284,9 @@ private fun <T> __rtkUnwrapOr(value: __rtkOption<T>, fallback: T): T =
         is __rtkOption.Some -> value.value
     }
 
-private class __rtkPanic(message: String) : kotlin.RuntimeException(message)
+private class __rtkPanic(
+    message: String,
+) : kotlin.RuntimeException(message)
 
 private fun <T> __rtkUnwrap(value: __rtkOption<T>): T =
     when (value) {
@@ -236,8 +296,9 @@ private fun <T> __rtkUnwrap(value: __rtkOption<T>): T =
 
 private fun __rtkSubI32(left: Int, right: Int): Int {
     val difference = left.toLong() - right.toLong()
-    if (difference < Int.MIN_VALUE || difference > Int.MAX_VALUE)
+    if (difference < Int.MIN_VALUE || difference > Int.MAX_VALUE) {
         throw __rtkPanic("attempt to subtract with overflow")
+    }
     return difference.toInt()
 }
 
@@ -260,7 +321,9 @@ private fun __rtkSub(left: ULong, right: ULong): ULong {
 
 // Rust 1.99 UTF-8 and Unicode scalar adapters. Input domain: valid Rust str/char.
 // Copies of immutable string/byte storage do not expose pointer identity in admitted operations.
-private data class __rtkChar(val codePoint: Int) {
+private data class __rtkChar(
+    val codePoint: Int,
+) {
     init {
         require(codePoint in 0..0x10ffff && codePoint !in 0xd800..0xdfff)
     }
@@ -269,42 +332,53 @@ private data class __rtkChar(val codePoint: Int) {
         scalarString().encodeToByteArray(throwOnInvalidSequence = true).size.toULong()
 
     fun scalarString(): String =
-        if (codePoint < 0x10000) codePoint.toChar().toString()
-        else
+        if (codePoint < 0x10000) {
+            codePoint.toChar().toString()
+        } else {
             (0xd800 + ((codePoint - 0x10000) shr 10)).toChar().toString() +
                 (0xdc00 + ((codePoint - 0x10000) and 1023)).toChar()
+        }
 }
 
 private class __rtkBytes
-internal constructor(private val bytes: ByteArray, private val start: Int = 0) {
-    fun len(): ULong = (bytes.size - start).toULong()
+    internal constructor(
+        private val bytes: ByteArray,
+        private val start: Int = 0,
+    ) {
+        fun len(): ULong = (bytes.size - start).toULong()
 
-    fun iter(): __rtkByteIter = __rtkByteIter(bytes, start)
+        fun iter(): __rtkByteIter = __rtkByteIter(bytes, start)
 
-    fun at(index: ULong): UByte {
-        if (index >= len())
-            throw __rtkPanic(
-                "index out of bounds: the len is " + len() + " but the index is " + index,
-            )
-        return bytes[start + index.toInt()].toUByte()
+        fun at(index: ULong): UByte {
+            if (index >= len()) {
+                throw __rtkPanic(
+                    "index out of bounds: the len is " + len() + " but the index is " + index,
+                )
+            }
+            return bytes[start + index.toInt()].toUByte()
+        }
     }
-}
 
-private class __rtkByteRef internal constructor(val value: UByte)
+private class __rtkByteRef internal constructor(
+    val value: UByte,
+)
 
 private class __rtkByteIter
-internal constructor(private val bytes: ByteArray, private var offset: Int) {
-    private val iterator: ByteIterator = bytes.copyOfRange(offset, bytes.size).iterator()
+    internal constructor(
+        private val bytes: ByteArray,
+        private var offset: Int,
+    ) {
+        private val iterator: ByteIterator = bytes.copyOfRange(offset, bytes.size).iterator()
 
-    fun next(): __rtkOption<__rtkByteRef> {
-        if (!iterator.hasNext()) return __rtkOption.None
-        val value = iterator.nextByte().toUByte()
-        offset++
-        return __rtkOption.Some(__rtkByteRef(value))
+        fun next(): __rtkOption<__rtkByteRef> {
+            if (!iterator.hasNext()) return __rtkOption.None
+            val value = iterator.nextByte().toUByte()
+            offset++
+            return __rtkOption.Some(__rtkByteRef(value))
+        }
+
+        fun asSlice(): __rtkBytes = __rtkBytes(bytes, offset)
     }
-
-    fun asSlice(): __rtkBytes = __rtkBytes(bytes, offset)
-}
 
 private fun __rtkAsBytes(source: String): __rtkBytes =
     __rtkBytes(source.encodeToByteArray(throwOnInvalidSequence = true))
@@ -315,13 +389,17 @@ private fun __rtkByteLen(source: String): ULong =
 private fun __rtkReadScalar(iterator: CharIterator): __rtkChar {
     val first = iterator.nextChar()
     return __rtkChar(
-        if (first.isHighSurrogate())
+        if (first.isHighSurrogate()) {
             0x10000 + ((first.code - 0xd800) shl 10) + (iterator.nextChar().code - 0xdc00)
-        else first.code,
+        } else {
+            first.code
+        },
     )
 }
 
-private class __rtkChars internal constructor(private val source: String) {
+private class __rtkChars internal constructor(
+    private val source: String,
+) {
     private var offset: Int = 0
     private val iterator: CharIterator = source.iterator()
 
@@ -359,7 +437,7 @@ private fun __rtkCharBoundary(source: String, position: ULong, label: String): I
     while (bytes < position) {
         val value = __rtkReadScalar(iterator)
         val end = bytes + value.lenUtf8()
-        if (position < end)
+        if (position < end) {
             throw __rtkPanic(
                 label +
                     " byte index " +
@@ -372,6 +450,7 @@ private fun __rtkCharBoundary(source: String, position: ULong, label: String): I
                     end +
                     " of string)",
             )
+        }
         bytes = end
         index += if (value.codePoint < 0x10000) 1 else 2
     }
@@ -381,14 +460,16 @@ private fun __rtkCharBoundary(source: String, position: ULong, label: String): I
 private fun __rtkSliceRange(source: String, begin: ULong, end: ULong): String {
     val length = __rtkByteLen(source)
     // Rust core::str::slice_error_fail_rt validation order.
-    if (begin > length)
+    if (begin > length) {
         throw __rtkPanic(
             "start byte index " + begin + " is out of bounds for string of length " + length,
         )
-    if (end > length)
+    }
+    if (end > length) {
         throw __rtkPanic(
             "end byte index " + end + " is out of bounds for string of length " + length,
         )
+    }
     if (begin > end) throw __rtkPanic("byte range starts at " + begin + " but ends at " + end)
     val from = __rtkCharBoundary(source, begin, "start")
     val to = __rtkCharBoundary(source, end, "end")
@@ -415,9 +496,13 @@ private fun __rtkDebugChar(value: __rtkChar): String {
     var high = __rtkCharDebugEscapes.size / 2
     while (low < high) {
         val middle = (low + high) / 2
-        if (point < __rtkCharDebugEscapes[2 * middle]) high = middle
-        else if (point > __rtkCharDebugEscapes[2 * middle + 1]) low = middle + 1
-        else return "'\\u{" + point.toString(16) + "}'"
+        if (point < __rtkCharDebugEscapes[2 * middle]) {
+            high = middle
+        } else if (point > __rtkCharDebugEscapes[2 * middle + 1]) {
+            low = middle + 1
+        } else {
+            return "'\\u{" + point.toString(16) + "}'"
+        }
     }
     return "'" + value.scalarString() + "'"
 }
@@ -454,13 +539,14 @@ private fun __rtkDebugAssertOptionChar(
     if (!enabled) return
     val a = left()
     val b = right()
-    if (a != b)
+    if (a != b) {
         throw __rtkPanic(
             "assertion `left == right` failed\n  left: " +
                 __rtkDebugOptionChar(a) +
                 "\n right: " +
                 __rtkDebugOptionChar(b),
         )
+    }
 }
 
 private val __rtkCharDebugEscapes =
@@ -2292,8 +2378,11 @@ private val __rtkCharDebugEscapes =
 // Kotlin locates the text; Rust exposes a UTF-8 byte offset, not a UTF-16 offset.
 private fun __rtkFind(source: String, pattern: String): __rtkOption<ULong> {
     val index = source.indexOf(pattern)
-    return if (index < 0) __rtkOption.None
-    else __rtkOption.Some(__rtkByteLen(source.substring(0, index)))
+    return if (index < 0) {
+        __rtkOption.None
+    } else {
+        __rtkOption.Some(__rtkByteLen(source.substring(0, index)))
+    }
 }
 
 // Rust core 1.99 char::is_whitespace / Unicode White_Space table.
@@ -2310,6 +2399,7 @@ private fun __rtkIsWhitespace(value: __rtkChar): Boolean =
         0x2029,
         0x202f,
         0x205f,
-        0x3000 -> true
+        0x3000,
+        -> true
         else -> false
     }

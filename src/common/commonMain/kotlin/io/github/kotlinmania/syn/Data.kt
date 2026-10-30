@@ -185,7 +185,7 @@ public data class Field(
 
             val colonToken = ColonParse.parse(input).getOrElse { return SynResult.failure(it) }
             val ty =
-                if (unnamedField && (input.peek(StructPeek) || input.peek(UnionPeek) && input.peek2(BracePeek))) {
+                if (unnamedField && (input.peek(StructPeek) || (input.peek(UnionPeek) && input.peek2(BracePeek)))) {
                     val begin = input.fork()
                     if (input.peek(StructPeek)) {
                         StructParse.parse(input).getOrElse { return SynResult.failure(it) }

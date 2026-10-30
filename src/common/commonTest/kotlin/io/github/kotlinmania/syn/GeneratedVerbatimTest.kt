@@ -20,35 +20,35 @@ class GeneratedVerbatimTest {
         input
             .step { step ->
                 var cursor = step.raw
-                for (operation in path) cursor =
-                    when (operation) {
-                        'n' -> cursor.tokenTree()!!.second
-                        'g' -> cursor.group(Delimiter.None)!!.first
-                        'p' -> cursor.group(Delimiter.Parenthesis)!!.first
-                        'e' -> {
-                            while (true) {
-                                val pair = cursor.tokenTree() ?: break
-                                cursor = pair.second
+                for (operation in path) {
+                    cursor =
+                        when (operation) {
+                            'n' -> cursor.tokenTree()!!.second
+                            'g' -> cursor.group(Delimiter.None)!!.first
+                            'p' -> cursor.group(Delimiter.Parenthesis)!!.first
+                            'e' -> {
+                                while (true) {
+                                    val pair = cursor.tokenTree() ?: break
+                                    cursor = pair.second
+                                }
+                                cursor
                             }
-                            cursor
+                            else -> error("invalid test cursor path")
                         }
-                        else -> error("invalid test cursor path")
-                    }
+                }
                 SynResult.success(Unit to cursor)
-            }
-            .getOrThrow()
+            }.getOrThrow()
     }
 
     private fun <T> withInput(stream: TokenStream, body: (ParseStream) -> T): T =
         parse2(
-                { input ->
-                    val result = body(input)
-                    TokenStreamParse.parse(input).getOrThrow()
-                    SynResult.success(result)
-                },
-                stream,
-            )
-            .getOrThrow()
+            { input ->
+                val result = body(input)
+                TokenStreamParse.parse(input).getOrThrow()
+                SynResult.success(result)
+            },
+            stream,
+        ).getOrThrow()
 
     @Test
     fun copiesSelectedTokensWithoutAdvancingInputs() {

@@ -4,51 +4,74 @@ package io.github.kotlinmania.syn
 import io.github.kotlinmania.procmacro2.*
 import io.github.kotlinmania.quote.ToTokens
 import io.github.kotlinmania.quote.toTokens
-import io.github.kotlinmania.syn.token.Semi
 import io.github.kotlinmania.syn.token.As
 import io.github.kotlinmania.syn.token.PathSep
+import io.github.kotlinmania.syn.token.Semi
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class GeneratedPrintTest {
     @Test fun productionAdapterMatchesNinetyRustObservations() {
-        val observations=mutableListOf<String>()
-        defaults("semi",Semi::default,observations)
-        defaults("as",As::default,observations)
-        defaults("pathsep",PathSep::default,observations)
-        assertEquals(expectedRust.lines(),observations)
+        val observations = mutableListOf<String>()
+        defaults("semi", Semi::default, observations)
+        defaults("as", As::default, observations)
+        defaults("pathsep", PathSep::default, observations)
+        assertEquals(expectedRust.lines(), observations)
     }
 }
 
 private class ProbePanic : RuntimeException()
-private class State(val mode: Int) { var defaults=0; var prints=0; val events=mutableListOf<String>() }
-private class Counted<T:ToTokens>(val value:T, val id:Int, val state:State):ToTokens {
-    override fun toTokens(tokens:TokenStream) {
-        state.prints++;state.events.add("p$id")
-        Ident.new("v$id",Span.callSite()).cloneToken().toTokens(tokens)
+private class State(
+    val mode: Int,
+) {
+    var defaults = 0
+    var prints = 0
+    val events = mutableListOf<String>()
+}
+private class Counted<T : ToTokens>(
+    val value: T,
+    val id: Int,
+    val state: State,
+) : ToTokens {
+    override fun toTokens(tokens: TokenStream) {
+        state.prints++
+        state.events.add("p$id")
+        Ident.new("v$id", Span.callSite()).cloneToken().toTokens(tokens)
         value.toTokens(tokens)
-        if(state.mode==2) throw ProbePanic()
+        if (state.mode == 2) throw ProbePanic()
     }
 }
-private fun <T:ToTokens> defaults(label:String, make:()->T, observations:MutableList<String>) {
-    for(present in listOf(false,true)) for(mode in 0..2) {
-        val state=State(mode)
-        val value: ToTokens? = if(present) Counted(make(),100,state) else null
-        val wrapper=tokensOrDefault(value) {
-            state.defaults++;val id=state.defaults;state.events.add("d$id")
-            if(mode==1) throw ProbePanic()
-            Counted(make(),id,state)
-        }
-        val output=TokenStream.fromString("prefix").getOrThrow()
-        for(call in 0..4) {
-            val status=try { wrapper.toTokens(output);"ok" } catch(_:ProbePanic) { "panic" }
-            observations.add("default|$label|${if(present) 1 else 0}|$mode|$call|$status|${state.defaults}|${state.prints}|${state.events.joinToString(",")}|$output")
+private fun <T : ToTokens> defaults(label: String, make: () -> T, observations: MutableList<String>) {
+    for (present in listOf(false, true)) {
+        for (mode in 0..2) {
+            val state = State(mode)
+            val value: ToTokens? = if (present) Counted(make(), 100, state) else null
+            val wrapper =
+                tokensOrDefault(value) {
+                    state.defaults++
+                    val id = state.defaults
+                    state.events.add("d$id")
+                    if (mode == 1) throw ProbePanic()
+                    Counted(make(), id, state)
+                }
+            val output = TokenStream.fromString("prefix").getOrThrow()
+            for (call in 0..4) {
+                val status =
+                    try {
+                        wrapper.toTokens(output)
+                        "ok"
+                    } catch (_: ProbePanic) {
+                        "panic"
+                    }
+                observations.add("default|$label|${if (present) 1 else 0}|$mode|$call|$status|${state.defaults}|${state.prints}|${state.events.joinToString(",")}|$output")
+            }
         }
     }
 }
 
 // Captured from complete frozen Rust print.rs, not the preceding handwritten Kotlin.
-private val expectedRust = """
+private val expectedRust =
+    """
 default|semi|0|0|0|ok|1|1|d1,p1|prefix v1 ;
 default|semi|0|0|1|ok|2|2|d1,p1,d2,p2|prefix v1 ; v2 ;
 default|semi|0|0|2|ok|3|3|d1,p1,d2,p2,d3,p3|prefix v1 ; v2 ; v3 ;
@@ -139,4 +162,4 @@ default|pathsep|1|2|1|panic|0|2|p100,p100|prefix v100 :: v100 ::
 default|pathsep|1|2|2|panic|0|3|p100,p100,p100|prefix v100 :: v100 :: v100 ::
 default|pathsep|1|2|3|panic|0|4|p100,p100,p100,p100|prefix v100 :: v100 :: v100 :: v100 ::
 default|pathsep|1|2|4|panic|0|5|p100,p100,p100,p100,p100|prefix v100 :: v100 :: v100 :: v100 :: v100 ::
-""".trimIndent()
+    """.trimIndent()

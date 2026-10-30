@@ -22,18 +22,19 @@ public sealed class Pat : ToTokens {
             val begin = input.fork()
             val lookahead = input.lookahead1()
             if (
-                input.peek(IdentPeek) &&
                 (
-                    input.peek2(PathSepPeek) ||
-                        input.peek2(NotPeek) ||
-                        input.peek2(BracePeek) ||
-                        input.peek2(ParenPeek) ||
-                        input.peek2(DotDotPeek) ||
-                        input.peek2(DotDotEqPeek) ||
-                        input.peek2(DotDotDotPeek)
+                    input.peek(IdentPeek) &&
+                        (
+                            input.peek2(PathSepPeek) ||
+                                input.peek2(NotPeek) ||
+                                input.peek2(BracePeek) ||
+                                input.peek2(ParenPeek) ||
+                                input.peek2(DotDotPeek) ||
+                                input.peek2(DotDotEqPeek) ||
+                                input.peek2(DotDotDotPeek)
+                        )
                 ) ||
-                input.peek(SelfValuePeek) &&
-                input.peek2(PathSepPeek) ||
+                (input.peek(SelfValuePeek) && input.peek2(PathSepPeek)) ||
                 input.peek(PathSepPeek) ||
                 input.peek(LtPeek) ||
                 input.peek(SelfTypePeek) ||
@@ -715,8 +716,7 @@ private fun patRangeBound(input: ParseStream): SynResult<PatRangeBound?> {
         input.isEmpty() ||
         input.peek(OrPeek) ||
         input.peek(EqPeek) ||
-        input.peek(ColonPeek) &&
-        !input.peek(PathSepPeek) ||
+        (input.peek(ColonPeek) && !input.peek(PathSepPeek)) ||
         input.peek(CommaPeek) ||
         input.peek(SemiPeek) ||
         input.peek(IfPeek)

@@ -297,10 +297,11 @@ public sealed class Item : ToTokens {
             modToken.toTokens(tokens)
             ident.toTokens(tokens)
             when (val body = content) {
-                is ModContent.Inline -> body.braceToken.surround(tokens) { inner ->
-                    for (attr in attrs) if (attr.style is AttrStyle.Inner) attr.toTokens(inner)
-                    for (item in body.items) item.toTokens(inner)
-                }
+                is ModContent.Inline ->
+                    body.braceToken.surround(tokens) { inner ->
+                        for (attr in attrs) if (attr.style is AttrStyle.Inner) attr.toTokens(inner)
+                        for (item in body.items) item.toTokens(inner)
+                    }
                 else -> body?.toTokens(tokens)
             }
         }

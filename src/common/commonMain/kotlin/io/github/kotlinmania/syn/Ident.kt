@@ -2,8 +2,6 @@
 package io.github.kotlinmania.syn
 
 import io.github.kotlinmania.procmacro2.Ident
-import io.github.kotlinmania.syn.token.*
-import io.github.kotlinmania.syn.generated.ident.xid_ok
 import io.github.kotlinmania.syn.generated.ident.__rtkImpl1
 import io.github.kotlinmania.syn.generated.ident.__rtkImpl2
 import io.github.kotlinmania.syn.generated.ident.__rtkImpl3
@@ -12,12 +10,16 @@ import io.github.kotlinmania.syn.generated.ident.__rtkImpl5
 import io.github.kotlinmania.syn.generated.ident.__rtkImpl6
 import io.github.kotlinmania.syn.generated.ident.__rtkImpl7
 import io.github.kotlinmania.syn.generated.ident.__rtkImpl8
+import io.github.kotlinmania.syn.generated.ident.xid_ok
+import io.github.kotlinmania.syn.token.*
 
 // Existing Kotlin API adapters; all translated behavior is in generated/ident.
 public fun Ident.copy(): Ident = cloneToken()
 public fun Ident.clone(): Ident = copy()
 
-public fun Ident(marker: TokenMarker): Ident = io.github.kotlinmania.syn.generated.ident.Ident(marker)
+public fun Ident(marker: TokenMarker): Ident =
+    io.github.kotlinmania.syn.generated.ident
+        .Ident(marker)
 
 public fun from(token: SelfValue): Ident = __rtkImpl1.from(token)
 public fun from(token: SelfType): Ident = __rtkImpl2.from(token)
