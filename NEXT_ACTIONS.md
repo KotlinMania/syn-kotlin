@@ -5,12 +5,12 @@ Based on AST analysis, here are the concrete next steps.
 ## Summary
 
 - **Files Present:** 52/55 (94.5%)
-- **Function parity:** 1679/2927 matched (target 3324) — 57.4%
-- **Class/type parity:** 105/121 matched (target 827) — 86.8%
-- **Combined symbol parity:** 1784/3048 matched (target 4151) — 58.5%
+- **Function parity:** 1679/2927 matched (target 3325) — 57.4%
+- **Class/type parity:** 105/121 matched (target 828) — 86.8%
+- **Combined symbol parity:** 1784/3048 matched (target 4153) — 58.5%
 - **Average inline-code cosine:** 0.18 (function body across 52 matched files)
 - **Average documentation cosine:** 0.32 (doc text across 52 matched files)
-- **Cheat-zeroed Files:** 5
+- **Cheat-zeroed Files:** 3
 - **Critical Issues:** 50 files with <0.60 function similarity
 - **Needs Review:** 0 files with 0.60-0.84 function similarity
 - **Excellent:** 2 files with >=0.85 function similarity
@@ -470,9 +470,9 @@ Every matched file is listed below with function and type symbol parity.
 - **Similarity:** 0.18
 - **Dependents:** 0
 - **Priority Score:** 41408.2
-- **Functions:** 5/7 matched (target 10)
+- **Functions:** 5/7 matched (target 11)
 - **Missing functions:** `append`, `new_spanned`
-- **Types:** 5/7 matched (target 5)
+- **Types:** 5/7 matched (target 6)
 - **Missing types:** `Token`, `Sealed`
 
 ### 37. data
@@ -489,10 +489,10 @@ Every matched file is listed below with function and type symbol parity.
 
 ### 38. fixup
 
-- **Target:** `Fixup [ZERO]`
-- **Similarity:** 0.00
+- **Target:** `Fixup`
+- **Similarity:** 0.19
 - **Dependents:** 0
-- **Priority Score:** 11810.0
+- **Priority Score:** 11808.1
 - **Functions:** 15/16 matched (target 24)
 - **Missing functions:** `clone`
 - **Types:** 2/2 matched
@@ -601,10 +601,10 @@ Every matched file is listed below with function and type symbol parity.
 
 ### 48. whitespace
 
-- **Target:** `Whitespace [ZERO]`
-- **Similarity:** 0.00
+- **Target:** `Whitespace`
+- **Similarity:** 0.16
 - **Dependents:** 0
-- **Priority Score:** 210.0
+- **Priority Score:** 208.4
 - **Functions:** 2/2 matched
 - **Missing functions:** _none_
 - **Types:** 0/0 matched
