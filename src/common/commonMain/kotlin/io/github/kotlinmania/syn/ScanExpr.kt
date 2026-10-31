@@ -583,12 +583,7 @@ internal fun atomExprImpl(input: ParseStream, allowStruct: Boolean): SynResult<E
 internal fun parseExprLetImpl(input: ParseStream, allowStruct: Boolean): SynResult<Expr.Let> {
     val letToken = LetParse.parse(input)
     if (letToken.isFailure) return letToken.asFailure()
-    var pat = parsePatFull(input).getOrElse { return SynResult.failure(it) }
-    if (input.peek(ColonPeek)) {
-        val colonToken = ColonParse.parse(input).getOrElse { return SynResult.failure(it) }
-        val ty = parseTypeFull(input).getOrElse { return SynResult.failure(it) }
-        pat = Pat.TypeAscription(mutableListOf(), pat, colonToken, ty)
-    }
+    val pat = Pat.parseMultiWithLeadingVert(input).getOrElse { return SynResult.failure(it) }
     val eqToken = EqParse.parse(input)
     if (eqToken.isFailure) return eqToken.asFailure()
     val lhs = unaryExprImpl(input, allowStruct)

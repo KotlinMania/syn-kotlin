@@ -1149,6 +1149,27 @@ class ExprTest {
         }
     }
 
+    @Test
+    fun testIfLetAndWhileLetOrPatternsWithOptionalLeadingVert() {
+        val ifExpr =
+            assertIs<Expr.If>(
+                parseStr(ExprParse::parse, "if let Scan::Bailout | Scan::Fail = state {}").getOrThrow(),
+            )
+        val ifCond = assertIs<Expr.Let>(ifExpr.cond)
+        val ifOr = assertIs<Pat.Or>(ifCond.pat)
+        assertNull(ifOr.leadingVert)
+        assertEquals(2, ifOr.cases.len())
+
+        val whileExpr =
+            assertIs<Expr.While>(
+                parseStr(ExprParse::parse, "while let | Some(a) | None = iter.next() {}").getOrThrow(),
+            )
+        val whileCond = assertIs<Expr.Let>(whileExpr.cond)
+        val whileOr = assertIs<Pat.Or>(whileCond.pat)
+        assertNotNull(whileOr.leadingVert)
+        assertEquals(2, whileOr.cases.len())
+    }
+
     private fun pathExpr(ident: String): Expr =
         Expr.Path(mutableListOf(), null, Path.from(Ident.new(ident, Span.callSite())))
 
