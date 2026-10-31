@@ -1317,8 +1317,8 @@ private fun parseLitInt(s: String): DigitsLiteralParts? {
             }
         if (digit >= base) return null
         hasDigit = true
-        value.`__rtkBigIntMulAssign_mul_assign`(base.toUByte())
-        value.`__rtkBigIntAddAssign_add_assign`(digit.toUByte())
+        value.mulAssign(base.toUByte())
+        value.addAssign(digit.toUByte())
         index += 1
     }
     if (!hasDigit) return null
@@ -1327,7 +1327,7 @@ private fun parseLitInt(s: String): DigitsLiteralParts? {
     val digits =
         buildString {
             if (negative) append('-')
-            append(value.to_string())
+            append(value.toString())
         }
     return DigitsLiteralParts(digits, suffix)
 }

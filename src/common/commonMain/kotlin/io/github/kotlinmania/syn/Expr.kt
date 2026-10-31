@@ -399,7 +399,7 @@ public sealed class Expr : ToTokens {
                 for ((i, arm) in arms.withIndex()) {
                     arm.toTokens(inner)
                     val isLast = i == arms.size - 1
-                    if (!isLast && requires_comma_to_be_match_arm(arm.body) && arm.comma == null) {
+                    if (!isLast && requiresCommaToBeMatchArm(arm.body) && arm.comma == null) {
                         io.github.kotlinmania.syn.token.Comma
                             .default()
                             .toTokens(inner)
@@ -1015,7 +1015,7 @@ public fun printExprBinary(e: Expr.Binary, tokens: TokenStream, fixup: FixupCont
     val needsGroup = e.attrs.isNotEmpty()
     val context = if (needsGroup) FixupContext.NONE else fixup
     val doPrintExpr = { output: TokenStream ->
-        val binopPrec = Precedence.of_binop(e.op)
+        val binopPrec = Precedence.ofBinop(e.op)
         val (leftPrec, leftFixup) =
             context.leftmostSubexpressionWithOperator(
                 e.left,
@@ -1068,7 +1068,7 @@ public fun printExprBreak(e: Expr.Break, tokens: TokenStream, fixup: FixupContex
     e.expr?.let { value ->
         printSubexpression(
             value,
-            e.label == null && expr_leading_label(value),
+            e.label == null && exprLeadingLabel(value),
             tokens,
             fixup.rightmostSubexpressionFixup(true, true, Precedence.Jump),
         )
@@ -1617,7 +1617,7 @@ public object ArmParse {
         val fatArrowToken = FatArrowParse.parse(input).getOrElse { return SynResult.failure(it) }
         val body = parseWithEarlierBoundaryRule(input).getOrElse { return SynResult.failure(it) }
         val comma =
-            if (requires_comma_to_be_match_arm(body) && !input.isEmpty()) {
+            if (requiresCommaToBeMatchArm(body) && !input.isEmpty()) {
                 CommaParse.parse(input).getOrElse { return SynResult.failure(it) }
             } else {
                 CommaParse.parse(input).getOrNull()

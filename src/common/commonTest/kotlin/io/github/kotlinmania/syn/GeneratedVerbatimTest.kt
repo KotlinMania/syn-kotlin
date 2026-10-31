@@ -96,8 +96,8 @@ class GeneratedVerbatimTest {
         withInput(tokens("a")) { a ->
             withInput(tokens("a")) { b ->
                 assertEquals(
-                    "assertion failed: crate::buffer::same_buffer(end, cursor)",
-                    assertFailsWith<__rtkVerbatimPanic> { between(a, b) }.message,
+                    "assertion failed: sameBuffer(end, cursor)",
+                    assertFailsWith<IllegalStateException> { between(a, b) }.message,
                 )
             }
         }
@@ -107,7 +107,7 @@ class GeneratedVerbatimTest {
             val original = input.cursor()
             assertEquals(
                 "verbatim end must not be inside a delimited group",
-                assertFailsWith<__rtkVerbatimPanic> { between(input, end) }.message,
+                assertFailsWith<IllegalStateException> { between(input, end) }.message,
             )
             assertEquals(original, input.cursor())
         }
@@ -116,7 +116,7 @@ class GeneratedVerbatimTest {
             move(begin, "n")
             assertEquals(
                 "verbatim end must not be inside a delimited group",
-                assertFailsWith<__rtkVerbatimPanic> { between(begin, input) }.message,
+                assertFailsWith<IllegalStateException> { between(begin, input) }.message,
             )
         }
     }
@@ -127,8 +127,8 @@ class GeneratedVerbatimTest {
             val begin = input.fork()
             move(begin, "e")
             assertEquals(
-                "called `Option::unwrap()` on a `None` value",
-                assertFailsWith<__rtkVerbatimPanic> { between(begin, input) }.message,
+                "called unwrap on a null value",
+                assertFailsWith<IllegalStateException> { between(begin, input) }.message,
             )
         }
     }

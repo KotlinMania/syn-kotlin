@@ -1,342 +1,169 @@
 // port-lint: source precedence.rs
-// Generated from complete Rust precedence.rs (full + printing); integration recorded in
-// docs/generated-precedence-2026-10-24.md.
-@file:Suppress("ClassNaming", "UnusedPrivateFunction")
-
 package io.github.kotlinmania.syn
 
-// Generated from Syn AST; exact original retained in input.rs.
-// Rust use resolved through explicit library bindings.
-// Rust use resolved through explicit library bindings.
-// Rust use resolved through explicit library bindings.
-// Rust use resolved through explicit library bindings.
-// Rust use resolved through explicit library bindings.
-// Rust use resolved through explicit library bindings.
-
 // Reference: https://doc.rust-lang.org/reference/expressions.html#expression-precedence
-public enum class `Precedence` {
+public enum class Precedence {
     // return, break, closures
-    `Jump`,
+    Jump,
 
     // = += -= *= /= %= &= |= ^= <<= >>=
-    `Assign`,
+    Assign,
 
     // .. ..=
-    `Range`,
+    Range,
 
     // ||
-    `Or`,
+    Or,
 
     // &&
-    `And`,
+    And,
 
     // let
-    `Let`,
+    Let,
 
     // == != < > <= >=
-    `Compare`,
+    Compare,
 
     // |
-    `BitOr`,
+    BitOr,
 
     // ^
-    `BitXor`,
+    BitXor,
 
     // &
-    `BitAnd`,
+    BitAnd,
 
     // << >>
-    `Shift`,
+    Shift,
 
     // + -
-    `Sum`,
+    Sum,
 
     // * / %
-    `Product`,
+    Product,
 
     // as
-    `Cast`,
+    Cast,
 
-    // unary - * ! & &mut
-    `Prefix`,
+    // unary - * ! &
+    Prefix,
 
     // paths, loops, function calls, array indexing, field expressions, method calls
-    `Unambiguous`,
+    Unambiguous,
 
     ;
 
-    public companion object
-}
+    public companion object {
+        internal val MIN: Precedence = Jump
 
-internal val `Precedence`.Companion.`MIN`: `Precedence`
-    get() = `Precedence`.`Jump`
+        internal fun ofBinop(op: BinOp): Precedence =
+            when (op) {
+                is BinOp.Add,
+                is BinOp.Sub,
+                -> Sum
 
-internal fun `Precedence`.Companion.`of_binop`(
-    `op`: io.github.kotlinmania.syn.BinOp,
-): `Precedence` =
-    (
-        when (`op`) {
-            is io.github.kotlinmania.syn.BinOp.Add,
-            is io.github.kotlinmania.syn.BinOp.Sub,
-            -> `Precedence`.`Sum`
-            is io.github.kotlinmania.syn.BinOp.Mul,
-            is io.github.kotlinmania.syn.BinOp.Div,
-            is io.github.kotlinmania.syn.BinOp.Rem,
-            -> `Precedence`.`Product`
-            is io.github.kotlinmania.syn.BinOp.And -> `Precedence`.`And`
-            is io.github.kotlinmania.syn.BinOp.Or -> `Precedence`.`Or`
-            is io.github.kotlinmania.syn.BinOp.BitXor -> `Precedence`.`BitXor`
-            is io.github.kotlinmania.syn.BinOp.BitAnd -> `Precedence`.`BitAnd`
-            is io.github.kotlinmania.syn.BinOp.BitOr -> `Precedence`.`BitOr`
-            is io.github.kotlinmania.syn.BinOp.Shl,
-            is io.github.kotlinmania.syn.BinOp.Shr,
-            -> `Precedence`.`Shift`
-            is io.github.kotlinmania.syn.BinOp.Eq,
-            is io.github.kotlinmania.syn.BinOp.Lt,
-            is io.github.kotlinmania.syn.BinOp.Le,
-            is io.github.kotlinmania.syn.BinOp.Ne,
-            is io.github.kotlinmania.syn.BinOp.Ge,
-            is io.github.kotlinmania.syn.BinOp.Gt,
-            -> `Precedence`.`Compare`
-            is io.github.kotlinmania.syn.BinOp.AddAssign,
-            is io.github.kotlinmania.syn.BinOp.SubAssign,
-            is io.github.kotlinmania.syn.BinOp.MulAssign,
-            is io.github.kotlinmania.syn.BinOp.DivAssign,
-            is io.github.kotlinmania.syn.BinOp.RemAssign,
-            is io.github.kotlinmania.syn.BinOp.BitXorAssign,
-            is io.github.kotlinmania.syn.BinOp.BitAndAssign,
-            is io.github.kotlinmania.syn.BinOp.BitOrAssign,
-            is io.github.kotlinmania.syn.BinOp.ShlAssign,
-            is io.github.kotlinmania.syn.BinOp.ShrAssign,
-            -> `Precedence`.`Assign`
-        }
-    )
+                is BinOp.Mul,
+                is BinOp.Div,
+                is BinOp.Rem,
+                -> Product
 
-internal fun `Precedence`.Companion.`of`(`e`: io.github.kotlinmania.syn.Expr): `Precedence` =
-    kotlin.run {
-        // Rust nested function prefix_attrs emitted at module scope as
-        // __rtkPrecedenceNested0_prefix_attrs.
-        (
-            when (val __rtkPrecedenceValue0: io.github.kotlinmania.syn.Expr = `e`) {
-                is io.github.kotlinmania.syn.Expr.Closure ->
-                    kotlin.run {
-                        val `e__binding1`: io.github.kotlinmania.syn.Expr.Closure =
-                            __rtkPrecedenceValue0
-                        (
-                            when ((`e__binding1`).`output`) {
-                                io.github.kotlinmania.syn.ReturnType.Default -> `Precedence`.`Jump`
-                                is io.github.kotlinmania.syn.ReturnType.TypeReturn ->
-                                    `__rtkPrecedenceNested0_prefix_attrs`((`e__binding1`).`attrs`)
-                            }
-                        )
-                    }
-                is io.github.kotlinmania.syn.Expr.Break,
-                is io.github.kotlinmania.syn.Expr.Return,
-                is io.github.kotlinmania.syn.Expr.Yield,
-                ->
-                    kotlin.run {
-                        val `expr`: __rtkPrecedenceOption<io.github.kotlinmania.syn.Expr> =
-                            when (__rtkPrecedenceValue0) {
-                                is io.github.kotlinmania.syn.Expr.Break ->
-                                    kotlin.run {
-                                        val __rtkPrecedenceValue3 = (__rtkPrecedenceValue0).`expr`
-                                        if (__rtkPrecedenceValue3 == null) {
-                                            __rtkPrecedenceOption.None
-                                        } else {
-                                            __rtkPrecedenceOption.Some(__rtkPrecedenceValue3)
-                                        }
-                                    }
-                                is io.github.kotlinmania.syn.Expr.Return ->
-                                    kotlin.run {
-                                        val __rtkPrecedenceValue4 = (__rtkPrecedenceValue0).`expr`
-                                        if (__rtkPrecedenceValue4 == null) {
-                                            __rtkPrecedenceOption.None
-                                        } else {
-                                            __rtkPrecedenceOption.Some(__rtkPrecedenceValue4)
-                                        }
-                                    }
-                                is io.github.kotlinmania.syn.Expr.Yield ->
-                                    kotlin.run {
-                                        val __rtkPrecedenceValue5 = (__rtkPrecedenceValue0).`expr`
-                                        if (__rtkPrecedenceValue5 == null) {
-                                            __rtkPrecedenceOption.None
-                                        } else {
-                                            __rtkPrecedenceOption.Some(__rtkPrecedenceValue5)
-                                        }
-                                    }
-                            }
-                        (
-                            when (`expr`) {
-                                is __rtkPrecedenceOption.Some -> `Precedence`.`Jump`
-                                __rtkPrecedenceOption.None -> `Precedence`.`Unambiguous`
-                            }
-                        )
-                    }
-                is io.github.kotlinmania.syn.Expr.Assign -> `Precedence`.`Assign`
-                is io.github.kotlinmania.syn.Expr.Range -> `Precedence`.`Range`
-                is io.github.kotlinmania.syn.Expr.Binary ->
-                    kotlin.run {
-                        val `e__binding7`: io.github.kotlinmania.syn.Expr.Binary = __rtkPrecedenceValue0
-                        `Precedence`.`of_binop`((`e__binding7`).`op`)
-                    }
-                is io.github.kotlinmania.syn.Expr.Let -> `Precedence`.`Let`
-                is io.github.kotlinmania.syn.Expr.Cast -> `Precedence`.`Cast`
-                is io.github.kotlinmania.syn.Expr.RawAddr,
-                is io.github.kotlinmania.syn.Expr.Reference,
-                is io.github.kotlinmania.syn.Expr.Unary,
-                -> `Precedence`.`Prefix`
-                is io.github.kotlinmania.syn.Expr.Array,
-                is io.github.kotlinmania.syn.Expr.Async,
-                is io.github.kotlinmania.syn.Expr.Await,
-                is io.github.kotlinmania.syn.Expr.BlockExpr,
-                is io.github.kotlinmania.syn.Expr.Call,
-                is io.github.kotlinmania.syn.Expr.Const,
-                is io.github.kotlinmania.syn.Expr.Continue,
-                is io.github.kotlinmania.syn.Expr.Field,
-                is io.github.kotlinmania.syn.Expr.ForLoop,
-                is io.github.kotlinmania.syn.Expr.Group,
-                is io.github.kotlinmania.syn.Expr.If,
-                is io.github.kotlinmania.syn.Expr.Index,
-                is io.github.kotlinmania.syn.Expr.Infer,
-                is io.github.kotlinmania.syn.Expr.Lit,
-                is io.github.kotlinmania.syn.Expr.Loop,
-                is io.github.kotlinmania.syn.Expr.Macro,
-                is io.github.kotlinmania.syn.Expr.Match,
-                is io.github.kotlinmania.syn.Expr.MethodCall,
-                is io.github.kotlinmania.syn.Expr.Paren,
-                is io.github.kotlinmania.syn.Expr.Path,
-                is io.github.kotlinmania.syn.Expr.Repeat,
-                is io.github.kotlinmania.syn.Expr.Struct,
-                is io.github.kotlinmania.syn.Expr.Try,
-                is io.github.kotlinmania.syn.Expr.TryBlock,
-                is io.github.kotlinmania.syn.Expr.Tuple,
-                is io.github.kotlinmania.syn.Expr.Unsafe,
-                is io.github.kotlinmania.syn.Expr.While,
-                ->
-                    kotlin.run {
-                        val `attrs`: kotlin.collections.List<io.github.kotlinmania.syn.Attribute> =
-                            when (__rtkPrecedenceValue0) {
-                                is io.github.kotlinmania.syn.Expr.Array ->
-                                    (__rtkPrecedenceValue0).`attrs`
-                                is io.github.kotlinmania.syn.Expr.Async ->
-                                    (__rtkPrecedenceValue0).`attrs`
-                                is io.github.kotlinmania.syn.Expr.Await ->
-                                    (__rtkPrecedenceValue0).`attrs`
-                                is io.github.kotlinmania.syn.Expr.BlockExpr ->
-                                    (__rtkPrecedenceValue0).`attrs`
-                                is io.github.kotlinmania.syn.Expr.Call ->
-                                    (__rtkPrecedenceValue0).`attrs`
-                                is io.github.kotlinmania.syn.Expr.Const ->
-                                    (__rtkPrecedenceValue0).`attrs`
-                                is io.github.kotlinmania.syn.Expr.Continue ->
-                                    (__rtkPrecedenceValue0).`attrs`
-                                is io.github.kotlinmania.syn.Expr.Field ->
-                                    (__rtkPrecedenceValue0).`attrs`
-                                is io.github.kotlinmania.syn.Expr.ForLoop ->
-                                    (__rtkPrecedenceValue0).`attrs`
-                                is io.github.kotlinmania.syn.Expr.Group ->
-                                    (__rtkPrecedenceValue0).`attrs`
-                                is io.github.kotlinmania.syn.Expr.If -> (__rtkPrecedenceValue0).`attrs`
-                                is io.github.kotlinmania.syn.Expr.Index ->
-                                    (__rtkPrecedenceValue0).`attrs`
-                                is io.github.kotlinmania.syn.Expr.Infer ->
-                                    (__rtkPrecedenceValue0).`attrs`
-                                is io.github.kotlinmania.syn.Expr.Lit -> (__rtkPrecedenceValue0).`attrs`
-                                is io.github.kotlinmania.syn.Expr.Loop ->
-                                    (__rtkPrecedenceValue0).`attrs`
-                                is io.github.kotlinmania.syn.Expr.Macro ->
-                                    (__rtkPrecedenceValue0).`attrs`
-                                is io.github.kotlinmania.syn.Expr.Match ->
-                                    (__rtkPrecedenceValue0).`attrs`
-                                is io.github.kotlinmania.syn.Expr.MethodCall ->
-                                    (__rtkPrecedenceValue0).`attrs`
-                                is io.github.kotlinmania.syn.Expr.Paren ->
-                                    (__rtkPrecedenceValue0).`attrs`
-                                is io.github.kotlinmania.syn.Expr.Path ->
-                                    (__rtkPrecedenceValue0).`attrs`
-                                is io.github.kotlinmania.syn.Expr.Repeat ->
-                                    (__rtkPrecedenceValue0).`attrs`
-                                is io.github.kotlinmania.syn.Expr.Struct ->
-                                    (__rtkPrecedenceValue0).`attrs`
-                                is io.github.kotlinmania.syn.Expr.Try -> (__rtkPrecedenceValue0).`attrs`
-                                is io.github.kotlinmania.syn.Expr.TryBlock ->
-                                    (__rtkPrecedenceValue0).`attrs`
-                                is io.github.kotlinmania.syn.Expr.Tuple ->
-                                    (__rtkPrecedenceValue0).`attrs`
-                                is io.github.kotlinmania.syn.Expr.Unsafe ->
-                                    (__rtkPrecedenceValue0).`attrs`
-                                is io.github.kotlinmania.syn.Expr.While ->
-                                    (__rtkPrecedenceValue0).`attrs`
-                            }
-                        `__rtkPrecedenceNested0_prefix_attrs`(`attrs`)
-                    }
-                is io.github.kotlinmania.syn.Expr.Verbatim -> `Precedence`.`Unambiguous`
+                is BinOp.And -> And
+                is BinOp.Or -> Or
+                is BinOp.BitXor -> BitXor
+                is BinOp.BitAnd -> BitAnd
+                is BinOp.BitOr -> BitOr
+
+                is BinOp.Shl,
+                is BinOp.Shr,
+                -> Shift
+
+                is BinOp.Eq,
+                is BinOp.Lt,
+                is BinOp.Le,
+                is BinOp.Ne,
+                is BinOp.Ge,
+                is BinOp.Gt,
+                -> Compare
+
+                is BinOp.AddAssign,
+                is BinOp.SubAssign,
+                is BinOp.MulAssign,
+                is BinOp.DivAssign,
+                is BinOp.RemAssign,
+                is BinOp.BitXorAssign,
+                is BinOp.BitAndAssign,
+                is BinOp.BitOrAssign,
+                is BinOp.ShlAssign,
+                is BinOp.ShrAssign,
+                -> Assign
             }
-        )
-    }
 
-private fun `__rtkPrecedenceNested0_prefix_attrs`(
-    `attrs`: kotlin.collections.List<io.github.kotlinmania.syn.Attribute>,
-): `Precedence` {
-    return kotlin.run {
-        kotlin.run {
-            for (`attr` in `attrs`) {
-                kotlin.run {
-                    val __rtkPrecedenceValue0 = (`attr`).`style`
-                    if (__rtkPrecedenceValue0 === io.github.kotlinmania.syn.AttrStyle.Outer) {
-                        kotlin.run {
-                            return `Precedence`.`Prefix`
-                        }
+        internal fun of(e: Expr): Precedence =
+            when (e) {
+                is Expr.Closure ->
+                    when (e.output) {
+                        ReturnType.Default -> Jump
+                        is ReturnType.TypeReturn -> prefixAttrs(e.attrs)
                     }
+
+                is Expr.Break -> if (e.expr != null) Jump else Unambiguous
+                is Expr.Return -> if (e.expr != null) Jump else Unambiguous
+                is Expr.Yield -> if (e.expr != null) Jump else Unambiguous
+
+                is Expr.Assign -> Assign
+                is Expr.Range -> Range
+                is Expr.Binary -> ofBinop(e.op)
+                is Expr.Let -> Let
+                is Expr.Cast -> Cast
+
+                is Expr.RawAddr,
+                is Expr.Reference,
+                is Expr.Unary,
+                -> Prefix
+
+                is Expr.Array -> prefixAttrs(e.attrs)
+                is Expr.Async -> prefixAttrs(e.attrs)
+                is Expr.Await -> prefixAttrs(e.attrs)
+                is Expr.BlockExpr -> prefixAttrs(e.attrs)
+                is Expr.Call -> prefixAttrs(e.attrs)
+                is Expr.Const -> prefixAttrs(e.attrs)
+                is Expr.Continue -> prefixAttrs(e.attrs)
+                is Expr.Field -> prefixAttrs(e.attrs)
+                is Expr.ForLoop -> prefixAttrs(e.attrs)
+                is Expr.Group -> prefixAttrs(e.attrs)
+                is Expr.If -> prefixAttrs(e.attrs)
+                is Expr.Index -> prefixAttrs(e.attrs)
+                is Expr.Infer -> prefixAttrs(e.attrs)
+                is Expr.Lit -> prefixAttrs(e.attrs)
+                is Expr.Loop -> prefixAttrs(e.attrs)
+                is Expr.Macro -> prefixAttrs(e.attrs)
+                is Expr.Match -> prefixAttrs(e.attrs)
+                is Expr.MethodCall -> prefixAttrs(e.attrs)
+                is Expr.Paren -> prefixAttrs(e.attrs)
+                is Expr.Path -> prefixAttrs(e.attrs)
+                is Expr.Repeat -> prefixAttrs(e.attrs)
+                is Expr.Struct -> prefixAttrs(e.attrs)
+                is Expr.Try -> prefixAttrs(e.attrs)
+                is Expr.TryBlock -> prefixAttrs(e.attrs)
+                is Expr.Tuple -> prefixAttrs(e.attrs)
+                is Expr.Unsafe -> prefixAttrs(e.attrs)
+                is Expr.While -> prefixAttrs(e.attrs)
+                is Expr.Verbatim -> Unambiguous
+            }
+
+        private fun prefixAttrs(attrs: List<Attribute>): Precedence {
+            for (attr in attrs) {
+                if (attr.style === AttrStyle.Outer) {
+                    return Prefix
                 }
             }
+            return Unambiguous
         }
-        `Precedence`.`Unambiguous`
     }
 }
 
-// Rust Copy marker: value copying requires no runtime operation.
-internal fun `Precedence`.`__rtkPrecedenceClone_clone`(): `Precedence` = this
+internal fun Precedence.clone(): Precedence = this
 
-internal fun `Precedence`.`__rtkPrecedencePartialEq_eq`(`other`: `Precedence`): kotlin.Boolean =
-    ((this).ordinal.toUByte() == (`other`).ordinal.toUByte())
+internal fun Precedence.eq(other: Precedence): Boolean = this.ordinal == other.ordinal
 
-internal fun `Precedence`.`__rtkPrecedencePartialOrd_partial_cmp`(
-    `other`: `Precedence`,
-): __rtkPrecedenceOption<__rtkPrecedenceOrdering> =
-    kotlin.run {
-        val `this`: kotlin.UByte = (this).ordinal.toUByte()
-        val `other__binding0`: kotlin.UByte = (`other`).ordinal.toUByte()
-        __rtkPrecedenceOption.Some(
-            __rtkPrecedenceOrderingFromComparison((`this`).compareTo(`other__binding0`)),
-        )
-    }
-
-// Rust core::cmp::Ordering: tags are distinct from Kotlin enum ordinals.
-internal enum class __rtkPrecedenceOrdering {
-    Less,
-    Equal,
-    Greater,
-}
-
-private fun __rtkPrecedenceOrderingFromComparison(value: kotlin.Int): __rtkPrecedenceOrdering =
-    when {
-        value < 0 -> __rtkPrecedenceOrdering.Less
-        value > 0 -> __rtkPrecedenceOrdering.Greater
-        else -> __rtkPrecedenceOrdering.Equal
-    }
-
-// Tagged Rust Option; owned payloads require a checked fresh-value context.
-internal sealed class __rtkPrecedenceOption<out T> {
-    data object None : __rtkPrecedenceOption<kotlin.Nothing>()
-
-    data class Some<T>(
-        val value: T,
-    ) : __rtkPrecedenceOption<T>()
-}
-
-private fun <T> __rtkPrecedenceUnwrapOr(value: __rtkPrecedenceOption<T>, fallback: T): T =
-    when (value) {
-        __rtkPrecedenceOption.None -> fallback
-        is __rtkPrecedenceOption.Some -> value.value
-    }
+internal fun Precedence.partialCmp(other: Precedence): Int = this.ordinal.compareTo(other.ordinal)

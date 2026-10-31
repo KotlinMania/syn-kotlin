@@ -133,7 +133,7 @@ private fun parseRestOfItem(
         if (!lookahead.peek(IdentPeek) && !lookahead.peek(UnderscorePeek)) {
             return SynResult.failure(lookahead.error())
         }
-        val ident = SynExtImpl0.parse_any(input).getOrElse { return SynResult.failure(it) }
+        val ident = identParseAny(input).getOrElse { return SynResult.failure(it) }
         val generics = parseGenerics(input).getOrElse { return SynResult.failure(it) }
         val colon = ColonParse.parse(input).getOrElse { return SynResult.failure(it) }
         val ty = parseTypeFull(input).getOrElse { return SynResult.failure(it) }
@@ -166,7 +166,7 @@ private fun parseRestOfItem(
         val modToken = ModParse.parse(input).getOrElse { return SynResult.failure(it) }
         val ident =
             if (input.peek(TryPeek)) {
-                SynExtImpl0.parse_any(input).getOrElse { return SynResult.failure(it) }
+                identParseAny(input).getOrElse { return SynResult.failure(it) }
             } else {
                 IdentParse.parse(input).getOrElse { return SynResult.failure(it) }
             }
@@ -1297,7 +1297,7 @@ internal fun parseTraitItem(input: ParseStream): SynResult<TraitItem> {
             if (!lookahead.peek(IdentPeek) && !lookahead.peek(UnderscorePeek)) {
                 return SynResult.failure(lookahead.error())
             }
-            val ident = SynExtImpl0.parse_any(input).getOrElse { return SynResult.failure(it) }
+            val ident = identParseAny(input).getOrElse { return SynResult.failure(it) }
             val generics = parseGenerics(input).getOrElse { return SynResult.failure(it) }
             val colon = ColonParse.parse(input).getOrElse { return SynResult.failure(it) }
             val ty = parseTypeFull(input).getOrElse { return SynResult.failure(it) }
@@ -1364,7 +1364,7 @@ internal fun parseImplItem(input: ParseStream): SynResult<ImplItem> {
             if (!lookahead.peek(IdentPeek) && !lookahead.peek(UnderscorePeek)) {
                 return SynResult.failure(lookahead.error())
             }
-            val ident = SynExtImpl0.parse_any(input).getOrElse { return SynResult.failure(it) }
+            val ident = identParseAny(input).getOrElse { return SynResult.failure(it) }
             val generics = parseGenerics(input).getOrElse { return SynResult.failure(it) }
             val colon = ColonParse.parse(input).getOrElse { return SynResult.failure(it) }
             val ty = parseTypeFull(input).getOrElse { return SynResult.failure(it) }

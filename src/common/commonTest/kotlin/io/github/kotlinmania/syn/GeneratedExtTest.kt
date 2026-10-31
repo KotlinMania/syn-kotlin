@@ -1,5 +1,6 @@
 package io.github.kotlinmania.syn
 
+import io.github.kotlinmania.procmacro2.Ident
 import io.github.kotlinmania.procmacro2.Spacing
 import io.github.kotlinmania.procmacro2.Span
 import io.github.kotlinmania.procmacro2.TokenStream
@@ -16,7 +17,7 @@ class GeneratedExtTest {
             val original =
                 (TokenStream.fromString(source).getOrThrow().first() as TokenTree.Ident).value
             val before = original.span().end()
-            val result = SynExtImpl0(original).unraw()
+            val result = original.unraw()
             assertEquals(source.removePrefix("r#"), result.toString())
             assertEquals(before, result.span().end())
             result.setSpan(Span.callSite())
@@ -31,7 +32,7 @@ class GeneratedExtTest {
                 { input ->
                     val before = input.cursor()
                     val peek = input.peek(IdentPeekAny)
-                    val result = SynExtImpl0.parse_any(input)
+                    val result = Ident.parseAny(input)
                     assertEquals(peek, result.isSuccess)
                     if (result.isSuccess) {
                         assertEquals("rest", input.cursor().tokenStream().toString())
@@ -85,12 +86,12 @@ class GeneratedExtTest {
     fun generatedAppendAndPunctuationKeepDataAndSpacing() {
         val stream = TokenStream.fromString("first").getOrThrow()
         for (token in TokenStream.fromString("r#type += 12u8 (x)").getOrThrow()) {
-            SynExtImpl4(stream).append(token)
+            stream.appendTokenTree(token)
         }
         assertEquals("first r#type += 12u8 (x)", stream.toString())
         val span = stream.first().span()
         for (spacing in listOf(Spacing.Alone, Spacing.Joint)) {
-            val punct = SynExtImpl5.new_spanned(SynExtChar('='.code), spacing, span)
+            val punct = punctNewSpanned('=', spacing, span)
             assertEquals('=', punct.asChar())
             assertEquals(spacing, punct.spacing())
             assertEquals(span.end(), punct.span().end())

@@ -238,5 +238,5 @@ public object ParenParse {
  * a phantom token-marker type that can never be instantiated at runtime.
  */
 public sealed class TokenMarker private constructor() : IntoSpans<Any?> {
-    override fun into_spans(): Any? = throw IllegalStateException("TokenMarker has no inhabitants")
+    override fun intoSpans(): Any? = throw IllegalStateException("TokenMarker has no inhabitants")
 }

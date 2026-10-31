@@ -10,16 +10,16 @@ class GeneratedBigIntTest {
     @Test
     fun decimalCarryAndReturnedTextUseIndependentOwnedStorage() {
         val value = BigInt.new()
-        assertEquals("0", value.to_string().toString())
+        assertEquals("0", value.toString())
         repeat(4) {
-            value.`__rtkBigIntMulAssign_mul_assign`(16u)
-            value.`__rtkBigIntAddAssign_add_assign`(15u)
+            value.mulAssign(16u)
+            value.addAssign(15u)
         }
-        val previous = value.to_string()
-        assertEquals("65535", previous.toString())
-        value.`__rtkBigIntMulAssign_mul_assign`(0u)
-        assertEquals("0", value.to_string().toString())
-        assertEquals("65535", previous.toString())
+        val previous = value.toString()
+        assertEquals("65535", previous)
+        value.mulAssign(0u)
+        assertEquals("0", value.toString())
+        assertEquals("65535", previous)
     }
 
     @Test
@@ -43,12 +43,12 @@ class GeneratedBigIntTest {
     @Test
     fun checkedByteFailurePreservesThePriorDecimalValue() {
         val value = BigInt.new()
-        value.`__rtkBigIntAddAssign_add_assign`(9u)
+        value.addAssign(9u)
         val error =
-            assertFailsWith<__rtkBigIntPanic> { value.`__rtkBigIntMulAssign_mul_assign`(255u) }
+            assertFailsWith<IllegalStateException> { value.mulAssign(255u) }
         assertEquals("attempt to multiply with overflow", error.message)
-        assertEquals("9", value.to_string().toString())
-        value.`__rtkBigIntAddAssign_add_assign`(1u)
-        assertEquals("10", value.to_string().toString())
+        assertEquals("9", value.toString())
+        value.addAssign(1u)
+        assertEquals("10", value.toString())
     }
 }

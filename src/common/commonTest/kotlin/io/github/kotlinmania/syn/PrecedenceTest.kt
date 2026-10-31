@@ -70,54 +70,54 @@ class PrecedenceTest {
 
     @Test
     fun testArithmeticBinopPrecedence() {
-        assertEquals(Precedence.Sum, Precedence.of_binop(BinOp.Add(Plus.default())))
-        assertEquals(Precedence.Sum, Precedence.of_binop(BinOp.Sub(Minus.default())))
-        assertEquals(Precedence.Product, Precedence.of_binop(BinOp.Mul(Star.default())))
-        assertEquals(Precedence.Product, Precedence.of_binop(BinOp.Div(Slash.default())))
-        assertEquals(Precedence.Product, Precedence.of_binop(BinOp.Rem(Percent.default())))
+        assertEquals(Precedence.Sum, Precedence.ofBinop(BinOp.Add(Plus.default())))
+        assertEquals(Precedence.Sum, Precedence.ofBinop(BinOp.Sub(Minus.default())))
+        assertEquals(Precedence.Product, Precedence.ofBinop(BinOp.Mul(Star.default())))
+        assertEquals(Precedence.Product, Precedence.ofBinop(BinOp.Div(Slash.default())))
+        assertEquals(Precedence.Product, Precedence.ofBinop(BinOp.Rem(Percent.default())))
     }
 
     @Test
     fun testShiftBinopPrecedence() {
-        assertEquals(Precedence.Shift, Precedence.of_binop(BinOp.Shl(Shl.default())))
-        assertEquals(Precedence.Shift, Precedence.of_binop(BinOp.Shr(Shr.default())))
+        assertEquals(Precedence.Shift, Precedence.ofBinop(BinOp.Shl(Shl.default())))
+        assertEquals(Precedence.Shift, Precedence.ofBinop(BinOp.Shr(Shr.default())))
     }
 
     @Test
     fun testBitwiseBinopPrecedence() {
-        assertEquals(Precedence.BitAnd, Precedence.of_binop(BinOp.BitAnd(And.default())))
-        assertEquals(Precedence.BitOr, Precedence.of_binop(BinOp.BitOr(Or.default())))
-        assertEquals(Precedence.BitXor, Precedence.of_binop(BinOp.BitXor(Caret.default())))
+        assertEquals(Precedence.BitAnd, Precedence.ofBinop(BinOp.BitAnd(And.default())))
+        assertEquals(Precedence.BitOr, Precedence.ofBinop(BinOp.BitOr(Or.default())))
+        assertEquals(Precedence.BitXor, Precedence.ofBinop(BinOp.BitXor(Caret.default())))
     }
 
     @Test
     fun testLogicalBinopPrecedence() {
-        assertEquals(Precedence.And, Precedence.of_binop(BinOp.And(AndAnd.default())))
-        assertEquals(Precedence.Or, Precedence.of_binop(BinOp.Or(OrOr.default())))
+        assertEquals(Precedence.And, Precedence.ofBinop(BinOp.And(AndAnd.default())))
+        assertEquals(Precedence.Or, Precedence.ofBinop(BinOp.Or(OrOr.default())))
     }
 
     @Test
     fun testComparisonBinopPrecedence() {
-        assertEquals(Precedence.Compare, Precedence.of_binop(BinOp.Eq(EqEq.default())))
-        assertEquals(Precedence.Compare, Precedence.of_binop(BinOp.Ne(Ne.default())))
-        assertEquals(Precedence.Compare, Precedence.of_binop(BinOp.Lt(Lt.default())))
-        assertEquals(Precedence.Compare, Precedence.of_binop(BinOp.Le(Le.default())))
-        assertEquals(Precedence.Compare, Precedence.of_binop(BinOp.Ge(Ge.default())))
-        assertEquals(Precedence.Compare, Precedence.of_binop(BinOp.Gt(Gt.default())))
+        assertEquals(Precedence.Compare, Precedence.ofBinop(BinOp.Eq(EqEq.default())))
+        assertEquals(Precedence.Compare, Precedence.ofBinop(BinOp.Ne(Ne.default())))
+        assertEquals(Precedence.Compare, Precedence.ofBinop(BinOp.Lt(Lt.default())))
+        assertEquals(Precedence.Compare, Precedence.ofBinop(BinOp.Le(Le.default())))
+        assertEquals(Precedence.Compare, Precedence.ofBinop(BinOp.Ge(Ge.default())))
+        assertEquals(Precedence.Compare, Precedence.ofBinop(BinOp.Gt(Gt.default())))
     }
 
     @Test
     fun testAssignBinopPrecedence() {
-        assertEquals(Precedence.Assign, Precedence.of_binop(BinOp.AddAssign(PlusEq.default())))
-        assertEquals(Precedence.Assign, Precedence.of_binop(BinOp.SubAssign(MinusEq.default())))
-        assertEquals(Precedence.Assign, Precedence.of_binop(BinOp.MulAssign(StarEq.default())))
-        assertEquals(Precedence.Assign, Precedence.of_binop(BinOp.DivAssign(SlashEq.default())))
-        assertEquals(Precedence.Assign, Precedence.of_binop(BinOp.RemAssign(PercentEq.default())))
-        assertEquals(Precedence.Assign, Precedence.of_binop(BinOp.BitXorAssign(CaretEq.default())))
-        assertEquals(Precedence.Assign, Precedence.of_binop(BinOp.BitAndAssign(AndEq.default())))
-        assertEquals(Precedence.Assign, Precedence.of_binop(BinOp.BitOrAssign(OrEq.default())))
-        assertEquals(Precedence.Assign, Precedence.of_binop(BinOp.ShlAssign(ShlEq.default())))
-        assertEquals(Precedence.Assign, Precedence.of_binop(BinOp.ShrAssign(ShrEq.default())))
+        assertEquals(Precedence.Assign, Precedence.ofBinop(BinOp.AddAssign(PlusEq.default())))
+        assertEquals(Precedence.Assign, Precedence.ofBinop(BinOp.SubAssign(MinusEq.default())))
+        assertEquals(Precedence.Assign, Precedence.ofBinop(BinOp.MulAssign(StarEq.default())))
+        assertEquals(Precedence.Assign, Precedence.ofBinop(BinOp.DivAssign(SlashEq.default())))
+        assertEquals(Precedence.Assign, Precedence.ofBinop(BinOp.RemAssign(PercentEq.default())))
+        assertEquals(Precedence.Assign, Precedence.ofBinop(BinOp.BitXorAssign(CaretEq.default())))
+        assertEquals(Precedence.Assign, Precedence.ofBinop(BinOp.BitAndAssign(AndEq.default())))
+        assertEquals(Precedence.Assign, Precedence.ofBinop(BinOp.BitOrAssign(OrEq.default())))
+        assertEquals(Precedence.Assign, Precedence.ofBinop(BinOp.ShlAssign(ShlEq.default())))
+        assertEquals(Precedence.Assign, Precedence.ofBinop(BinOp.ShrAssign(ShrEq.default())))
     }
 
     @Test
@@ -164,7 +164,7 @@ class PrecedenceTest {
                 op = BinOp.Add(Plus.default()),
                 right = intLit(),
             )
-        assertEquals(Precedence.of_binop(BinOp.Add(Plus.default())), Precedence.of(binary))
+        assertEquals(Precedence.ofBinop(BinOp.Add(Plus.default())), Precedence.of(binary))
         assertEquals(Precedence.Sum, Precedence.of(binary))
     }
 
@@ -270,19 +270,11 @@ class PrecedenceTest {
     fun testGeneratedTraitBodiesMatchRust() {
         val first = Precedence.Jump
         val last = Precedence.Unambiguous
-        assertEquals(first, first.__rtkPrecedenceClone_clone())
-        assertEquals(true, first.__rtkPrecedencePartialEq_eq(first))
-        assertEquals(false, first.__rtkPrecedencePartialEq_eq(last))
-        for (
-        (left, right, expected) in
-        listOf(
-            Triple(first, first, __rtkPrecedenceOrdering.Equal),
-            Triple(first, last, __rtkPrecedenceOrdering.Less),
-            Triple(last, first, __rtkPrecedenceOrdering.Greater),
-        )
-        ) {
-            val comparison = left.__rtkPrecedencePartialOrd_partial_cmp(right)
-            assertEquals(expected, (comparison as __rtkPrecedenceOption.Some).value)
-        }
+        assertEquals(first, first.clone())
+        assertEquals(true, first.eq(first))
+        assertEquals(false, first.eq(last))
+        assertEquals(0, first.partialCmp(first))
+        assertEquals(true, first.partialCmp(last) < 0)
+        assertEquals(true, last.partialCmp(first) > 0)
     }
 }

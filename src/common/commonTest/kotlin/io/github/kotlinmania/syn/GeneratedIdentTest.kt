@@ -7,7 +7,6 @@ import io.github.kotlinmania.procmacro2.Ident
 import io.github.kotlinmania.procmacro2.Span
 import io.github.kotlinmania.procmacro2.TokenStream
 import io.github.kotlinmania.procmacro2.TokenTree
-import io.github.kotlinmania.syn.generated.ident.__rtkPanic
 import io.github.kotlinmania.syn.token.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -53,7 +52,7 @@ private fun productionObservations(): List<String> {
         val status =
             try {
                 xidOk(value).toString()
-            } catch (_: __rtkPanic) {
+            } catch (_: RuntimeException) {
                 "panic"
             }
         observations.add("xid|$index|$status")

@@ -92,10 +92,10 @@ internal fun parseExprBinaryImpl(
         val opResult = BinOpParse.parse(ahead)
         if (opResult.isSuccess) {
             val op = opResult.getOrThrow()
-            val precedence = Precedence.of_binop(op)
+            val precedence = Precedence.ofBinop(op)
             if (precedence.ordinal < base.ordinal) break
             if (precedence == Precedence.Compare && current is Expr.Binary) {
-                if (Precedence.of_binop(current.op) == Precedence.Compare) {
+                if (Precedence.ofBinop(current.op) == Precedence.Compare) {
                     return SynResult.failure(input.error("comparison operators cannot be chained"))
                 }
             }
@@ -161,7 +161,7 @@ private fun sameCursor(left: Cursor, right: Cursor): Boolean =
 
 internal fun peekPrecedenceImpl(input: ParseStream): Precedence {
     val op = BinOpParse.parse(input.fork())
-    if (op.isSuccess) return Precedence.of_binop(op.getOrThrow())
+    if (op.isSuccess) return Precedence.ofBinop(op.getOrThrow())
     if (input.peek(EqPeek) && !input.peek(FatArrowPeek)) return Precedence.Assign
     if (input.peek(DotDotPeek) || input.peek(DotDotEqPeek)) return Precedence.Range
     if (input.peek(AsPeek)) return Precedence.Cast
@@ -934,7 +934,7 @@ internal fun parseStmtFull(input: ParseStream): SynResult<Stmt> {
                     return e.asFailure()
                 } else {
                     val diverge =
-                        if (!expr_trailing_brace(e.getOrThrow()) && input.peek(ElsePeek)) {
+                        if (!exprTrailingBrace(e.getOrThrow()) && input.peek(ElsePeek)) {
                             val elseToken = ElseParse.parse(input).getOrThrow()
                             val block = parseExprBlock(input)
                             if (block.isFailure) return block.asFailure()

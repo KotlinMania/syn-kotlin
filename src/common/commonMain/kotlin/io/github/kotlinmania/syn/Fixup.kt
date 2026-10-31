@@ -138,9 +138,9 @@ public data class FixupContext(
     }
 
     public fun parenthesize(expr: Expr): Boolean =
-        (leftmostSubexpressionInStmt && !requires_semi_to_be_stmt(expr)) ||
+        (leftmostSubexpressionInStmt && !requiresSemiToBeStmt(expr)) ||
             ((stmt || leftmostSubexpressionInStmt) && expr is Expr.Let) ||
-            (leftmostSubexpressionInMatchArm && !requires_comma_to_be_match_arm(expr)) ||
+            (leftmostSubexpressionInMatchArm && !requiresCommaToBeMatchArm(expr)) ||
             (condition && expr is Expr.Struct) ||
             (
                 rightmostSubexpressionInCondition &&
@@ -193,7 +193,7 @@ public data class FixupContext(
         }
 
         if (nextOperatorCanBeginGenerics && expr is Expr.Cast) {
-            if (trailing_unparameterized_path(expr.ty)) {
+            if (trailingUnparameterizedPath(expr.ty)) {
                 return Precedence.MIN
             }
         }
@@ -220,7 +220,7 @@ private fun scanLeft(expr: Expr, fixup: FixupContext): Boolean =
         }
 
         is Expr.Binary -> {
-            val binopPrec = Precedence.of_binop(expr.op)
+            val binopPrec = Precedence.ofBinop(expr.op)
             if (binopPrec == Precedence.Assign) {
                 fixup.previousOperator <= Precedence.Assign
             } else {
@@ -375,7 +375,7 @@ private fun scanRightBinary(
     ) {
         return Scan.Consume
     }
-    val binopPrec = Precedence.of_binop(expr.op)
+    val binopPrec = Precedence.ofBinop(expr.op)
     if (binopPrec == Precedence.Compare && fixup.nextOperator == Precedence.Compare) {
         return Scan.Consume
     }
@@ -518,7 +518,7 @@ private fun scanRightBreak(
         }
 
         else -> {
-            if (bailoutOffset >= 1 || (expr.label == null && expr_leading_label(value))) {
+            if (bailoutOffset >= 1 || (expr.label == null && exprLeadingLabel(value))) {
                 return Scan.Consume
             }
             val rightFixup = fixup.rightmostSubexpressionFixup(true, true, Precedence.Jump)

@@ -32,7 +32,7 @@ class GeneratedClassifyTest {
             )
         for ((source, expected) in cases) {
             val expr = parseStr(::parseExpr, source).getOrThrow()
-            assertEquals(expected, "${requires_semi_to_be_stmt(expr)}|${requires_comma_to_be_match_arm(expr)}", source)
+            assertEquals(expected, "${requiresSemiToBeStmt(expr)}|${requiresCommaToBeMatchArm(expr)}", source)
         }
     }
 
@@ -68,7 +68,7 @@ class GeneratedClassifyTest {
             )
         for ((source, expected) in cases) {
             val type = parseStr(SynType::parse, source).getOrThrow()
-            assertEquals(expected, trailing_unparameterized_path(type), source)
+            assertEquals(expected, trailingUnparameterizedPath(type), source)
         }
     }
 
@@ -77,7 +77,7 @@ class GeneratedClassifyTest {
         val inner = parseStr(SynType::parse, "u8").getOrThrow()
         assertEquals(
             false,
-            trailing_unparameterized_path(
+            trailingUnparameterizedPath(
                 SynType.Group(
                     io.github.kotlinmania.syn.token.Group
                         .default(),
@@ -87,7 +87,7 @@ class GeneratedClassifyTest {
         )
         assertEquals(
             false,
-            trailing_unparameterized_path(
+            trailingUnparameterizedPath(
                 SynType.Verbatim(
                     io.github.kotlinmania.procmacro2.TokenStream
                         .new(),
@@ -99,7 +99,7 @@ class GeneratedClassifyTest {
             io.github.kotlinmania.syn.token.Plus
                 .default(),
         )
-        assertEquals(true, trailing_unparameterized_path(trailing))
+        assertEquals(true, trailingUnparameterizedPath(trailing))
     }
 
     @Test
@@ -116,7 +116,7 @@ class GeneratedClassifyTest {
                 SynType.TraitObject(null, TypeParamBoundList()),
             )
         for (type in empty) {
-            val error = assertFailsWith<RuntimeException> { trailing_unparameterized_path(type) }
+            val error = assertFailsWith<RuntimeException> { trailingUnparameterizedPath(type) }
             assertEquals("called `Option::unwrap()` on a `None` value", error.message)
         }
     }
@@ -175,7 +175,7 @@ class GeneratedClassifyTest {
             )
         for ((source, expected) in cases) {
             val expr = parseStr(ExprParse::parse, source).getOrThrow()
-            assertEquals(expected, "${requires_semi_to_be_stmt(expr)}|${requires_comma_to_be_match_arm(expr)}|${expr_leading_label(expr)}|${expr_trailing_brace(expr)}", source)
+            assertEquals(expected, "${requiresSemiToBeStmt(expr)}|${requiresCommaToBeMatchArm(expr)}|${exprLeadingLabel(expr)}|${exprTrailingBrace(expr)}", source)
         }
     }
 
@@ -195,7 +195,7 @@ class GeneratedClassifyTest {
             )
         fun check(tokens: io.github.kotlinmania.procmacro2.TokenStream, expected: Boolean) {
             val before = tokens.toString()
-            assertEquals(expected, expr_trailing_brace(Expr.Verbatim(tokens.clone())))
+            assertEquals(expected, exprTrailingBrace(Expr.Verbatim(tokens.clone())))
             val cast =
                 Expr.Cast(
                     mutableListOf(),
@@ -204,7 +204,7 @@ class GeneratedClassifyTest {
                         .default(),
                     SynType.Verbatim(tokens.clone()),
                 )
-            assertEquals(expected, expr_trailing_brace(cast))
+            assertEquals(expected, exprTrailingBrace(cast))
             assertEquals(before, tokens.toString())
         }
         for ((source, expected) in cases) {
@@ -256,7 +256,7 @@ class GeneratedClassifyTest {
                         .default(),
                     type,
                 )
-            val error = assertFailsWith<RuntimeException> { expr_trailing_brace(cast) }
+            val error = assertFailsWith<RuntimeException> { exprTrailingBrace(cast) }
             assertEquals("called `Option::unwrap()` on a `None` value", error.message)
         }
     }
