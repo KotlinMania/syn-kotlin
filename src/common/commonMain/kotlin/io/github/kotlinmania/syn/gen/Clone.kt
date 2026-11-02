@@ -45,7 +45,6 @@ import io.github.kotlinmania.syn.ImplRestriction
 import io.github.kotlinmania.syn.Index
 import io.github.kotlinmania.syn.Item
 import io.github.kotlinmania.syn.Label
-import io.github.kotlinmania.syn.Lifetime
 import io.github.kotlinmania.syn.Lit
 import io.github.kotlinmania.syn.LocalInit
 import io.github.kotlinmania.syn.Macro
@@ -69,6 +68,7 @@ import io.github.kotlinmania.syn.Signature
 import io.github.kotlinmania.syn.StaticMutability
 import io.github.kotlinmania.syn.Stmt
 import io.github.kotlinmania.syn.SynType
+import io.github.kotlinmania.syn.TraitBoundModifier
 import io.github.kotlinmania.syn.TraitItem
 import io.github.kotlinmania.syn.TypeParamBound
 import io.github.kotlinmania.syn.UnOp
@@ -78,6 +78,7 @@ import io.github.kotlinmania.syn.Variant
 import io.github.kotlinmania.syn.Visibility
 import io.github.kotlinmania.syn.WhereClause
 import io.github.kotlinmania.syn.WherePredicate
+import io.github.kotlinmania.syn.cloneLiteral
 import io.github.kotlinmania.syn.copy
 
 public fun Abi.clone(): Abi =
@@ -90,7 +91,7 @@ public fun PathArguments.AngleBracketed.clone(): PathArguments.AngleBracketed =
     PathArguments.AngleBracketed(colon2Token, ltToken, args.copy({ it.clone() }, { it }), gtToken)
 
 public fun Arm.clone(): Arm =
-    Arm(attrs.cloneList(), pat.clone(), guard?.let { it.clone() }, fatArrowToken, body.clone(), comma)
+    Arm(attrs.cloneAttrs(), pat.clone(), guard?.let { it.clone() }, fatArrowToken, body.clone(), comma)
 
 public fun AssocConst.clone(): AssocConst =
     AssocConst(ident.copy(), generics?.let { it.clone() }, eqToken, value.clone())
@@ -104,7 +105,7 @@ public fun Attribute.clone(): Attribute =
     Attribute(poundToken, style.clone(), bracketToken, meta.clone())
 
 public fun BareFnArg.clone(): BareFnArg =
-    BareFnArg(attrs.cloneList(), name?.clone(), ty.clone())
+    BareFnArg(attrs.cloneAttrs(), name?.clone(), ty.clone())
 
 public fun BinOp.clone(): BinOp =
     when (this) {
@@ -139,7 +140,7 @@ public fun BinOp.clone(): BinOp =
     }
 
 public fun Block.clone(): Block =
-    Block(braceToken, stmts.cloneList())
+    Block(braceToken, stmts.cloneStmts())
 
 public fun BoundLifetimes.clone(): BoundLifetimes =
     BoundLifetimes(forToken, ltToken, lifetimes.copy({ it.clone() }, { it }), gtToken)
@@ -170,7 +171,7 @@ public fun DataUnion.clone(): DataUnion =
     DataUnion(unionToken, fields.clone())
 
 public fun DeriveInput.clone(): DeriveInput =
-    DeriveInput(attrs.cloneList(), vis.clone(), ident.copy(), generics.clone(), data.clone())
+    DeriveInput(attrs.cloneAttrs(), vis.clone(), ident.copy(), generics.clone(), data.clone())
 
 public fun Expr.clone(): Expr =
     when (this) {
@@ -217,135 +218,135 @@ public fun Expr.clone(): Expr =
     }
 
 public fun Expr.Array.clone(): Expr.Array =
-    Expr.Array(attrs.cloneList(), bracketToken, elems.copy({ it.clone() }, { it }))
+    Expr.Array(attrs.cloneAttrs(), bracketToken, elems.copy({ it.clone() }, { it }))
 
 public fun Expr.Assign.clone(): Expr.Assign =
-    Expr.Assign(attrs.cloneList(), left.clone(), eqToken, right.clone())
+    Expr.Assign(attrs.cloneAttrs(), left.clone(), eqToken, right.clone())
 
 public fun Expr.Async.clone(): Expr.Async =
-    Expr.Async(attrs.cloneList(), asyncToken, capture, block.clone())
+    Expr.Async(attrs.cloneAttrs(), asyncToken, capture, block.clone())
 
 public fun Expr.Await.clone(): Expr.Await =
-    Expr.Await(attrs.cloneList(), base.clone(), dotToken, awaitToken)
+    Expr.Await(attrs.cloneAttrs(), base.clone(), dotToken, awaitToken)
 
 public fun Expr.Binary.clone(): Expr.Binary =
-    Expr.Binary(attrs.cloneList(), left.clone(), op.clone(), right.clone())
+    Expr.Binary(attrs.cloneAttrs(), left.clone(), op.clone(), right.clone())
 
 public fun Expr.BlockExpr.clone(): Expr.BlockExpr =
-    Expr.BlockExpr(attrs.cloneList(), label?.clone(), block.clone())
+    Expr.BlockExpr(attrs.cloneAttrs(), label?.clone(), block.clone())
 
 public fun Expr.Break.clone(): Expr.Break =
-    Expr.Break(attrs.cloneList(), breakToken, label?.clone(), expr?.clone())
+    Expr.Break(attrs.cloneAttrs(), breakToken, label?.clone(), expr?.clone())
 
 public fun Expr.Call.clone(): Expr.Call =
-    Expr.Call(attrs.cloneList(), func.clone(), parenToken, args.copy({ it.clone() }, { it }))
+    Expr.Call(attrs.cloneAttrs(), func.clone(), parenToken, args.copy({ it.clone() }, { it }))
 
 public fun Expr.Cast.clone(): Expr.Cast =
-    Expr.Cast(attrs.cloneList(), expr.clone(), asToken, ty.clone())
+    Expr.Cast(attrs.cloneAttrs(), expr.clone(), asToken, ty.clone())
 
 public fun Expr.Closure.clone(): Expr.Closure =
-    Expr.Closure(attrs.cloneList(), lifetimes?.clone(), constness, movability, asyncness, capture, or1Token, inputs.copy({ it.clone() }, { it }), or2Token, output.clone(), body.clone())
+    Expr.Closure(attrs.cloneAttrs(), lifetimes?.clone(), constness, movability, asyncness, capture, or1Token, inputs.copy({ it.clone() }, { it }), or2Token, output.clone(), body.clone())
 
 public fun Expr.Const.clone(): Expr.Const =
-    Expr.Const(attrs.cloneList(), constToken, block.clone())
+    Expr.Const(attrs.cloneAttrs(), constToken, block.clone())
 
 public fun Expr.Continue.clone(): Expr.Continue =
-    Expr.Continue(attrs.cloneList(), continueToken, label?.clone())
+    Expr.Continue(attrs.cloneAttrs(), continueToken, label?.clone())
 
 public fun Expr.Field.clone(): Expr.Field =
-    Expr.Field(attrs.cloneList(), base.clone(), dotToken, member.clone())
+    Expr.Field(attrs.cloneAttrs(), base.clone(), dotToken, member.clone())
 
 public fun Expr.ForLoop.clone(): Expr.ForLoop =
-    Expr.ForLoop(attrs.cloneList(), label?.clone(), forToken, pat.clone(), inToken, expr.clone(), body.clone())
+    Expr.ForLoop(attrs.cloneAttrs(), label?.clone(), forToken, pat.clone(), inToken, expr.clone(), body.clone())
 
 public fun Expr.Group.clone(): Expr.Group =
-    Expr.Group(attrs.cloneList(), groupToken, expr.clone())
+    Expr.Group(attrs.cloneAttrs(), groupToken, expr.clone())
 
 public fun Expr.If.clone(): Expr.If =
-    Expr.If(attrs.cloneList(), ifToken, cond.clone(), thenBranch.clone(), elseBranch?.clone())
+    Expr.If(attrs.cloneAttrs(), ifToken, cond.clone(), thenBranch.clone(), elseBranch?.clone())
 
 public fun Expr.Index.clone(): Expr.Index =
-    Expr.Index(attrs.cloneList(), expr.clone(), bracketToken, index.clone())
+    Expr.Index(attrs.cloneAttrs(), expr.clone(), bracketToken, index.clone())
 
 public fun Expr.Infer.clone(): Expr.Infer =
-    Expr.Infer(attrs.cloneList(), underscoreToken)
+    Expr.Infer(attrs.cloneAttrs(), underscoreToken)
 
 public fun Expr.Let.clone(): Expr.Let =
-    Expr.Let(attrs.cloneList(), letToken, pat.clone(), eqToken, expr.clone())
+    Expr.Let(attrs.cloneAttrs(), letToken, pat.clone(), eqToken, expr.clone())
 
 public fun Expr.Lit.clone(): Expr.Lit =
-    Expr.Lit(attrs.cloneList(), lit.clone())
+    Expr.Lit(attrs.cloneAttrs(), lit.clone())
 
 public fun Expr.Loop.clone(): Expr.Loop =
-    Expr.Loop(attrs.cloneList(), label?.clone(), loopToken, body.clone())
+    Expr.Loop(attrs.cloneAttrs(), label?.clone(), loopToken, body.clone())
 
 public fun Expr.Macro.clone(): Expr.Macro =
-    Expr.Macro(attrs.cloneList(), mac.clone())
+    Expr.Macro(attrs.cloneAttrs(), mac.clone())
 
 public fun Expr.Match.clone(): Expr.Match =
-    Expr.Match(attrs.cloneList(), matchToken, expr.clone(), braceToken, arms.cloneList())
+    Expr.Match(attrs.cloneAttrs(), matchToken, expr.clone(), braceToken, arms.cloneArms())
 
 public fun Expr.MethodCall.clone(): Expr.MethodCall =
-    Expr.MethodCall(attrs.cloneList(), receiver.clone(), dotToken, method.copy(), turbofish?.let { it.clone() }, parenToken, args.copy({ it.clone() }, { it }))
+    Expr.MethodCall(attrs.cloneAttrs(), receiver.clone(), dotToken, method.copy(), turbofish?.let { it.clone() }, parenToken, args.copy({ it.clone() }, { it }))
 
 public fun Expr.Paren.clone(): Expr.Paren =
-    Expr.Paren(attrs.cloneList(), parenToken, expr.clone())
+    Expr.Paren(attrs.cloneAttrs(), parenToken, expr.clone())
 
 public fun Expr.Path.clone(): Expr.Path =
-    Expr.Path(attrs.cloneList(), qself?.clone(), path.clone())
+    Expr.Path(attrs.cloneAttrs(), qself?.clone(), path.clone())
 
 public fun Expr.Range.clone(): Expr.Range =
-    Expr.Range(attrs.cloneList(), start?.clone(), limits.clone(), end?.clone())
+    Expr.Range(attrs.cloneAttrs(), start?.clone(), limits.clone(), end?.clone())
 
 public fun Expr.RawAddr.clone(): Expr.RawAddr =
-    Expr.RawAddr(attrs.cloneList(), andToken, raw, mutability.clone(), expr.clone())
+    Expr.RawAddr(attrs.cloneAttrs(), andToken, raw, mutability.clone(), expr.clone())
 
 public fun Expr.Reference.clone(): Expr.Reference =
-    Expr.Reference(attrs.cloneList(), andToken, mutability, expr.clone())
+    Expr.Reference(attrs.cloneAttrs(), andToken, mutability, expr.clone())
 
 public fun Expr.Repeat.clone(): Expr.Repeat =
-    Expr.Repeat(attrs.cloneList(), bracketToken, expr.clone(), semiToken, len.clone())
+    Expr.Repeat(attrs.cloneAttrs(), bracketToken, expr.clone(), semiToken, len.clone())
 
 public fun Expr.Return.clone(): Expr.Return =
-    Expr.Return(attrs.cloneList(), returnToken, expr?.clone())
+    Expr.Return(attrs.cloneAttrs(), returnToken, expr?.clone())
 
 public fun Expr.Struct.clone(): Expr.Struct =
-    Expr.Struct(attrs.cloneList(), qself?.clone(), path.clone(), braceToken, fields.copy({ it.clone() }, { it }), dot2Token, rest?.clone())
+    Expr.Struct(attrs.cloneAttrs(), qself?.clone(), path.clone(), braceToken, fields.copy({ it.clone() }, { it }), dot2Token, rest?.clone())
 
 public fun Expr.Try.clone(): Expr.Try =
-    Expr.Try(attrs.cloneList(), expr.clone(), questionToken)
+    Expr.Try(attrs.cloneAttrs(), expr.clone(), questionToken)
 
 public fun Expr.TryBlock.clone(): Expr.TryBlock =
-    Expr.TryBlock(attrs.cloneList(), tryToken, block.clone())
+    Expr.TryBlock(attrs.cloneAttrs(), tryToken, block.clone())
 
 public fun Expr.Tuple.clone(): Expr.Tuple =
-    Expr.Tuple(attrs.cloneList(), parenToken, elems.copy({ it.clone() }, { it }))
+    Expr.Tuple(attrs.cloneAttrs(), parenToken, elems.copy({ it.clone() }, { it }))
 
 public fun Expr.Unary.clone(): Expr.Unary =
-    Expr.Unary(attrs.cloneList(), op.clone(), expr.clone())
+    Expr.Unary(attrs.cloneAttrs(), op.clone(), expr.clone())
 
 public fun Expr.Unsafe.clone(): Expr.Unsafe =
-    Expr.Unsafe(attrs.cloneList(), unsafeToken, block.clone())
+    Expr.Unsafe(attrs.cloneAttrs(), unsafeToken, block.clone())
 
 public fun Expr.Verbatim.clone(): Expr.Verbatim =
     Expr.Verbatim(tokens.clone())
 
 public fun Expr.While.clone(): Expr.While =
-    Expr.While(attrs.cloneList(), label?.clone(), whileToken, cond.clone(), body.clone())
+    Expr.While(attrs.cloneAttrs(), label?.clone(), whileToken, cond.clone(), body.clone())
 
 public fun Expr.Yield.clone(): Expr.Yield =
-    Expr.Yield(attrs.cloneList(), yieldToken, expr?.clone())
+    Expr.Yield(attrs.cloneAttrs(), yieldToken, expr?.clone())
 
 public fun Field.clone(): Field =
-    Field(attrs.cloneList(), vis.clone(), mutability.clone(), ident?.let { it.copy() }, colonToken, ty.clone())
+    Field(attrs.cloneAttrs(), vis.clone(), mutability.clone(), ident?.let { it.copy() }, colonToken, ty.clone())
 
 public fun FieldMutability.clone(): FieldMutability = this
 
 public fun FieldPat.clone(): FieldPat =
-    FieldPat(member.clone(), colonToken, pat.clone(), attrs.cloneList())
+    FieldPat(member.clone(), colonToken, pat.clone(), attrs.cloneAttrs())
 
 public fun FieldValue.clone(): FieldValue =
-    FieldValue(attrs.cloneList(), member.clone(), colonToken, expr.clone())
+    FieldValue(attrs.cloneAttrs(), member.clone(), colonToken, expr.clone())
 
 public fun Fields.clone(): Fields =
     when (this) {
@@ -361,7 +362,7 @@ public fun FieldsUnnamed.clone(): FieldsUnnamed =
     FieldsUnnamed(parenToken, unnamed.copy({ it.clone() }, { it }))
 
 public fun File.clone(): File =
-    File(shebang, attrs.cloneList(), items.cloneList())
+    File(shebang, attrs.cloneAttrs(), items.cloneItems())
 
 public fun FnArg.clone(): FnArg =
     when (this) {
@@ -382,16 +383,16 @@ public fun ForeignItem.clone(): ForeignItem =
     }
 
 public fun ForeignItem.Fn.clone(): ForeignItem.Fn =
-    ForeignItem.Fn(attrs.cloneList(), vis.clone(), sig.clone(), semiToken)
+    ForeignItem.Fn(attrs.cloneAttrs(), vis.clone(), sig.clone(), semiToken)
 
 public fun ForeignItem.Macro.clone(): ForeignItem.Macro =
-    ForeignItem.Macro(attrs.cloneList(), mac.clone(), semiToken)
+    ForeignItem.Macro(attrs.cloneAttrs(), mac.clone(), semiToken)
 
 public fun ForeignItem.Static.clone(): ForeignItem.Static =
-    ForeignItem.Static(attrs.cloneList(), vis.clone(), staticToken, mutability, ident.copy(), colonToken, ty.clone(), semiToken)
+    ForeignItem.Static(attrs.cloneAttrs(), vis.clone(), staticToken, mutability, ident.copy(), colonToken, ty.clone(), semiToken)
 
 public fun ForeignItem.ItemType.clone(): ForeignItem.ItemType =
-    ForeignItem.ItemType(attrs.cloneList(), vis.clone(), typeToken, ident.copy(), generics.clone(), semiToken)
+    ForeignItem.ItemType(attrs.cloneAttrs(), vis.clone(), typeToken, ident.copy(), generics.clone(), semiToken)
 
 public fun ForeignItem.Verbatim.clone(): ForeignItem.Verbatim =
     ForeignItem.Verbatim(tokens.clone())
@@ -413,6 +414,9 @@ public fun GenericParam.clone(): GenericParam =
         is GenericParam.ConstParam -> this.clone()
     }
 
+public fun GenericParam.ConstParam.clone(): GenericParam.ConstParam =
+    GenericParam.ConstParam(attrs.cloneAttrs(), constToken, ident.copy(), colonToken, ty.clone(), eqToken, default?.clone())
+
 public fun Generics.clone(): Generics =
     Generics(ltToken, params.copy({ it.clone() }, { it }), gtToken, whereClause?.clone())
 
@@ -426,16 +430,16 @@ public fun ImplItem.clone(): ImplItem =
     }
 
 public fun ImplItem.Const.clone(): ImplItem.Const =
-    ImplItem.Const(attrs.cloneList(), vis.clone(), defaultness, constToken, ident.copy(), generics.clone(), colonToken, ty.clone(), eqToken, expr.clone(), semiToken)
+    ImplItem.Const(attrs.cloneAttrs(), vis.clone(), defaultness, constToken, ident.copy(), generics.clone(), colonToken, ty.clone(), eqToken, expr.clone(), semiToken)
 
 public fun ImplItem.Fn.clone(): ImplItem.Fn =
-    ImplItem.Fn(attrs.cloneList(), vis.clone(), defaultness, sig.clone(), block.clone())
+    ImplItem.Fn(attrs.cloneAttrs(), vis.clone(), defaultness, sig.clone(), block.clone())
 
 public fun ImplItem.Macro.clone(): ImplItem.Macro =
-    ImplItem.Macro(attrs.cloneList(), mac.clone(), semiToken)
+    ImplItem.Macro(attrs.cloneAttrs(), mac.clone(), semiToken)
 
 public fun ImplItem.AssocType.clone(): ImplItem.AssocType =
-    ImplItem.AssocType(attrs.cloneList(), vis.clone(), defaultness, typeToken, ident.copy(), generics.clone(), eqToken, ty.clone(), semiToken)
+    ImplItem.AssocType(attrs.cloneAttrs(), vis.clone(), defaultness, typeToken, ident.copy(), generics.clone(), eqToken, ty.clone(), semiToken)
 
 public fun ImplItem.Verbatim.clone(): ImplItem.Verbatim =
     ImplItem.Verbatim(tokens.clone())
@@ -466,49 +470,49 @@ public fun Item.clone(): Item =
     }
 
 public fun Item.Const.clone(): Item.Const =
-    Item.Const(attrs.cloneList(), vis.clone(), constToken, ident.copy(), colonToken, ty.clone(), eqToken, expr?.clone(), semiToken)
+    Item.Const(attrs.cloneAttrs(), vis.clone(), constToken, ident.copy(), colonToken, ty.clone(), eqToken, expr?.clone(), semiToken)
 
 public fun Item.Enum.clone(): Item.Enum =
-    Item.Enum(attrs.cloneList(), vis.clone(), enumToken, ident.copy(), generics.clone(), braceToken, variants.copy({ it.clone() }, { it }))
+    Item.Enum(attrs.cloneAttrs(), vis.clone(), enumToken, ident.copy(), generics.clone(), braceToken, variants.copy({ it.clone() }, { it }))
 
 public fun Item.ExternCrate.clone(): Item.ExternCrate =
-    Item.ExternCrate(attrs.cloneList(), vis.clone(), externToken, crateToken, ident.copy(), rename?.clone(), semiToken)
+    Item.ExternCrate(attrs.cloneAttrs(), vis.clone(), externToken, crateToken, ident.copy(), rename?.clone(), semiToken)
 
 public fun Item.Fn.clone(): Item.Fn =
-    Item.Fn(attrs.cloneList(), vis.clone(), sig.clone(), block)
+    Item.Fn(attrs.cloneAttrs(), vis.clone(), sig.clone(), block?.clone())
 
 public fun Item.ForeignMod.clone(): Item.ForeignMod =
-    Item.ForeignMod(attrs.cloneList(), unsafety, abi.clone(), braceToken, items.cloneList())
+    Item.ForeignMod(attrs.cloneAttrs(), unsafety, abi.clone(), braceToken, items.cloneForeignItems())
 
 public fun Item.Impl.clone(): Item.Impl =
-    Item.Impl(attrs.cloneList(), defaultness, unsafety, implToken, generics.clone(), traitPath?.clone(), selfType.clone(), braceToken, items.cloneList())
+    Item.Impl(attrs.cloneAttrs(), defaultness, unsafety, implToken, generics.clone(), traitPath?.clone(), selfType.clone(), braceToken, items.cloneImplItems())
 
 public fun Item.Macro.clone(): Item.Macro =
-    Item.Macro(attrs.cloneList(), ident?.let { it.copy() }, mac.clone(), semiToken)
+    Item.Macro(attrs.cloneAttrs(), ident?.let { it.copy() }, mac.clone(), semiToken)
 
 public fun Item.Mod.clone(): Item.Mod =
-    Item.Mod(attrs.cloneList(), vis.clone(), unsafety, modToken, ident.copy(), content?.clone())
+    Item.Mod(attrs.cloneAttrs(), vis.clone(), unsafety, modToken, ident.copy(), content?.clone())
 
 public fun Item.Static.clone(): Item.Static =
-    Item.Static(attrs.cloneList(), vis.clone(), staticToken, mutability.clone(), ident.copy(), colonToken, ty.clone(), eqToken, expr.clone(), semiToken)
+    Item.Static(attrs.cloneAttrs(), vis.clone(), staticToken, mutability.clone(), ident.copy(), colonToken, ty.clone(), eqToken, expr.clone(), semiToken)
 
 public fun Item.Struct.clone(): Item.Struct =
-    Item.Struct(attrs.cloneList(), vis.clone(), structToken, ident.copy(), generics.clone(), fields.clone(), semiToken)
+    Item.Struct(attrs.cloneAttrs(), vis.clone(), structToken, ident.copy(), generics.clone(), fields.clone(), semiToken)
 
 public fun Item.Trait.clone(): Item.Trait =
-    Item.Trait(attrs.cloneList(), vis.clone(), unsafety, autoToken, restriction, traitToken, ident.copy(), generics.clone(), colonToken, supertraits.copy({ it.clone() }, { it }), braceToken, items.cloneList())
+    Item.Trait(attrs.cloneAttrs(), vis.clone(), unsafety, autoToken, restriction, traitToken, ident.copy(), generics.clone(), colonToken, supertraits.copy({ it.clone() }, { it }), braceToken, items.cloneTraitItems())
 
 public fun Item.TraitAlias.clone(): Item.TraitAlias =
-    Item.TraitAlias(attrs.cloneList(), vis.clone(), traitToken, ident.copy(), generics.clone(), eqToken, bounds.copy({ it.clone() }, { it }), semiToken)
+    Item.TraitAlias(attrs.cloneAttrs(), vis.clone(), traitToken, ident.copy(), generics.clone(), eqToken, bounds.copy({ it.clone() }, { it }), semiToken)
 
 public fun Item.ItemType.clone(): Item.ItemType =
-    Item.ItemType(attrs.cloneList(), vis.clone(), typeToken, ident.copy(), generics.clone(), eqToken, ty.clone(), semiToken)
+    Item.ItemType(attrs.cloneAttrs(), vis.clone(), typeToken, ident.copy(), generics.clone(), eqToken, ty.clone(), semiToken)
 
 public fun Item.Union.clone(): Item.Union =
-    Item.Union(attrs.cloneList(), vis.clone(), unionToken, ident.copy(), generics.clone(), fields.clone())
+    Item.Union(attrs.cloneAttrs(), vis.clone(), unionToken, ident.copy(), generics.clone(), fields.clone())
 
 public fun Item.Use.clone(): Item.Use =
-    Item.Use(attrs.cloneList(), vis.clone(), useToken, leadingColon, tree.clone(), semiToken)
+    Item.Use(attrs.cloneAttrs(), vis.clone(), useToken, leadingColon, tree.clone(), semiToken)
 
 public fun Item.Verbatim.clone(): Item.Verbatim =
     Item.Verbatim(tokens.clone())
@@ -517,7 +521,7 @@ public fun Label.clone(): Label =
     Label(name.clone(), colonToken)
 
 public fun GenericParam.LifetimeParam.clone(): GenericParam.LifetimeParam =
-    GenericParam.LifetimeParam(attrs.cloneList(), lifetime.clone(), colonToken, bounds.copy({ it.clone() }, { it }))
+    GenericParam.LifetimeParam(attrs.cloneAttrs(), lifetime.clone(), colonToken, bounds.copy({ it.clone() }, { it }))
 
 public fun Lit.clone(): Lit =
     when (this) {
@@ -529,7 +533,7 @@ public fun Lit.clone(): Lit =
         is Lit.Int -> Lit.Int(value.clone())
         is Lit.Float -> Lit.Float(value.clone())
         is Lit.Bool -> Lit.Bool(value.clone())
-        is Lit.Verbatim -> Lit.Verbatim(value)
+        is Lit.Verbatim -> Lit.Verbatim(cloneLiteral(value))
     }
 
 public fun Macro.clone(): Macro =
@@ -550,10 +554,19 @@ public fun Member.clone(): Member =
 
 public fun Meta.clone(): Meta =
     when (this) {
-        is Meta.PathMeta -> Meta.PathMeta(path.clone())
-        is Meta.List -> Meta.List(path.clone(), delimiter, tokens.clone())
-        is Meta.NameValue -> Meta.NameValue(path.clone(), eqToken, value.clone())
+        is Meta.PathMeta -> this.clone()
+        is Meta.List -> this.clone()
+        is Meta.NameValue -> this.clone()
     }
+
+public fun Meta.PathMeta.clone(): Meta.PathMeta =
+    Meta.PathMeta(path.clone())
+
+public fun Meta.List.clone(): Meta.List =
+    Meta.List(path.clone(), delimiter.clone(), tokens.clone())
+
+public fun Meta.NameValue.clone(): Meta.NameValue =
+    Meta.NameValue(path.clone(), eqToken, value.clone())
 
 public fun Pat.clone(): Pat =
     when (this) {
@@ -577,61 +590,61 @@ public fun Pat.clone(): Pat =
     }
 
 public fun Pat.Ident.clone(): Pat.Ident =
-    Pat.Ident(attrs.cloneList(), byRef, mutability.clone(), ident.copy(), atToken, subpat?.clone())
+    Pat.Ident(attrs.cloneAttrs(), byRef, mutability.clone(), ident.copy(), atToken, subpat?.clone())
 
 public fun Pat.Tuple.clone(): Pat.Tuple =
-    Pat.Tuple(parenToken, elems.copy({ it.clone() }, { it }), attrs.cloneList())
+    Pat.Tuple(parenToken, elems.copy({ it.clone() }, { it }), attrs.cloneAttrs())
 
 public fun Pat.Or.clone(): Pat.Or =
-    Pat.Or(leadingVert, cases.copy({ it.clone() }, { it }), attrs.cloneList())
+    Pat.Or(leadingVert, cases.copy({ it.clone() }, { it }), attrs.cloneAttrs())
 
 public fun Pat.PatParen.clone(): Pat.PatParen =
-    Pat.PatParen(parenToken, pat.clone(), attrs.cloneList())
+    Pat.PatParen(parenToken, pat.clone(), attrs.cloneAttrs())
 
 public fun Pat.Reference.clone(): Pat.Reference =
-    Pat.Reference(andToken, mutability, pat.clone(), attrs.cloneList())
+    Pat.Reference(andToken, mutability, pat.clone(), attrs.cloneAttrs())
 
 public fun Pat.Struct.clone(): Pat.Struct =
-    Pat.Struct(qself?.clone(), path.clone(), braceToken, fields.copy({ it.clone() }, { it }), rest?.clone(), dot2Token, attrs.cloneList())
+    Pat.Struct(qself?.clone(), path.clone(), braceToken, fields.copy({ it.clone() }, { it }), rest?.clone(), dot2Token, attrs.cloneAttrs())
 
 public fun Pat.Slice.clone(): Pat.Slice =
-    Pat.Slice(bracketToken, elems.copy({ it.clone() }, { it }), attrs.cloneList())
+    Pat.Slice(bracketToken, elems.copy({ it.clone() }, { it }), attrs.cloneAttrs())
 
 public fun Pat.TypeAscription.clone(): Pat.TypeAscription =
-    Pat.TypeAscription(attrs.cloneList(), pat.clone(), colonToken, ty.clone())
+    Pat.TypeAscription(attrs.cloneAttrs(), pat.clone(), colonToken, ty.clone())
 
 public fun Pat.Const.clone(): Pat.Const =
-    Pat.Const(attrs.cloneList(), constToken, block.clone())
+    Pat.Const(attrs.cloneAttrs(), constToken, block.clone())
 
 public fun Pat.Lit.clone(): Pat.Lit =
-    Pat.Lit(attrs.cloneList(), lit.clone())
+    Pat.Lit(attrs.cloneAttrs(), lit.clone())
 
 public fun Pat.Macro.clone(): Pat.Macro =
-    Pat.Macro(attrs.cloneList(), mac.clone())
+    Pat.Macro(attrs.cloneAttrs(), mac.clone())
 
 public fun Pat.Path.clone(): Pat.Path =
-    Pat.Path(attrs.cloneList(), qself?.clone(), path.clone())
+    Pat.Path(attrs.cloneAttrs(), qself?.clone(), path.clone())
 
 public fun Pat.Range.clone(): Pat.Range =
-    Pat.Range(attrs.cloneList(), start?.clone(), limits.clone(), end?.clone())
+    Pat.Range(attrs.cloneAttrs(), start?.clone(), limits.clone(), end?.clone())
 
 public fun Pat.Rest.clone(): Pat.Rest =
-    Pat.Rest(attrs.cloneList(), dot2Token)
+    Pat.Rest(attrs.cloneAttrs(), dot2Token)
 
 public fun Pat.TupleStruct.clone(): Pat.TupleStruct =
-    Pat.TupleStruct(attrs.cloneList(), qself?.clone(), path.clone(), parenToken, elems.copy({ it.clone() }, { it }))
+    Pat.TupleStruct(attrs.cloneAttrs(), qself?.clone(), path.clone(), parenToken, elems.copy({ it.clone() }, { it }))
 
 public fun Pat.Wild.clone(): Pat.Wild =
-    Pat.Wild(attrs.cloneList(), underscoreToken)
+    Pat.Wild(attrs.cloneAttrs(), underscoreToken)
 
 public fun Pat.Verbatim.clone(): Pat.Verbatim =
     Pat.Verbatim(tokens.clone())
 
 public fun PatRest.clone(): PatRest =
-    PatRest(dot2Token, attrs.cloneList())
+    PatRest(dot2Token, attrs.cloneAttrs())
 
 public fun PatType.clone(): PatType =
-    PatType(attrs.cloneList(), pat.clone(), colonToken, ty.clone())
+    PatType(attrs.cloneAttrs(), pat.clone(), colonToken, ty.clone())
 
 public fun Path.clone(): Path =
     Path(leadingColon, segments.copy({ it.clone() }, { it }))
@@ -662,7 +675,7 @@ public fun RangeLimits.clone(): RangeLimits =
     }
 
 public fun FnArg.Receiver.clone(): FnArg.Receiver =
-    FnArg.Receiver(attrs.cloneList(), reference?.clone(), mutability, selfToken, colonToken, type.clone())
+    FnArg.Receiver(attrs.cloneAttrs(), reference?.clone(), mutability, selfToken, colonToken, type.clone())
 
 public fun ReturnType.clone(): ReturnType =
     when (this) {
@@ -682,7 +695,7 @@ public fun Stmt.clone(): Stmt =
     }
 
 public fun Stmt.Local.clone(): Stmt.Local =
-    Stmt.Local(attrs.cloneList(), letToken, pat.clone(), init?.clone(), semiToken)
+    Stmt.Local(attrs.cloneAttrs(), letToken, pat.clone(), init?.clone(), semiToken)
 
 public fun Stmt.ItemStmt.clone(): Stmt.ItemStmt =
     Stmt.ItemStmt(item.clone())
@@ -691,7 +704,7 @@ public fun Stmt.ExprStmt.clone(): Stmt.ExprStmt =
     Stmt.ExprStmt(expr.clone(), semiToken)
 
 public fun Stmt.MacroStmt.clone(): Stmt.MacroStmt =
-    Stmt.MacroStmt(attrs.cloneList(), mac.clone(), semiToken)
+    Stmt.MacroStmt(attrs.cloneAttrs(), mac.clone(), semiToken)
 
 public fun TraitItem.clone(): TraitItem =
     when (this) {
@@ -703,16 +716,16 @@ public fun TraitItem.clone(): TraitItem =
     }
 
 public fun TraitItem.Const.clone(): TraitItem.Const =
-    TraitItem.Const(attrs.cloneList(), constToken, ident.copy(), generics.clone(), colonToken, ty.clone(), default, semiToken)
+    TraitItem.Const(attrs.cloneAttrs(), constToken, ident.copy(), generics.clone(), colonToken, ty.clone(), default?.clone(), semiToken)
 
 public fun TraitItem.Fn.clone(): TraitItem.Fn =
-    TraitItem.Fn(attrs.cloneList(), sig.clone(), default, semiToken)
+    TraitItem.Fn(attrs.cloneAttrs(), sig.clone(), default?.clone(), semiToken)
 
 public fun TraitItem.AssocType.clone(): TraitItem.AssocType =
-    TraitItem.AssocType(attrs.cloneList(), typeToken, ident.copy(), generics.clone(), colonToken, bounds.copy({ it.clone() }, { it }), default, semiToken)
+    TraitItem.AssocType(attrs.cloneAttrs(), typeToken, ident.copy(), generics.clone(), colonToken, bounds.copy({ it.clone() }, { it }), default?.clone(), semiToken)
 
 public fun TraitItem.Macro.clone(): TraitItem.Macro =
-    TraitItem.Macro(attrs.cloneList(), mac.clone(), semiToken)
+    TraitItem.Macro(attrs.cloneAttrs(), mac.clone(), semiToken)
 
 public fun TraitItem.Verbatim.clone(): TraitItem.Verbatim =
     TraitItem.Verbatim(tokens.clone())
@@ -725,7 +738,7 @@ public fun SynType.clone(): SynType =
         is SynType.ImplTrait -> this.clone()
         is SynType.Infer -> this.clone()
         is SynType.Macro -> this.clone()
-        is SynType.Never -> this
+        is SynType.Never -> this.clone()
         is SynType.Paren -> this.clone()
         is SynType.Path -> this.clone()
         is SynType.Ptr -> this.clone()
@@ -761,6 +774,9 @@ public fun SynType.Infer.clone(): SynType.Infer =
 public fun SynType.Macro.clone(): SynType.Macro =
     SynType.Macro(mac.clone())
 
+public fun SynType.Never.clone(): SynType.Never =
+    SynType.Never(bangToken)
+
 public fun SynType.Paren.clone(): SynType.Paren =
     SynType.Paren(parenToken, elem.clone())
 
@@ -786,15 +802,33 @@ public fun SynType.Verbatim.clone(): SynType.Verbatim =
     SynType.Verbatim(tokens.clone())
 
 public fun GenericParam.TypeParam.clone(): GenericParam.TypeParam =
-    GenericParam.TypeParam(attrs.cloneList(), ident.copy(), colonToken, bounds.copy({ it.clone() }, { it }), eqToken, default?.clone())
+    GenericParam.TypeParam(attrs.cloneAttrs(), ident.copy(), colonToken, bounds.copy({ it.clone() }, { it }), eqToken, default?.clone())
+
+public fun TraitBoundModifier.clone(): TraitBoundModifier =
+    when (this) {
+        TraitBoundModifier.None -> TraitBoundModifier.None
+        is TraitBoundModifier.Maybe -> TraitBoundModifier.Maybe(token)
+    }
 
 public fun TypeParamBound.clone(): TypeParamBound =
     when (this) {
-        is TypeParamBound.Trait -> TypeParamBound.Trait(parenToken, modifier, lifetimes?.clone(), path.clone())
-        is TypeParamBound.LifetimeBound -> TypeParamBound.LifetimeBound(lifetime.clone())
-        is TypeParamBound.PreciseCapture -> TypeParamBound.PreciseCapture(useToken, ltToken, params.copy({ it.clone() }, { it }), gtToken)
-        is TypeParamBound.Verbatim -> TypeParamBound.Verbatim(tokens.clone())
+        is TypeParamBound.Trait -> this.clone()
+        is TypeParamBound.LifetimeBound -> this.clone()
+        is TypeParamBound.PreciseCapture -> this.clone()
+        is TypeParamBound.Verbatim -> this.clone()
     }
+
+public fun TypeParamBound.Trait.clone(): TypeParamBound.Trait =
+    TypeParamBound.Trait(parenToken, modifier.clone(), lifetimes?.clone(), path.clone())
+
+public fun TypeParamBound.LifetimeBound.clone(): TypeParamBound.LifetimeBound =
+    TypeParamBound.LifetimeBound(lifetime.clone())
+
+public fun TypeParamBound.PreciseCapture.clone(): TypeParamBound.PreciseCapture =
+    TypeParamBound.PreciseCapture(useToken, ltToken, params.copy({ it.clone() }, { it }), gtToken)
+
+public fun TypeParamBound.Verbatim.clone(): TypeParamBound.Verbatim =
+    TypeParamBound.Verbatim(tokens.clone())
 
 public fun UnOp.clone(): UnOp =
     when (this) {
@@ -804,23 +838,32 @@ public fun UnOp.clone(): UnOp =
     }
 
 public fun Variant.clone(): Variant =
-    Variant(attrs.cloneList(), ident.copy(), fields.clone(), discriminant?.let { it.copy(expr = it.expr.clone()) })
+    Variant(attrs.cloneAttrs(), ident.copy(), fields.clone(), discriminant?.let { it.copy(expr = it.expr.clone()) })
 
 public fun Visibility.clone(): Visibility =
     when (this) {
-        is Visibility.Public -> this
-        is Visibility.Restricted -> Visibility.Restricted(pubToken, parenToken, inToken, path.clone())
+        is Visibility.Public -> Visibility.Public(pubToken)
+        is Visibility.Restricted -> this.clone()
         is Visibility.Inherited -> Visibility.Inherited
     }
+
+public fun Visibility.Restricted.clone(): Visibility.Restricted =
+    Visibility.Restricted(pubToken, parenToken, inToken, path.clone())
 
 public fun WhereClause.clone(): WhereClause =
     WhereClause(whereToken, predicates.copy({ it.clone() }, { it }))
 
 public fun WherePredicate.clone(): WherePredicate =
     when (this) {
-        is WherePredicate.TypePredicate -> WherePredicate.TypePredicate(lifetimes?.clone(), boundedTy.clone(), colonToken, bounds.copy({ it.clone() }, { it }))
-        is WherePredicate.LifetimePredicate -> WherePredicate.LifetimePredicate(lifetime.clone(), colonToken, bounds.copy({ it.clone() }, { it }))
+        is WherePredicate.TypePredicate -> this.clone()
+        is WherePredicate.LifetimePredicate -> this.clone()
     }
+
+public fun WherePredicate.TypePredicate.clone(): WherePredicate.TypePredicate =
+    WherePredicate.TypePredicate(lifetimes?.clone(), boundedTy.clone(), colonToken, bounds.copy({ it.clone() }, { it }))
+
+public fun WherePredicate.LifetimePredicate.clone(): WherePredicate.LifetimePredicate =
+    WherePredicate.LifetimePredicate(lifetime.clone(), colonToken, bounds.copy({ it.clone() }, { it }))
 
 public fun EqExpr.clone(): EqExpr = EqExpr(eqToken, expr.clone())
 
@@ -840,8 +883,26 @@ public fun PatColon.clone(): PatColon = PatColon(pat.clone(), colonToken)
 
 public fun LocalInit.clone(): LocalInit = LocalInit(eqToken, expr.clone(), diverge?.clone())
 
-internal fun <T> List<T>.cloneList(): MutableList<T> =
-    mapTo(mutableListOf()) { it }
+internal fun List<Attribute>.cloneAttrs(): MutableList<Attribute> =
+    mapTo(mutableListOf()) { it.clone() }
+
+internal fun List<Stmt>.cloneStmts(): MutableList<Stmt> =
+    mapTo(mutableListOf()) { it.clone() }
+
+internal fun List<Arm>.cloneArms(): MutableList<Arm> =
+    mapTo(mutableListOf()) { it.clone() }
+
+internal fun List<Item>.cloneItems(): MutableList<Item> =
+    mapTo(mutableListOf()) { it.clone() }
+
+internal fun List<ForeignItem>.cloneForeignItems(): MutableList<ForeignItem> =
+    mapTo(mutableListOf()) { it.clone() }
+
+internal fun List<ImplItem>.cloneImplItems(): MutableList<ImplItem> =
+    mapTo(mutableListOf()) { it.clone() }
+
+internal fun List<TraitItem>.cloneTraitItems(): MutableList<TraitItem> =
+    mapTo(mutableListOf()) { it.clone() }
 
 public fun PathTrait.clone(): PathTrait =
     PathTrait(polarity, path.clone(), forToken)
@@ -849,16 +910,28 @@ public fun PathTrait.clone(): PathTrait =
 public fun ModContent.clone(): ModContent =
     when (this) {
         is ModContent.Unnamed -> ModContent.Unnamed(semiToken)
-        is ModContent.Inline -> ModContent.Inline(braceToken, items.map { it.clone() })
+        is ModContent.Inline -> ModContent.Inline(braceToken, items.cloneItems())
     }
 
 public fun UseTree.clone(): UseTree =
     when (this) {
-        is UseTree.Path -> UseTree.Path(ident.copy(), colon2Token, tree?.clone())
-        is UseTree.Name -> UseTree.Name(ident.copy(), rename?.clone())
-        is UseTree.Group -> UseTree.Group(braceToken, items.copy({ it.clone() }, { it }))
-        is UseTree.Glob -> UseTree.Glob(starToken)
+        is UseTree.Path -> this.clone()
+        is UseTree.Name -> this.clone()
+        is UseTree.Group -> this.clone()
+        is UseTree.Glob -> this.clone()
     }
+
+public fun UseTree.Path.clone(): UseTree.Path =
+    UseTree.Path(ident.copy(), colon2Token, tree?.clone())
+
+public fun UseTree.Name.clone(): UseTree.Name =
+    UseTree.Name(ident.copy(), rename?.clone())
+
+public fun UseTree.Group.clone(): UseTree.Group =
+    UseTree.Group(braceToken, items.copy({ it.clone() }, { it }))
+
+public fun UseTree.Glob.clone(): UseTree.Glob =
+    UseTree.Glob(starToken)
 
 public fun StaticMutability.clone(): StaticMutability =
     when (this) {
@@ -867,7 +940,7 @@ public fun StaticMutability.clone(): StaticMutability =
     }
 
 public fun BareVariadic.clone(): BareVariadic =
-    BareVariadic(attrs.cloneList(), name?.clone(), dots, comma)
+    BareVariadic(attrs.cloneAttrs(), name?.clone(), dots, comma)
 
 public fun Variadic.clone(): Variadic =
-    Variadic(attrs.cloneList(), pat?.clone(), dots, comma)
+    Variadic(attrs.cloneAttrs(), pat?.clone(), dots, comma)

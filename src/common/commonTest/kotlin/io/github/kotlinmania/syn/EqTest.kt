@@ -75,4 +75,23 @@ class EqTest {
         assertTrue(left.eq(right))
         assertFalse(left.eq(different))
     }
+
+    @Test
+    fun exprItemPatAndTypeEqIgnoreSpansAndTokenPositions() {
+        val exprLeft = parseStr(ExprParse::parse, "(a, b).0 + m!(1 + 2)").getOrThrow()
+        val exprRight = parseStr(ExprParse::parse, "\n  ( a , b ) . 0  +  m! ( 1 + 2 ) ").getOrThrow()
+        val exprDiff = parseStr(ExprParse::parse, "(a, b).1 + m!(1 + 2)").getOrThrow()
+        assertTrue(exprLeft.eq(exprRight))
+        assertFalse(exprLeft.eq(exprDiff))
+
+        val itemLeft = parseStr(ItemParse::parse, "pub fn f<const N: usize>(x: &[u8; N]) -> bool { true }").getOrThrow()
+        val itemRight = parseStr(ItemParse::parse, "\npub  fn  f < const N : usize > ( x : & [ u8 ; N ] ) -> bool { true }").getOrThrow()
+        val itemDiff = parseStr(ItemParse::parse, "pub fn f<const N: usize>(x: &[u8; N]) -> bool { false }").getOrThrow()
+        assertTrue(itemLeft.eq(itemRight))
+        assertFalse(itemLeft.eq(itemDiff))
+
+        val patLeft = parseStr(Pat::parseSingle, "Some(ref mut x @ 1..=5)").getOrThrow()
+        val patRight = parseStr(Pat::parseSingle, "  Some ( ref  mut  x  @  1 ..= 5 ) ").getOrThrow()
+        assertTrue(patLeft.eq(patRight))
+    }
 }

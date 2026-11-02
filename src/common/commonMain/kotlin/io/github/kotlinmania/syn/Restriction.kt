@@ -9,14 +9,7 @@ import io.github.kotlinmania.syn.token.Paren
 import io.github.kotlinmania.syn.token.Pub
 
 /**
- * The visibility level of an item: inherited or `pub` or
- * `pub(restricted)`.
- *
- * # Syntax tree enum
- *
- * This type is a [syntax tree enum].
- *
- * [syntax tree enum]: crate::expr::Expr#syntax-tree-enums
+ * The visibility level of an item: inherited, `pub`, or `pub(restricted)`.
  */
 public sealed class Visibility : ToTokens {
     /**
@@ -24,37 +17,35 @@ public sealed class Visibility : ToTokens {
      */
     public data class Public(
         var pubToken: Pub,
-    ) : Visibility() {
-        override fun toTokens(tokens: TokenStream) {
-            pubToken.toTokens(tokens)
-        }
-    }
+    ) : Visibility()
 
     /**
-     * A visibility level restricted to some path: `pub(self)` or
-     * `pub(super)` or `pub(crate)` or `pub(in some::module)`.
+     * A visibility level restricted to a module path, such as `pub(self)`,
+     * `pub(super)`, `pub(crate)`, or `pub(in module)`.
      */
     public data class Restricted(
         var pubToken: Pub,
         var parenToken: Paren,
         var inToken: In?,
         var path: Path,
-    ) : Visibility() {
-        override fun toTokens(tokens: TokenStream) {
-            pubToken.toTokens(tokens)
-            parenToken.surround(tokens) { inner ->
-                inToken?.toTokens(inner)
-                path.toTokens(inner)
-            }
-        }
-    }
+    ) : Visibility()
 
     /**
      * An inherited visibility, which usually means private.
      */
-    public data object Inherited : Visibility() {
-        override fun toTokens(tokens: TokenStream) {
-            // inherited (private) visibility emits nothing
+    public data object Inherited : Visibility()
+
+    override fun toTokens(tokens: TokenStream) {
+        when (this) {
+            is Public -> pubToken.toTokens(tokens)
+            is Restricted -> {
+                pubToken.toTokens(tokens)
+                parenToken.surround(tokens) { inner ->
+                    inToken?.toTokens(inner)
+                    printPath(inner, path, PathStyle.Mod)
+                }
+            }
+            Inherited -> Unit
         }
     }
 
@@ -64,17 +55,16 @@ public sealed class Visibility : ToTokens {
 
 /** Field mutability marker. Reserved for RFC 3323. */
 public sealed class FieldMutability : ToTokens {
-    public data object None : FieldMutability() {
-        override fun toTokens(tokens: TokenStream) {
-            // immutable field emits nothing
-        }
-    }
+    public data object None : FieldMutability()
 
     public data class Mut(
         var token: io.github.kotlinmania.syn.token.Mut,
-    ) : FieldMutability() {
-        override fun toTokens(tokens: TokenStream) {
-            token.toTokens(tokens)
+    ) : FieldMutability()
+
+    override fun toTokens(tokens: TokenStream) {
+        when (this) {
+            None -> Unit
+            is Mut -> token.toTokens(tokens)
         }
     }
 }
@@ -89,43 +79,47 @@ public object VisibilityParse {
             return SynResult.success(Visibility.Inherited)
         }
 
-        if (!input.peek(PubPeek)) {
-            return SynResult.success(Visibility.Inherited)
+        return if (input.peek(PubPeek)) {
+            parseVisibilityPub(input)
+        } else {
+            SynResult.success(Visibility.Inherited)
         }
-
-        val pubToken = PubParse.parse(input).getOrThrow()
-
-        if (input.peek(ParenPeek)) {
-            val ahead = input.fork()
-            val parens =
-                parseParens(ahead).getOrElse {
-                    return SynResult.success(Visibility.Public(pubToken))
-                }
-            val content = parens.content
-            if (content.peek(CratePeek) || content.peek(SelfValuePeek) || content.peek(SuperPeek)) {
-                val ident =
-                    when {
-                        content.peek(CratePeek) -> identFromCrate(CrateParse.parse(content).getOrThrow())
-                        content.peek(SelfValuePeek) -> identFromSelfValue(SelfValueParse.parse(content).getOrThrow())
-                        else -> identFromSuper(SuperParse.parse(content).getOrThrow())
-                    }
-                if (content.isEmpty()) {
-                    input.advanceTo(ahead)
-                    return SynResult.success(Visibility.Restricted(pubToken, parens.token, null, Path.from(ident)))
-                }
-            } else if (content.peek(InPeek)) {
-                val inToken = InParse.parse(content).getOrElse { return SynResult.failure(it) }
-                val path = parseModStylePath(content).getOrElse { return SynResult.failure(it) }
-                if (!content.isEmpty()) {
-                    return SynResult.failure(content.error("unexpected token"))
-                }
-                input.advanceTo(ahead)
-                return SynResult.success(Visibility.Restricted(pubToken, parens.token, inToken, path))
-            }
-        }
-
-        return SynResult.success(Visibility.Public(pubToken))
     }
+}
+
+private fun parseVisibilityPub(input: ParseStream): SynResult<Visibility> {
+    val pubToken = PubParse.parse(input).getOrElse { return SynResult.failure(it) }
+
+    if (input.peek(ParenPeek)) {
+        val ahead = input.fork()
+        val parens =
+            parseParens(ahead).getOrElse {
+                return SynResult.success(Visibility.Public(pubToken))
+            }
+        val content = parens.content
+        if (content.peek(CratePeek) || content.peek(SelfValuePeek) || content.peek(SuperPeek)) {
+            val ident =
+                when {
+                    content.peek(CratePeek) -> identFromCrate(CrateParse.parse(content).getOrThrow())
+                    content.peek(SelfValuePeek) -> identFromSelfValue(SelfValueParse.parse(content).getOrThrow())
+                    else -> identFromSuper(SuperParse.parse(content).getOrThrow())
+                }
+            if (content.isEmpty()) {
+                input.advanceTo(ahead)
+                return SynResult.success(Visibility.Restricted(pubToken, parens.token, null, Path.from(ident)))
+            }
+        } else if (content.peek(InPeek)) {
+            val inToken = InParse.parse(content).getOrElse { return SynResult.failure(it) }
+            val path = parseModStylePath(content).getOrElse { return SynResult.failure(it) }
+            if (!content.isEmpty()) {
+                return SynResult.failure(content.error("unexpected token"))
+            }
+            input.advanceTo(ahead)
+            return SynResult.success(Visibility.Restricted(pubToken, parens.token, inToken, path))
+        }
+    }
+
+    return SynResult.success(Visibility.Public(pubToken))
 }
 
 public object PubPeek : Peek {

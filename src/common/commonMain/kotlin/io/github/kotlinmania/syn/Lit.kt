@@ -24,9 +24,39 @@ import io.github.kotlinmania.quote.toTokens
  */
 public sealed class Lit : ToTokens {
     public companion object {
+        public fun parse(input: ParseStream): SynResult<Lit> =
+            LitParse.parse(input)
+
         /** Interpret a literal token as a Syn literal. */
         public fun new(token: Literal): Lit =
             fromStr(token, token.toString())
+
+        public fun from(token: Literal): Lit =
+            new(token)
+
+        public fun from(lit: LitStr): Lit =
+            Str(lit)
+
+        public fun from(lit: LitByteStr): Lit =
+            ByteStr(lit)
+
+        public fun from(lit: LitCStr): Lit =
+            CStr(lit)
+
+        public fun from(lit: LitByte): Lit =
+            Byte(lit)
+
+        public fun from(lit: LitChar): Lit =
+            Char(lit)
+
+        public fun from(lit: LitInt): Lit =
+            Int(lit)
+
+        public fun from(lit: LitFloat): Lit =
+            Float(lit)
+
+        public fun from(lit: LitBool): Lit =
+            Bool(lit)
 
         public fun fromStrForFuzzing(repr: String): Lit =
             fromStr(Literal.u8Unsuffixed(0u), repr)
@@ -148,6 +178,19 @@ public sealed class Lit : ToTokens {
         override fun hashCode(): kotlin.Int = value.toString().hashCode()
     }
 
+    public fun suffix(): String =
+        when (this) {
+            is Str -> value.suffix()
+            is ByteStr -> value.suffix()
+            is CStr -> value.suffix()
+            is Byte -> value.suffix()
+            is Char -> value.suffix()
+            is Int -> value.suffix()
+            is Float -> value.suffix()
+            is Bool -> ""
+            is Verbatim -> ""
+        }
+
     public fun span(): Span =
         when (this) {
             is Str -> value.span()
@@ -218,7 +261,7 @@ private data class LitFloatRepr(
         LitFloatRepr(cloneLiteral(token), digits, suffix)
 }
 
-private fun cloneLiteral(token: Literal): Literal =
+internal fun cloneLiteral(token: Literal): Literal =
     Literal.fromStrUnchecked(token.toString()).also { it.setSpan(token.span()) }
 
 /** A UTF-8 string literal: `"foo"`. */
@@ -227,6 +270,9 @@ public class LitStr private constructor(
     private val cooked: String,
 ) : ToTokens {
     public companion object {
+        public fun parse(input: ParseStream): SynResult<LitStr> =
+            LitStrParse.parse(input)
+
         public fun new(value: String, span: Span): LitStr {
             val token = Literal.string(value)
             token.setSpan(span)
@@ -258,7 +304,7 @@ public class LitStr private constructor(
      *
      * // Parse a string literal like "a::b::c" into a Path, not allowing
      * // generic arguments on any of the path segments.
-     * val basicPath = litStr.parseWith(syn::Path::parseModStyle)?;
+     * val basicPath = litStr.parseWith(Path::parseModStyle);
      * ```
      */
     public fun <T> parseWith(parser: (ParseStream) -> SynResult<T>): SynResult<T> {
@@ -319,6 +365,9 @@ public class LitByteStr(
     private val literal: Literal? = null,
 ) : ToTokens {
     public companion object {
+        public fun parse(input: ParseStream): SynResult<LitByteStr> =
+            LitByteStrParse.parse(input)
+
         public fun new(value: List<UByte>, span: Span): LitByteStr =
             LitByteStr(value, span)
     }
@@ -331,6 +380,7 @@ public class LitByteStr(
 
     public fun setSpan(span: Span) {
         spanValue = span
+        literal?.setSpan(span)
     }
 
     public fun suffix(): String =
@@ -349,7 +399,7 @@ public class LitByteStr(
     internal fun debug(name: String): String =
         "$name(token=${token()})"
 
-    public fun copy(): LitByteStr = LitByteStr(bytes, spanValue, suffix, literal)
+    public fun copy(): LitByteStr = LitByteStr(bytes.toList(), spanValue, suffix, literal?.let(::cloneLiteral))
 
     public fun clone(): LitByteStr = copy()
 
@@ -369,6 +419,9 @@ public class LitCStr(
     private val literal: Literal? = null,
 ) : ToTokens {
     public companion object {
+        public fun parse(input: ParseStream): SynResult<LitCStr> =
+            LitCStrParse.parse(input)
+
         public fun new(value: ByteArray, span: Span): LitCStr =
             LitCStr(value.copyOf(), span)
     }
@@ -400,7 +453,7 @@ public class LitCStr(
     internal fun debug(name: String): String =
         "$name(token=${token()})"
 
-    public fun copy(): LitCStr = LitCStr(bytes.copyOf(), spanValue, suffix, literal)
+    public fun copy(): LitCStr = LitCStr(bytes.copyOf(), spanValue, suffix, literal?.let(::cloneLiteral))
 
     public fun clone(): LitCStr = copy()
 
@@ -420,6 +473,9 @@ public class LitByte(
     private val literal: Literal? = null,
 ) : ToTokens {
     public companion object {
+        public fun parse(input: ParseStream): SynResult<LitByte> =
+            LitByteParse.parse(input)
+
         public fun new(value: UByte, span: Span): LitByte =
             LitByte(value, "", span)
     }
@@ -456,7 +512,7 @@ public class LitByte(
     internal fun debug(name: String): String =
         "$name(token=${token()})"
 
-    public fun copy(): LitByte = LitByte(value, suffix, spanValue, literal)
+    public fun copy(): LitByte = LitByte(value, suffix, spanValue, literal?.let(::cloneLiteral))
 
     public fun clone(): LitByte = copy()
 
@@ -476,6 +532,9 @@ public class LitChar(
     private val literal: Literal? = null,
 ) : ToTokens {
     public companion object {
+        public fun parse(input: ParseStream): SynResult<LitChar> =
+            LitCharParse.parse(input)
+
         public fun new(value: Char, span: Span): LitChar =
             LitChar(value.code, span)
 
@@ -520,7 +579,7 @@ public class LitChar(
     internal fun debug(name: String): String =
         "$name(token=${token()})"
 
-    public fun copy(): LitChar = LitChar(value, spanValue, suffix, literal)
+    public fun copy(): LitChar = LitChar(value, spanValue, suffix, literal?.let(::cloneLiteral))
 
     public fun clone(): LitChar = copy()
 
@@ -539,10 +598,13 @@ public class LitInt private constructor(
     public constructor(digits: String, suffix: String, span: Span) : this(newRepr(digits + suffix, span))
 
     public companion object {
+        public fun parse(input: ParseStream): SynResult<LitInt> =
+            LitIntParse.parse(input)
+
         public fun new(digits: String, suffix: String, span: Span): LitInt =
             LitInt(digits, suffix, span)
 
-        internal fun from(token: Literal): LitInt {
+        public fun from(token: Literal): LitInt {
             val parsed = parseLitInt(token.toString()) ?: error("not an integer literal: `$token`")
             return from(token, parsed.digits, parsed.suffix)
         }
@@ -601,10 +663,13 @@ public class LitFloat private constructor(
     public constructor(digits: String, suffix: String, span: Span) : this(newRepr(digits + suffix, span))
 
     public companion object {
+        public fun parse(input: ParseStream): SynResult<LitFloat> =
+            LitFloatParse.parse(input)
+
         public fun new(digits: String, suffix: String, span: Span): LitFloat =
             LitFloat(digits, suffix, span)
 
-        internal fun from(token: Literal): LitFloat {
+        public fun from(token: Literal): LitFloat {
             val parsed = parseLitFloat(token.toString()) ?: error("not a float literal: `$token`")
             return from(token, parsed.digits, parsed.suffix)
         }
@@ -661,6 +726,14 @@ public data class LitBool(
     private val value: Boolean,
     private var spanValue: Span,
 ) : ToTokens {
+    public companion object {
+        public fun parse(input: ParseStream): SynResult<LitBool> =
+            LitBoolParse.parse(input)
+
+        public fun new(value: Boolean, span: Span): LitBool =
+            LitBool(value, span)
+    }
+
     public fun value(): Boolean =
         value
 
@@ -1539,6 +1612,7 @@ public object LitParse {
 
 public object LitStrParse {
     public fun parse(input: ParseStream): SynResult<LitStr> {
+        val head = input.fork()
         val result = LitParse.parse(input)
         if (result is SynResult.Success) {
             val value = result.value
@@ -1546,12 +1620,69 @@ public object LitStrParse {
                 return SynResult.success(value.value)
             }
         }
-        return SynResult.failure(input.error("expected string literal"))
+        return SynResult.failure(head.error("expected string literal"))
+    }
+}
+
+public object LitByteStrParse {
+    public fun parse(input: ParseStream): SynResult<LitByteStr> {
+        val head = input.fork()
+        val result = LitParse.parse(input)
+        if (result is SynResult.Success) {
+            val value = result.value
+            if (value is Lit.ByteStr) {
+                return SynResult.success(value.value)
+            }
+        }
+        return SynResult.failure(head.error("expected byte string literal"))
+    }
+}
+
+public object LitCStrParse {
+    public fun parse(input: ParseStream): SynResult<LitCStr> {
+        val head = input.fork()
+        val result = LitParse.parse(input)
+        if (result is SynResult.Success) {
+            val value = result.value
+            if (value is Lit.CStr) {
+                return SynResult.success(value.value)
+            }
+        }
+        return SynResult.failure(head.error("expected C string literal"))
+    }
+}
+
+public object LitByteParse {
+    public fun parse(input: ParseStream): SynResult<LitByte> {
+        val head = input.fork()
+        val result = LitParse.parse(input)
+        if (result is SynResult.Success) {
+            val value = result.value
+            if (value is Lit.Byte) {
+                return SynResult.success(value.value)
+            }
+        }
+        return SynResult.failure(head.error("expected byte literal"))
+    }
+}
+
+public object LitCharParse {
+    public fun parse(input: ParseStream): SynResult<LitChar> {
+        val head = input.fork()
+        val result = LitParse.parse(input)
+        if (result is SynResult.Success) {
+            val value = result.value
+            if (value is Lit.Char) {
+                return SynResult.success(value.value)
+            }
+        }
+        return SynResult.failure(head.error("expected character literal"))
     }
 }
 
 public object LitIntParse {
     public fun parse(input: ParseStream): SynResult<LitInt> {
+        val head = input.fork()
         val result = LitParse.parse(input)
         if (result is SynResult.Success) {
             val value = result.value
@@ -1559,12 +1690,13 @@ public object LitIntParse {
                 return SynResult.success(value.value)
             }
         }
-        return SynResult.failure(input.error("expected integer literal"))
+        return SynResult.failure(head.error("expected integer literal"))
     }
 }
 
 public object LitFloatParse {
     public fun parse(input: ParseStream): SynResult<LitFloat> {
+        val head = input.fork()
         val result = LitParse.parse(input)
         if (result is SynResult.Success) {
             val value = result.value
@@ -1572,23 +1704,22 @@ public object LitFloatParse {
                 return SynResult.success(value.value)
             }
         }
-        return SynResult.failure(input.error("expected float literal"))
+        return SynResult.failure(head.error("expected floating point literal"))
     }
 }
 
 public object LitBoolParse {
-    public fun parse(input: ParseStream): SynResult<LitBool> =
-        input.step { cursor ->
-            val pair = cursor.ident()
-            if (pair != null) {
-                val (ident, rest) = pair
-                when (ident.toString()) {
-                    "true" -> return@step SynResult.success(LitBool(true, ident.span()) to rest)
-                    "false" -> return@step SynResult.success(LitBool(false, ident.span()) to rest)
-                }
+    public fun parse(input: ParseStream): SynResult<LitBool> {
+        val head = input.fork()
+        val result = LitParse.parse(input)
+        if (result is SynResult.Success) {
+            val value = result.value
+            if (value is Lit.Bool) {
+                return SynResult.success(value.value)
             }
-            SynResult.failure(cursor.error("expected `true` or `false`"))
         }
+        return SynResult.failure(head.error("expected boolean literal"))
+    }
 }
 
 public object LitPeek : Peek {
@@ -1596,4 +1727,60 @@ public object LitPeek : Peek {
         peekImpl(cursor, LitParse::parse)
 
     override fun display(): String = "literal"
+}
+
+public object LitStrPeek : Peek {
+    override fun peek(cursor: Cursor): Boolean =
+        peekImpl(cursor, LitStrParse::parse)
+
+    override fun display(): String = "string literal"
+}
+
+public object LitByteStrPeek : Peek {
+    override fun peek(cursor: Cursor): Boolean =
+        peekImpl(cursor, LitByteStrParse::parse)
+
+    override fun display(): String = "byte string literal"
+}
+
+public object LitCStrPeek : Peek {
+    override fun peek(cursor: Cursor): Boolean =
+        peekImpl(cursor, LitCStrParse::parse)
+
+    override fun display(): String = "C-string literal"
+}
+
+public object LitBytePeek : Peek {
+    override fun peek(cursor: Cursor): Boolean =
+        peekImpl(cursor, LitByteParse::parse)
+
+    override fun display(): String = "byte literal"
+}
+
+public object LitCharPeek : Peek {
+    override fun peek(cursor: Cursor): Boolean =
+        peekImpl(cursor, LitCharParse::parse)
+
+    override fun display(): String = "character literal"
+}
+
+public object LitIntPeek : Peek {
+    override fun peek(cursor: Cursor): Boolean =
+        peekImpl(cursor, LitIntParse::parse)
+
+    override fun display(): String = "integer literal"
+}
+
+public object LitFloatPeek : Peek {
+    override fun peek(cursor: Cursor): Boolean =
+        peekImpl(cursor, LitFloatParse::parse)
+
+    override fun display(): String = "floating point literal"
+}
+
+public object LitBoolPeek : Peek {
+    override fun peek(cursor: Cursor): Boolean =
+        peekImpl(cursor, LitBoolParse::parse)
+
+    override fun display(): String = "boolean literal"
 }

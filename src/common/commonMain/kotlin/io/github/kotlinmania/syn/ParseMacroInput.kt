@@ -1,5 +1,3 @@
-// port-lint: source parse_macro_input.rs
-
 package io.github.kotlinmania.syn
 
 import io.github.kotlinmania.procmacro2.TokenStream

@@ -2,7 +2,9 @@ package io.github.kotlinmania.syn
 
 import io.github.kotlinmania.procmacro2.Span
 import io.github.kotlinmania.syn.gen.Visit
+import io.github.kotlinmania.syn.gen.visitExpr
 import kotlin.test.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class VisitTest {
@@ -458,5 +460,19 @@ class VisitTest {
 
         fun dump(): String =
             events.joinToString(separator = "\n")
+    }
+
+    @Test
+    fun topLevelVisitExprWalksChildren() {
+        val seen = mutableListOf<String>()
+        val visitor =
+            object : Visit() {
+                override fun visitIdent(id: io.github.kotlinmania.procmacro2.Ident) {
+                    seen += id.toString()
+                }
+            }
+        val expr = parseStr(ExprParse::parse, "alpha + beta * gamma").getOrThrow()
+        visitExpr(visitor, expr)
+        assertEquals(listOf("alpha", "beta", "gamma"), seen)
     }
 }

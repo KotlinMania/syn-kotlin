@@ -305,6 +305,44 @@ class DeriveInputTest {
         assertEquals("str", assertIs<SynType.Path>(reference.elem).path.toString())
     }
 
+    @Test
+    fun deriveInputFromItemStructEnumUnionAndScanExprDiscriminant() {
+        val itemStruct =
+            assertIs<Item.Struct>(
+                parseStr(ItemParse::parse, "#[repr(C)] pub struct Pair<T>(pub T, pub T);").getOrThrow(),
+            )
+        val fromStruct = DeriveInput.from(itemStruct)
+        assertEquals("Pair", fromStruct.ident.toString())
+        assertEquals(1, fromStruct.attrs.size)
+        assertIs<Data.Struct>(fromStruct.data)
+
+        val itemEnum =
+            assertIs<Item.Enum>(
+                parseStr(
+                    ItemParse::parse,
+                    """
+                    pub enum ComplexDiscriminant {
+                        First = { struct Local { x: usize } Local { x: 1 }.x + 2 },
+                        Second = if true { 10 } else { 20 },
+                    }
+                    """.trimIndent(),
+                ).getOrThrow(),
+            )
+        val fromEnum = DeriveInput.from(itemEnum)
+        val enumVariants = assertIs<Data.Enum>(fromEnum.data).variants.toList()
+        assertEquals(2, enumVariants.size)
+        assertNotNull(enumVariants[0].discriminant)
+        assertNotNull(enumVariants[1].discriminant)
+
+        val itemUnion =
+            assertIs<Item.Union>(
+                parseStr(ItemParse::parse, "union RawBits { int_val: u32, float_val: f32 }").getOrThrow(),
+            )
+        val fromUnion = DeriveInput.from(itemUnion)
+        assertEquals("RawBits", fromUnion.ident.toString())
+        assertIs<Data.Union>(fromUnion.data)
+    }
+
     private fun parse(source: String): DeriveInput =
         parseStr(DeriveInputParse::parse, source).getOrThrow()
 

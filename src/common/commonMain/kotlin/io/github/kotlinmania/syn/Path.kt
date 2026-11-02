@@ -34,36 +34,7 @@ public class Path(
         }
 
         /**
-         * Parse a `Path` containing no path arguments on any of its segments.
-         *
-         * # Example
-         *
-         * ```
-         * import syn..Path, Result, Token};
-         * import syn.parse..Parse, ParseStream};
-         *
-         * // A simplified single `use` statement like:
-         * //
-         * //     import alloc.collections.HashMap;
-         * //
-         * // Note that generic parameters are not allowed in a `use` statement
-         * // so the following must not be accepted.
-         * //
-         * //     import a.<b>::c;
-         * struct SingleUse {
-         *     useToken: token[use],
-         *     path: Path,
-         * }
-         *
-         * class SingleUse : Parse {
-         *     fun parse(input: ParseStream) -> Result<Self> {
-         *         Ok(SingleUse {
-         *             useToken: input.parse()?,
-         *             path: input.call(Path::parseModStyle)?,
-         *         })
-         *     }
-         * }
-         * ```
+         * Parse a [Path] containing no path arguments on any of its segments.
          */
         public fun parseModStyle(input: ParseStream): SynResult<Path> {
             val leadingColon =
@@ -150,17 +121,20 @@ public class Path(
     }
 
     /**
-     * An error if this path is not a single ident, as defined in `getIdent`.
+     * An error if this path is not a single ident, as defined in [getIdent].
      */
-    public fun requireIdent(): Ident {
+    public fun requireIdent(): SynResult<Ident> {
         val ident = getIdent()
-        if (ident != null) return ident
-        val diagnostic =
-            SynError.new(
-                segments.first()?.ident?.span() ?: Span.callSite(),
+        if (ident != null) return SynResult.success(ident)
+        val first = segments.first()?.ident?.span() ?: Span.callSite()
+        val last = segments.last()?.ident?.span() ?: first
+        return SynResult.failure(
+            SynError.new2(
+                first,
+                last,
                 "expected this path to be an identifier",
-            )
-        diagnostic.raise()
+            ),
+        )
     }
 
     public fun span(): Span {
@@ -250,14 +224,6 @@ public data class PathSegment(
 
 /**
  * Angle bracketed or parenthesized arguments of a path segment.
- *
- * ## Angle bracketed
- *
- * The `<, T>` in `core::slice::iter<, T>`.
- *
- * ## Parenthesized
- *
- * The `(A, B) -> C` in `Fn(A, B) -> C`.
  */
 public sealed class PathArguments : ToTokens {
     public companion object {
@@ -265,10 +231,7 @@ public sealed class PathArguments : ToTokens {
             None
     }
 
-    public data object None : PathArguments() {
-        override fun toTokens(tokens: TokenStream) {
-        }
-    }
+    public data object None : PathArguments()
 
     /** Generic arguments surrounded by angle brackets. */
     public data class AngleBracketed(
@@ -279,10 +242,7 @@ public sealed class PathArguments : ToTokens {
     ) : PathArguments() {
         public companion object {
             /**
-             * Parse `::<…>` with mandatory leading `::`.
-             *
-             * The ordinary [`Parse`] implementation for `AngleBracketedGenericArguments`
-             * parses optional leading `::`.
+             * Parse turbofish generic arguments with a mandatory leading path separator.
              */
             public fun parseTurbofish(input: ParseStream): SynResult<AngleBracketed> {
                 val colon2Token = PathSepParse.parse(input).getOrElse { return SynResult.failure(it) }
@@ -453,22 +413,12 @@ public data class Constraint(
 }
 
 /**
- * The explicit Self type in a qualified path: the `T` in `<T as
- * Display>::fmt`.
+ * The explicit Self type in a qualified path, such as the `T` in a qualified
+ * associated item reference.
  *
  * The actual path, including the trait and the associated item, is stored
- * separately. The `position` field represents the index of the associated
+ * separately. The [position] field represents the index of the associated
  * item qualified with this Self type.
- *
- * ```text
- * <Vec<T> as a::b::Trait>::AssociatedItem
- *  ^~~~~~    ~~~~~~~~~~~~~~^
- *  ty        position = 3
- *
- * <Vec<T>>::AssociatedItem
- *  ^~~~~~   ^
- *  ty       position = 0
- * ```
  */
 public data class QSelf(
     public var ltToken: Lt,
@@ -478,6 +428,8 @@ public data class QSelf(
     public var gtToken: Gt,
 ) : Spanned {
     override fun span(): Span = QSelfDelimiters(this).span()
+
+    public fun deepCopy(): QSelf = copy(ty = ty.deepCopy())
 }
 
 private class QSelfDelimiters(
@@ -709,16 +661,16 @@ public object GenericArgumentParse {
 
 internal fun constArgument(input: ParseStream): SynResult<Expr> {
     val lookahead = input.lookahead1()
-    if (input.peek(LitPeek)) {
+    if (lookahead.peek(LitPeek)) {
         val lit = LitParse.parse(input).getOrElse { return SynResult.failure(it) }
         return SynResult.success(Expr.Lit(mutableListOf(), lit))
     }
-    if (input.peek(IdentPeek)) {
+    if (lookahead.peek(IdentPeek)) {
         val ident = IdentParse.parse(input).getOrElse { return SynResult.failure(it) }
         return SynResult.success(Expr.Path(mutableListOf(), null, Path.from(ident)))
     }
-    if (input.peek(BracePeek)) {
-        return parseExprFull(input)
+    if (lookahead.peek(BracePeek)) {
+        return parseExprBlock(input)
     }
     return SynResult.failure(lookahead.error())
 }

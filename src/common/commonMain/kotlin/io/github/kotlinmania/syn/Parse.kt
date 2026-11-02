@@ -79,24 +79,17 @@ public typealias ParseStream = ParseBuffer
 /**
  * Cursor position within a buffered token stream.
  *
- * This type is more commonly used through the type alias [`ParseStream`] which
- * is an alias for `&ParseBuffer`.
- *
- * `ParseStream` is the input type for all parser functions in Syn. They have
- * the signature `fn(ParseStream) -> Result<T>`.
+ * This type is commonly referenced through the type alias [ParseStream].
+ * `ParseStream` is the input type for all parser functions in Syn, which have
+ * the signature `(ParseStream) -> SynResult<T>`.
  *
  * ## Calling a parser function
  *
- * There is no public way to construct a `ParseBuffer`. Instead, if you are
- * looking to invoke a parser function that requires `ParseStream` as input,
- * you will need to go through one of the public parsing entry points.
- *
- * - The [`parseMacroInput!`] macro if parsing input of a procedural macro;
- * - One of [the `syn::parse*` functions][syn-parse]; or
- * - A method of the [`Parser`] trait.
- *
- * [`parseMacroInput!`]: crate::parseMacroInput!
- * [syn-parse]: self#the-synparse-functions
+ * Invoke parser functions that require [ParseStream] through one of the public
+ * parsing entry points:
+ * - [parseMacroInput] or [parseMacroInput2] when parsing procedural macro input
+ * - [parse], [parse2], or [parseStr]
+ * - A method of the [Parser] interface
  */
 public class ParseBuffer internal constructor(
     internal val scope: Span,
@@ -115,42 +108,8 @@ public class ParseBuffer internal constructor(
     public fun <T> parse(parser: (ParseStream) -> SynResult<T>): SynResult<T> = parser(this)
 
     /**
-     * Calls the given parser function to parse a syntax tree node of type `T`
+     * Calls the given parser function to parse a syntax tree node of type [T]
      * from this stream.
-     *
-     * # Example
-     *
-     * The parser below invokes [`Attribute::parseOuter`] to parse a vector of
-     * zero or more outer attributes.
-     *
-     * [`Attribute::parseOuter`]: crate::Attribute::parseOuter
-     *
-     * ```
-     * import syn..Attribute, Ident, Result, Token};
-     * import syn.parse..Parse, ParseStream};
-     *
-     * // Parses a unit struct with attributes.
-     * //
-     * //
-     * //     struct S;
-     * struct UnitStruct {
-     *     attrs: Vec<Attribute>,
-     *     structToken: token[struct],
-     *     name: Ident,
-     *     semiToken: token[;],
-     * }
-     *
-     * class UnitStruct : Parse {
-     *     fun parse(input: ParseStream) -> Result<Self> {
-     *         Ok(UnitStruct {
-     *             attrs: input.call(Attribute::parseOuter)?,
-     *             structToken: input.parse()?,
-     *             name: input.parse()?,
-     *             semiToken: input.parse()?,
-     *         })
-     *     }
-     * }
-     * ```
      */
     public fun <T> call(function: (ParseStream) -> SynResult<T>): SynResult<T> = function(this)
 
@@ -159,74 +118,6 @@ public class ParseBuffer internal constructor(
      * matches the requested type of token.
      *
      * Does not advance the position of the parse stream.
-     *
-     * # Syntax
-     *
-     * Note that this method does not use turbofish syntax. Pass the peek type
-     * inside of parentheses.
-     *
-     * - `input.peek(token[struct])`
-     * - `input.peek(token[==])`
-     * - `input.peek(syn::Ident)`&emsp;*(does not accept keywords)*
-     * - `input.peek(syn::Ident::peekAny)`
-     * - `input.peek(scope)`
-     * - `input.peek(token::Brace)`
-     *
-     * # Example
-     *
-     * In this example we finish parsing the list of supertraits when the next
-     * token in the input is either `where` or an opening curly brace.
-     *
-     * ```
-     * import syn..braced, token, Generics, Ident, Result, Token, TypeParamBound};
-     * import syn.parse..Parse, ParseStream};
-     * import syn.punctuated.Punctuated;
-     *
-     * // Parses a trait definition containing no associated items.
-     * //
-     * //     trait Marker<, T>: A + B<> where Holder<T>: Clone {}
-     * struct MarkerTrait {
-     *     traitToken: token[trait],
-     *     ident: Ident,
-     *     generics: Generics,
-     *     colonToken: Option<token[:]>,
-     *     supertraits: Punctuated<TypeParamBound, token[+]>,
-     *     braceToken: token::Brace,
-     * }
-     *
-     * class MarkerTrait : Parse {
-     *     fun parse(input: ParseStream) -> Result<Self> {
-     *         val traitToken: token[trait] = input.parse()?;
-     *         val ident: Ident = input.parse()?;
-     *         var generics: Generics = input.parse()?;
-     *         val colonToken: Option<token[:]> = input.parse()?;
-     *
-     *         var supertraits = Punctuated::new();
-     *         if colonToken.isSome() {
-     *             loop {
-     *                 supertraits.pushValue(input.parse()?);
-     *                 if input.peek(token[where]) || input.peek(token::Brace) {
-     *                     break;
-     *                 }
-     *                 supertraits.pushPunct(input.parse()?);
-     *             }
-     *         }
-     *
-     *         generics.whereClause = input.parse()?;
-     *         val content;
-     *         val emptyBraceToken = braced(content in input);
-     *
-     *         Ok(MarkerTrait {
-     *             traitToken,
-     *             ident,
-     *             generics,
-     *             colonToken,
-     *             supertraits,
-     *             braceToken: emptyBraceToken,
-     *         })
-     *     }
-     * }
-     * ```
      */
     public fun peek(token: Peek): Boolean = token.peek(currentCursor)
 
@@ -247,85 +138,11 @@ public class ParseBuffer internal constructor(
     }
 
     /**
-     * Parses zero or more occurrences of `T` separated by punctuation of type
-     * `P`, with optional trailing punctuation.
+     * Parses zero or more occurrences of [T] separated by punctuation of type
+     * [P], with optional trailing punctuation.
      *
      * Parsing continues until the end of this parse stream. The entire content
-     * of this parse stream must consist of `T` and `P`.
-     *
-     * # Example
-     *
-     * ```
-     * import syn..parenthesized, token, Ident, Result, Token, Type};
-     * import syn.parse..Parse, ParseStream};
-     * import syn.punctuated.Punctuated;
-     *
-     * // Parse a simplified tuple struct syntax like:
-     * //
-     * //     struct S(A, B);
-     * struct TupleStruct {
-     *     structToken: token[struct],
-     *     ident: Ident,
-     *     parenToken: token::Paren,
-     *     fields: Punctuated<Type, token[,]>,
-     *     semiToken: token[;],
-     * }
-     *
-     * class TupleStruct : Parse {
-     *     fun parse(input: ParseStream) -> Result<Self> {
-     *         val content;
-     *         Ok(TupleStruct {
-     *             structToken: input.parse()?,
-     *             ident: input.parse()?,
-     *             parenToken: parenthesized(content in input),
-     *             fields: content.parseTerminated(Type::parse, token[,])?,
-     *             semiToken: input.parse()?,
-     *         })
-     *     }
-     * }
-     * ```
-     *
-     * # See also
-     *
-     * If your separator is anything more complicated than an invocation of the
-     * `Token!` macro, this method won't be applicable and you can instead
-     * directly use `Punctuated`'s parser functions: [`parseTerminated`],
-     * [`parseSeparatedNonempty`] etc.
-     *
-     * [`parseTerminated`]: Punctuated::parseTerminated
-     * [`parseSeparatedNonempty`]: Punctuated::parseSeparatedNonempty
-     *
-     * ```
-     * import syn..customKeyword, Expr, Result, Token};
-     * import syn.parse..Parse, ParseStream};
-     * import syn.punctuated.Punctuated;
-     *
-     * mod kw {
-     *     syn::customKeyword(fin);
-     * }
-     *
-     * struct Fin(kw::fin, token[;]);
-     *
-     * class Fin : Parse {
-     *     fun parse(input: ParseStream) -> Result<Self> {
-     *         Ok(Self(input.parse()?, input.parse()?))
-     *     }
-     * }
-     *
-     * struct Thing {
-     *     steps: Punctuated<Expr, Fin>,
-     * }
-     *
-     * class Thing : Parse {
-     *     fun parse(input: ParseStream) -> Result<Self> {
-     *         Ok(Thing {
-     *             steps: Punctuated::parseTerminated(input)?,
-     *         })
-     *         // or equivalently, this means the same thing:
-     *             steps: input.call(Punctuated::parseTerminated)?,
-     *     }
-     * }
-     * ```
+     * of this parse stream must consist of [T] and [P].
      */
     internal fun <T, P> parseTerminated(
         parser: (ParseStream) -> SynResult<T>,
@@ -343,89 +160,12 @@ public class ParseBuffer internal constructor(
      * This method returns true upon reaching the end of the content within a
      * set of delimiters, as well as at the end of the tokens provided to the
      * outermost parsing entry point.
-     *
-     * This is equivalent to
-     * <code>.<a href="#method.peek">peek</a>(<a href="struct.End.html">syn::parse::End</a>)</code>.
-     * Use `.peek2(End)` or `.peek3(End)` to look for the end of a parse stream
-     * further ahead than the current position.
-     *
-     * # Example
-     *
-     * ```
-     * import syn..braced, token, Ident, Item, Result, Token};
-     * import syn.parse..Parse, ParseStream};
-     *
-     * // Parses a Rust `mod m { ... }` containing zero or more items.
-     * struct Mod {
-     *     modToken: token[mod],
-     *     name: Ident,
-     *     braceToken: token::Brace,
-     *     items: Vec<Item>,
-     * }
-     *
-     * class Mod : Parse {
-     *     fun parse(input: ParseStream) -> Result<Self> {
-     *         val content;
-     *         Ok(Mod {
-     *             modToken: input.parse()?,
-     *             name: input.parse()?,
-     *             braceToken: braced(content in input),
-     *             items: {
-     *                 var items = Vec::new();
-     *                 while !content.isEmpty() {
-     *                     items.push(content.parse()?);
-     *                 }
-     *                 items
-     *             },
-     *         })
-     *     }
-     * }
-     * ```
      */
     public fun isEmpty(): Boolean = currentCursor.eof()
 
     /**
      * Constructs a helper for peeking at the next token in this stream and
      * building an error message if it is not one of a set of expected tokens.
-     *
-     * # Example
-     *
-     * ```
-     * import syn..ConstParam, Ident, scope, LifetimeParam, Result, Token, TypeParam};
-     * import syn.parse..Parse, ParseStream};
-     *
-     * // A generic parameter, a single one of the comma-separated elements inside
-     * // angle brackets in:
-     * //
-     * //     fn f<T: Clone, , : , const N: Int>() { ... }
-     * //
-     * // On invalid input, lookahead gives us a reasonable error message.
-     * //
-     * //     error: expected one of: identifier, scope, `const`
-     * //       |
-     * //     5 |     fn f<!Sized>() {}
-     * //       |          ^
-     * enum GenericParam {
-     *     Type(TypeParam),
-     *     scope(LifetimeParam),
-     *     Const(ConstParam),
-     * }
-     *
-     * class GenericParam : Parse {
-     *     fun parse(input: ParseStream) -> Result<Self> {
-     *         val lookahead = input.lookahead1();
-     *         if lookahead.peek(Ident) {
-     *             input.parse().map(GenericParam::Type)
-     *         } else if lookahead.peek(scope) {
-     *             input.parse().map(GenericParam::scope)
-     *         } else if lookahead.peek(token[const]) {
-     *             input.parse().map(GenericParam::Const)
-     *         } else {
-     *             Err(lookahead.error())
-     *         }
-     *     }
-     * }
-     * ```
      */
     public fun lookahead1(): Lookahead1 = lookahead1New(scope, currentCursor)
 
@@ -433,119 +173,10 @@ public class ParseBuffer internal constructor(
      * Forks a parse stream so that parsing tokens out of either the original
      * or the fork does not advance the position of the other.
      *
-     * # Performance
-     *
      * Forking a parse stream is a cheap fixed amount of work and does not
-     * involve copying token buffers. Where you might hit performance problems
-     * is if your macro ends up parsing a large amount of content more than
-     * once.
-     *
-     * ```
-     * // Do not do this.
-     * if input.fork().parse::<Expr>().isOk() {
-     *     return input.parse::<Expr>();
-     * }
-     * ```
-     *
-     * As a rule, avoid parsing an unbounded amount of tokens out of a forked
-     * parse stream. Only use a fork when the amount of work performed against
-     * the fork is small and bounded.
-     *
-     * When complex speculative parsing against the forked stream is
-     * unavoidable, use [`parse::discouraged::Speculative`] to advance the
-     * original stream once the fork's parse is determined to have been
-     * successful.
-     *
-     * For a lower level way to perform speculative parsing at the token level,
-     * consider using [`ParseStream::step`] instead.
-     *
-     * [`parse::discouraged::Speculative`]: discouraged::Speculative
-     * [`ParseStream::step`]: ParseBuffer::step
-     *
-     * # Example
-     *
-     * The parse implementation shown here parses possibly restricted `pub`
-     * visibilities.
-     *
-     * - `pub`
-     * - `pub(crate)`
-     * - `pub(self)`
-     * - `pub(super)`
-     * - `pub(in some::path)`
-     *
-     * To handle the case of visibilities inside of tuple structs, the parser
-     * needs to distinguish parentheses that specify visibility restrictions
-     * from parentheses that form part of a tuple type.
-     *
-     * ```
-     * struct S(pub(crate) A, pub (B, C));
-     * ```
-     *
-     * In this example input the first tuple struct element of `S` has
-     * `pub(crate)` visibility while the second tuple struct element has `pub`
-     * visibility; the parentheses around `(B, C)` are part of the type rather
-     * than part of a visibility restriction.
-     *
-     * The parser uses a forked parse stream to check the first token inside of
-     * parentheses after the `pub` keyword. This is a small bounded amount of
-     * work performed against the forked parse stream.
-     *
-     * ```
-     * import syn..parenthesized, token, Ident, Path, Result, Token};
-     * import syn.ext.IdentExt;
-     * import syn.parse..Parse, ParseStream};
-     *
-     * struct PubVisibility {
-     *     pubToken: token[pub],
-     *     restricted: Option<Restricted>,
-     * }
-     *
-     * struct Restricted {
-     *     parenToken: token::Paren,
-     *     inToken: Option<token[in]>,
-     *     path: Path,
-     * }
-     *
-     * class PubVisibility : Parse {
-     *     fun parse(input: ParseStream) -> Result<Self> {
-     *         val pubToken: token[pub] = input.parse()?;
-     *
-     *         if input.peek(token::Paren) {
-     *             val ahead = input.fork();
-     *             var content;
-     *             parenthesized(content in ahead);
-     *
-     *             if content.peek(token[crate])
-     *                 || content.peek(token[self])
-     *                 || content.peek(token[super])
-     *             {
-     *                 return Ok(PubVisibility {
-     *                     pubToken,
-     *                     restricted: Some(Restricted {
-     *                         parenToken: parenthesized(content in input),
-     *                         inToken: None,
-     *                         path: Path::from(content.call(Ident::parseAny)?),
-     *                     }),
-     *                 });
-     *             } else if content.peek(token[in]) {
-     *                 return Ok(PubVisibility {
-     *                     pubToken,
-     *                     restricted: Some(Restricted {
-     *                         parenToken: parenthesized(content in input),
-     *                         inToken: Some(content.parse()?),
-     *                         path: content.call(Path::parseModStyle)?,
-     *                     }),
-     *                 });
-     *             }
-     *         }
-     *
-     *         Ok(PubVisibility {
-     *             pubToken,
-     *             restricted: None,
-     *         })
-     *     }
-     * }
-     * ```
+     * involve copying token buffers. Avoid parsing an unbounded amount of
+     * tokens out of a forked parse stream; when committing speculative work,
+     * call [advanceTo].
      */
     public fun fork(): ParseBuffer =
         ParseBuffer(
@@ -562,36 +193,6 @@ public class ParseBuffer internal constructor(
     /**
      * Speculatively parses tokens from this parse stream, advancing the
      * position of this stream only if parsing succeeds.
-     *
-     * This is a powerful low-level API used for defining the `Parse` impls of
-     * the basic built-in token types. It is not something that will be used
-     * widely outside of the Syn codebase.
-     *
-     * # Example
-     *
-     * ```
-     * import procMacro2.TokenTree;
-     * import syn.Result;
-     * import syn.parse.ParseStream;
-     *
-     * // This function advances the stream past the next occurrence of `@`. If
-     * // no `@` is present in the stream, the stream position is unchanged and
-     * // an error is returned.
-     * fun skipPastNextAt(input: ParseStream) -> Result<()> {
-     *     input.step(|cursor| {
-     *         var rest = *cursor;
-     *         while val some((tt, next)) = rest.tokenTree() {
-     *             when (&tt) {
-     *                 TokenTree::Punct(punct) if punct.asChar() == '@' => {
-     *                     return Ok(((), next));
-     *                 }
-     *                 _ => rest = next,
-     *             }
-     *         }
-     *         Err(cursor.error("no `@` was found after this point"))
-     *     })
-     * }
-     * ```
      */
     public fun <R> step(function: (StepCursor) -> SynResult<Pair<R, Cursor>>): SynResult<R> {
         val stepCursor = StepCursor(scope, currentCursor)
@@ -615,60 +216,8 @@ public class ParseBuffer internal constructor(
      * Provides low-level access to the token representation underlying this
      * parse stream.
      *
-     * Cursors are immutable so no operations you perform against the cursor
-     * will affect the state of this parse stream.
-     *
-     * # Example
-     *
-     * ```
-     * import procMacro2.TokenStream;
-     * import syn.buffer.Cursor;
-     * import syn.parse..ParseStream, Result};
-     *
-     * // Run a parser that returns T, but get its output as TokenStream instead of T.
-     * // This works without T needing to implement ToTokens.
-     * fn recognizeTokenStream<T>(
-     *     recognizer: fn(ParseStream) -> Result<T>,
-     * ) -> class Fn(ParseStream) -> Result<TokenStream> {
-     *     move |input| {
-     *         val begin = input.cursor();
-     *         recognizer(input)?;
-     *         val end = input.cursor();
-     *         Ok(tokensBetween(begin, end))
-     *     }
-     * }
-     *
-     * // Collect tokens between two cursors as a TokenStream.
-     * fun tokensBetween(begin: Cursor, end: Cursor) -> TokenStream {
-     *     assert(begin <= end);
-     *
-     *     var cursor = begin;
-     *     var tokens = TokenStream::new();
-     *     while cursor < end {
-     *         let (token, next) = cursor.tokenTree().unwrap();
-     *         tokens.extend(core::iter::once(token));
-     *         cursor = next;
-     *     }
-     *     tokens
-     * }
-     *
-     * fun main() {
-     *     import quote.quote;
-     *     import syn.parse..Parse, Parser};
-     *     import syn.Token;
-     *
-     *     // Parse syn::Type as a TokenStream, surrounded by angle brackets.
-     *     fun example(input: ParseStream) -> Result<TokenStream> {
-     *         val langle: token[<] = input.parse()?;
-     *         val ty = recognizeTokenStream(syn::Type::parse)(input)?;
-     *         val rangle: token[>] = input.parse()?;
-     *         Ok(ty)
-     *     }
-     *
-     *     val tokens = quote{ <fn() -> u8> };
-     *     println("{}", example.parse2(tokens).unwrap());
-     * }
-     * ```
+     * Cursors are immutable so no operations performed against the cursor
+     * affect the state of this parse stream.
      */
     public fun cursor(): Cursor = currentCursor
 
@@ -717,35 +266,7 @@ public class ParseBuffer internal constructor(
 /**
  * Cursor state associated with speculative parsing.
  *
- * This type is the input of the closure provided to [`ParseStream::step`].
- *
- * [`ParseStream::step`]: ParseBuffer::step
- *
- * # Example
- *
- * ```
- * import procMacro2.TokenTree;
- * import syn.Result;
- * import syn.parse.ParseStream;
- *
- * // This function advances the stream past the next occurrence of `@`. If
- * // no `@` is present in the stream, the stream position is unchanged and
- * // an error is returned.
- * fun skipPastNextAt(input: ParseStream) -> Result<()> {
- *     input.step(|cursor| {
- *         var rest = *cursor;
- *         while val some((tt, next)) = rest.tokenTree() {
- *             when (&tt) {
- *                 TokenTree::Punct(punct) if punct.asChar() == '@' => {
- *                     return Ok(((), next));
- *                 }
- *                 _ => rest = next,
- *             }
- *         }
- *         Err(cursor.error("no `@` was found after this point"))
- *     })
- * }
- * ```
+ * This type is the input of the closure provided to [ParseBuffer.step].
  */
 public class StepCursor internal constructor(
     private val scope: Span,
@@ -981,16 +502,16 @@ internal fun <T> parseScoped(
     }
 }
 
-private fun errUnexpectedToken(span: Span, delimiter: Delimiter): SynError {
-    val msg =
+private fun errUnexpectedToken(span: Span, delimiter: Delimiter): SynError =
+    SynError.new(
+        span,
         when (delimiter) {
             Delimiter.Parenthesis -> "unexpected token, expected `)`"
             Delimiter.Brace -> "unexpected token, expected `}`"
             Delimiter.Bracket -> "unexpected token, expected `]`"
             Delimiter.None -> "unexpected token"
-        }
-    return SynError.new(span, msg)
-}
+        },
+    )
 
 /**
  * An empty syntax tree node that consumes no tokens when parsed.
@@ -1001,7 +522,7 @@ private fun errUnexpectedToken(span: Span, delimiter: Delimiter): SynError {
 public object Nothing : ToTokens {
     public fun parse(input: ParseStream): SynResult<Nothing> = SynResult.success(Nothing)
 
-    override fun toTokens(tokens: TokenStream) {}
+    override fun toTokens(tokens: TokenStream): Unit = Unit
 
     override fun toString(): String = "Nothing"
 

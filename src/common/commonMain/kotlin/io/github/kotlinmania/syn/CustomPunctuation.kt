@@ -1,4 +1,3 @@
-// port-lint: source custom_punctuation.rs
 package io.github.kotlinmania.syn
 
 import io.github.kotlinmania.procmacro2.Punct
@@ -9,15 +8,10 @@ import io.github.kotlinmania.quote.ToTokens
 import io.github.kotlinmania.quote.append
 
 /**
- * Support for defining custom multi-character punctuation tokens.
+ * Base representation for multi-character custom punctuation tokens.
  *
- * In the upstream crate this is a declarative macro. In Kotlin, custom
- * punctuation is defined as a data class with companion Peek and parser
- * implementations that match the character sequence.
- *
- * Example: PathSeparator for the angle-bracket-slash sequence would be
- * defined as a data class holding the three spans, with a companion
- * Peek that checks for the character sequence with joint spacing.
+ * Custom punctuation matches an exact sequence of characters where every
+ * character prior to the last has [Spacing.Joint] spacing.
  */
 public abstract class CustomPunctuation : ToTokens {
     /** The spans covering each character of this punctuation. */
@@ -53,12 +47,8 @@ private class ExplicitCustomPunctuation(
 ) : CustomPunctuation()
 
 /**
- * Creates a Peek and parser pair for a custom multi-character punctuation
+ * Creates a [Peek] and parser pair for a multi-character custom punctuation
  * sequence.
- *
- * In the upstream crate, a declarative macro defines data classes for
- * specific punctuation sequences. In Kotlin, this function provides a
- * dynamic mechanism to peek and parse arbitrary punctuation sequences.
  *
  * @param chars The character sequence for this punctuation.
  * @return A pair of [Peek] and concrete parser for this punctuation.

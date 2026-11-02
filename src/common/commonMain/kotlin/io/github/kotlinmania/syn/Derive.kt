@@ -16,6 +16,38 @@ public data class DeriveInput(
     public var generics: Generics,
     public var data: Data,
 ) : ToTokens {
+    public companion object {
+        public fun parse(input: ParseStream): SynResult<DeriveInput> =
+            DeriveInputParse.parse(input)
+
+        public fun from(input: Item.Struct): DeriveInput =
+            DeriveInput(
+                attrs = input.attrs,
+                vis = input.vis,
+                ident = input.ident,
+                generics = input.generics,
+                data = Data.Struct(DataStruct(structToken = input.structToken, fields = input.fields, semiToken = input.semiToken)),
+            )
+
+        public fun from(input: Item.Enum): DeriveInput =
+            DeriveInput(
+                attrs = input.attrs,
+                vis = input.vis,
+                ident = input.ident,
+                generics = input.generics,
+                data = Data.Enum(DataEnum(enumToken = input.enumToken, braceToken = input.braceToken, variants = input.variants)),
+            )
+
+        public fun from(input: Item.Union): DeriveInput =
+            DeriveInput(
+                attrs = input.attrs,
+                vis = input.vis,
+                ident = input.ident,
+                generics = input.generics,
+                data = Data.Union(DataUnion(unionToken = input.unionToken, fields = input.fields)),
+            )
+    }
+
     override fun toTokens(tokens: TokenStream) {
         for (attr in attrs) attr.toTokens(tokens)
         vis.toTokens(tokens)

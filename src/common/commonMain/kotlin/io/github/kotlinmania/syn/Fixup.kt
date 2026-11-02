@@ -269,7 +269,7 @@ private fun scanRight(
     return when (expr) {
         is Expr.Assign -> {
             if (expr.attrs.isEmpty()) {
-                scanRightAssign(expr, fixup, consumeByPrecedence, failOffset, bailoutOffset)
+                scanRightAssign(expr, fixup, failOffset, bailoutOffset)
             } else {
                 scanRightLeaf(fixup, precedence, consumeByPrecedence)
             }
@@ -332,7 +332,6 @@ private fun scanRight(
 private fun scanRightAssign(
     expr: Expr.Assign,
     fixup: FixupContext,
-    consumeByPrecedence: Scan,
     failOffset: Int,
     bailoutOffset: Int,
 ): Scan {

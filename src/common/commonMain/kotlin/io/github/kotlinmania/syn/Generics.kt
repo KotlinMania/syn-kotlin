@@ -680,10 +680,15 @@ public sealed class GenericParam : ToTokens {
                 val ident = IdentParse.parse(input).getOrElse { return SynResult.failure(it) }
                 val colonToken = ColonParse.parse(input).getOrElse { return SynResult.failure(it) }
                 val ty = parseTypeFull(input).getOrElse { return SynResult.failure(it) }
-                val eqToken = EqParse.parse(input).getOrNull()
+                val eqToken =
+                    if (input.peek(EqPeek)) {
+                        EqParse.parse(input).getOrElse { return SynResult.failure(it) }
+                    } else {
+                        null
+                    }
                 val default =
                     if (eqToken != null) {
-                        parseExprFull(input).getOrElse { return SynResult.failure(it) }
+                        constArgument(input).getOrElse { return SynResult.failure(it) }
                     } else {
                         null
                     }
@@ -1116,7 +1121,7 @@ public sealed class TypeParamBound : ToTokens {
             tokens.extendTokenStreams(listOf(this.tokens))
         }
 
-        override fun deepCopy(): Verbatim = this
+        override fun deepCopy(): Verbatim = copy(tokens = tokens.clone())
     }
 }
 
@@ -1137,19 +1142,20 @@ public sealed class TraitBoundModifier : ToTokens {
     }
 
     public data object None : TraitBoundModifier() {
-        override fun toTokens(tokens: TokenStream) {}
-
         override fun deepCopy(): None = this
     }
 
     public data class Maybe(
         var token: io.github.kotlinmania.syn.token.Question,
     ) : TraitBoundModifier() {
-        override fun toTokens(tokens: TokenStream) {
-            token.toTokens(tokens)
-        }
-
         override fun deepCopy(): Maybe = this
+    }
+
+    override fun toTokens(tokens: TokenStream) {
+        when (this) {
+            None -> Unit
+            is Maybe -> token.toTokens(tokens)
+        }
     }
 }
 
@@ -1245,9 +1251,8 @@ public sealed class CapturedParam : ToTokens {
     }
 
     /**
-     * A type parameter or const generic parameter in precise capturing
-     * bound: `fn f<T>() -> implementation Trait + use<T>` or `fn f<const K: T>() ->
-     * implementation Trait + use<K>`.
+     * A type parameter or const generic parameter in a precise capturing
+     * bound.
      */
     public data class Ident(
         var ident: io.github.kotlinmania.procmacro2.Ident,
@@ -1258,4 +1263,94 @@ public sealed class CapturedParam : ToTokens {
 
         override fun deepCopy(): Ident = Ident(ident.copy())
     }
+}
+
+internal fun parseGenerics(input: ParseStream): SynResult<Generics> = Generics.parse(input)
+
+internal object GenericsLtPeek : Peek {
+    override fun peek(cursor: Cursor): Boolean {
+        val (punct, _) = cursor.punct() ?: return false
+        return punct.asChar() == '<'
+    }
+
+    override fun display(): String = "`<`"
+}
+
+internal object GenericsLtParse {
+    fun parse(input: ParseStream): SynResult<Lt> =
+        input.step { cursor ->
+            val (punct, rest) =
+                cursor.punct()
+                    ?: return@step SynResult.failure(cursor.error("expected `<`"))
+            if (punct.asChar() != '<') return@step SynResult.failure(cursor.error("expected `<`"))
+            SynResult.success(Lt.from(punct.span()) to rest)
+        }
+}
+
+internal object GenericsGtPeek : Peek {
+    override fun peek(cursor: Cursor): Boolean {
+        val (punct, _) = cursor.punct() ?: return false
+        return punct.asChar() == '>'
+    }
+
+    override fun display(): String = "`>`"
+}
+
+internal object GenericsGtParse {
+    fun parse(input: ParseStream): SynResult<Gt> =
+        input.step { cursor ->
+            val (punct, rest) =
+                cursor.punct()
+                    ?: return@step SynResult.failure(cursor.error("expected `>`"))
+            if (punct.asChar() != '>') return@step SynResult.failure(cursor.error("expected `>`"))
+            SynResult.success(Gt.from(punct.span()) to rest)
+        }
+}
+
+public object GenericParamParse {
+    fun parse(input: ParseStream): SynResult<GenericParam> =
+        GenericParam.parse(input)
+}
+
+public object WhereClauseParse {
+    fun parse(input: ParseStream): SynResult<WhereClause> =
+        parseWhereClause(input)
+}
+
+internal fun parseWhereClause(input: ParseStream): SynResult<WhereClause> = WhereClause.parse(input)
+
+internal fun parseTypeParamBounds(
+    input: ParseStream,
+    stopAtEq: Boolean,
+    allowPreciseCapture: Boolean = false,
+    allowPlus: Boolean = true,
+): SynResult<TypeParamBoundList> {
+    val bounds = TypeParamBoundList()
+    while (!input.isEmpty() && !input.peek(CommaPeek) && !input.peek(GenericsGtPeek) && !input.peek(BracePeek) && !input.peek(WherePeek) && !input.peek(SemiPeek) && !(stopAtEq && input.peek(EqPeek))) {
+        val bound =
+            TypeParamBound
+                .parseSingle(
+                    input,
+                    allowPreciseCapture = allowPreciseCapture,
+                    allowConst = false,
+                ).getOrElse { return SynResult.failure(it) }
+        bounds.pushValue(bound)
+        if (!allowPlus || !input.peek(PlusPeek)) break
+        bounds.pushPunct(PlusParse.parse(input).getOrThrow())
+    }
+    return SynResult.success(bounds)
+}
+
+internal fun parseTypeParamBoundsMultiple(
+    input: ParseStream,
+    allowPlus: Boolean,
+    allowPreciseCapture: Boolean,
+    allowConst: Boolean,
+): SynResult<TypeParamBoundList> = TypeParamBound.parseMultiple(input, allowPlus, allowPreciseCapture, allowConst)
+
+internal fun parseBoundLifetimes(input: ParseStream): SynResult<BoundLifetimes> = BoundLifetimes.parse(input)
+
+public object TypeParamBoundParse {
+    fun parse(input: ParseStream): SynResult<TypeParamBound> =
+        TypeParamBound.parse(input)
 }

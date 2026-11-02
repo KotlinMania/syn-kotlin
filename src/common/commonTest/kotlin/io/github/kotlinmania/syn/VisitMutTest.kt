@@ -1,6 +1,9 @@
 package io.github.kotlinmania.syn
 
+import io.github.kotlinmania.procmacro2.TokenStream
 import io.github.kotlinmania.syn.gen.VisitMut
+import io.github.kotlinmania.syn.gen.visitBlockMut
+import io.github.kotlinmania.syn.gen.visitExprMut
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -543,5 +546,29 @@ class VisitMutTest {
 
         fun dump(): String =
             events.joinToString(separator = "\n")
+    }
+
+    @Test
+    fun topLevelVisitExprMutAndVisitBlockMutDispatchThroughVisitor() {
+        val visitor =
+            object : VisitMut() {
+                override fun visitIdentMut(id: io.github.kotlinmania.procmacro2.Ident) {
+                    visitIdent(id)
+                }
+
+                override fun visitExpr(e: Expr): Expr {
+                    val walked = visitExprMut(this, e)
+                    return if (walked is Expr.Path && walked.path.isIdent("old_val")) {
+                        parseStr(ExprParse::parse, "new_val").getOrThrow()
+                    } else {
+                        walked
+                    }
+                }
+            }
+        val block = parseStr(BlockParse::parse, "{ let x = old_val + 1; }").getOrThrow()
+        visitBlockMut(visitor, block)
+        val tokens = TokenStream.new()
+        block.toTokens(tokens)
+        assertEquals("{ let x = new_val + 1 ; }", tokens.toString())
     }
 }

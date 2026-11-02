@@ -3,6 +3,9 @@ package io.github.kotlinmania.syn
 
 import io.github.kotlinmania.procmacro2.TokenStream
 import io.github.kotlinmania.quote.ToTokens
+import io.github.kotlinmania.syn.gen.punctuatedDebug
+import io.github.kotlinmania.syn.gen.punctuatedEq
+import io.github.kotlinmania.syn.gen.punctuatedHash
 
 internal typealias RawPair<T, P> = kotlin.Pair<T, P>
 
@@ -108,13 +111,13 @@ public sealed class SynPunctuated :
 
     override fun hashCode(): Int = inner.hashCode() * 31 + (last?.hashCode() ?: 0)
 
-    override fun toString(): String = inner.map { it.first.toString() }.joinToString(", ", "[", "]")
+    override fun toString(): String = iterator().asSequence().joinToString(", ", "[", "]")
 
-    public fun eq(other: SynPunctuated): Boolean = equals(other)
+    public fun eq(other: SynPunctuated): Boolean = punctuatedEq(this, other)
 
-    public fun hash(): Int = hashCode()
+    public fun hash(): Int = punctuatedHash(this)
 
-    public fun fmt(): String = toString()
+    public fun fmt(): String = punctuatedDebug(this)
 
     public fun index(index: Int): ToTokens =
         if (index + 1 == len()) {

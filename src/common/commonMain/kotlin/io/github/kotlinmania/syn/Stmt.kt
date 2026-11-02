@@ -3,6 +3,7 @@ package io.github.kotlinmania.syn
 
 import io.github.kotlinmania.procmacro2.TokenStream
 import io.github.kotlinmania.quote.ToTokens
+import io.github.kotlinmania.syn.gen.clone
 import io.github.kotlinmania.syn.token.Brace
 import io.github.kotlinmania.syn.token.Let
 import io.github.kotlinmania.syn.token.Semi
@@ -14,6 +15,14 @@ public data class Block(
     public var braceToken: Brace,
     public var stmts: List<Stmt>,
 ) : ToTokens {
+    public companion object {
+        public fun parse(input: ParseStream): SynResult<Block> = parseBlock(input)
+
+        public fun parseWithin(input: ParseStream): SynResult<List<Stmt>> =
+            io.github.kotlinmania.syn
+                .parseWithin(input)
+    }
+
     override fun toTokens(tokens: TokenStream) {
         braceToken.surround(tokens) { inner ->
             for (stmt in stmts) stmt.toTokens(inner)
@@ -56,7 +65,7 @@ public sealed class Stmt : ToTokens {
             item.toTokens(tokens)
         }
 
-        override fun deepCopy(): ItemStmt = ItemStmt(item)
+        override fun deepCopy(): ItemStmt = ItemStmt(item.clone())
     }
 
     /** Expression, with or without trailing semicolon. */
@@ -188,56 +197,20 @@ internal fun stmtMac(input: ParseStream): SynResult<Stmt.MacroStmt> {
     return SynResult.success(Stmt.MacroStmt(mutableListOf(), mac, semi))
 }
 
+public object BlockParse {
+    public fun parse(input: ParseStream): SynResult<Block> = parseBlock(input)
+}
+
+internal fun parseBlock(input: ParseStream): SynResult<Block> {
+    val bracesVal = braced(input).getOrElse { return SynResult.failure(it) }
+    val stmts = parseWithin(bracesVal.content).getOrElse { return SynResult.failure(it) }
+    bracesVal.content.finishChildBuffer()
+    return SynResult.success(Block(bracesVal.token, stmts))
+}
+
 /**
  * Parse the body of a block as zero or more statements, possibly
  * including one trailing expression.
- *
- * # Example
- *
- * ```
- * import syn..braced, token, Attribute, Block, Ident, Result, Stmt, Token};
- * import syn.parse..Parse, ParseStream};
- *
- * // Parse a function with no generics or parameter list.
- * //
- * //     fn playground {
- * //         var x = 1;
- * //         x += 1;
- * //         println("{}", x);
- * //     }
- * struct MiniFunction {
- *     attrs: Vec<Attribute>,
- *     fnToken: token[fn],
- *     name: Ident,
- *     braceToken: token::Brace,
- *     stmts: Vec<Stmt>,
- * }
- *
- * class MiniFunction : Parse {
- *     fun parse(input: ParseStream) -> Result<Self> {
- *         val outerAttrs = input.call(Attribute::parseOuter)?;
- *         val fnToken: token[fn] = input.parse()?;
- *         val name: Ident = input.parse()?;
- *
- *         val content;
- *         val braceToken = braced(content in input);
- *         val innerAttrs = content.call(Attribute::parseInner)?;
- *         val stmts = content.call(Block::parseWithin)?;
- *
- *         Ok(MiniFunction {
- *             attrs: {
- *                 var attrs = outerAttrs;
- *                 attrs.extend(innerAttrs);
- *                 attrs
- *             },
- *             fnToken,
- *             name,
- *             braceToken,
- *             stmts,
- *         })
- *     }
- * }
- * ```
  */
 public fun parseWithin(input: ParseStream): SynResult<List<Stmt>> {
     val stmts = mutableListOf<Stmt>()

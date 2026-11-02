@@ -46,13 +46,28 @@ class DebugTest {
         assertTrue(data.debug().startsWith("Data::Struct { "))
     }
 
+    @Test
+    fun exprItemPatAndTypeDebugRenderRustVariantShapes() {
+        val expr = parseStr(ExprParse::parse, "a + 1").getOrThrow()
+        assertTrue(expr.debug().startsWith("Expr::Binary { "))
+
+        val item = parseStr(ItemParse::parse, "type Alias = u32;").getOrThrow()
+        assertTrue(item.debug().startsWith("Item::Type { "))
+
+        val pat = parseStr(Pat::parseSingle, "Some(x)").getOrThrow()
+        assertTrue(pat.debug().startsWith("Pat::TupleStruct { "))
+
+        val ty = parseStr(SynTypeParseExpr::parse, "&'a mut [u8]").getOrThrow()
+        assertTrue(ty.debug().startsWith("Type::Reference { "))
+    }
+
     private fun assertInOrder(
         text: String,
         vararg fragments: String,
     ) {
         var previous = -1
         for (fragment in fragments) {
-            val index = text.indexOf(fragment)
+            val index = text.indexOf(fragment, previous + 1)
             assertTrue(index >= 0, "missing fragment: $fragment in $text")
             assertTrue(index > previous, "fragment out of order: $fragment in $text")
             previous = index

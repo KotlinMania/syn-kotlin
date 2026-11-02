@@ -403,4 +403,88 @@ class LitTest {
         assertEquals(span, lit.span())
         assertEquals(span, lit.value.token().span())
     }
+
+    @Test
+    fun litSuffixFromAndTypedParsersAndPeeks() {
+        val span = Span.callSite()
+        val litStr = parseStr(LitStrParse::parse, "\"hello\"_s").getOrThrow()
+        assertEquals("_s", Lit.from(litStr).suffix())
+
+        val litByteStr = parseStr(LitByteStrParse::parse, "b\"abc\"_bs").getOrThrow()
+        assertEquals("_bs", Lit.from(litByteStr).suffix())
+
+        val litCStr = parseStr(LitCStrParse::parse, "c\"abc\"_cs").getOrThrow()
+        assertEquals("_cs", Lit.from(litCStr).suffix())
+
+        val litByte = parseStr(LitByteParse::parse, "b'x'u8").getOrThrow()
+        assertEquals("u8", Lit.from(litByte).suffix())
+
+        val litChar = parseStr(LitCharParse::parse, "'z'_ch").getOrThrow()
+        assertEquals("_ch", Lit.from(litChar).suffix())
+
+        val litInt = LitInt.new("42", "u64", span)
+        assertEquals("u64", Lit.from(litInt).suffix())
+
+        val litFloat = LitFloat.new("3.5", "f32", span)
+        assertEquals("f32", Lit.from(litFloat).suffix())
+
+        val litBool = LitBool.new(true, span)
+        assertEquals("", Lit.from(litBool).suffix())
+
+        parseStr(
+            { input ->
+                assertTrue(input.peek(LitStrPeek))
+                LitStrParse.parse(input)
+            },
+            "\"ok\"",
+        ).getOrThrow()
+
+        parseStr(
+            { input ->
+                assertTrue(input.peek(LitByteStrPeek))
+                LitByteStrParse.parse(input)
+            },
+            "b\"ok\"",
+        ).getOrThrow()
+
+        parseStr(
+            { input ->
+                assertTrue(input.peek(LitCStrPeek))
+                LitCStrParse.parse(input)
+            },
+            "c\"ok\"",
+        ).getOrThrow()
+
+        parseStr(
+            { input ->
+                assertTrue(input.peek(LitBytePeek))
+                LitByteParse.parse(input)
+            },
+            "b'a'",
+        ).getOrThrow()
+
+        parseStr(
+            { input ->
+                assertTrue(input.peek(LitCharPeek))
+                LitCharParse.parse(input)
+            },
+            "'a'",
+        ).getOrThrow()
+
+        // Ensure failed LitStrParse reports the offending literal's span via `head = input.fork()`
+        // rather than the following token's span after `LitParse` consumes `123`.
+        val errOnFirstToken =
+            parseStr(
+                { input ->
+                    val firstSpan = input.span()
+                    val err = LitStrParse.parse(input).exceptionOrNull() as SynError
+                    assertEquals(firstSpan, err.span())
+                    val afterIdent = IdentParse.parse(input).getOrElse { return@parseStr SynResult.failure(it) }
+                    assertEquals("identAfter", afterIdent.toString())
+                    SynResult.success(afterIdent)
+                },
+                "123 identAfter",
+            )
+        assertTrue(errOnFirstToken.isSuccess)
+    }
 }

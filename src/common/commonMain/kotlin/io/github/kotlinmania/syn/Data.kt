@@ -51,28 +51,25 @@ public sealed class Fields :
      */
     public data class Named(
         var fields: FieldsNamed,
-    ) : Fields() {
-        override fun toTokens(tokens: TokenStream) {
-            fields.toTokens(tokens)
-        }
-    }
+    ) : Fields()
 
     /**
-     * Unnamed fields of a tuple struct or tuple variant such as `Some(T)`.
+     * Unnamed fields of a tuple data structure or tuple variant such as `Some(T)`.
      */
     public data class Unnamed(
         var fields: FieldsUnnamed,
-    ) : Fields() {
-        override fun toTokens(tokens: TokenStream) {
-            fields.toTokens(tokens)
-        }
-    }
+    ) : Fields()
 
     /**
-     * Unit struct or unit variant such as `None`.
+     * Unit data structure or unit variant such as `None`.
      */
-    public data object Unit : Fields() {
-        override fun toTokens(tokens: TokenStream) {
+    public data object Unit : Fields()
+
+    override fun toTokens(tokens: TokenStream) {
+        when (this) {
+            is Named -> fields.toTokens(tokens)
+            is Unnamed -> fields.toTokens(tokens)
+            Unit -> kotlin.Unit
         }
     }
 
@@ -80,9 +77,7 @@ public sealed class Fields :
         iter()
 
     /**
-     * Get an iterator over the borrowed [`Field`] items in this object. This
-     * iterator can be used to iterate over a named or unnamed struct or
-     * variant's fields uniformly.
+     * Get an iterator over the [Field] items in this object.
      */
     public fun iter(): Iterator<Field> =
         when (this) {
@@ -92,9 +87,7 @@ public sealed class Fields :
         }
 
     /**
-     * Get an iterator over the mutably borrowed [`Field`] items in this
-     * object. This iterator can be used to iterate over a named or unnamed
-     * struct or variant's fields uniformly.
+     * Get an iterator over the [Field] items in this object.
      */
     public fun iterMut(): Iterator<Field> =
         iter()
@@ -119,36 +112,10 @@ public sealed class Fields :
         len() == 0
 
     /**
-     * Get an iterator over the fields of a struct or variant as [`Member`]s.
-     * This iterator can be used to iterate over a named or unnamed struct or
-     * variant's fields uniformly.
+     * Get an iterator over the fields of a data structure or variant as [Member]s.
      *
-     * # Example
-     *
-     * The following is a simplistic [`Clone`] derive for structs. (A more
-     * complete implementation would additionally want to infer trait bounds on
-     * the generic type parameters.)
-     *
-     * ```
-     * fun deriveClone(input: &syn::ItemStruct) -> procMacro2::TokenStream {
-     *     val ident = &input.ident;
-     *     val members = input.fields.members();
-     *     let (implGenerics, tyGenerics, whereClause) = input.generics.splitForImpl();
-     *     quote{
-     *         class #ident #tyGenerics #whereClause : #implGenerics Clone {
-     *             fun clone(&self) -> Self {
-     *                 Self {
-     *                     #(#members: self.#members.clone()),*
-     *                 }
-     *             }
-     *         }
-     *     }
-     * }
-     * ```
-     *
-     * For structs with named fields, it produces an expression like `Self { a:
-     * self.a.clone() }`. For structs with unnamed fields, `Self { 0:
-     * self.0.clone() }`. And for unit structs, `Self {}`.
+     * Named fields yield [Member.Named] and unnamed fields yield [Member.Unnamed]
+     * with their positional index.
      */
     public fun members(): Members =
         Members(iter().asSequence().toList())
@@ -297,7 +264,15 @@ public object VariantParse {
         val discriminant =
             if (input.peek(EqPeek)) {
                 val eq = EqParse.parse(input).getOrElse { return SynResult.failure(it) }
-                val expr = parseExprFull(input).getOrElse { return SynResult.failure(it) }
+                val begin = input.fork()
+                val ahead = input.fork()
+                var parsedExpr = parseExprFull(ahead)
+                if (parsedExpr.isSuccess && (ahead.isEmpty() || ahead.peek(CommaPeek))) {
+                    input.advanceTo(ahead)
+                } else if (scanExpr(input).isSuccess) {
+                    parsedExpr = SynResult.success(Expr.Verbatim(between(begin, input)))
+                }
+                val expr = parsedExpr.getOrElse { return SynResult.failure(it) }
                 EqExpr(eq, expr)
             } else {
                 null
@@ -305,3 +280,45 @@ public object VariantParse {
         return SynResult.success(Variant(attrs, ident, fields, discriminant))
     }
 }
+
+internal fun parseNamedFieldList(input: ParseStream): SynResult<FieldList> {
+    val fields = FieldList()
+    while (!input.isEmpty()) {
+        val field = parseNamedField(input).getOrElse { return SynResult.failure(it) }
+        fields.pushValue(field)
+        if (input.isEmpty()) break
+        val comma = CommaParse.parse(input).getOrElse { return SynResult.failure(it) }
+        fields.pushPunct(comma)
+    }
+    return SynResult.success(fields)
+}
+
+internal fun parseUnnamedFieldList(input: ParseStream): SynResult<FieldList> {
+    val fields = FieldList()
+    while (!input.isEmpty()) {
+        val field = parseUnnamedField(input).getOrElse { return SynResult.failure(it) }
+        fields.pushValue(field)
+        if (input.isEmpty()) break
+        val comma = CommaParse.parse(input).getOrElse { return SynResult.failure(it) }
+        fields.pushPunct(comma)
+    }
+    return SynResult.success(fields)
+}
+
+internal fun parseVariantList(input: ParseStream): SynResult<VariantList> {
+    val variants = VariantList()
+    while (!input.isEmpty()) {
+        val variant = parseVariant(input).getOrElse { return SynResult.failure(it) }
+        variants.pushValue(variant)
+        if (input.isEmpty()) break
+        val comma = CommaParse.parse(input).getOrElse { return SynResult.failure(it) }
+        variants.pushPunct(comma)
+    }
+    return SynResult.success(variants)
+}
+
+internal fun parseNamedField(input: ParseStream): SynResult<Field> = Field.parseNamed(input)
+
+internal fun parseVariant(input: ParseStream): SynResult<Variant> = VariantParse.parse(input)
+
+internal fun parseUnnamedField(input: ParseStream): SynResult<Field> = Field.parseUnnamed(input)

@@ -1,7 +1,9 @@
 package io.github.kotlinmania.syn
 
 import io.github.kotlinmania.procmacro2.Ident
+import io.github.kotlinmania.procmacro2.TokenStream
 import io.github.kotlinmania.syn.gen.Fold
+import io.github.kotlinmania.syn.gen.foldExpr
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
@@ -598,5 +600,19 @@ class FoldTest {
 
         fun dump(): String =
             events.joinToString(separator = "\n")
+    }
+
+    @Test
+    fun topLevelFoldExprRewritesIdentifiers() {
+        val folder =
+            object : Fold() {
+                override fun foldIdent(id: Ident): Ident =
+                    Ident.new("${id}_folded", id.span())
+            }
+        val expr = parseStr(ExprParse::parse, "lhs + rhs").getOrThrow()
+        val folded = foldExpr(folder, expr)
+        val tokens = TokenStream.new()
+        folded.toTokens(tokens)
+        assertEquals("lhs_folded + rhs_folded", tokens.toString())
     }
 }

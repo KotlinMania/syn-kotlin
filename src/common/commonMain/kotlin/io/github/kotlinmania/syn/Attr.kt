@@ -7,157 +7,24 @@ import io.github.kotlinmania.procmacro2.TokenStream
 import io.github.kotlinmania.quote.ToTokens
 
 /**
- * An attribute, like ``.
+ * An outer or inner attribute node in a syntax tree.
  *
- * <br>
+ * The [style] field of type [AttrStyle] distinguishes whether an attribute is
+ * outer (decorating the following item) or inner (decorating the enclosing
+ * module or block).
  *
- * # Syntax
+ * Every attribute has a path indicating the interpretation of its contents,
+ * stored together with any optional arguments inside [meta] in one of three
+ * varieties:
+ * - [Meta.PathMeta] — attributes carrying only a path.
+ * - [Meta.List] — attributes carrying tokens surrounded by parentheses,
+ *   brackets, or braces after the path.
+ * - [Meta.NameValue] — attributes with an `=` token and expression after the
+ *   path (including doc comments lowered to `doc = "..."`).
  *
- * Rust has six types of attributes.
- *
- * - Outer attributes like ``. These appear outside or
- *   in front of the item they describe.
- *
- * - Inner attributes like ``. These appear inside
- *   of the item they describe, usually a module.
- *
- * - Outer one-line doc comments like `/// Example`.
- *
- * - Inner one-line doc comments like `//! Please file an issue`.
- *
- * - Outer documentation blocks `/ ** Example * /`.
- *
- * - Inner documentation blocks `/ *! Please file an issue * /`.
- *
- * The `style` field of type `AttrStyle` distinguishes whether an attribute
- * is outer or inner.
- *
- * Every attribute has a `path` that indicates the intended interpretation
- * of the rest of the attribute's contents. The path and the optional
- * additional contents are represented together in the `meta` field of the
- * attribute in three possible varieties:
- *
- * - Meta::Path &mdash; attributes whose information content conveys just a
- *   path, for example the `` attribute.
- *
- * - Meta::List &mdash; attributes that carry arbitrary tokens after the
- *   path, surrounded by a delimiter (parenthesis, bracket, or brace). For
- *   example `` or ``.
- *
- * - Meta::NameValue &mdash; attributes with an `=` sign after the path,
- *   followed by a Rust expression. For example `#[path =
- *   "sys/windows.rs"]`.
- *
- * All doc comments are represented in the NameValue style with a path of
- * "doc", as this is how they are processed by the compiler and by
- * `macroRules` macros.
- *
- * ```text
- *
- *   ~~~~~~Path
- *   ^^^^^^^^^^^^^^^^^^^Meta::List
- *
- *
- *   ~~~~Path
- *   ^^^^^^^^^^^^^^^^^^^^^^^Meta::NameValue
- *
- *
- *   ^^^^Meta::Path
- * ```
- *
- * <br>
- *
- * # Parsing from tokens to Attribute
- *
- * This type does not implement the [`Parse`] trait and thus cannot be
- * parsed directly by [`ParseStream::parse`]. Instead use
- * [`ParseStream::call`] with one of the two parser functions
- * [`Attribute::parseOuter`] or [`Attribute::parseInner`] depending on
- * which you intend to parse.
- *
- * [`Parse`]: crate::parse::Parse
- * [`ParseStream::parse`]: crate::parse::ParseBuffer::parse
- * [`ParseStream::call`]: crate::parse::ParseBuffer::call
- *
- * ```
- * import syn..Attribute, Ident, Result, Token};
- * import syn.parse..Parse, ParseStream};
- *
- * // Parses a unit struct with attributes.
- * //
- * //
- * //     struct S;
- * struct UnitStruct {
- *     attrs: Vec<Attribute>,
- *     structToken: token[struct],
- *     name: Ident,
- *     semiToken: token[;],
- * }
- *
- * class UnitStruct : Parse {
- *     fun parse(input: ParseStream) -> Result<Self> {
- *         Ok(UnitStruct {
- *             attrs: input.call(Attribute::parseOuter)?,
- *             structToken: input.parse()?,
- *             name: input.parse()?,
- *             semiToken: input.parse()?,
- *         })
- *     }
- * }
- * ```
- *
- * <p><br></p>
- *
- * # Parsing from Attribute to structured arguments
- *
- * The grammar of attributes in Rust is very flexible, which makes the
- * syntax tree not that useful on its own. In particular, arguments of the
- * `Meta::List` variety of attribute are held in an arbitrary `tokens:
- * TokenStream`. Macros are expected to check the `path` of the attribute,
- * decide whether they recognize it, and then parse the remaining tokens
- * according to whatever grammar they wish to require for that kind of
- * attribute. Use [`parseArgs()`] to parse those tokens into the expected
- * data structure.
- *
- * [`parseArgs()`]: Attribute::parseArgs
- *
- * <p><br></p>
- *
- * # Doc comments
- *
- * The compiler transforms doc comments, such as `/// comment` and `/ *!
- * comment * /`, into attributes before macros are expanded. Each comment is
- * expanded into an attribute of the form ``.
- *
- * As an example, the following `mod` items are expanded identically:
- *
- * ```
- * val doc: ItemMod = parseQuote{
- *     /// Single line doc comments
- *     /// We write so many!
- *     / **
- *      * Multi-line comments...
- *      * May span many lines
- *      * /
- *     mod example {
- *         //! Of course, they can be inner too
- *         / *! And fit in a single line * /
- *     }
- * };
- * val attr: ItemMod = parseQuote{
- *
- *
- *     #[doc = r"
- *      * Multi-line comments...
- *      * May span many lines
- *      "]
- *     mod example {
- *
- *
- *     }
- * };
- * assertEq(doc, attr);
- * ```
+ * Use [Attribute.parseOuter] or [Attribute.parseInner] to parse attributes
+ * from a [ParseStream], and [parseArgs], [parseArgsWith], or [parseNestedMeta]
+ * to parse structured arguments inside [Meta.List].
  */
 public data class Attribute(
     public var poundToken: io.github.kotlinmania.syn.token.Pound,
@@ -170,15 +37,13 @@ public data class Attribute(
     public companion object {
         /**
          * Parses zero or more outer attributes from the stream.
-         *
-         * # Example
-         *
-         * See
-         * [*Parsing from tokens to Attribute*](#parsing-from-tokens-to-attribute).
          */
         public fun parseOuter(input: ParseStream): SynResult<List<Attribute>> =
             parseOuterAttributes(input)
 
+        /**
+         * Parses zero or more inner attributes from the stream.
+         */
         public fun parseInner(input: ParseStream): SynResult<List<Attribute>> =
             parseInnerAttributes(input)
     }
@@ -270,7 +135,7 @@ internal fun parseInnerAttributes(input: ParseStream): SynResult<List<Attribute>
 
 internal fun parseOuterAttributes(input: ParseStream): SynResult<List<Attribute>> {
     val attrs = mutableListOf<Attribute>()
-    while (input.peek(PoundPeek) && input.peek2(BracketPeek)) {
+    while (input.peek(PoundPeek)) {
         attrs.add(singleParseOuter(input).getOrElse { return SynResult.failure(it) })
     }
     return SynResult.success(attrs)
@@ -280,7 +145,7 @@ internal fun parseInner(
     input: ParseStream,
     attrs: MutableList<Attribute>,
 ): SynResult<Unit> {
-    while (input.peek(PoundPeek) && input.peek2(NotPeek) && input.peek3(BracketPeek)) {
+    while (input.peek(PoundPeek) && input.peek2(NotPeek)) {
         attrs.add(singleParseInner(input).getOrElse { return SynResult.failure(it) })
     }
     return SynResult.success(Unit)
@@ -326,31 +191,18 @@ private fun parseAttribute(input: ParseStream): SynResult<Attribute> {
 /**
  * Distinguishes between attributes that decorate an item and attributes
  * that are contained within an item.
- *
- * # Outer attributes
- *
- * - ``
- * - `/// # Example`
- * - `/ ** Please file an issue * /`
- *
- * # Inner attributes
- *
- * - ``
- * - `//! # Example`
- * - `/ *! Please file an issue * /`
  */
 public sealed class AttrStyle : ToTokens {
-    public data object Outer : AttrStyle() {
-        override fun toTokens(tokens: TokenStream) {
-            // outer attribute emits nothing before the bracket
-        }
-    }
+    public data object Outer : AttrStyle()
 
     public data class Inner(
         var bangToken: io.github.kotlinmania.syn.token.Not,
-    ) : AttrStyle() {
-        override fun toTokens(tokens: TokenStream) {
-            bangToken.toTokens(tokens)
+    ) : AttrStyle()
+
+    override fun toTokens(tokens: TokenStream) {
+        when (this) {
+            Outer -> Unit
+            is Inner -> bangToken.toTokens(tokens)
         }
     }
 }
@@ -358,24 +210,9 @@ public sealed class AttrStyle : ToTokens {
 /**
  * Content of a compile-time structured attribute.
  *
- * ## Path
- *
- * A meta path is like the `test` in ``.
- *
- * ## List
- *
- * A meta list is like the `derive(Copy)` in ``.
- *
- * ## NameValue
- *
- * A name-value meta is like the `path = "..."` in `#[path =
- * "sys/windows.rs"]`.
- *
- * # Syntax tree enum
- *
- * This type is a [syntax tree enum].
- *
- * [syntax tree enum]: crate::expr::Expr#syntax-tree-enums
+ * - [PathMeta] — a bare path such as `test`.
+ * - [List] — a path with delimited arguments such as `derive(Copy)`.
+ * - [NameValue] — a key-value pair such as `path = "sys.rs"`.
  */
 public sealed class Meta : ToTokens {
     public companion object {
@@ -393,7 +230,7 @@ public sealed class Meta : ToTokens {
         var path: Path,
     ) : Meta() {
         override fun toTokens(tokens: TokenStream) {
-            path.toTokens(tokens)
+            printPath(tokens, path, PathStyle.Mod)
         }
     }
 
@@ -409,13 +246,13 @@ public sealed class Meta : ToTokens {
             parseArgsWith(parser)
 
         public fun <T> parseArgsWith(parser: (ParseStream) -> SynResult<T>): SynResult<T> =
-            parseScoped(parser, delimiter.closeSpan(), tokens)
+            parseScoped(parser, delimiter.closeSpan(), tokens.clone())
 
         public fun parseNestedMeta(logic: (ParseNestedMeta) -> SynResult<Unit>): SynResult<Unit> =
-            parseScoped(parser(logic), delimiter.closeSpan(), tokens)
+            parseScoped(parser(logic), delimiter.closeSpan(), tokens.clone())
 
         override fun toTokens(tokens: TokenStream) {
-            path.toTokens(tokens)
+            printPath(tokens, path, PathStyle.Mod)
             delimiter.surround(tokens, this.tokens)
         }
     }
@@ -429,7 +266,7 @@ public sealed class Meta : ToTokens {
         var value: Expr,
     ) : Meta() {
         override fun toTokens(tokens: TokenStream) {
-            path.toTokens(tokens)
+            printPath(tokens, path, PathStyle.Mod)
             eqToken.toTokens(tokens)
             value.toTokens(tokens)
         }
@@ -443,7 +280,7 @@ public sealed class Meta : ToTokens {
         }
 
     /**
-     * Error if this is a `Meta::List` or `Meta::NameValue`.
+     * Error if this is a [Meta.List] or [Meta.NameValue].
      */
     public fun requirePathOnly(): SynResult<Path> =
         when (this) {
@@ -453,7 +290,7 @@ public sealed class Meta : ToTokens {
         }
 
     /**
-     * Error if this is a `Meta::Path` or `Meta::NameValue`.
+     * Error if this is a [Meta.PathMeta] or [Meta.NameValue].
      */
     public fun requireList(): SynResult<List> =
         when (this) {
@@ -491,7 +328,7 @@ public sealed class Meta : ToTokens {
         }
 
     /**
-     * Error if this is a `Meta::Path` or `Meta::List`.
+     * Error if this is a [Meta.PathMeta] or [Meta.List].
      */
     public fun requireNameValue(): SynResult<NameValue> =
         when (this) {
@@ -531,7 +368,7 @@ public sealed class Meta : ToTokens {
     public fun copy(): Meta =
         when (this) {
             is PathMeta -> copy(path = path.deepCopy())
-            is List -> copy(path = path.deepCopy())
+            is List -> copy(path = path.deepCopy(), tokens = tokens.clone())
             is NameValue -> copy(path = path.deepCopy(), value = value.deepCopy())
         }
 }

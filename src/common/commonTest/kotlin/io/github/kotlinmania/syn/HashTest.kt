@@ -63,4 +63,17 @@ class HashTest {
         assertEquals(structData.hash(), sameStructData.hash())
         assertNotEquals(structData.hash(), enumData.hash())
     }
+
+    @Test
+    fun exprItemAndPatHashesAreSpanIndependent() {
+        val exprLeft = parseStr(ExprParse::parse, "(a, b).0 + m!(1 + 2)").getOrThrow()
+        val exprRight = parseStr(ExprParse::parse, "\n  ( a , b ) . 0  +  m! ( 1 + 2 ) ").getOrThrow()
+        val exprDiff = parseStr(ExprParse::parse, "(a, b).1 + m!(1 + 2)").getOrThrow()
+        assertEquals(exprLeft.hash(), exprRight.hash())
+        assertNotEquals(exprLeft.hash(), exprDiff.hash())
+
+        val itemLeft = parseStr(ItemParse::parse, "pub fn f<const N: usize>(x: &[u8; N]) -> bool { true }").getOrThrow()
+        val itemRight = parseStr(ItemParse::parse, "\npub  fn  f < const N : usize > ( x : & [ u8 ; N ] ) -> bool { true }").getOrThrow()
+        assertEquals(itemLeft.hash(), itemRight.hash())
+    }
 }

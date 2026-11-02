@@ -199,6 +199,19 @@ class PathTest {
     fun pathParseFailureOnPunct() {
         assertTrue(parseStr(PathParse::parse, "::").isFailure)
     }
+
+    @Test
+    fun pathRequireIdentSucceedsForSimpleAndFailsWithExpectedMessage() {
+        val simple = parseStr(PathParse::parse, "MyIdent").getOrThrow()
+        assertEquals("MyIdent", simple.requireIdent().getOrThrow().toString())
+
+        val leading = parseStr(PathParse::parse, "::MyIdent").getOrThrow()
+        assertTrue(leading.requireIdent().isFailure)
+
+        val parameterized = parseStr(PathParse::parse, "Vec<u8>").getOrThrow()
+        val err = parameterized.requireIdent().exceptionOrNull() as SynError
+        assertTrue(err.toString().contains("expected this path to be an identifier"))
+    }
 }
 
 private fun <T : Any> assertNotNull(value: T?): T =

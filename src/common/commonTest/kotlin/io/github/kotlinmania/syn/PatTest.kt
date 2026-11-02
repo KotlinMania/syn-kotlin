@@ -28,6 +28,40 @@ class PatTest {
     }
 
     @Test
+    fun qualifiedPatPrintingConstBlockInnerAttrsAndIdentDeepCopy() {
+        val patPath = parsePat("<T as Trait>::ASSOC")
+        assertEquals("< T as Trait > :: ASSOC", roundTripTokens(patPath))
+
+        val patStruct = parsePat("<T as Trait>::Struct { a: 1, .. }")
+        assertEquals("< T as Trait > :: Struct { a : 1 , .. }", roundTripTokens(patStruct))
+
+        val patTupleStruct = parsePat("<T as Trait>::Tuple(x, y)")
+        assertEquals("< T as Trait > :: Tuple (x , y)", roundTripTokens(patTupleStruct))
+
+        val patConst = assertIs<Pat.Const>(parsePat("const { #![inner] 1 + 2 }"))
+        val renderedConst = roundTripTokens(patConst)
+        assertTrue(renderedConst.contains("const"))
+        assertTrue(renderedConst.contains("# ! [inner]"))
+
+        val outerAttrs = parseStr(Attribute::parseOuter, "#[outer]").getOrThrow()
+        val patConstWithOuter = patConst.copy(attrs = outerAttrs + patConst.attrs)
+        val constWithOuterTokens = TokenStream.new()
+        patConstWithOuter.toTokens(constWithOuterTokens)
+        assertTrue(constWithOuterTokens.toString().contains("# [outer] const"))
+        assertTrue(constWithOuterTokens.toString().contains("# ! [inner]"))
+
+        val identPat = assertIs<Pat.Ident>(parsePat("ref mut x @ Some(y)"))
+        val copiedIdent = assertIs<Pat.Ident>(identPat.deepCopy())
+        val origTuple = assertIs<Pat.TupleStruct>(identPat.subpat)
+        origTuple.elems.clear()
+        val copiedTuple = assertIs<Pat.TupleStruct>(copiedIdent.subpat)
+        assertEquals(1, copiedTuple.elems.len())
+
+        val badPatErr = parseStr(Pat::parseSingle, "+").exceptionOrNull() as SynError
+        assertTrue(badPatErr.toString().contains("expected"))
+    }
+
+    @Test
     fun testLeadingVert() {
         assertIs<Item.Fn>(parseStr(ItemParse::parse, "fn f() {}").getOrThrow())
         assertTrue(parseStr(ItemParse::parse, "fn fun1(| A: E) {}").isFailure)
@@ -175,6 +209,15 @@ class PatTest {
         val tokens = TokenStream.new()
         pat.toTokens(tokens)
         return parsePat(tokens)
+    }
+
+    private fun roundTripTokens(pat: Pat): String {
+        val tokens = TokenStream.new()
+        pat.toTokens(tokens)
+        val reparsed = parsePat(tokens)
+        val out = TokenStream.new()
+        reparsed.toTokens(out)
+        return out.toString()
     }
 
     private fun assertFailsPat(source: String) {

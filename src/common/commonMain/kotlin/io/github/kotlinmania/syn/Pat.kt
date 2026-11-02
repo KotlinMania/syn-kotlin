@@ -8,14 +8,8 @@ import io.github.kotlinmania.syn.token.Colon
 import io.github.kotlinmania.syn.token.Underscore
 
 /**
- * A pattern in a local binding, function signature, match expression, or
- * various other places.
- *
- * # Syntax tree enum
- *
- * This type is a [syntax tree enum].
- *
- * [syntax tree enum]: crate::expr::Expr#syntax-tree-enums
+ * A pattern in a local binding, function signature, branching arm, or
+ * destructuring position.
  */
 public sealed class Pat : ToTokens {
     public abstract fun deepCopy(): Pat
@@ -25,77 +19,55 @@ public sealed class Pat : ToTokens {
             parseSingle(input)
 
         /**
-         * Parse a pattern that does _not_ involve `|` at the top level.
+         * Parse a pattern that does not involve `|` at the top level.
          *
-         * This parser matches the behavior of the `$:patParam` macroRules
-         * matcher, and on editions prior to Rust 2021, the behavior of
-         * `$:pat`.
-         *
-         * In Rust syntax, some examples of where this syntax would occur are
-         * in the argument pattern of functions and closures. Patterns using
-         * `|` are not allowed to occur in these positions.
-         *
-         * ```kotlin
-         * fun f(Some(_) | None: Option<T>) {
-         *     val unused = |Some(_) | None: Option<T>| {};
-         *     //       ^^^^^^^^^^^^^^^^^^^^^^^^^??? :(
-         * }
-         * ```
-         *
-         * ```console
-         * error: top-level or-patterns are not allowed in function parameters
-         *  --> src/main.rs:1:6
-         *   |
-         * 1 | fun f(Some(_) | None: Option<T>) {
-         *   |      ^^^^^^^^^^^^^^ help: wrap the pattern in parentheses: `(Some(_) | None)`
-         * ```
+         * Top-level or-patterns are disallowed in function and closure
+         * parameter lists unless wrapped in parentheses.
          */
         fun parseSingle(input: ParseStream): SynResult<Pat> {
             val begin = input.fork()
             val lookahead = input.lookahead1()
             if (
                 (
-                    input.peek(IdentPeek) &&
+                    lookahead.peek(IdentPeek) &&
                         (
                             input.peek2(PathSepPeek) ||
                                 input.peek2(NotPeek) ||
                                 input.peek2(BracePeek) ||
                                 input.peek2(ParenPeek) ||
-                                input.peek2(DotDotPeek) ||
-                                input.peek2(DotDotEqPeek) ||
-                                input.peek2(DotDotDotPeek)
+                                input.peek2(DotDotPeek)
                         )
                 ) ||
                 (input.peek(SelfValuePeek) && input.peek2(PathSepPeek)) ||
-                input.peek(PathSepPeek) ||
-                input.peek(LtPeek) ||
+                lookahead.peek(PathSepPeek) ||
+                lookahead.peek(LtPeek) ||
                 input.peek(SelfTypePeek) ||
                 input.peek(SuperPeek) ||
                 input.peek(CratePeek)
             ) {
                 return patPathOrMacroOrStructOrRange(input)
-            } else if (input.peek(UnderscorePeek)) {
+            } else if (lookahead.peek(UnderscorePeek)) {
                 return patWild(input).map { it }
             } else if (input.peek(BoxPeek)) {
                 return patBox(begin, input)
-            } else if (input.peek(MinusPeek) || input.peek(LitPeek) || input.peek(ConstPeek)) {
+            } else if (input.peek(MinusPeek) || lookahead.peek(LitPeek) || lookahead.peek(ConstPeek)) {
                 return patLitOrRange(input)
             } else if (
-                input.peek(RefPeek) ||
-                input.peek(MutPeek) ||
+                lookahead.peek(RefPeek) ||
+                lookahead.peek(MutPeek) ||
                 input.peek(SelfValuePeek) ||
                 input.peek(IdentPeek)
             ) {
                 return patIdent(input).map { it }
-            } else if (input.peek(AndPeek)) {
+            } else if (lookahead.peek(AndPeek)) {
                 return patReference(input).map { it }
-            } else if (input.peek(ParenPeek)) {
+            } else if (lookahead.peek(ParenPeek)) {
                 return patParenOrTuple(input)
-            } else if (input.peek(BracketPeek)) {
+            } else if (lookahead.peek(BracketPeek)) {
                 return patSlice(input).map { it }
-            } else if ((input.peek(DotDotPeek) || input.peek(DotDotEqPeek)) && !input.peek(DotDotDotPeek)) {
+            } else if (lookahead.peek(DotDotPeek) && !input.peek(DotDotDotPeek)) {
                 return patRangeHalfOpen(input)
-            } else if (input.peek(ConstPeek)) {
+            } else if (lookahead.peek(ConstPeek)) {
                 return patConst(input).map(::Verbatim)
             }
             return SynResult.failure(lookahead.error())
@@ -106,39 +78,10 @@ public sealed class Pat : ToTokens {
             multiPatImpl(input, leadingVert = null)
 
         /**
-         * Parse a pattern, possibly involving `|`, possibly including a
+         * Parse a pattern, possibly involving `|`, including an optional
          * leading `|`.
          *
-         * This parser matches the behavior of the Rust 2021 edition's `$:pat`
-         * macroRules matcher.
-         *
-         * In Rust syntax, an example of where this syntax would occur is in
-         * the pattern of a `match` arm, where the language permits an optional
-         * leading `|`, although it is not idiomatic to write one there in
-         * handwritten code.
-         *
-         * ```
-         * when (wat) {
-         *     | None | Some(false) => {}
-         *     | Some(true) => {}
-         * }
-         * ```
-         *
-         * The compiler accepts it only to facilitate some situations in
-         * macro-generated code where a macro author might need to write:
-         *
-         * ```
-         * when ($value) {
-         *     $(| $conditions1)* $(| $conditions2)* => $then
-         * }
-         * ```
-         *
-         * Expressing the same thing correctly in the case that either one (but
-         * not both) of `$conditions1` and `$conditions2` might be empty,
-         * without leading `|`, is complex.
-         *
-         * Use [`Pat::parseMulti`] instead if you are not intending to support
-         * macro-generated macro input.
+         * Use [Pat.parseMulti] instead if a leading `|` should be rejected.
          */
         public fun parseMultiWithLeadingVert(input: ParseStream): SynResult<Pat> {
             val leadingVert =
@@ -160,10 +103,15 @@ public sealed class Pat : ToTokens {
         public var atToken: io.github.kotlinmania.syn.token.At?,
         public var subpat: Pat?,
     ) : Pat() {
-        override fun deepCopy(): Pat = copy(attrs = attrs.mapTo(mutableListOf()) { it.deepCopy() })
+        override fun deepCopy(): Pat =
+            copy(
+                attrs = attrs.mapTo(mutableListOf()) { it.deepCopy() },
+                ident = ident.copy(),
+                subpat = subpat?.deepCopy(),
+            )
 
         override fun toTokens(tokens: TokenStream) {
-            for (attr in attrs) attr.toTokens(tokens)
+            outerAttrsToTokens(attrs, tokens)
             byRef?.toTokens(tokens)
             mutability.toTokens(tokens)
             ident.toTokens(tokens)
@@ -182,7 +130,7 @@ public sealed class Pat : ToTokens {
             copy(attrs = attrs.mapTo(mutableListOf()) { it.deepCopy() }, elems = elems.copy({ it.deepCopy() }, { it }))
 
         override fun toTokens(tokens: TokenStream) {
-            for (attr in attrs) attr.toTokens(tokens)
+            outerAttrsToTokens(attrs, tokens)
             parenToken.surround(tokens) { inner ->
                 elems.toTokens(inner)
                 if (elems.len() == 1 && !elems.trailingPunct() && elems.first() !is Rest) {
@@ -204,7 +152,7 @@ public sealed class Pat : ToTokens {
             copy(attrs = attrs.mapTo(mutableListOf()) { it.deepCopy() }, cases = cases.copy({ it.deepCopy() }, { it }))
 
         override fun toTokens(tokens: TokenStream) {
-            for (attr in attrs) attr.toTokens(tokens)
+            outerAttrsToTokens(attrs, tokens)
             leadingVert?.toTokens(tokens)
             for ((case, vert) in cases.pairsList()) {
                 case.toTokens(tokens)
@@ -223,7 +171,7 @@ public sealed class Pat : ToTokens {
             copy(attrs = attrs.mapTo(mutableListOf()) { it.deepCopy() }, pat = pat.deepCopy())
 
         override fun toTokens(tokens: TokenStream) {
-            for (attr in attrs) attr.toTokens(tokens)
+            outerAttrsToTokens(attrs, tokens)
             parenToken.surround(tokens) { inner -> pat.toTokens(inner) }
         }
     }
@@ -239,7 +187,7 @@ public sealed class Pat : ToTokens {
             copy(attrs = attrs.mapTo(mutableListOf()) { it.deepCopy() }, andToken = andToken, mutability = mutability, pat = pat.deepCopy())
 
         override fun toTokens(tokens: TokenStream) {
-            for (attr in attrs) attr.toTokens(tokens)
+            outerAttrsToTokens(attrs, tokens)
             andToken.toTokens(tokens)
             mutability.toTokens(tokens)
             pat.toTokens(tokens)
@@ -259,7 +207,7 @@ public sealed class Pat : ToTokens {
         override fun deepCopy(): Pat =
             copy(
                 attrs = attrs.mapTo(mutableListOf()) { it.deepCopy() },
-                qself = qself,
+                qself = qself?.deepCopy(),
                 path = path.deepCopy(),
                 fields = fields.copy({ it.deepCopy() }, { it }),
                 rest = rest?.deepCopy(),
@@ -267,14 +215,8 @@ public sealed class Pat : ToTokens {
             )
 
         override fun toTokens(tokens: TokenStream) {
-            for (attr in attrs) attr.toTokens(tokens)
-            qself?.let {
-                it.ltToken.toTokens(tokens)
-                it.ty.toTokens(tokens)
-                it.asToken?.toTokens(tokens)
-                it.gtToken.toTokens(tokens)
-            }
-            path.toTokens(tokens)
+            outerAttrsToTokens(attrs, tokens)
+            printQpath(tokens, qself, path, PathStyle.Expr)
             braceToken.surround(tokens) { inner ->
                 fields.toTokens(inner)
                 if (!fields.emptyOrTrailing() && rest != null) {
@@ -298,7 +240,7 @@ public sealed class Pat : ToTokens {
             copy(attrs = attrs.mapTo(mutableListOf()) { it.deepCopy() }, elems = elems.copy({ it.deepCopy() }, { it }))
 
         override fun toTokens(tokens: TokenStream) {
-            for (attr in attrs) attr.toTokens(tokens)
+            outerAttrsToTokens(attrs, tokens)
             bracketToken.surround(tokens) { inner ->
                 elems.toTokens(inner)
             }
@@ -315,7 +257,7 @@ public sealed class Pat : ToTokens {
         override fun deepCopy(): Pat = copy(attrs = attrs.mapTo(mutableListOf()) { it.deepCopy() }, pat = pat.deepCopy(), ty = ty.deepCopy())
 
         override fun toTokens(tokens: TokenStream) {
-            for (attr in attrs) attr.toTokens(tokens)
+            outerAttrsToTokens(attrs, tokens)
             pat.toTokens(tokens)
             colonToken.toTokens(tokens)
             ty.toTokens(tokens)
@@ -331,9 +273,12 @@ public sealed class Pat : ToTokens {
         override fun deepCopy(): Pat = copy(attrs = attrs.mapTo(mutableListOf()) { it.deepCopy() }, block = block.deepCopy())
 
         override fun toTokens(tokens: TokenStream) {
-            for (attr in attrs) attr.toTokens(tokens)
+            outerAttrsToTokens(attrs, tokens)
             constToken.toTokens(tokens)
-            block.toTokens(tokens)
+            block.braceToken.surround(tokens) { inner ->
+                innerAttrsToTokens(attrs, inner)
+                for (stmt in block.stmts) stmt.toTokens(inner)
+            }
         }
     }
 
@@ -345,7 +290,7 @@ public sealed class Pat : ToTokens {
         override fun deepCopy(): Pat = copy(attrs = attrs.mapTo(mutableListOf()) { it.deepCopy() }, lit = lit)
 
         override fun toTokens(tokens: TokenStream) {
-            for (attr in attrs) attr.toTokens(tokens)
+            outerAttrsToTokens(attrs, tokens)
             lit.toTokens(tokens)
         }
     }
@@ -358,28 +303,22 @@ public sealed class Pat : ToTokens {
         override fun deepCopy(): Pat = copy(attrs = attrs.mapTo(mutableListOf()) { it.deepCopy() }, mac = mac.deepCopy())
 
         override fun toTokens(tokens: TokenStream) {
-            for (attr in attrs) attr.toTokens(tokens)
+            outerAttrsToTokens(attrs, tokens)
             mac.toTokens(tokens)
         }
     }
 
-    /** A path pattern like `Color::Red`, optionally qualified with a self-type. */
+    /** A path pattern, optionally qualified with a self-type. */
     public data class Path(
         public var attrs: List<Attribute>,
         public var qself: QSelf?,
         public var path: io.github.kotlinmania.syn.Path,
     ) : Pat() {
-        override fun deepCopy(): Pat = copy(attrs = attrs.mapTo(mutableListOf()) { it.deepCopy() }, qself = qself, path = path.deepCopy())
+        override fun deepCopy(): Pat = copy(attrs = attrs.mapTo(mutableListOf()) { it.deepCopy() }, qself = qself?.deepCopy(), path = path.deepCopy())
 
         override fun toTokens(tokens: TokenStream) {
-            for (attr in attrs) attr.toTokens(tokens)
-            qself?.let {
-                it.ltToken.toTokens(tokens)
-                it.ty.toTokens(tokens)
-                it.asToken?.toTokens(tokens)
-                it.gtToken.toTokens(tokens)
-            }
-            path.toTokens(tokens)
+            outerAttrsToTokens(attrs, tokens)
+            printQpath(tokens, qself, path, PathStyle.Expr)
         }
     }
 
@@ -393,7 +332,7 @@ public sealed class Pat : ToTokens {
         override fun deepCopy(): Pat = copy(attrs = attrs.mapTo(mutableListOf()) { it.deepCopy() }, start = start?.deepCopy(), end = end?.deepCopy())
 
         override fun toTokens(tokens: TokenStream) {
-            for (attr in attrs) attr.toTokens(tokens)
+            outerAttrsToTokens(attrs, tokens)
             start?.toTokens(tokens)
             limits.toTokens(tokens)
             end?.toTokens(tokens)
@@ -408,12 +347,12 @@ public sealed class Pat : ToTokens {
         override fun deepCopy(): Pat = copy(attrs = attrs.mapTo(mutableListOf()) { it.deepCopy() })
 
         override fun toTokens(tokens: TokenStream) {
-            for (attr in attrs) attr.toTokens(tokens)
+            outerAttrsToTokens(attrs, tokens)
             dot2Token.toTokens(tokens)
         }
     }
 
-    /** A tuple struct or tuple variant pattern: `Variant(x, y, .., z)`. */
+    /** A tuple variant or tuple data-object pattern: `Variant(x, y, .., z)`. */
     public data class TupleStruct(
         public var attrs: List<Attribute>,
         public var qself: QSelf?,
@@ -421,17 +360,11 @@ public sealed class Pat : ToTokens {
         public var parenToken: io.github.kotlinmania.syn.token.Paren,
         public var elems: PatList,
     ) : Pat() {
-        override fun deepCopy(): Pat = copy(attrs = attrs.mapTo(mutableListOf()) { it.deepCopy() }, qself = qself, path = path.deepCopy(), elems = elems.copy({ it.deepCopy() }, { it }))
+        override fun deepCopy(): Pat = copy(attrs = attrs.mapTo(mutableListOf()) { it.deepCopy() }, qself = qself?.deepCopy(), path = path.deepCopy(), elems = elems.copy({ it.deepCopy() }, { it }))
 
         override fun toTokens(tokens: TokenStream) {
-            for (attr in attrs) attr.toTokens(tokens)
-            qself?.let {
-                it.ltToken.toTokens(tokens)
-                it.ty.toTokens(tokens)
-                it.asToken?.toTokens(tokens)
-                it.gtToken.toTokens(tokens)
-            }
-            path.toTokens(tokens)
+            outerAttrsToTokens(attrs, tokens)
+            printQpath(tokens, qself, path, PathStyle.Expr)
             parenToken.surround(tokens) { inner -> elems.toTokens(inner) }
         }
     }
@@ -444,7 +377,7 @@ public sealed class Pat : ToTokens {
         override fun deepCopy(): Pat = copy(attrs = attrs.mapTo(mutableListOf()) { it.deepCopy() })
 
         override fun toTokens(tokens: TokenStream) {
-            for (attr in attrs) attr.toTokens(tokens)
+            outerAttrsToTokens(attrs, tokens)
             underscoreToken.toTokens(tokens)
         }
     }
@@ -453,7 +386,7 @@ public sealed class Pat : ToTokens {
     public data class Verbatim(
         public var tokens: TokenStream,
     ) : Pat() {
-        override fun deepCopy(): Pat = this
+        override fun deepCopy(): Pat = copy(tokens = tokens.clone())
 
         override fun toTokens(tokens: TokenStream) {
             tokens.extendTokenStreams(listOf(this.tokens))
@@ -462,10 +395,10 @@ public sealed class Pat : ToTokens {
 }
 
 /**
- * A single field in a struct pattern.
+ * A single field in a data-object pattern.
  *
- * Patterns like the fields of Foo `{ x, ref y, ref mut z }` are treated
- * the same as `x: x, y: ref y, z: ref mut z` but there is no colon token.
+ * Shorthand field patterns like `{ x, ref y, ref mut z }` store [colonToken]
+ * as `null` while binding the corresponding [Pat.Ident].
  */
 public data class FieldPat(
     public var member: Member,
@@ -474,7 +407,7 @@ public data class FieldPat(
     public var attrs: List<Attribute> = mutableListOf(),
 ) : ToTokens {
     override fun toTokens(tokens: TokenStream) {
-        for (attr in attrs) attr.toTokens(tokens)
+        outerAttrsToTokens(attrs, tokens)
         colonToken?.let { colon ->
             member.toTokens(tokens)
             colon.toTokens(tokens)
@@ -492,7 +425,7 @@ public data class PatRest(
     public var attrs: List<Attribute> = mutableListOf(),
 ) : ToTokens {
     override fun toTokens(tokens: TokenStream) {
-        for (attr in attrs) attr.toTokens(tokens)
+        outerAttrsToTokens(attrs, tokens)
         dot2Token?.toTokens(tokens)
     }
 
@@ -517,7 +450,7 @@ public data class PatType(
     }
 
     override fun toTokens(tokens: TokenStream) {
-        for (attr in attrs) attr.toTokens(tokens)
+        outerAttrsToTokens(attrs, tokens)
         pat.toTokens(tokens)
         colonToken.toTokens(tokens)
         ty.toTokens(tokens)
@@ -699,7 +632,7 @@ private fun patRange(
 }
 
 private fun patRangeHalfOpen(input: ParseStream): SynResult<Pat> {
-    val limits = parsePatRangeLimitsObsolete(input).getOrElse { return SynResult.failure(it) }
+    val limits = RangeLimitsParse.parse(input).getOrElse { return SynResult.failure(it) }
     val end = patRangeBound(input).getOrElse { return SynResult.failure(it) }
     if (end != null) {
         return SynResult.success(Pat.Range(mutableListOf(), null, limits, end.intoExpr()))
@@ -796,23 +729,23 @@ private fun patRangeBound(input: ParseStream): SynResult<PatRangeBound?> {
     }
 
     val lookahead = input.lookahead1()
-    if (input.peek(LitPeek) || input.peek(MinusPeek)) {
+    if (lookahead.peek(LitPeek) || input.peek(MinusPeek)) {
         val lit = LitParse.parse(input).getOrElse { return SynResult.failure(it) }
         return SynResult.success(PatRangeBound.Lit(Expr.Lit(mutableListOf(), lit)))
     }
     if (
-        input.peek(IdentPeek) ||
-        input.peek(PathSepPeek) ||
-        input.peek(LtPeek) ||
-        input.peek(SelfValuePeek) ||
-        input.peek(SelfTypePeek) ||
-        input.peek(SuperPeek) ||
-        input.peek(CratePeek)
+        lookahead.peek(IdentPeek) ||
+        lookahead.peek(PathSepPeek) ||
+        lookahead.peek(LtPeek) ||
+        lookahead.peek(SelfValuePeek) ||
+        lookahead.peek(SelfTypePeek) ||
+        lookahead.peek(SuperPeek) ||
+        lookahead.peek(CratePeek)
     ) {
         var (qself, path) = qpath(input, exprStyle = true).getOrElse { return SynResult.failure(it) }
         return SynResult.success(PatRangeBound.Path(Expr.Path(mutableListOf(), qself, path)))
     }
-    if (input.peek(ConstPeek)) {
+    if (lookahead.peek(ConstPeek)) {
         return parsePatConstExpr(input).map { PatRangeBound.Const(it) }
     }
     return SynResult.failure(lookahead.error())
@@ -854,9 +787,10 @@ private fun patConst(input: ParseStream): SynResult<TokenStream> {
 private fun parsePatConstExpr(input: ParseStream): SynResult<Expr.Const> {
     val constToken = ConstParse.parse(input).getOrElse { return SynResult.failure(it) }
     val braces = braced(input).getOrElse { return SynResult.failure(it) }
+    val attrs = parseInnerAttributes(braces.content).getOrElse { return SynResult.failure(it) }
     val stmts = parseWithin(braces.content).getOrElse { return SynResult.failure(it) }
     braces.content.finishChildBuffer()
-    return SynResult.success(Expr.Const(mutableListOf(), constToken, Block(braces.token, stmts.toMutableList())))
+    return SynResult.success(Expr.Const(attrs.toMutableList(), constToken, Block(braces.token, stmts.toMutableList())))
 }
 
 private fun parsePatRangeLimitsObsolete(input: ParseStream): SynResult<RangeLimits> {
@@ -871,3 +805,13 @@ private fun parsePatRangeLimitsObsolete(input: ParseStream): SynResult<RangeLimi
     }
     return RangeLimitsParse.parse(input)
 }
+
+internal fun parsePatFull(input: ParseStream): SynResult<Pat> = PatParseImpl.parse(input)
+
+internal object PatParseImpl {
+    fun parse(input: ParseStream): SynResult<Pat> = parsePatSingle(input)
+}
+
+internal fun parsePatSingle(input: ParseStream): SynResult<Pat> = Pat.parseSingle(input)
+
+internal fun parsePatMultiWithLeadingVert(input: ParseStream): SynResult<Pat> = Pat.parseMultiWithLeadingVert(input)
