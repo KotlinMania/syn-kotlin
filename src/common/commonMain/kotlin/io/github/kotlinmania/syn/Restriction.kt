@@ -8,8 +8,20 @@ import io.github.kotlinmania.syn.token.In
 import io.github.kotlinmania.syn.token.Paren
 import io.github.kotlinmania.syn.token.Pub
 
-/** Visibility of an item: `pub`, `pub(restricted)`, or inherited (private). */
+/**
+ * The visibility level of an item: inherited or `pub` or
+ * `pub(restricted)`.
+ *
+ * # Syntax tree enum
+ *
+ * This type is a [syntax tree enum].
+ *
+ * [syntax tree enum]: crate::expr::Expr#syntax-tree-enums
+ */
 public sealed class Visibility : ToTokens {
+    /**
+     * A public visibility level: `pub`.
+     */
     public data class Public(
         var pubToken: Pub,
     ) : Visibility() {
@@ -18,6 +30,10 @@ public sealed class Visibility : ToTokens {
         }
     }
 
+    /**
+     * A visibility level restricted to some path: `pub(self)` or
+     * `pub(super)` or `pub(crate)` or `pub(in some::module)`.
+     */
     public data class Restricted(
         var pubToken: Pub,
         var parenToken: Paren,
@@ -33,6 +49,9 @@ public sealed class Visibility : ToTokens {
         }
     }
 
+    /**
+     * An inherited visibility, which usually means private.
+     */
     public data object Inherited : Visibility() {
         override fun toTokens(tokens: TokenStream) {
             // inherited (private) visibility emits nothing

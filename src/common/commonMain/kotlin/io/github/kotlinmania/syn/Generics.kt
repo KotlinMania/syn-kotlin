@@ -15,7 +15,17 @@ import io.github.kotlinmania.syn.token.Lt
 import io.github.kotlinmania.syn.token.PathSep
 import io.github.kotlinmania.syn.token.Where
 
-/** Generic parameters attached to a declaration. */
+/**
+ * scopes and type parameters attached to a declaration of a function,
+ * enum, trait, etc.
+ *
+ * This struct represents two distinct optional syntactic elements,
+ * [generic parameters] and [where clause]. In some locations of the
+ * grammar, there may be other tokens in between these two things.
+ *
+ * [generic parameters]: https://doc.rust-lang.org/stable/reference/items/generics.html#generic-parameters
+ * [where clause]: https://doc.rust-lang.org/stable/reference/items/generics.html#where-clauses
+ */
 public data class Generics(
     public var ltToken: Lt? = null,
     public var params: GenericParamList = GenericParamList(),
@@ -81,24 +91,45 @@ public data class Generics(
         }
     }
 
+    /**
+     * Iterator over the scope parameters in `self.params`.
+     */
     public fun lifetimes(): Lifetimes =
         Lifetimes(params.toList())
 
+    /**
+     * Iterator over the scope parameters in `self.params`.
+     */
     public fun lifetimesMut(): LifetimesMut =
         LifetimesMut(params.toList())
 
+    /**
+     * Iterator over the type parameters in `self.params`.
+     */
     public fun typeParams(): TypeParams =
         TypeParams(params.toList())
 
+    /**
+     * Iterator over the type parameters in `self.params`.
+     */
     public fun typeParamsMut(): TypeParamsMut =
         TypeParamsMut(params.toList())
 
+    /**
+     * Iterator over the constant parameters in `self.params`.
+     */
     public fun constParams(): ConstParams =
         ConstParams(params.toList())
 
+    /**
+     * Iterator over the constant parameters in `self.params`.
+     */
     public fun constParamsMut(): ConstParamsMut =
         ConstParamsMut(params.toList())
 
+    /**
+     * Initializes an empty `where`-clause if there is not one present already.
+     */
     public fun makeWhereClause(): WhereClause {
         if (whereClause == null) {
             whereClause = WhereClause(Where(Span.callSite()), WherePredicateList())
@@ -106,6 +137,19 @@ public data class Generics(
         return whereClause!!
     }
 
+    /**
+     * Split a type's generics into the pieces required for implementation'ing a trait
+     * for that type.
+     *
+     * ```
+     * let (implGenerics, tyGenerics, whereClause) = generics.splitForImpl();
+     * quote{
+     *     class #name #tyGenerics #whereClause : #implGenerics MyTrait {
+     *         // ...
+     *     }
+     * }
+     * ```
+     */
     public fun splitForImpl(): SplitForImpl =
         SplitForImpl(
             ImplGenerics(this),
@@ -210,6 +254,9 @@ public class ConstParamsMut(
         params.asSequence().filterIsInstance<GenericParam.ConstParam>().iterator()
 }
 
+/**
+ * Returned by `Generics::splitForImpl`.
+ */
 public data class ImplGenerics(
     public var generics: Generics,
 ) : ToTokens {
@@ -227,6 +274,9 @@ public data class ImplGenerics(
     }
 }
 
+/**
+ * Returned by `Generics::splitForImpl`.
+ */
 public data class TypeGenerics(
     public var generics: Generics,
 ) : ToTokens {
@@ -239,6 +289,9 @@ public data class TypeGenerics(
     public val gtToken: Gt?
         get() = generics.gtToken
 
+    /**
+     * Turn a type's generics like `<X, Y>` into a turbofish like `::<X, Y>`.
+     */
     public fun asTurbofish(): Turbofish =
         Turbofish(generics)
 
@@ -250,6 +303,9 @@ public data class TypeGenerics(
     }
 }
 
+/**
+ * Returned by `TypeGenerics::asTurbofish`.
+ */
 public data class Turbofish(
     public var generics: Generics,
 ) : ToTokens {
@@ -448,6 +504,16 @@ private fun printGenericParams(params: GenericParamList, tokens: TokenStream) {
     }
 }
 
+/**
+ * A generic type parameter, scope, or const generic: `T: Into<String>`,
+ * `'a: `, `const LEN: Int`.
+ *
+ * # Syntax tree enum
+ *
+ * This type is a [syntax tree enum].
+ *
+ * [syntax tree enum]: crate::expr::Expr#syntax-tree-enums
+ */
 public sealed class GenericParam : ToTokens {
     public abstract fun deepCopy(): GenericParam
 
@@ -475,6 +541,9 @@ public sealed class GenericParam : ToTokens {
         }
     }
 
+    /**
+ * A scope definition: `'a:  +  + `.
+ */
     public data class LifetimeParam(
         public var attrs: List<Attribute>,
         public var lifetime: Lifetime,
@@ -518,6 +587,9 @@ public sealed class GenericParam : ToTokens {
             LifetimeParam(attrs.mapTo(mutableListOf()) { it.deepCopy() }, lifetime.deepCopy(), colonToken, bounds.copy({ it.deepCopy() }, { it }))
     }
 
+    /**
+ * A generic type parameter: `T: Into<String>`.
+ */
     public data class TypeParam(
         public var attrs: List<Attribute>,
         public var ident: Ident,
@@ -585,6 +657,9 @@ public sealed class GenericParam : ToTokens {
             TypeParam(attrs.mapTo(mutableListOf()) { it.deepCopy() }, ident.copy(), colonToken, bounds.copy({ it.deepCopy() }, { it }), eqToken, default?.deepCopy())
     }
 
+    /**
+ * A const generic parameter: `const LENGTH: Int`.
+ */
     public data class ConstParam(
         public var attrs: List<Attribute>,
         public var constToken: io.github.kotlinmania.syn.token.Const,
@@ -633,6 +708,10 @@ public sealed class GenericParam : ToTokens {
     }
 }
 
+/**
+ * A `where` clause in a definition: `where T: Deserialize<>, D:
+ * `.
+ */
 public data class WhereClause(
     public var whereToken: Where,
     public var predicates: WherePredicateList,
@@ -702,6 +781,15 @@ internal fun printConstArgument(expr: Expr, tokens: TokenStream) {
     }
 }
 
+/**
+ * A single predicate in a `where` clause: `T: Deserialize<>`.
+ *
+ * # Syntax tree enum
+ *
+ * This type is a [syntax tree enum].
+ *
+ * [syntax tree enum]: crate::expr::Expr#syntax-tree-enums
+ */
 public sealed class WherePredicate : ToTokens {
     public abstract fun deepCopy(): WherePredicate
 
@@ -754,6 +842,9 @@ public sealed class WherePredicate : ToTokens {
 
     public data class TypePredicate(
         public var lifetimes: BoundLifetimes?,
+        /**
+     * The type being bounded
+     */
         public var boundedTy: SynType,
         public var colonToken: Colon,
         public var bounds: TypeParamBoundList,
@@ -791,6 +882,9 @@ public sealed class WherePredicate : ToTokens {
     }
 }
 
+/**
+ * A trait or scope used as a bound on a type parameter.
+ */
 public sealed class TypeParamBound : ToTokens {
     public abstract fun deepCopy(): TypeParamBound
 
@@ -1026,6 +1120,10 @@ public sealed class TypeParamBound : ToTokens {
     }
 }
 
+/**
+ * A modifier on a trait bound, currently only used for the `?` in
+ * `?Sized`.
+ */
 public sealed class TraitBoundModifier : ToTokens {
     public abstract fun deepCopy(): TraitBoundModifier
 
@@ -1055,6 +1153,9 @@ public sealed class TraitBoundModifier : ToTokens {
     }
 }
 
+/**
+ * A set of bound scopes: `for<, , >`.
+ */
 public data class BoundLifetimes(
     var forToken: io.github.kotlinmania.syn.token.For,
     var ltToken: Lt,
@@ -1102,6 +1203,9 @@ public data class BoundLifetimes(
     public fun deepCopy(): BoundLifetimes = BoundLifetimes(forToken, ltToken, lifetimes.copy({ it.deepCopy() }, { it }), gtToken)
 }
 
+/**
+ * Single parameter in a precise capturing bound.
+ */
 public sealed class CapturedParam : ToTokens {
     public abstract fun deepCopy(): CapturedParam
 
@@ -1140,6 +1244,11 @@ public sealed class CapturedParam : ToTokens {
         override fun deepCopy(): Lifetime = Lifetime(lifetime.deepCopy())
     }
 
+    /**
+     * A type parameter or const generic parameter in precise capturing
+     * bound: `fn f<T>() -> implementation Trait + use<T>` or `fn f<const K: T>() ->
+     * implementation Trait + use<K>`.
+     */
     public data class Ident(
         var ident: io.github.kotlinmania.procmacro2.Ident,
     ) : CapturedParam() {

@@ -10,13 +10,35 @@ import io.github.kotlinmania.procmacro2.TokenStream
 import io.github.kotlinmania.quote.ToTokens
 import io.github.kotlinmania.quote.append
 
-/** A named duration marker in a syntax tree. */
+/**
+ * A Rust scope: `'a`.
+ *
+ * scope names must conform to the following rules:
+ *
+ * - Must start with an apostrophe.
+ * - Must not consist of just an apostrophe: `'`.
+ * - Character after the apostrophe must be `_` or a Unicode code point with
+ *   the XidStart property.
+ * - All following characters must be Unicode code points with the XidContinue
+ *   property.
+ */
 public data class Lifetime(
     public var apostrophe: Span,
     public var ident: Ident,
 ) : Comparable<Lifetime>,
     ToTokens {
     public companion object {
+        /**
+         * # Panics
+         *
+         * Panics if the scope does not conform to the bulleted rules above.
+         *
+         * # Invocation
+         *
+         * ```
+         * scope::new("'a", Span::callSite())
+         * ```
+         */
         public fun new(symbol: String, span: Span): Lifetime {
             require(symbol.startsWith('\'')) {
                 "lifetime name must start with apostrophe"

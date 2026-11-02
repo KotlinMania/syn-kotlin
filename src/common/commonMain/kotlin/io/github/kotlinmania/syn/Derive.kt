@@ -62,7 +62,15 @@ public data class DeriveInput(
     }
 }
 
-/** The storage of an enum-like, data-class-like, or union data structure. */
+/**
+ * The storage of a struct, enum or union data structure.
+ *
+ * # Syntax tree enum
+ *
+ * This type is a [syntax tree enum].
+ *
+ * [syntax tree enum]: crate::expr::Expr#syntax-tree-enums
+ */
 public sealed class Data : ToTokens {
     public data class Struct(
         var value: DataStruct,

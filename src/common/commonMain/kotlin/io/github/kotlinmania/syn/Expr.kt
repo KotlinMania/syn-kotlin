@@ -13,7 +13,62 @@ internal fun Expr.toTokensAsStmt(tokens: TokenStream) {
     printExpr(this, tokens, FixupContext.newStmt())
 }
 
-/** An expression syntax tree node. */
+/**
+ * A Rust expression.
+ *
+ * *This type is available only if Syn is built with the `"derive"` or `"full"`
+ * feature, but most of the variants are not available unless "full" is enabled.*
+ *
+ * # Syntax tree enums
+ *
+ * This type is a syntax tree enum. In Syn this and other syntax tree enums
+ * are designed to be traversed using the following rebinding idiom.
+ *
+ * ```
+ * val expr: Expr = / * ... * /;
+ * when (expr) {
+ *     Expr::MethodCall(expr) => {
+ *         / * ... * /
+ *     }
+ *     Expr::Cast(expr) => {
+ *         / * ... * /
+ *     }
+ *     Expr::If(expr) => {
+ *         / * ... * /
+ *     }
+ *
+ *     / * ... * /
+ * ```
+ *
+ * We begin with a variable `expr` of type `Expr` that has no fields
+ * (because it is an enum), and by matching on it and rebinding a variable
+ * with the same name `expr` we effectively imbue our variable with all of
+ * the data fields provided by the variant that it turned out to be. So for
+ * example above if we ended up in the `MethodCall` case then we get to use
+ * `expr.receiver`, `expr.args` etc; if we ended up in the `If` case we get
+ * to use `expr.cond`, `expr.thenBranch`, `expr.elseBranch`.
+ *
+ * This approach avoids repeating the variant names twice on every line.
+ *
+ * ```
+ * // Repetitive; recommend not doing this.
+ * when (expr) {
+ *     Expr::MethodCall(ExprMethodCall { method, args, .. }) => {
+ * ```
+ *
+ * In general, the name to which a syntax tree enum variant is bound should
+ * be a suitable name for the complete syntax tree enum type.
+ *
+ * ```
+ * // Binding is called `base` which is the name I would use if I were
+ * // assigning `*discriminant.base` without an `if let`.
+ * if val expr::Tuple(base) = *discriminant.base {
+ * ```
+ *
+ * A sign that you may not be choosing the right variable names is if you
+ * see names getting repeated in your code, like accessing
+ * `receiver.receiver` or `pat.pat` or `cond.cond`.
+ */
 public sealed class Expr : ToTokens {
     /** A slice literal expression: `[a, b, c, d]`. */
     public data class Array(
@@ -244,7 +299,13 @@ public sealed class Expr : ToTokens {
         override fun deepCopy(): ForLoop = ForLoop(attrs.mapTo(mutableListOf()) { it.deepCopy() }, label?.deepCopy(), forToken, pat.deepCopy(), inToken, expr.deepCopy(), body.deepCopy())
     }
 
-    /** An expression contained within invisible delimiters. */
+    /**
+     * An expression contained within invisible delimiters.
+     *
+     * This variant is important for faithfully representing the precedence
+     * of expressions and is related to `None`-delimited spans in a
+     * `TokenStream`.
+     */
     public data class Group(
         public var attrs: List<Attribute>,
         public var groupToken: io.github.kotlinmania.syn.token.Group,
@@ -258,7 +319,13 @@ public sealed class Expr : ToTokens {
         override fun deepCopy(): Group = Group(attrs.mapTo(mutableListOf()) { it.deepCopy() }, groupToken, expr.deepCopy())
     }
 
-    /** An `if` expression with an optional `else` block. */
+    /**
+     * An `if` expression with an optional `else` block: `if expr { ... }
+     * else { ... }`.
+     *
+     * The `else` branch expression may only be an `If` or `Block`
+     * expression, not any of the other types of expression.
+     */
     public data class If(
         public var attrs: List<Attribute>,
         public var ifToken: io.github.kotlinmania.syn.token.If,
@@ -442,7 +509,12 @@ public sealed class Expr : ToTokens {
         override fun deepCopy(): Paren = Paren(attrs.mapTo(mutableListOf()) { it.deepCopy() }, parenToken, expr.deepCopy())
     }
 
-    /** A path expression possibly containing generic parameters. */
+    /**
+     * A path like `core::mem::replace` possibly containing generic
+     * parameters and a qualified self-type.
+     *
+     * A plain identifier like `x` is a path of length 1.
+     */
     public data class Path(
         var attrs: List<Attribute>,
         var qself: QSelf?,
@@ -532,7 +604,12 @@ public sealed class Expr : ToTokens {
         override fun deepCopy(): Return = Return(attrs.mapTo(mutableListOf()) { it.deepCopy() }, returnToken, expr?.deepCopy())
     }
 
-    /** A data-object initialization expression. */
+    /**
+     * A struct literal expression: `Point { x: 1, y: 1 }`.
+     *
+     * The `rest` provides the value of the remaining fields as in `S { a:
+     * 1, b: 1, ..rest }`.
+     */
     public data class Struct(
         public var attrs: List<Attribute>,
         public var qself: QSelf?,
@@ -700,6 +777,9 @@ public sealed class Expr : ToTokens {
 
 /** A member of a data structure or tuple. */
 public sealed class Member : ToTokens {
+    /**
+     * A named field like `self.x`.
+     */
     public data class Named(
         var ident: Ident,
     ) : Member() {
@@ -708,6 +788,9 @@ public sealed class Member : ToTokens {
         }
     }
 
+    /**
+     * An unnamed field like `self.0`.
+     */
     public data class Unnamed(
         var index: Index,
     ) : Member() {
@@ -786,6 +869,9 @@ public data class Arm(
 
 /** Limit types of a range, inclusive or exclusive. */
 public sealed class RangeLimits : ToTokens {
+    /**
+     * Inclusive at the beginning, exclusive at the end.
+     */
     public data class HalfOpen(
         var token: io.github.kotlinmania.syn.token.DotDot,
     ) : RangeLimits() {
@@ -794,6 +880,9 @@ public sealed class RangeLimits : ToTokens {
         }
     }
 
+    /**
+     * Inclusive at the beginning and end.
+     */
     public data class Closed(
         var token: io.github.kotlinmania.syn.token.DotDotEq,
     ) : RangeLimits() {
@@ -803,7 +892,10 @@ public sealed class RangeLimits : ToTokens {
     }
 }
 
-/** Mutability of a raw pointer. */
+/**
+ * Mutability of a raw pointer (`*const T`, `*mut T`), in which non-mutable
+ * isn't the implicit default.
+ */
 public sealed class PointerMutability : ToTokens {
     public data class Const(
         var token: io.github.kotlinmania.syn.token.Const,
@@ -1742,12 +1834,95 @@ internal value class AllowStruct(
     val value: Boolean,
 )
 
+/**
+         * An alternative to the primary `Expr::parse` parser (from the [`Parse`]
+         * trait) for ambiguous syntactic positions in which a trailing brace
+         * should not be taken as part of the expression.
+         *
+         * [`Parse`]: crate::parse::Parse
+         *
+         * Rust grammar has an ambiguity where braces sometimes turn a path
+         * expression into a struct initialization and sometimes do not. In the
+         * following code, the expression `S {}` is one expression. Presumably
+         * there is an empty struct `struct S {}` defined somewhere which it is
+         * instantiating.
+         *
+         * ```
+         * val unused = *S {};
+         *
+         * // parsed by rustc as: `*(S {})`
+         * ```
+         *
+         * We would want to parse the above using `Expr::parse` after the `=`
+         * token.
+         *
+         * But in the following, `S {}` is *not* a struct init expression.
+         *
+         * ```
+         * if *S {} {}
+         *
+         * // parsed by rustc as:
+         * //
+         * //    if (*S) {
+         * //        / * empty block * /
+         * //    }
+         * //    {
+         * //        / * another empty block * /
+         * //    }
+         * ```
+         *
+         * For that reason we would want to parse if-conditions using
+         * `Expr::parseWithoutEagerBrace` after the `if` token. Same for similar
+         * syntactic positions such as the condition expr after a `while` token or
+         * the expr at the top of a `match`.
+         *
+         * The Rust grammar's choices around which way this ambiguity is resolved
+         * at various syntactic positions is fairly arbitrary. Really either parse
+         * behavior could work in most positions, and language designers just
+         * decide each case based on which is more likely to be what the programmer
+         * had in mind most of the time.
+         *
+         * ```
+         * if return S {} {}
+         *
+         * // parsed by rustc as:
+         * //
+         * //    if (return (S {})) {
+         * //    }
+         * //
+         * // but could equally well have been this other arbitrary choice:
+         * //
+         * //    if (return S) {
+         * //    }
+         * //    {}
+         * ```
+         *
+         * Note the grammar ambiguity on trailing braces is distinct from
+         * precedence and is not captured by assigning a precedence level to the
+         * braced struct init expr in relation to other operators. This can be
+         * illustrated by `return 0..S {}` vs `when (0..S) {}`. The former parses as
+         * `return (0..(S {}))` implying tighter precedence for struct init than
+         * `..`, while the latter parses as `when ((0..S)) {}` implying tighter
+         * precedence for `..` than struct init, a contradiction.
+         */
 public fun parseWithoutEagerBrace(input: ParseStream): SynResult<Expr> =
     ambiguousExprImpl(input, allowStruct = false)
 
 public fun parseWithEarlierBoundaryRule(input: ParseStream): SynResult<Expr> =
     parseExprWithEarlierBoundaryRuleImpl(input)
 
+/**
+         * Returns whether the next token in the parse stream is one that might
+         * possibly form the beginning of an expr.
+         *
+         * This classification is a load-bearing part of the grammar of some Rust
+         * expressions, notably `return` and `break`. For example `return < …` will
+         * never parse `<` as a binary operator regardless of what comes after,
+         * because `<` is a legal starting token for an expression and so it's
+         * required to be continued as a return value, such as `return <Struct as
+         * Trait>::CONST`. Meanwhile `return > …` treats the `>` as a binary
+         * operator because it cannot be a starting token for any Rust expression.
+         */
 public fun peek(input: ParseStream): Boolean = peekExpr(input)
 
 public fun from(ident: io.github.kotlinmania.procmacro2.Ident): Member = Member.Named(ident)

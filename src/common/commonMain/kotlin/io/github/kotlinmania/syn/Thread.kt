@@ -1,32 +1,40 @@
 // port-lint: source thread.rs
-
 package io.github.kotlinmania.syn
 
 internal expect fun currentThreadBoundToken(): Any
 
-public class ThreadBound private constructor(
-    private val value: Any?,
+/**
+ * ThreadBound is a Sync-maker and Send-maker that allows accessing a value
+ * of type T only from the original thread on which the ThreadBound was
+ * constructed.
+ */
+internal class ThreadBound<T> private constructor(
+    private val value: T,
     private val threadId: Any,
 ) {
-    public companion object {
-        public fun new(value: Any?): ThreadBound = ThreadBound(value, currentThreadBoundToken())
+    internal companion object {
+        internal fun <T> new(value: T): ThreadBound<T> =
+            ThreadBound(value, currentThreadBoundToken())
     }
 
-    public fun get(): Any? =
+    internal fun get(): T? =
         if (currentThreadBoundToken() == threadId) value else null
 
-    public fun clone(): ThreadBound = ThreadBound(value, threadId)
-
     override fun toString(): String =
-        when (val v = get()) {
+        when (val value = get()) {
             null -> "unknown"
-            else -> v.toString()
+            else -> value.toString()
         }
 
-    override fun equals(other: Any?): Boolean =
-        other is ThreadBound && value == other.value && threadId == other.threadId
+    internal fun fmt(): String = toString()
 
-    override fun hashCode(): Int = 31 * (value?.hashCode() ?: 0) + threadId.hashCode()
-
-    public fun fmt(): String = toString()
+    // Copy the value even when the currently running thread is the wrong
+    // thread. The original thread must not simultaneously mutate the value
+    // through interior mutability, which would be a data race.
+    //
+    // In the source language, the Copy bound guarantees that the value has no
+    // interior mutability. That guarantee depends on all interior mutability
+    // being built on UnsafeCell, which does not implement Copy. This needs
+    // revisiting if that restriction is relaxed.
+    internal fun clone(): ThreadBound<T> = ThreadBound(value, threadId)
 }

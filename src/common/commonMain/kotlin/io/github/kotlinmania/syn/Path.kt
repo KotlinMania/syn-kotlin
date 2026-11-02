@@ -33,7 +33,38 @@ public class Path(
             return path
         }
 
-        /** Parse a path containing no path arguments on any of its segments. */
+        /**
+ * Parse a `Path` containing no path arguments on any of its segments.
+ *
+ * # Example
+ *
+ * ```
+ * import syn..Path, Result, Token};
+ * import syn.parse..Parse, ParseStream};
+ *
+ * // A simplified single `use` statement like:
+ * //
+ * //     import alloc.collections.HashMap;
+ * //
+ * // Note that generic parameters are not allowed in a `use` statement
+ * // so the following must not be accepted.
+ * //
+ * //     import a.<b>::c;
+ * struct SingleUse {
+ *     useToken: token[use],
+ *     path: Path,
+ * }
+ *
+ * class SingleUse : Parse {
+ *     fun parse(input: ParseStream) -> Result<Self> {
+ *         Ok(SingleUse {
+ *             useToken: input.parse()?,
+ *             path: input.call(Path::parseModStyle)?,
+ *         })
+ *     }
+ * }
+ * ```
+ */
         public fun parseModStyle(input: ParseStream): SynResult<Path> {
             val leadingColon =
                 if (input.peek(PathSepPeek)) {
@@ -100,7 +131,16 @@ public class Path(
     public fun isIdent(ident: Ident): Boolean =
         getIdent() == ident
 
-    /** If this path consists of a single ident, returns the ident. */
+    /**
+     * If this path consists of a single ident, returns the ident.
+     *
+     * A path is considered an ident if:
+     *
+     * - the path has no leading colon,
+     * - the number of path segments is 1, and
+     * - the first path segment has no angle bracketed or parenthesized
+     *   path arguments.
+     */
     public fun getIdent(): Ident? {
         if (leadingColon != null || segments.len() != 1) {
             return null
@@ -109,6 +149,9 @@ public class Path(
         return if (segment.arguments.isNone()) segment.ident else null
     }
 
+    /**
+     * An error if this path is not a single ident, as defined in `getIdent`.
+     */
     public fun requireIdent(): Ident {
         val ident = getIdent()
         if (ident != null) return ident
@@ -205,7 +248,17 @@ public data class PathSegment(
         if (arguments.isNone()) ident.toString() else "$ident$arguments"
 }
 
-/** Angle bracketed or parenthesized arguments of a path segment. */
+/**
+ * Angle bracketed or parenthesized arguments of a path segment.
+ *
+ * ## Angle bracketed
+ *
+ * The `<, T>` in `core::slice::iter<, T>`.
+ *
+ * ## Parenthesized
+ *
+ * The `(A, B) -> C` in `Fn(A, B) -> C`.
+ */
 public sealed class PathArguments : ToTokens {
     public companion object {
         public fun default(): PathArguments =
@@ -225,7 +278,12 @@ public sealed class PathArguments : ToTokens {
         public var gtToken: Gt,
     ) : PathArguments() {
         public companion object {
-            /** Parse `::<...>` with mandatory leading `::`. */
+            /**
+ * Parse `::<…>` with mandatory leading `::`.
+ *
+ * The ordinary [`Parse`] implementation for `AngleBracketedGenericArguments`
+ * parses optional leading `::`.
+ */
             public fun parseTurbofish(input: ParseStream): SynResult<AngleBracketed> {
                 val colon2Token = PathSepParse.parse(input).getOrElse { return SynResult.failure(it) }
                 return doParse(colon2Token, input)
@@ -263,7 +321,13 @@ public sealed class PathArguments : ToTokens {
     /** The `(A, B) -> C` in `Fn(A, B) -> C`. */
     public data class Parenthesized(
         public var parenToken: Paren,
+        /**
+     * `(A, B)`
+     */
         public var inputs: SynTypeList,
+        /**
+     * `C`
+     */
         public var output: ReturnType,
     ) : PathArguments()
 
@@ -388,7 +452,24 @@ public data class Constraint(
     public fun deepCopy(): Constraint = Constraint(ident.copy(), generics?.deepCopy() as? PathArguments.AngleBracketed?, colonToken, bounds.copy({ it.deepCopy() }, { it }))
 }
 
-/** The explicit Self type in a qualified path. */
+/**
+ * The explicit Self type in a qualified path: the `T` in `<T as
+ * Display>::fmt`.
+ *
+ * The actual path, including the trait and the associated item, is stored
+ * separately. The `position` field represents the index of the associated
+ * item qualified with this Self type.
+ *
+ * ```text
+ * <Vec<T> as a::b::Trait>::AssociatedItem
+ *  ^~~~~~    ~~~~~~~~~~~~~~^
+ *  ty        position = 3
+ *
+ * <Vec<T>>::AssociatedItem
+ *  ^~~~~~   ^
+ *  ty       position = 0
+ * ```
+ */
 public data class QSelf(
     public var ltToken: Lt,
     public var ty: SynType,

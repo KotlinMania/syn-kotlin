@@ -78,10 +78,17 @@ public data class AnyDelimiterResult(
     public var content: ParseBuffer,
 )
 
+/**
+ * Extensions to the `ParseStream` API to support speculative parsing.
+ */
 public interface Speculative {
     public fun advanceTo(fork: ParseBuffer)
 }
 
+/**
+ * Extensions to the `ParseStream` API to support manipulating invisible
+ * delimiters the same as if they were visible.
+ */
 public interface AnyDelimiter {
     public fun parseAnyDelimiter(): SynResult<AnyDelimiterResult>
 }

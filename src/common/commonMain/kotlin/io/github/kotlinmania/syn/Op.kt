@@ -6,114 +6,198 @@ import io.github.kotlinmania.quote.ToTokens
 
 /** A binary operator. */
 public sealed class BinOp : ToTokens {
+    /**
+     * The `+` operator (addition)
+     */
     public data class Add(
         var token: io.github.kotlinmania.syn.token.Plus,
     ) : BinOp()
 
+    /**
+     * The `-` operator (subtraction)
+     */
     public data class Sub(
         var token: io.github.kotlinmania.syn.token.Minus,
     ) : BinOp()
 
+    /**
+     * The `*` operator (multiplication)
+     */
     public data class Mul(
         var token: io.github.kotlinmania.syn.token.Star,
     ) : BinOp()
 
+    /**
+     * The `/` operator (division)
+     */
     public data class Div(
         var token: io.github.kotlinmania.syn.token.Slash,
     ) : BinOp()
 
+    /**
+     * The `%` operator (modulus)
+     */
     public data class Rem(
         var token: io.github.kotlinmania.syn.token.Percent,
     ) : BinOp()
 
+    /**
+     * The `&&` operator (logical and)
+     */
     public data class And(
         var token: io.github.kotlinmania.syn.token.AndAnd,
     ) : BinOp()
 
+    /**
+     * The `||` operator (logical or)
+     */
     public data class Or(
         var token: io.github.kotlinmania.syn.token.OrOr,
     ) : BinOp()
 
+    /**
+     * The `^` operator (bitwise xor)
+     */
     public data class BitXor(
         var token: io.github.kotlinmania.syn.token.Caret,
     ) : BinOp()
 
+    /**
+     * The `&` operator (bitwise and)
+     */
     public data class BitAnd(
         var token: io.github.kotlinmania.syn.token.And,
     ) : BinOp()
 
+    /**
+     * The `|` operator (bitwise or)
+     */
     public data class BitOr(
         var token: io.github.kotlinmania.syn.token.Or,
     ) : BinOp()
 
+    /**
+     * The `<<` operator (shift left)
+     */
     public data class Shl(
         var token: io.github.kotlinmania.syn.token.Shl,
     ) : BinOp()
 
+    /**
+     * The `>>` operator (shift right)
+     */
     public data class Shr(
         var token: io.github.kotlinmania.syn.token.Shr,
     ) : BinOp()
 
+    /**
+     * The `==` operator (equality)
+     */
     public data class Eq(
         var token: io.github.kotlinmania.syn.token.EqEq,
     ) : BinOp()
 
+    /**
+     * The `<` operator (less than)
+     */
     public data class Lt(
         var token: io.github.kotlinmania.syn.token.Lt,
     ) : BinOp()
 
+    /**
+     * The `<=` operator (less than or equal to)
+     */
     public data class Le(
         var token: io.github.kotlinmania.syn.token.Le,
     ) : BinOp()
 
+    /**
+     * The `!=` operator (not equal to)
+     */
     public data class Ne(
         var token: io.github.kotlinmania.syn.token.Ne,
     ) : BinOp()
 
+    /**
+     * The `>=` operator (greater than or equal to)
+     */
     public data class Ge(
         var token: io.github.kotlinmania.syn.token.Ge,
     ) : BinOp()
 
+    /**
+     * The `>` operator (greater than)
+     */
     public data class Gt(
         var token: io.github.kotlinmania.syn.token.Gt,
     ) : BinOp()
 
+    /**
+     * The `+=` operator
+     */
     public data class AddAssign(
         var token: io.github.kotlinmania.syn.token.PlusEq,
     ) : BinOp()
 
+    /**
+     * The `-=` operator
+     */
     public data class SubAssign(
         var token: io.github.kotlinmania.syn.token.MinusEq,
     ) : BinOp()
 
+    /**
+     * The `*=` operator
+     */
     public data class MulAssign(
         var token: io.github.kotlinmania.syn.token.StarEq,
     ) : BinOp()
 
+    /**
+     * The `/=` operator
+     */
     public data class DivAssign(
         var token: io.github.kotlinmania.syn.token.SlashEq,
     ) : BinOp()
 
+    /**
+     * The `%=` operator
+     */
     public data class RemAssign(
         var token: io.github.kotlinmania.syn.token.PercentEq,
     ) : BinOp()
 
+    /**
+     * The `^=` operator
+     */
     public data class BitXorAssign(
         var token: io.github.kotlinmania.syn.token.CaretEq,
     ) : BinOp()
 
+    /**
+     * The `&=` operator
+     */
     public data class BitAndAssign(
         var token: io.github.kotlinmania.syn.token.AndEq,
     ) : BinOp()
 
+    /**
+     * The `|=` operator
+     */
     public data class BitOrAssign(
         var token: io.github.kotlinmania.syn.token.OrEq,
     ) : BinOp()
 
+    /**
+     * The `<<=` operator
+     */
     public data class ShlAssign(
         var token: io.github.kotlinmania.syn.token.ShlEq,
     ) : BinOp()
 
+    /**
+     * The `>>=` operator
+     */
     public data class ShrAssign(
         var token: io.github.kotlinmania.syn.token.ShrEq,
     ) : BinOp()
@@ -154,6 +238,9 @@ public sealed class BinOp : ToTokens {
 
 /** A unary operator. */
 public sealed class UnOp : ToTokens {
+    /**
+     * The `*` operator for dereferencing
+     */
     public data class Deref(
         var token: io.github.kotlinmania.syn.token.Star,
     ) : UnOp()
@@ -162,6 +249,9 @@ public sealed class UnOp : ToTokens {
         var token: io.github.kotlinmania.syn.token.Not,
     ) : UnOp()
 
+    /**
+     * The `-` operator for negation
+     */
     public data class Neg(
         var token: io.github.kotlinmania.syn.token.Minus,
     ) : UnOp()

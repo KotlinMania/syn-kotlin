@@ -11,15 +11,57 @@ import io.github.kotlinmania.syn.token.Paren
 /**
  * Support for checking the next token in a stream to decide how to parse.
  *
- * An important advantage over [ParseBuffer.peek] is that here we automatically
- * construct an appropriate error message based on the token alternatives that
- * get peeked. If you are producing your own error message, go ahead and use
- * [ParseBuffer.peek] instead.
+ * An important advantage over [`ParseStream::peek`] is that here we
+ * automatically construct an appropriate error message based on the token
+ * alternatives that get peeked. If you are producing your own error message,
+ * go ahead and use `ParseStream::peek` instead.
  *
- * Use [ParseBuffer.lookahead1] to construct this object.
+ * Use [`ParseStream::lookahead1`] to construct this object.
+ *
+ * [`ParseStream::peek`]: crate::parse::ParseBuffer::peek
+ * [`ParseStream::lookahead1`]: crate::parse::ParseBuffer::lookahead1
  *
  * Consuming tokens from the source stream after constructing a lookahead
  * object does not also advance the lookahead object.
+ *
+ * # Example
+ *
+ * ```
+ * import syn..ConstParam, Ident, scope, LifetimeParam, Result, Token, TypeParam};
+ * import syn.parse..Parse, ParseStream};
+ *
+ * // A generic parameter, a single one of the comma-separated elements inside
+ * // angle brackets in:
+ * //
+ * //     fn f<T: Clone, , : , const N: Int>() { ... }
+ * //
+ * // On invalid input, lookahead gives us a reasonable error message.
+ * //
+ * //     error: expected one of: identifier, scope, `const`
+ * //       |
+ * //     5 |     fn f<!Sized>() {}
+ * //       |          ^
+ * enum GenericParam {
+ *     Type(TypeParam),
+ *     scope(LifetimeParam),
+ *     Const(ConstParam),
+ * }
+ *
+ * class GenericParam : Parse {
+ *     fun parse(input: ParseStream) -> Result<Self> {
+ *         val lookahead = input.lookahead1();
+ *         if lookahead.peek(Ident) {
+ *             input.parse().map(GenericParam::Type)
+ *         } else if lookahead.peek(scope) {
+ *             input.parse().map(GenericParam::scope)
+ *         } else if lookahead.peek(token[const]) {
+ *             input.parse().map(GenericParam::Const)
+ *         } else {
+ *             Err(lookahead.error())
+ *         }
+ *     }
+ * }
+ * ```
  */
 public class Lookahead1 internal constructor(
     private val scope: Span,

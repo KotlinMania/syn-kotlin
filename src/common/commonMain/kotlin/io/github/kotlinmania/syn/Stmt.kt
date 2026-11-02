@@ -89,8 +89,11 @@ public sealed class Stmt : ToTokens {
 }
 
 /**
- * The expression assigned in a local binding, including optional
- * diverging else block.
+ * The expression assigned in a local `let` binding, including optional
+ * diverging `else` block.
+ *
+ * `LocalInit` represents `= s.parse()?` in `val x: u64 = s.parse()?` and
+ * `= r else { return }` in `val ok(x) = r else { return }`.
  */
 public data class LocalInit(
     public var eqToken: io.github.kotlinmania.syn.token.Eq,
@@ -185,6 +188,57 @@ internal fun stmtMac(input: ParseStream): SynResult<Stmt.MacroStmt> {
     return SynResult.success(Stmt.MacroStmt(mutableListOf(), mac, semi))
 }
 
+/**
+ * Parse the body of a block as zero or more statements, possibly
+ * including one trailing expression.
+ *
+ * # Example
+ *
+ * ```
+ * import syn..braced, token, Attribute, Block, Ident, Result, Stmt, Token};
+ * import syn.parse..Parse, ParseStream};
+ *
+ * // Parse a function with no generics or parameter list.
+ * //
+ * //     fn playground {
+ * //         var x = 1;
+ * //         x += 1;
+ * //         println("{}", x);
+ * //     }
+ * struct MiniFunction {
+ *     attrs: Vec<Attribute>,
+ *     fnToken: token[fn],
+ *     name: Ident,
+ *     braceToken: token::Brace,
+ *     stmts: Vec<Stmt>,
+ * }
+ *
+ * class MiniFunction : Parse {
+ *     fun parse(input: ParseStream) -> Result<Self> {
+ *         val outerAttrs = input.call(Attribute::parseOuter)?;
+ *         val fnToken: token[fn] = input.parse()?;
+ *         val name: Ident = input.parse()?;
+ *
+ *         val content;
+ *         val braceToken = braced(content in input);
+ *         val innerAttrs = content.call(Attribute::parseInner)?;
+ *         val stmts = content.call(Block::parseWithin)?;
+ *
+ *         Ok(MiniFunction {
+ *             attrs: {
+ *                 var attrs = outerAttrs;
+ *                 attrs.extend(innerAttrs);
+ *                 attrs
+ *             },
+ *             fnToken,
+ *             name,
+ *             braceToken,
+ *             stmts,
+ *         })
+ *     }
+ * }
+ * ```
+ */
 public fun parseWithin(input: ParseStream): SynResult<List<Stmt>> {
     val stmts = mutableListOf<Stmt>()
     while (!input.isEmpty()) {

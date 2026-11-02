@@ -19,6 +19,12 @@ import io.github.kotlinmania.syn.token.Unsafe
 
 /**
  * Things that can appear directly inside of a module or scope.
+ *
+ * # Syntax tree enum
+ *
+ * This type is a [syntax tree enum].
+ *
+ * [syntax tree enum]: crate::expr::Expr#syntax-tree-enums
  */
 public sealed class Item : ToTokens {
     public companion object {
@@ -388,7 +394,9 @@ public sealed class Item : ToTokens {
         }
     }
 
-    /** A trait alias. */
+    /**
+     * A trait alias: `public interface SharableIterator = Iterator + Sync`.
+     */
     public data class TraitAlias(
         public var attrs: List<Attribute>,
         public var vis: Visibility,
@@ -581,8 +589,19 @@ public sealed class ModContent : ToTokens {
     }
 }
 
-/** A use tree in a use declaration. */
+/**
+ * A suffix of an import tree in a `use` item: `Type as Renamed` or `*`.
+ *
+ * # Syntax tree enum
+ *
+ * This type is a [syntax tree enum].
+ *
+ * [syntax tree enum]: crate::expr::Expr#syntax-tree-enums
+ */
 public sealed class UseTree : ToTokens {
+    /**
+     * A path prefix of imports in a `use` item: `core::...`.
+     */
     public data class Path(
         var ident: Ident,
         var colon2Token: io.github.kotlinmania.syn.token.PathSep?,
@@ -595,6 +614,9 @@ public sealed class UseTree : ToTokens {
         }
     }
 
+    /**
+     * An identifier imported by a `use` item: `HashMap`.
+     */
     public data class Name(
         var ident: Ident,
         var rename: AsIdent?,
@@ -605,6 +627,9 @@ public sealed class UseTree : ToTokens {
         }
     }
 
+    /**
+     * A braced group of imports in a `use` item: `{A, B, C}`.
+     */
     public data class Group(
         var braceToken: Brace,
         var items: UseTreeList,
@@ -616,6 +641,9 @@ public sealed class UseTree : ToTokens {
         }
     }
 
+    /**
+     * A glob import in a `use` item: `*`.
+     */
     public data class Glob(
         var starToken: io.github.kotlinmania.syn.token.Star,
     ) : UseTree() {
@@ -731,7 +759,15 @@ public sealed class StaticMutability : ToTokens {
 /** Reserved for implementation restrictions. */
 public sealed class ImplRestriction : ToTokens
 
-/** An item within an extern block. */
+/**
+ * An item within an `extern` block.
+ *
+ * # Syntax tree enum
+ *
+ * This type is a [syntax tree enum].
+ *
+ * [syntax tree enum]: crate::expr::Expr#syntax-tree-enums
+ */
 public sealed class ForeignItem : ToTokens {
     /** A foreign function in an extern block. */
     public data class Fn(
@@ -814,7 +850,15 @@ public sealed class ForeignItem : ToTokens {
     }
 }
 
-/** An item within a trait definition. */
+/**
+ * An item declaration within the definition of a trait.
+ *
+ * # Syntax tree enum
+ *
+ * This type is a [syntax tree enum].
+ *
+ * [syntax tree enum]: crate::expr::Expr#syntax-tree-enums
+ */
 public sealed class TraitItem : ToTokens {
     /** An associated constant within the definition of a trait. */
     public data class Const(
@@ -914,7 +958,15 @@ public sealed class TraitItem : ToTokens {
     }
 }
 
-/** An item within an impl block. */
+/**
+ * An item within an implementation block.
+ *
+ * # Syntax tree enum
+ *
+ * This type is a [syntax tree enum].
+ *
+ * [syntax tree enum]: crate::expr::Expr#syntax-tree-enums
+ */
 public sealed class ImplItem : ToTokens {
     /** An associated constant within an impl block. */
     public data class Const(

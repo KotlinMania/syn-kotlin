@@ -26,6 +26,9 @@ public sealed class SynType : ToTokens {
         public fun withoutPlus(input: ParseStream): SynResult<SynType> = parseTypeWithoutPlus(input)
     }
 
+    /**
+     * A fixed size array type: `[T; n]`.
+     */
     public data class Array(
         var elem: SynType,
         var len: Expr,
@@ -43,6 +46,9 @@ public sealed class SynType : ToTokens {
         override fun deepCopy(): Array = Array(elem.deepCopy(), len.deepCopy(), Bracket.from(bracketToken.span), Semi.from(semiToken.span))
     }
 
+    /**
+     * A bare function type: `fn(Int) -> bool`.
+     */
     public data class BareFn(
         var lifetimes: BoundLifetimes?,
         var unsafety: io.github.kotlinmania.syn.token.Unsafe?,
@@ -86,6 +92,9 @@ public sealed class SynType : ToTokens {
             )
     }
 
+    /**
+     * A type contained within invisible delimiters.
+     */
     public data class Group(
         var groupToken: io.github.kotlinmania.syn.token.Group,
         var elem: SynType,
@@ -97,6 +106,10 @@ public sealed class SynType : ToTokens {
         override fun deepCopy(): Group = Group(groupToken, elem.deepCopy())
     }
 
+    /**
+     * An `implementation Bound1 + Bound2 + Bound3` type where `Bound` is a trait or
+     * a scope.
+     */
     public data class ImplTrait(
         var implToken: io.github.kotlinmania.syn.token.Impl,
         var bounds: TypeParamBoundList,
@@ -117,6 +130,9 @@ public sealed class SynType : ToTokens {
         override fun deepCopy(): ImplTrait = ImplTrait(implToken, bounds.copy({ it.deepCopy() }, { it }))
     }
 
+    /**
+     * Indication that a type should be inferred by the compiler: `_`.
+     */
     public data class Infer(
         var underscoreToken: io.github.kotlinmania.syn.token.Underscore,
     ) : SynType() {
@@ -127,6 +143,9 @@ public sealed class SynType : ToTokens {
         override fun deepCopy(): Infer = this
     }
 
+    /**
+     * A macro in the type position.
+     */
     public data class Macro(
         var mac: io.github.kotlinmania.syn.Macro,
     ) : SynType() {
@@ -137,6 +156,9 @@ public sealed class SynType : ToTokens {
         override fun deepCopy(): Macro = Macro(mac.deepCopy())
     }
 
+    /**
+     * The never type: `!`.
+     */
     public data class Never(
         var bangToken: io.github.kotlinmania.syn.token.Not,
     ) : SynType() {
@@ -160,6 +182,10 @@ public sealed class SynType : ToTokens {
         override fun deepCopy(): Paren = Paren(parenToken, elem.deepCopy())
     }
 
+    /**
+     * A path like `core::slice::Iter`, optionally qualified with a
+     * self-type as in `<Vec<T> as SomeTrait>::Associated`.
+     */
     public data class Path(
         var qself: QSelf?,
         var path: io.github.kotlinmania.syn.Path,
@@ -171,6 +197,9 @@ public sealed class SynType : ToTokens {
         override fun deepCopy(): Path = Path(qself, path.deepCopy())
     }
 
+    /**
+     * A raw pointer type: `*const T` or `*mut T`.
+     */
     public data class Ptr(
         var starToken: io.github.kotlinmania.syn.token.Star,
         var constToken: io.github.kotlinmania.syn.token.Const?,
@@ -187,6 +216,9 @@ public sealed class SynType : ToTokens {
         override fun deepCopy(): Ptr = Ptr(starToken, constToken, mutability, elem.deepCopy())
     }
 
+    /**
+     * A reference type: `& T` or `& mut T`.
+     */
     public data class Reference(
         var andToken: io.github.kotlinmania.syn.token.And,
         var lifetime: Lifetime?,
@@ -203,6 +235,9 @@ public sealed class SynType : ToTokens {
         override fun deepCopy(): Reference = Reference(andToken, lifetime?.deepCopy(), mutability, elem.deepCopy())
     }
 
+    /**
+     * A dynamically sized slice type: `[T]`.
+     */
     public data class Slice(
         var elem: SynType,
     ) : SynType() {
@@ -215,6 +250,10 @@ public sealed class SynType : ToTokens {
         override fun deepCopy(): Slice = Slice(elem.deepCopy())
     }
 
+    /**
+     * A trait object type `dynamic Bound1 + Bound2 + Bound3` where `Bound` is a
+     * trait or a scope.
+     */
     public data class TraitObject(
         var dynToken: io.github.kotlinmania.syn.token.Dyn?,
         var bounds: TypeParamBoundList,
@@ -277,6 +316,9 @@ public sealed class SynType : ToTokens {
         override fun deepCopy(): TraitObject = TraitObject(dynToken, bounds.copy({ it.deepCopy() }, { it }))
     }
 
+    /**
+     * A tuple type: `(A, B, C, String)`.
+     */
     public data class Tuple(
         var parenToken: io.github.kotlinmania.syn.token.Paren,
         var elems: SynTypeList,
@@ -290,6 +332,9 @@ public sealed class SynType : ToTokens {
         override fun deepCopy(): Tuple = Tuple(parenToken, elems.copy({ it.deepCopy() }, { it }))
     }
 
+    /**
+     * Tokens in type position not interpreted by Syn.
+     */
     public data class Verbatim(
         var tokens: TokenStream,
     ) : SynType() {
@@ -303,6 +348,9 @@ public sealed class SynType : ToTokens {
     public abstract fun deepCopy(): SynType
 }
 
+/**
+ * An argument in a function type: the `Int` in `fn(Int) -> bool`.
+ */
 public data class BareFnArg(
     public var attrs: List<Attribute>,
     public var name: IdentColon?,
@@ -344,6 +392,9 @@ public data class BareVariadic(
     public fun deepCopy(): BareVariadic = BareVariadic(attrs.mapTo(mutableListOf()) { it.deepCopy() }, name, dots, comma)
 }
 
+/**
+ * Return type of a function signature.
+ */
 public sealed class ReturnType : ToTokens {
     public companion object {
         fun parse(input: ParseStream): SynResult<ReturnType> = parseReturnType(input)
@@ -352,6 +403,11 @@ public sealed class ReturnType : ToTokens {
             parseReturnTypeWithoutPlus(input)
     }
 
+    /**
+     * Return type is not specified.
+     *
+     * Functions default to `()` and closures default to type inference.
+     */
     public data object Default : ReturnType() {
         override fun toTokens(tokens: TokenStream) {
             // default return type emits nothing

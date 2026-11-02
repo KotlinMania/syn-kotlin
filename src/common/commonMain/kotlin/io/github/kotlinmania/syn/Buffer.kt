@@ -104,6 +104,10 @@ public class TokenBuffer internal constructor(
             return TokenBuffer(entries.toTypedArray())
         }
 
+        /**
+         * Creates a `TokenBuffer` containing all the tokens from the input
+         * `procMacro::TokenStream`.
+         */
         public fun new(stream: TokenStream): TokenBuffer = new2(stream)
     }
 

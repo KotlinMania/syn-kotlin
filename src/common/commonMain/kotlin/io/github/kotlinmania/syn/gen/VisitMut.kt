@@ -772,7 +772,12 @@ public open class VisitMut {
         visitReturnTypeMut(sig.output)
     }
 
-    public open fun visitAbi(a: Abi) { }
+    public open fun visitAbi(a: Abi) {
+        val name = a.name
+        if (name != null) {
+            visitLitStrMut(name)
+        }
+    }
 
     public open fun visitReturnType(rt: ReturnType) {
         when (rt) {

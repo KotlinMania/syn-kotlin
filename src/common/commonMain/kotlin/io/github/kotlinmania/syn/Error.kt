@@ -201,9 +201,15 @@ public class SynError private constructor(
             new(Span.callSite(), err.error ?: "cannot parse string")
     }
 
-    /** The source location of the error. */
+    /**
+     * The source location of the error.
+     *
+     * Spans are not thread-safe so this function returns `Span::callSite()`
+     * if called from a different thread than the one on which the `Error` was
+     * originally created.
+     */
     public fun span(): Span {
-        val range = messages[0].span.get() as? SpanRange ?: return Span.callSite()
+        val range = messages[0].span.get() ?: return Span.callSite()
         return range.start.join(range.end) ?: range.start
     }
 
@@ -221,7 +227,35 @@ public class SynError private constructor(
         return tokens
     }
 
-    /** Render the error as an invocation of `compileError`. */
+    /**
+     * Render the error as an invocation of [`compileError!`].
+     *
+     * [`compileError!`]: core::compileError!
+     *
+     * # Example
+     *
+     * ```
+     * import procMacro.TokenStream;
+     * import syn..parseMacroInput, DeriveInput, Error};
+     *
+     *
+     * public fun deriveMyTrait(input: TokenStream) -> TokenStream {
+     *     val input = parseMacroInput(input as DeriveInput);
+     *     myTrait::expand(input)
+     *         .unwrapOrElse(Error::intoCompileError)
+     *         .into()
+     * }
+     *
+     * mod myTrait {
+     *     import procMacro2.TokenStream;
+     *     import syn..DeriveInput, Result};
+     *
+     *     public fun expand(input: DeriveInput) -> Result<TokenStream> {
+     *         / * ... * /
+     *     }
+     * }
+     * ```
+     */
     public fun intoCompileError(): TokenStream =
         toCompileError()
 
@@ -312,7 +346,7 @@ public class Iter internal constructor(
 }
 
 private data class ErrorMessage(
-    var span: ThreadBound,
+    var span: ThreadBound<SpanRange>,
     var message: String,
 ) {
     fun debugString(): String =
@@ -322,7 +356,7 @@ private data class ErrorMessage(
         debugString()
 
     fun toCompileError(tokens: TokenStream) {
-        val range = span.get() as? SpanRange
+        val range = span.get()
         val start = range?.start ?: Span.callSite()
         val end = range?.end ?: Span.callSite()
 

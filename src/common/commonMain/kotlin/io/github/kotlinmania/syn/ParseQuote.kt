@@ -7,8 +7,8 @@ import io.github.kotlinmania.procmacro2.TokenStream
 /**
  * Parsing interface for syntax tree types supported by `parseQuote`.
  */
-public interface ParseQuote {
-    public fun parse(input: ParseStream): SynResult<Any?>
+public interface ParseQuote<T> {
+    public fun parse(input: ParseStream): SynResult<T>
 }
 
 /**
@@ -100,3 +100,10 @@ public fun parseQuoteWherePredicate(tokenStream: TokenStream): WherePredicate {
         onFailure = { err: SynError -> err.raise() },
     )
 }
+
+public fun <T, P> parseQuotePunctuated(
+    tokenStream: TokenStream,
+    valueParser: (ParseStream) -> SynResult<T>,
+    punctuationParser: (ParseStream) -> SynResult<P>,
+): Punctuated<T, P> =
+    parse(tokenStream) { input -> Punctuated.parseTerminated(input, valueParser, punctuationParser) }

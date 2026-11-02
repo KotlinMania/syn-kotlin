@@ -11,7 +11,9 @@ class ThreadTest {
         val cloned = original.clone()
 
         assertNotSame(original, cloned)
-        assertEquals("value", cloned.get())
-        assertEquals(original, cloned)
+        val clonedValue: String? = cloned.get()
+        assertEquals("value", clonedValue)
+        val number: Int? = ThreadBound.new(7).get()
+        assertEquals(7, number)
     }
 }

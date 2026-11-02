@@ -54,8 +54,8 @@ private data class SepToken(
     }
 }
 
-private fun punctuatedIntComma(vararg values: Int): Punctuated {
-    val seq = Punctuated.new()
+private fun punctuatedIntComma(vararg values: Int): Punctuated<IntToken, Comma> {
+    val seq = Punctuated.new<IntToken, Comma>()
     for (value in values) {
         seq.push(IntToken(value), Comma::default)
     }
@@ -68,13 +68,13 @@ private fun ToTokens.boxToken(): BoxToken = this as BoxToken
 
 private fun ToTokens.litInt(): LitInt = this as LitInt
 
-private fun Punctuated.intValues(): List<Int> =
+private fun Punctuated<out ToTokens, *>.intValues(): List<Int> =
     toList().map { it.intToken().v }
 
-private fun Punctuated.boxValues(): List<Int> =
+private fun Punctuated<out ToTokens, *>.boxValues(): List<Int> =
     toList().map { it.boxToken().v }
 
-private fun Punctuated.litIntValues(): List<Long> =
+private fun Punctuated<out ToTokens, *>.litIntValues(): List<Long> =
     toList().map { it.litInt().base10Parse() }
 
 private fun <T> Iterator<T>.remainingList(): List<T> =
@@ -86,6 +86,68 @@ private fun <T> Iterator<T>.remainingList(): List<T> =
 private fun <T> Iterator<T>.remainingCount(): Int = remainingList().size
 
 class PunctuatedTest {
+    @Test
+    fun genericValuesAndPunctuationRetainTheirTypes() {
+        val sequence = Punctuated.new<Int, String>()
+        sequence.push(1) { "," }
+        sequence.push(2) { "," }
+        val value: Int = sequence[0]
+        val punctuation: String? = sequence.punct(0)
+        val pair: Punctuated.Pair<Int, String> = sequence.pairs().next()
+        assertEquals(1, value)
+        assertEquals(",", punctuation)
+        assertEquals(1, pair.value())
+        assertEquals(listOf(1, 2), sequence.clone(copyValue = { it }, copyPunctuation = { it }).toList())
+        sequence.clear()
+        assertTrue(sequence.isEmpty())
+        assertEquals(0, sequence.len())
+        assertFalse(sequence.trailingPunct())
+        sequence.pushValue(3)
+        assertEquals(listOf(3), sequence.toList())
+    }
+
+    @Test
+    fun genericFoldTransformsValuesAndPreservesPunctuation() {
+        val sequence = Punctuated.new<Int, String>()
+        sequence.pushValue(1)
+        sequence.pushPunct(",")
+        sequence.pushValue(2)
+        sequence.pushPunct(";")
+        val visited = mutableListOf<Int>()
+        val rewritten = fold(sequence, visited) { state, value ->
+            state.add(value)
+            value + 10
+        }
+        assertEquals(listOf(1, 2), visited)
+        assertEquals(listOf(11, 12), rewritten.toList())
+        assertEquals(",", rewritten.punct(0))
+        assertEquals(";", rewritten.punct(1))
+        assertTrue(rewritten.trailingPunct())
+    }
+
+    @Test
+    fun nullableGenericValuesKeepPresenceAndPairVariants() {
+        val sequence = Punctuated.new<Int?, String?>()
+        sequence.pushValue(null)
+        assertFalse(sequence.isEmpty())
+        assertEquals(1, sequence.len())
+        assertNull(sequence[0])
+        sequence.pushPunct(null)
+        sequence.pushValue(2)
+        assertNull(sequence.first())
+        assertEquals(2, sequence.last())
+        assertEquals(listOf(null, 2), sequence.clone(copyValue = { it }, copyPunctuation = { it }).toList())
+        val pair = sequence.pairs().next().cloned(copyValue = { it }, copyPunct = { it })
+        assertTrue(pair is Punctuated.Pair.Punctuated<*, *>)
+        val extended = Punctuated.fromPairs<Int?, String?>(
+            listOf(pair, Punctuated.Pair.End(3)),
+        )
+        assertEquals(listOf(null, 3), extended.toList())
+        assertTrue(extended.pop() is Punctuated.Pair.End<*, *>)
+        assertTrue(extended.pop() is Punctuated.Pair.Punctuated<*, *>)
+        assertTrue(extended.isEmpty())
+    }
+
     @Test
     fun pairs() {
         val p = punctuatedIntComma(2, 3, 4)
@@ -110,7 +172,7 @@ class PunctuatedTest {
         assertEquals(4, lastPair.valueMut().intToken().v)
         assertEquals(4, lastPair.intoValue().intToken().v)
         assertNull(lastPair.punct())
-        assertTrue(lastPair is Punctuated.Pair.End)
+        assertTrue(lastPair is Punctuated.Pair.End<*, *>)
         val firstPair = pairsList.first()
         assertEquals(
             2,
@@ -125,17 +187,17 @@ class PunctuatedTest {
         assertEquals(
             2,
             firstPair
-                .cloned()
+                .cloned(copyValue = { it }, copyPunct = { it })
                 .value()
                 .intToken()
                 .v,
         )
-        assertTrue(firstPair is Punctuated.Pair.Punctuated)
+        assertTrue(firstPair is Punctuated.Pair.Punctuated<*, *>)
     }
 
     @Test
     fun extendPairs() {
-        val p = Punctuated.new()
+        val p = Punctuated.new<ToTokens, ToTokens>()
         p.pushValue(IntToken(1))
 
         p.extendPairs(
@@ -154,7 +216,7 @@ class PunctuatedTest {
 
     @Test
     fun extendPairSequence() {
-        val p = Punctuated.new()
+        val p = Punctuated.new<ToTokens, ToTokens>()
         p.pushValue(IntToken(1))
 
         p.extend(
@@ -173,7 +235,7 @@ class PunctuatedTest {
 
     @Test
     fun fromIterAndDefault() {
-        val empty = Punctuated.default()
+        val empty = Punctuated.default<ToTokens, ToTokens>()
         assertTrue(empty.isEmpty())
 
         val values = Punctuated.fromIter(listOf(IntToken(1), IntToken(2)), Comma::default)
@@ -298,13 +360,13 @@ class PunctuatedTest {
 
     @Test
     fun emptyPunctuatedIterators() {
-        assertFalse(emptyPunctuatedIter().hasNext())
-        assertFalse(emptyPunctuatedIterMut().hasNext())
+        assertFalse(emptyPunctuatedIter<ToTokens>().hasNext())
+        assertFalse(emptyPunctuatedIterMut<ToTokens>().hasNext())
     }
 
     @Test
     fun toSynPunctuated() {
-        val p = Punctuated.new()
+        val p = Punctuated.new<ToTokens, ToTokens>()
         p.pushValue(IntToken(1))
         p.pushPunct(Comma.default())
         p.pushValue(IntToken(2))
@@ -337,7 +399,7 @@ class PunctuatedTest {
 
     @Test
     fun indexOutOfBounds() {
-        val p = Punctuated.new()
+        val p = Punctuated.new<ToTokens, ToTokens>()
         assertFailsWith<IndexOutOfBoundsException> {
             p[0]
         }
@@ -382,7 +444,7 @@ class PunctuatedTest {
 
     @Test
     fun mutableAccessorsReturnStoredElements() {
-        val p = Punctuated.new()
+        val p = Punctuated.new<ToTokens, ToTokens>()
         p.push(BoxToken(1), Comma::default)
         p.push(BoxToken(2), Comma::default)
 
@@ -395,17 +457,17 @@ class PunctuatedTest {
 
     @Test
     fun equalityIncludesPunctuation() {
-        val left = Punctuated.new()
+        val left = Punctuated.new<ToTokens, ToTokens>()
         left.pushValue(IntToken(1))
         left.pushPunct(SepToken("a"))
         left.pushValue(IntToken(2))
 
-        val same = Punctuated.new()
+        val same = Punctuated.new<ToTokens, ToTokens>()
         same.pushValue(IntToken(1))
         same.pushPunct(SepToken("a"))
         same.pushValue(IntToken(2))
 
-        val differentPunctuation = Punctuated.new()
+        val differentPunctuation = Punctuated.new<ToTokens, ToTokens>()
         differentPunctuation.pushValue(IntToken(1))
         differentPunctuation.pushPunct(SepToken("b"))
         differentPunctuation.pushValue(IntToken(2))
@@ -417,14 +479,14 @@ class PunctuatedTest {
 
     @Test
     fun cloneFromReplacesContents() {
-        val target = Punctuated.new()
+        val target = Punctuated.new<ToTokens, ToTokens>()
         target.push(BoxToken(1), Comma::default)
 
-        val source = Punctuated.new()
+        val source = Punctuated.new<ToTokens, ToTokens>()
         source.push(BoxToken(2), Comma::default)
         source.push(BoxToken(3), Comma::default)
 
-        target.cloneFrom(source, copyValue = { BoxToken(it.boxToken().v) })
+        target.cloneFrom(source, copyValue = { BoxToken(it.boxToken().v) }, copyPunctuation = { it })
 
         source.firstMut()?.boxToken()?.v = 20
         assertEquals(listOf(2, 3), target.boxValues())
@@ -432,7 +494,7 @@ class PunctuatedTest {
 
     @Test
     fun cloneCopiesSequenceContents() {
-        val original = Punctuated.new()
+        val original = Punctuated.new<ToTokens, ToTokens>()
         original.pushValue(BoxToken(1))
         original.pushPunct(SepToken("a"))
         original.pushValue(BoxToken(2))

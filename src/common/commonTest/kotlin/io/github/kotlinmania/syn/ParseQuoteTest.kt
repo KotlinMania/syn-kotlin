@@ -19,10 +19,22 @@ import kotlin.test.assertTrue
  * equivalent is a concrete parse-quote entrypoint for the target type.
  */
 class ParseQuoteTest {
+    @Test
+    fun punctuatedQuoteKeepsElementAndSeparatorTypes() {
+        val sequence: Punctuated<LitInt, io.github.kotlinmania.syn.token.Comma> =
+            parseQuotePunctuated(tokens("1, 2,"), LitIntParse::parse, CommaParse::parse)
+        val value: LitInt = sequence[0]
+        val punctuation: io.github.kotlinmania.syn.token.Comma? = sequence.punct(0)
+        assertEquals("1", value.base10Digits())
+        assertTrue(punctuation != null)
+        assertEquals(2, sequence.len())
+        assertTrue(sequence.trailingPunct())
+    }
+
     private fun tokens(source: String): TokenStream =
         TokenStream.fromString(source).getOrThrow()
 
-    private fun parseLitOrPunctuated(source: String): Punctuated =
+    private fun parseLitOrPunctuated(source: String): Punctuated<Lit, io.github.kotlinmania.syn.token.Or> =
         parse2(
             parser@{ input: ParseStream ->
                 Punctuated.parseTerminatedWith(

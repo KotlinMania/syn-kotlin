@@ -9,9 +9,10 @@ import io.github.kotlinmania.procmacro2.TokenStream
 import io.github.kotlinmania.procmacro2.TokenTree
 
 /**
- * Additional methods for [Ident] not provided by `proc-macro2`.
+ * Additional methods for `Ident` not provided by proc-macro2 or libprocMacro.
  *
- * This interface is sealed and cannot be implemented for types outside of Syn.
+ * This trait is sealed and cannot be implemented for types outside of Syn. It
+ * is implemented only for `procMacro2::Ident`.
  */
 public sealed interface IdentExt {
     /** Strips the raw marker prefix, if any, from the beginning of an identifier. */

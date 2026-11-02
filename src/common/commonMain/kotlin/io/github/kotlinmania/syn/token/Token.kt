@@ -23,8 +23,17 @@ import io.github.kotlinmania.procmacro2.Group as ProcMacroGroup
  */
 sealed interface Sealed
 
+/**
+ * Marker trait for types that represent single tokens.
+ *
+ * This trait is sealed and cannot be implemented for types outside of Syn.
+ */
 sealed interface Token : Sealed
 
+/**
+ * Support writing `token.span` rather than `token.spans[0]` on tokens that
+ * hold a single span.
+ */
 data class WithSpan(
     var span: Span,
 )
@@ -95,7 +104,15 @@ private fun callSiteSpans(count: Int): List<Span> =
 private fun repeatedSpans(span: Span, count: Int): List<Span> =
     List(count) { span }
 
-/** `_` */
+/**
+ *
+ * Usage:
+ *
+ * Don't try to remember the name of this type &mdash; use the
+ * [`Token!`] macro instead.
+ *
+ * [`Token!`]: crate::token
+ */
 class Underscore private constructor(
     spans: List<Span>,
 ) : PunctuationToken(spans, "_") {
@@ -240,6 +257,13 @@ class Paren private constructor(
     }
 }
 
+/**
+ *
+ * Don't try to remember the name of this type &mdash; use the
+ * [`Token!`] macro instead.
+ *
+ * [`Token!`]: crate::token
+ */
 class Abstract private constructor(
     span: Span,
 ) : KeywordToken(span) {
@@ -254,6 +278,13 @@ class Abstract private constructor(
     }
 }
 
+/**
+ *
+ * Don't try to remember the name of this type &mdash; use the
+ * [`Token!`] macro instead.
+ *
+ * [`Token!`]: crate::token
+ */
 class As private constructor(
     span: Span,
 ) : KeywordToken(span) {
@@ -268,6 +299,13 @@ class As private constructor(
     }
 }
 
+/**
+ *
+ * Don't try to remember the name of this type &mdash; use the
+ * [`Token!`] macro instead.
+ *
+ * [`Token!`]: crate::token
+ */
 class Async private constructor(
     span: Span,
 ) : KeywordToken(span) {
@@ -282,6 +320,13 @@ class Async private constructor(
     }
 }
 
+/**
+ *
+ * Don't try to remember the name of this type &mdash; use the
+ * [`Token!`] macro instead.
+ *
+ * [`Token!`]: crate::token
+ */
 class Auto private constructor(
     span: Span,
 ) : KeywordToken(span) {
@@ -296,6 +341,13 @@ class Auto private constructor(
     }
 }
 
+/**
+ *
+ * Don't try to remember the name of this type &mdash; use the
+ * [`Token!`] macro instead.
+ *
+ * [`Token!`]: crate::token
+ */
 class Await private constructor(
     span: Span,
 ) : KeywordToken(span) {
@@ -310,6 +362,13 @@ class Await private constructor(
     }
 }
 
+/**
+ *
+ * Don't try to remember the name of this type &mdash; use the
+ * [`Token!`] macro instead.
+ *
+ * [`Token!`]: crate::token
+ */
 class Become private constructor(
     span: Span,
 ) : KeywordToken(span) {
@@ -324,6 +383,13 @@ class Become private constructor(
     }
 }
 
+/**
+ *
+ * Don't try to remember the name of this type &mdash; use the
+ * [`Token!`] macro instead.
+ *
+ * [`Token!`]: crate::token
+ */
 class Box private constructor(
     span: Span,
 ) : KeywordToken(span) {
@@ -338,6 +404,13 @@ class Box private constructor(
     }
 }
 
+/**
+ *
+ * Don't try to remember the name of this type &mdash; use the
+ * [`Token!`] macro instead.
+ *
+ * [`Token!`]: crate::token
+ */
 class Break private constructor(
     span: Span,
 ) : KeywordToken(span) {
@@ -352,6 +425,13 @@ class Break private constructor(
     }
 }
 
+/**
+ *
+ * Don't try to remember the name of this type &mdash; use the
+ * [`Token!`] macro instead.
+ *
+ * [`Token!`]: crate::token
+ */
 class Const private constructor(
     span: Span,
 ) : KeywordToken(span) {
@@ -366,6 +446,13 @@ class Const private constructor(
     }
 }
 
+/**
+ *
+ * Don't try to remember the name of this type &mdash; use the
+ * [`Token!`] macro instead.
+ *
+ * [`Token!`]: crate::token
+ */
 class Continue private constructor(
     span: Span,
 ) : KeywordToken(span) {
@@ -380,6 +467,13 @@ class Continue private constructor(
     }
 }
 
+/**
+ *
+ * Don't try to remember the name of this type &mdash; use the
+ * [`Token!`] macro instead.
+ *
+ * [`Token!`]: crate::token
+ */
 class Crate private constructor(
     span: Span,
 ) : KeywordToken(span) {
@@ -394,6 +488,13 @@ class Crate private constructor(
     }
 }
 
+/**
+ *
+ * Don't try to remember the name of this type &mdash; use the
+ * [`Token!`] macro instead.
+ *
+ * [`Token!`]: crate::token
+ */
 class Default private constructor(
     span: Span,
 ) : KeywordToken(span) {
@@ -408,6 +509,13 @@ class Default private constructor(
     }
 }
 
+/**
+ *
+ * Don't try to remember the name of this type &mdash; use the
+ * [`Token!`] macro instead.
+ *
+ * [`Token!`]: crate::token
+ */
 class Do private constructor(
     span: Span,
 ) : KeywordToken(span) {
@@ -422,6 +530,13 @@ class Do private constructor(
     }
 }
 
+/**
+ *
+ * Don't try to remember the name of this type &mdash; use the
+ * [`Token!`] macro instead.
+ *
+ * [`Token!`]: crate::token
+ */
 class Dyn private constructor(
     span: Span,
 ) : KeywordToken(span) {
@@ -436,6 +551,13 @@ class Dyn private constructor(
     }
 }
 
+/**
+ *
+ * Don't try to remember the name of this type &mdash; use the
+ * [`Token!`] macro instead.
+ *
+ * [`Token!`]: crate::token
+ */
 class Else private constructor(
     span: Span,
 ) : KeywordToken(span) {
@@ -450,6 +572,13 @@ class Else private constructor(
     }
 }
 
+/**
+ *
+ * Don't try to remember the name of this type &mdash; use the
+ * [`Token!`] macro instead.
+ *
+ * [`Token!`]: crate::token
+ */
 class Enum private constructor(
     span: Span,
 ) : KeywordToken(span) {
@@ -464,6 +593,13 @@ class Enum private constructor(
     }
 }
 
+/**
+ *
+ * Don't try to remember the name of this type &mdash; use the
+ * [`Token!`] macro instead.
+ *
+ * [`Token!`]: crate::token
+ */
 class Extern private constructor(
     span: Span,
 ) : KeywordToken(span) {
@@ -478,6 +614,13 @@ class Extern private constructor(
     }
 }
 
+/**
+ *
+ * Don't try to remember the name of this type &mdash; use the
+ * [`Token!`] macro instead.
+ *
+ * [`Token!`]: crate::token
+ */
 class Final private constructor(
     span: Span,
 ) : KeywordToken(span) {
@@ -492,6 +635,13 @@ class Final private constructor(
     }
 }
 
+/**
+ *
+ * Don't try to remember the name of this type &mdash; use the
+ * [`Token!`] macro instead.
+ *
+ * [`Token!`]: crate::token
+ */
 class Fn private constructor(
     span: Span,
 ) : KeywordToken(span) {
@@ -506,6 +656,13 @@ class Fn private constructor(
     }
 }
 
+/**
+ *
+ * Don't try to remember the name of this type &mdash; use the
+ * [`Token!`] macro instead.
+ *
+ * [`Token!`]: crate::token
+ */
 class For private constructor(
     span: Span,
 ) : KeywordToken(span) {
@@ -520,6 +677,13 @@ class For private constructor(
     }
 }
 
+/**
+ *
+ * Don't try to remember the name of this type &mdash; use the
+ * [`Token!`] macro instead.
+ *
+ * [`Token!`]: crate::token
+ */
 class If private constructor(
     span: Span,
 ) : KeywordToken(span) {
@@ -534,6 +698,13 @@ class If private constructor(
     }
 }
 
+/**
+ *
+ * Don't try to remember the name of this type &mdash; use the
+ * [`Token!`] macro instead.
+ *
+ * [`Token!`]: crate::token
+ */
 class Impl private constructor(
     span: Span,
 ) : KeywordToken(span) {
@@ -548,6 +719,13 @@ class Impl private constructor(
     }
 }
 
+/**
+ *
+ * Don't try to remember the name of this type &mdash; use the
+ * [`Token!`] macro instead.
+ *
+ * [`Token!`]: crate::token
+ */
 class In private constructor(
     span: Span,
 ) : KeywordToken(span) {
@@ -562,6 +740,13 @@ class In private constructor(
     }
 }
 
+/**
+ *
+ * Don't try to remember the name of this type &mdash; use the
+ * [`Token!`] macro instead.
+ *
+ * [`Token!`]: crate::token
+ */
 class Let private constructor(
     span: Span,
 ) : KeywordToken(span) {
@@ -576,6 +761,13 @@ class Let private constructor(
     }
 }
 
+/**
+ *
+ * Don't try to remember the name of this type &mdash; use the
+ * [`Token!`] macro instead.
+ *
+ * [`Token!`]: crate::token
+ */
 class Loop private constructor(
     span: Span,
 ) : KeywordToken(span) {
@@ -590,6 +782,13 @@ class Loop private constructor(
     }
 }
 
+/**
+ *
+ * Don't try to remember the name of this type &mdash; use the
+ * [`Token!`] macro instead.
+ *
+ * [`Token!`]: crate::token
+ */
 class Macro private constructor(
     span: Span,
 ) : KeywordToken(span) {
@@ -604,6 +803,13 @@ class Macro private constructor(
     }
 }
 
+/**
+ *
+ * Don't try to remember the name of this type &mdash; use the
+ * [`Token!`] macro instead.
+ *
+ * [`Token!`]: crate::token
+ */
 class Match private constructor(
     span: Span,
 ) : KeywordToken(span) {
@@ -618,6 +824,13 @@ class Match private constructor(
     }
 }
 
+/**
+ *
+ * Don't try to remember the name of this type &mdash; use the
+ * [`Token!`] macro instead.
+ *
+ * [`Token!`]: crate::token
+ */
 class Mod private constructor(
     span: Span,
 ) : KeywordToken(span) {
@@ -632,6 +845,13 @@ class Mod private constructor(
     }
 }
 
+/**
+ *
+ * Don't try to remember the name of this type &mdash; use the
+ * [`Token!`] macro instead.
+ *
+ * [`Token!`]: crate::token
+ */
 class Move private constructor(
     span: Span,
 ) : KeywordToken(span) {
@@ -646,6 +866,13 @@ class Move private constructor(
     }
 }
 
+/**
+ *
+ * Don't try to remember the name of this type &mdash; use the
+ * [`Token!`] macro instead.
+ *
+ * [`Token!`]: crate::token
+ */
 class Mut private constructor(
     span: Span,
 ) : KeywordToken(span) {
@@ -660,6 +887,13 @@ class Mut private constructor(
     }
 }
 
+/**
+ *
+ * Don't try to remember the name of this type &mdash; use the
+ * [`Token!`] macro instead.
+ *
+ * [`Token!`]: crate::token
+ */
 class Override private constructor(
     span: Span,
 ) : KeywordToken(span) {
@@ -674,6 +908,13 @@ class Override private constructor(
     }
 }
 
+/**
+ *
+ * Don't try to remember the name of this type &mdash; use the
+ * [`Token!`] macro instead.
+ *
+ * [`Token!`]: crate::token
+ */
 class Priv private constructor(
     span: Span,
 ) : KeywordToken(span) {
@@ -688,6 +929,13 @@ class Priv private constructor(
     }
 }
 
+/**
+ *
+ * Don't try to remember the name of this type &mdash; use the
+ * [`Token!`] macro instead.
+ *
+ * [`Token!`]: crate::token
+ */
 class Pub private constructor(
     span: Span,
 ) : KeywordToken(span) {
@@ -702,6 +950,13 @@ class Pub private constructor(
     }
 }
 
+/**
+ *
+ * Don't try to remember the name of this type &mdash; use the
+ * [`Token!`] macro instead.
+ *
+ * [`Token!`]: crate::token
+ */
 class Raw private constructor(
     span: Span,
 ) : KeywordToken(span) {
@@ -716,6 +971,13 @@ class Raw private constructor(
     }
 }
 
+/**
+ *
+ * Don't try to remember the name of this type &mdash; use the
+ * [`Token!`] macro instead.
+ *
+ * [`Token!`]: crate::token
+ */
 class Ref private constructor(
     span: Span,
 ) : KeywordToken(span) {
@@ -730,6 +992,13 @@ class Ref private constructor(
     }
 }
 
+/**
+ *
+ * Don't try to remember the name of this type &mdash; use the
+ * [`Token!`] macro instead.
+ *
+ * [`Token!`]: crate::token
+ */
 class Return private constructor(
     span: Span,
 ) : KeywordToken(span) {
@@ -744,6 +1013,13 @@ class Return private constructor(
     }
 }
 
+/**
+ *
+ * Don't try to remember the name of this type &mdash; use the
+ * [`Token!`] macro instead.
+ *
+ * [`Token!`]: crate::token
+ */
 class SelfType private constructor(
     span: Span,
 ) : KeywordToken(span) {
@@ -758,6 +1034,13 @@ class SelfType private constructor(
     }
 }
 
+/**
+ *
+ * Don't try to remember the name of this type &mdash; use the
+ * [`Token!`] macro instead.
+ *
+ * [`Token!`]: crate::token
+ */
 class SelfValue private constructor(
     span: Span,
 ) : KeywordToken(span) {
@@ -772,6 +1055,13 @@ class SelfValue private constructor(
     }
 }
 
+/**
+ *
+ * Don't try to remember the name of this type &mdash; use the
+ * [`Token!`] macro instead.
+ *
+ * [`Token!`]: crate::token
+ */
 class Static private constructor(
     span: Span,
 ) : KeywordToken(span) {
@@ -786,6 +1076,13 @@ class Static private constructor(
     }
 }
 
+/**
+ *
+ * Don't try to remember the name of this type &mdash; use the
+ * [`Token!`] macro instead.
+ *
+ * [`Token!`]: crate::token
+ */
 class Struct private constructor(
     span: Span,
 ) : KeywordToken(span) {
@@ -800,6 +1097,13 @@ class Struct private constructor(
     }
 }
 
+/**
+ *
+ * Don't try to remember the name of this type &mdash; use the
+ * [`Token!`] macro instead.
+ *
+ * [`Token!`]: crate::token
+ */
 class Super private constructor(
     span: Span,
 ) : KeywordToken(span) {
@@ -814,6 +1118,13 @@ class Super private constructor(
     }
 }
 
+/**
+ *
+ * Don't try to remember the name of this type &mdash; use the
+ * [`Token!`] macro instead.
+ *
+ * [`Token!`]: crate::token
+ */
 class Trait private constructor(
     span: Span,
 ) : KeywordToken(span) {
@@ -828,6 +1139,13 @@ class Trait private constructor(
     }
 }
 
+/**
+ *
+ * Don't try to remember the name of this type &mdash; use the
+ * [`Token!`] macro instead.
+ *
+ * [`Token!`]: crate::token
+ */
 class Try private constructor(
     span: Span,
 ) : KeywordToken(span) {
@@ -864,6 +1182,13 @@ class SynTypeToken private constructor(
     }
 }
 
+/**
+ *
+ * Don't try to remember the name of this type &mdash; use the
+ * [`Token!`] macro instead.
+ *
+ * [`Token!`]: crate::token
+ */
 class Typeof private constructor(
     span: Span,
 ) : KeywordToken(span) {
@@ -878,6 +1203,13 @@ class Typeof private constructor(
     }
 }
 
+/**
+ *
+ * Don't try to remember the name of this type &mdash; use the
+ * [`Token!`] macro instead.
+ *
+ * [`Token!`]: crate::token
+ */
 class Union private constructor(
     span: Span,
 ) : KeywordToken(span) {
@@ -892,6 +1224,13 @@ class Union private constructor(
     }
 }
 
+/**
+ *
+ * Don't try to remember the name of this type &mdash; use the
+ * [`Token!`] macro instead.
+ *
+ * [`Token!`]: crate::token
+ */
 class Unsafe private constructor(
     span: Span,
 ) : KeywordToken(span) {
@@ -906,6 +1245,13 @@ class Unsafe private constructor(
     }
 }
 
+/**
+ *
+ * Don't try to remember the name of this type &mdash; use the
+ * [`Token!`] macro instead.
+ *
+ * [`Token!`]: crate::token
+ */
 class Unsized private constructor(
     span: Span,
 ) : KeywordToken(span) {
@@ -920,6 +1266,13 @@ class Unsized private constructor(
     }
 }
 
+/**
+ *
+ * Don't try to remember the name of this type &mdash; use the
+ * [`Token!`] macro instead.
+ *
+ * [`Token!`]: crate::token
+ */
 class Use private constructor(
     span: Span,
 ) : KeywordToken(span) {
@@ -934,6 +1287,13 @@ class Use private constructor(
     }
 }
 
+/**
+ *
+ * Don't try to remember the name of this type &mdash; use the
+ * [`Token!`] macro instead.
+ *
+ * [`Token!`]: crate::token
+ */
 class Virtual private constructor(
     span: Span,
 ) : KeywordToken(span) {
@@ -948,6 +1308,13 @@ class Virtual private constructor(
     }
 }
 
+/**
+ *
+ * Don't try to remember the name of this type &mdash; use the
+ * [`Token!`] macro instead.
+ *
+ * [`Token!`]: crate::token
+ */
 class Where private constructor(
     span: Span,
 ) : KeywordToken(span) {
@@ -962,6 +1329,13 @@ class Where private constructor(
     }
 }
 
+/**
+ *
+ * Don't try to remember the name of this type &mdash; use the
+ * [`Token!`] macro instead.
+ *
+ * [`Token!`]: crate::token
+ */
 class While private constructor(
     span: Span,
 ) : KeywordToken(span) {
@@ -976,6 +1350,13 @@ class While private constructor(
     }
 }
 
+/**
+ *
+ * Don't try to remember the name of this type &mdash; use the
+ * [`Token!`] macro instead.
+ *
+ * [`Token!`]: crate::token
+ */
 class Yield private constructor(
     span: Span,
 ) : KeywordToken(span) {
@@ -990,6 +1371,15 @@ class Yield private constructor(
     }
 }
 
+/**
+ *
+ * Usage:
+ *
+ * Don't try to remember the name of this type &mdash; use the
+ * [`Token!`] macro instead.
+ *
+ * [`Token!`]: crate::token
+ */
 class And private constructor(
     spans: List<Span>,
 ) : PunctuationToken(spans, "&") {
@@ -1004,6 +1394,15 @@ class And private constructor(
     }
 }
 
+/**
+ *
+ * Usage:
+ *
+ * Don't try to remember the name of this type &mdash; use the
+ * [`Token!`] macro instead.
+ *
+ * [`Token!`]: crate::token
+ */
 class AndAnd private constructor(
     spans: List<Span>,
 ) : PunctuationToken(spans, "&&") {
@@ -1018,6 +1417,15 @@ class AndAnd private constructor(
     }
 }
 
+/**
+ *
+ * Usage:
+ *
+ * Don't try to remember the name of this type &mdash; use the
+ * [`Token!`] macro instead.
+ *
+ * [`Token!`]: crate::token
+ */
 class AndEq private constructor(
     spans: List<Span>,
 ) : PunctuationToken(spans, "&=") {
@@ -1032,6 +1440,15 @@ class AndEq private constructor(
     }
 }
 
+/**
+ *
+ * Usage:
+ *
+ * Don't try to remember the name of this type &mdash; use the
+ * [`Token!`] macro instead.
+ *
+ * [`Token!`]: crate::token
+ */
 class At private constructor(
     spans: List<Span>,
 ) : PunctuationToken(spans, "@") {
@@ -1046,6 +1463,15 @@ class At private constructor(
     }
 }
 
+/**
+ *
+ * Usage:
+ *
+ * Don't try to remember the name of this type &mdash; use the
+ * [`Token!`] macro instead.
+ *
+ * [`Token!`]: crate::token
+ */
 class Caret private constructor(
     spans: List<Span>,
 ) : PunctuationToken(spans, "^") {
@@ -1060,6 +1486,15 @@ class Caret private constructor(
     }
 }
 
+/**
+ *
+ * Usage:
+ *
+ * Don't try to remember the name of this type &mdash; use the
+ * [`Token!`] macro instead.
+ *
+ * [`Token!`]: crate::token
+ */
 class CaretEq private constructor(
     spans: List<Span>,
 ) : PunctuationToken(spans, "^=") {
@@ -1074,6 +1509,15 @@ class CaretEq private constructor(
     }
 }
 
+/**
+ *
+ * Usage:
+ *
+ * Don't try to remember the name of this type &mdash; use the
+ * [`Token!`] macro instead.
+ *
+ * [`Token!`]: crate::token
+ */
 class Colon private constructor(
     spans: List<Span>,
 ) : PunctuationToken(spans, ":") {
@@ -1088,6 +1532,15 @@ class Colon private constructor(
     }
 }
 
+/**
+ *
+ * Usage:
+ *
+ * Don't try to remember the name of this type &mdash; use the
+ * [`Token!`] macro instead.
+ *
+ * [`Token!`]: crate::token
+ */
 class Comma private constructor(
     spans: List<Span>,
 ) : PunctuationToken(spans, ",") {
@@ -1102,6 +1555,15 @@ class Comma private constructor(
     }
 }
 
+/**
+ *
+ * Usage:
+ *
+ * Don't try to remember the name of this type &mdash; use the
+ * [`Token!`] macro instead.
+ *
+ * [`Token!`]: crate::token
+ */
 class Dollar private constructor(
     spans: List<Span>,
 ) : PunctuationToken(spans, "\$") {
@@ -1116,6 +1578,15 @@ class Dollar private constructor(
     }
 }
 
+/**
+ *
+ * Usage:
+ *
+ * Don't try to remember the name of this type &mdash; use the
+ * [`Token!`] macro instead.
+ *
+ * [`Token!`]: crate::token
+ */
 class Dot private constructor(
     spans: List<Span>,
 ) : PunctuationToken(spans, ".") {
@@ -1130,6 +1601,15 @@ class Dot private constructor(
     }
 }
 
+/**
+ *
+ * Usage:
+ *
+ * Don't try to remember the name of this type &mdash; use the
+ * [`Token!`] macro instead.
+ *
+ * [`Token!`]: crate::token
+ */
 class DotDot private constructor(
     spans: List<Span>,
 ) : PunctuationToken(spans, "..") {
@@ -1144,6 +1624,15 @@ class DotDot private constructor(
     }
 }
 
+/**
+ *
+ * Usage:
+ *
+ * Don't try to remember the name of this type &mdash; use the
+ * [`Token!`] macro instead.
+ *
+ * [`Token!`]: crate::token
+ */
 class DotDotDot private constructor(
     spans: List<Span>,
 ) : PunctuationToken(spans, "...") {
@@ -1158,6 +1647,15 @@ class DotDotDot private constructor(
     }
 }
 
+/**
+ *
+ * Usage:
+ *
+ * Don't try to remember the name of this type &mdash; use the
+ * [`Token!`] macro instead.
+ *
+ * [`Token!`]: crate::token
+ */
 class DotDotEq private constructor(
     spans: List<Span>,
 ) : PunctuationToken(spans, "..=") {
@@ -1172,6 +1670,15 @@ class DotDotEq private constructor(
     }
 }
 
+/**
+ *
+ * Usage:
+ *
+ * Don't try to remember the name of this type &mdash; use the
+ * [`Token!`] macro instead.
+ *
+ * [`Token!`]: crate::token
+ */
 class Eq private constructor(
     spans: List<Span>,
 ) : PunctuationToken(spans, "=") {
@@ -1186,6 +1693,15 @@ class Eq private constructor(
     }
 }
 
+/**
+ *
+ * Usage:
+ *
+ * Don't try to remember the name of this type &mdash; use the
+ * [`Token!`] macro instead.
+ *
+ * [`Token!`]: crate::token
+ */
 class EqEq private constructor(
     spans: List<Span>,
 ) : PunctuationToken(spans, "==") {
@@ -1200,6 +1716,15 @@ class EqEq private constructor(
     }
 }
 
+/**
+ *
+ * Usage:
+ *
+ * Don't try to remember the name of this type &mdash; use the
+ * [`Token!`] macro instead.
+ *
+ * [`Token!`]: crate::token
+ */
 class FatArrow private constructor(
     spans: List<Span>,
 ) : PunctuationToken(spans, "=>") {
@@ -1214,6 +1739,15 @@ class FatArrow private constructor(
     }
 }
 
+/**
+ *
+ * Usage:
+ *
+ * Don't try to remember the name of this type &mdash; use the
+ * [`Token!`] macro instead.
+ *
+ * [`Token!`]: crate::token
+ */
 class Ge private constructor(
     spans: List<Span>,
 ) : PunctuationToken(spans, ">=") {
@@ -1228,6 +1762,15 @@ class Ge private constructor(
     }
 }
 
+/**
+ *
+ * Usage:
+ *
+ * Don't try to remember the name of this type &mdash; use the
+ * [`Token!`] macro instead.
+ *
+ * [`Token!`]: crate::token
+ */
 class Gt private constructor(
     spans: List<Span>,
 ) : PunctuationToken(spans, ">") {
@@ -1242,6 +1785,15 @@ class Gt private constructor(
     }
 }
 
+/**
+ *
+ * Usage:
+ *
+ * Don't try to remember the name of this type &mdash; use the
+ * [`Token!`] macro instead.
+ *
+ * [`Token!`]: crate::token
+ */
 class LArrow private constructor(
     spans: List<Span>,
 ) : PunctuationToken(spans, "<-") {
@@ -1256,6 +1808,15 @@ class LArrow private constructor(
     }
 }
 
+/**
+ *
+ * Usage:
+ *
+ * Don't try to remember the name of this type &mdash; use the
+ * [`Token!`] macro instead.
+ *
+ * [`Token!`]: crate::token
+ */
 class Le private constructor(
     spans: List<Span>,
 ) : PunctuationToken(spans, "<=") {
@@ -1270,6 +1831,15 @@ class Le private constructor(
     }
 }
 
+/**
+ *
+ * Usage:
+ *
+ * Don't try to remember the name of this type &mdash; use the
+ * [`Token!`] macro instead.
+ *
+ * [`Token!`]: crate::token
+ */
 class Lt private constructor(
     spans: List<Span>,
 ) : PunctuationToken(spans, "<") {
@@ -1284,6 +1854,15 @@ class Lt private constructor(
     }
 }
 
+/**
+ *
+ * Usage:
+ *
+ * Don't try to remember the name of this type &mdash; use the
+ * [`Token!`] macro instead.
+ *
+ * [`Token!`]: crate::token
+ */
 class Minus private constructor(
     spans: List<Span>,
 ) : PunctuationToken(spans, "-") {
@@ -1298,6 +1877,15 @@ class Minus private constructor(
     }
 }
 
+/**
+ *
+ * Usage:
+ *
+ * Don't try to remember the name of this type &mdash; use the
+ * [`Token!`] macro instead.
+ *
+ * [`Token!`]: crate::token
+ */
 class MinusEq private constructor(
     spans: List<Span>,
 ) : PunctuationToken(spans, "-=") {
@@ -1312,6 +1900,15 @@ class MinusEq private constructor(
     }
 }
 
+/**
+ *
+ * Usage:
+ *
+ * Don't try to remember the name of this type &mdash; use the
+ * [`Token!`] macro instead.
+ *
+ * [`Token!`]: crate::token
+ */
 class Ne private constructor(
     spans: List<Span>,
 ) : PunctuationToken(spans, "!=") {
@@ -1326,6 +1923,15 @@ class Ne private constructor(
     }
 }
 
+/**
+ *
+ * Usage:
+ *
+ * Don't try to remember the name of this type &mdash; use the
+ * [`Token!`] macro instead.
+ *
+ * [`Token!`]: crate::token
+ */
 class Not private constructor(
     spans: List<Span>,
 ) : PunctuationToken(spans, "!") {
@@ -1340,6 +1946,15 @@ class Not private constructor(
     }
 }
 
+/**
+ *
+ * Usage:
+ *
+ * Don't try to remember the name of this type &mdash; use the
+ * [`Token!`] macro instead.
+ *
+ * [`Token!`]: crate::token
+ */
 class Or private constructor(
     spans: List<Span>,
 ) : PunctuationToken(spans, "|") {
@@ -1354,6 +1969,15 @@ class Or private constructor(
     }
 }
 
+/**
+ *
+ * Usage:
+ *
+ * Don't try to remember the name of this type &mdash; use the
+ * [`Token!`] macro instead.
+ *
+ * [`Token!`]: crate::token
+ */
 class OrEq private constructor(
     spans: List<Span>,
 ) : PunctuationToken(spans, "|=") {
@@ -1368,6 +1992,15 @@ class OrEq private constructor(
     }
 }
 
+/**
+ *
+ * Usage:
+ *
+ * Don't try to remember the name of this type &mdash; use the
+ * [`Token!`] macro instead.
+ *
+ * [`Token!`]: crate::token
+ */
 class OrOr private constructor(
     spans: List<Span>,
 ) : PunctuationToken(spans, "||") {
@@ -1382,6 +2015,15 @@ class OrOr private constructor(
     }
 }
 
+/**
+ *
+ * Usage:
+ *
+ * Don't try to remember the name of this type &mdash; use the
+ * [`Token!`] macro instead.
+ *
+ * [`Token!`]: crate::token
+ */
 class PathSep private constructor(
     spans: List<Span>,
 ) : PunctuationToken(spans, "::") {
@@ -1396,6 +2038,15 @@ class PathSep private constructor(
     }
 }
 
+/**
+ *
+ * Usage:
+ *
+ * Don't try to remember the name of this type &mdash; use the
+ * [`Token!`] macro instead.
+ *
+ * [`Token!`]: crate::token
+ */
 class Percent private constructor(
     spans: List<Span>,
 ) : PunctuationToken(spans, "%") {
@@ -1410,6 +2061,15 @@ class Percent private constructor(
     }
 }
 
+/**
+ *
+ * Usage:
+ *
+ * Don't try to remember the name of this type &mdash; use the
+ * [`Token!`] macro instead.
+ *
+ * [`Token!`]: crate::token
+ */
 class PercentEq private constructor(
     spans: List<Span>,
 ) : PunctuationToken(spans, "%=") {
@@ -1424,6 +2084,15 @@ class PercentEq private constructor(
     }
 }
 
+/**
+ *
+ * Usage:
+ *
+ * Don't try to remember the name of this type &mdash; use the
+ * [`Token!`] macro instead.
+ *
+ * [`Token!`]: crate::token
+ */
 class Plus private constructor(
     spans: List<Span>,
 ) : PunctuationToken(spans, "+") {
@@ -1438,6 +2107,15 @@ class Plus private constructor(
     }
 }
 
+/**
+ *
+ * Usage:
+ *
+ * Don't try to remember the name of this type &mdash; use the
+ * [`Token!`] macro instead.
+ *
+ * [`Token!`]: crate::token
+ */
 class PlusEq private constructor(
     spans: List<Span>,
 ) : PunctuationToken(spans, "+=") {
@@ -1452,6 +2130,15 @@ class PlusEq private constructor(
     }
 }
 
+/**
+ *
+ * Usage:
+ *
+ * Don't try to remember the name of this type &mdash; use the
+ * [`Token!`] macro instead.
+ *
+ * [`Token!`]: crate::token
+ */
 class Pound private constructor(
     spans: List<Span>,
 ) : PunctuationToken(spans, "#") {
@@ -1466,6 +2153,15 @@ class Pound private constructor(
     }
 }
 
+/**
+ *
+ * Usage:
+ *
+ * Don't try to remember the name of this type &mdash; use the
+ * [`Token!`] macro instead.
+ *
+ * [`Token!`]: crate::token
+ */
 class Question private constructor(
     spans: List<Span>,
 ) : PunctuationToken(spans, "?") {
@@ -1480,6 +2176,15 @@ class Question private constructor(
     }
 }
 
+/**
+ *
+ * Usage:
+ *
+ * Don't try to remember the name of this type &mdash; use the
+ * [`Token!`] macro instead.
+ *
+ * [`Token!`]: crate::token
+ */
 class RArrow private constructor(
     spans: List<Span>,
 ) : PunctuationToken(spans, "->") {
@@ -1494,6 +2199,15 @@ class RArrow private constructor(
     }
 }
 
+/**
+ *
+ * Usage:
+ *
+ * Don't try to remember the name of this type &mdash; use the
+ * [`Token!`] macro instead.
+ *
+ * [`Token!`]: crate::token
+ */
 class Semi private constructor(
     spans: List<Span>,
 ) : PunctuationToken(spans, ";") {
@@ -1508,6 +2222,15 @@ class Semi private constructor(
     }
 }
 
+/**
+ *
+ * Usage:
+ *
+ * Don't try to remember the name of this type &mdash; use the
+ * [`Token!`] macro instead.
+ *
+ * [`Token!`]: crate::token
+ */
 class Shl private constructor(
     spans: List<Span>,
 ) : PunctuationToken(spans, "<<") {
@@ -1522,6 +2245,15 @@ class Shl private constructor(
     }
 }
 
+/**
+ *
+ * Usage:
+ *
+ * Don't try to remember the name of this type &mdash; use the
+ * [`Token!`] macro instead.
+ *
+ * [`Token!`]: crate::token
+ */
 class ShlEq private constructor(
     spans: List<Span>,
 ) : PunctuationToken(spans, "<<=") {
@@ -1536,6 +2268,15 @@ class ShlEq private constructor(
     }
 }
 
+/**
+ *
+ * Usage:
+ *
+ * Don't try to remember the name of this type &mdash; use the
+ * [`Token!`] macro instead.
+ *
+ * [`Token!`]: crate::token
+ */
 class Shr private constructor(
     spans: List<Span>,
 ) : PunctuationToken(spans, ">>") {
@@ -1550,6 +2291,15 @@ class Shr private constructor(
     }
 }
 
+/**
+ *
+ * Usage:
+ *
+ * Don't try to remember the name of this type &mdash; use the
+ * [`Token!`] macro instead.
+ *
+ * [`Token!`]: crate::token
+ */
 class ShrEq private constructor(
     spans: List<Span>,
 ) : PunctuationToken(spans, ">>=") {
@@ -1564,6 +2314,15 @@ class ShrEq private constructor(
     }
 }
 
+/**
+ *
+ * Usage:
+ *
+ * Don't try to remember the name of this type &mdash; use the
+ * [`Token!`] macro instead.
+ *
+ * [`Token!`]: crate::token
+ */
 class Slash private constructor(
     spans: List<Span>,
 ) : PunctuationToken(spans, "/") {
@@ -1578,6 +2337,15 @@ class Slash private constructor(
     }
 }
 
+/**
+ *
+ * Usage:
+ *
+ * Don't try to remember the name of this type &mdash; use the
+ * [`Token!`] macro instead.
+ *
+ * [`Token!`]: crate::token
+ */
 class SlashEq private constructor(
     spans: List<Span>,
 ) : PunctuationToken(spans, "/=") {
@@ -1592,6 +2360,15 @@ class SlashEq private constructor(
     }
 }
 
+/**
+ *
+ * Usage:
+ *
+ * Don't try to remember the name of this type &mdash; use the
+ * [`Token!`] macro instead.
+ *
+ * [`Token!`]: crate::token
+ */
 class Star private constructor(
     spans: List<Span>,
 ) : PunctuationToken(spans, "*") {
@@ -1606,6 +2383,15 @@ class Star private constructor(
     }
 }
 
+/**
+ *
+ * Usage:
+ *
+ * Don't try to remember the name of this type &mdash; use the
+ * [`Token!`] macro instead.
+ *
+ * [`Token!`]: crate::token
+ */
 class StarEq private constructor(
     spans: List<Span>,
 ) : PunctuationToken(spans, "*=") {
@@ -1620,6 +2406,15 @@ class StarEq private constructor(
     }
 }
 
+/**
+ *
+ * Usage:
+ *
+ * Don't try to remember the name of this type &mdash; use the
+ * [`Token!`] macro instead.
+ *
+ * [`Token!`]: crate::token
+ */
 class Tilde private constructor(
     spans: List<Span>,
 ) : PunctuationToken(spans, "~") {

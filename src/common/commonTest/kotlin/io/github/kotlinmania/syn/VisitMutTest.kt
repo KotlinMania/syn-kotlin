@@ -3,8 +3,23 @@ package io.github.kotlinmania.syn
 import io.github.kotlinmania.syn.gen.VisitMut
 import kotlin.test.Test
 import kotlin.test.assertTrue
+import kotlin.test.assertEquals
 
 class VisitMutTest {
+    @Test
+    fun abiVisitsOptionalName() {
+        val names = mutableListOf<String>()
+        val visitor = object : VisitMut() {
+            override fun visitLitStrMut(l: LitStr) {
+                names.add(l.value())
+            }
+        }
+        val span = io.github.kotlinmania.procmacro2.Span.callSite()
+        visitor.visitAbiMut(Abi(io.github.kotlinmania.syn.token.Extern.default(), LitStr.new("C", span)))
+        visitor.visitAbiMut(Abi(io.github.kotlinmania.syn.token.Extern.default(), null))
+        assertEquals(listOf("C"), names)
+    }
+
     @Test
     fun deriveInputVisitMutRecursesThroughDataAndGenerics() {
         val input =

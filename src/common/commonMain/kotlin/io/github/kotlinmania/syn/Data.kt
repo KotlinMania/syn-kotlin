@@ -17,6 +17,9 @@ public data class Variant(
     public var attrs: List<Attribute>,
     public var ident: Ident,
     public var fields: Fields,
+    /**
+     * Explicit discriminant: `Variant = 1`
+     */
     public var discriminant: EqExpr?,
 ) : ToTokens {
     override fun toTokens(tokens: TokenStream) {
@@ -27,13 +30,25 @@ public data class Variant(
     }
 }
 
-/** Data stored within an enum variant or data structure. */
+/**
+ * Data stored within an enum variant or struct.
+ *
+ * # Syntax tree enum
+ *
+ * This type is a [syntax tree enum].
+ *
+ * [syntax tree enum]: crate::expr::Expr#syntax-tree-enums
+ */
 public sealed class Fields :
     Iterable<Field>,
     ToTokens {
     public typealias Item = Field
     public typealias IntoIter = Iterator<Field>
 
+    /**
+     * Named fields of a struct or struct variant such as `Point { x: f64,
+     * y: f64 }`.
+     */
     public data class Named(
         var fields: FieldsNamed,
     ) : Fields() {
@@ -42,6 +57,9 @@ public sealed class Fields :
         }
     }
 
+    /**
+     * Unnamed fields of a tuple struct or tuple variant such as `Some(T)`.
+     */
     public data class Unnamed(
         var fields: FieldsUnnamed,
     ) : Fields() {
@@ -50,6 +68,9 @@ public sealed class Fields :
         }
     }
 
+    /**
+     * Unit struct or unit variant such as `None`.
+     */
     public data object Unit : Fields() {
         override fun toTokens(tokens: TokenStream) {
         }
@@ -58,6 +79,11 @@ public sealed class Fields :
     override fun iterator(): Iterator<Field> =
         iter()
 
+    /**
+     * Get an iterator over the borrowed [`Field`] items in this object. This
+     * iterator can be used to iterate over a named or unnamed struct or
+     * variant's fields uniformly.
+     */
     public fun iter(): Iterator<Field> =
         when (this) {
             Unit -> emptyList<Field>().iterator()
@@ -65,12 +91,20 @@ public sealed class Fields :
             is Unnamed -> fields.unnamed.toList().iterator()
         }
 
+    /**
+     * Get an iterator over the mutably borrowed [`Field`] items in this
+     * object. This iterator can be used to iterate over a named or unnamed
+     * struct or variant's fields uniformly.
+     */
     public fun iterMut(): Iterator<Field> =
         iter()
 
     public fun intoIter(): Iterator<Field> =
         iter()
 
+    /**
+     * Returns the number of fields.
+     */
     public fun len(): Int =
         when (this) {
             Unit -> 0
@@ -78,9 +112,44 @@ public sealed class Fields :
             is Unnamed -> fields.unnamed.len()
         }
 
+    /**
+     * Returns `true` if there are zero fields.
+     */
     public fun isEmpty(): Boolean =
         len() == 0
 
+    /**
+     * Get an iterator over the fields of a struct or variant as [`Member`]s.
+     * This iterator can be used to iterate over a named or unnamed struct or
+     * variant's fields uniformly.
+     *
+     * # Example
+     *
+     * The following is a simplistic [`Clone`] derive for structs. (A more
+     * complete implementation would additionally want to infer trait bounds on
+     * the generic type parameters.)
+     *
+     * ```
+     * fun deriveClone(input: &syn::ItemStruct) -> procMacro2::TokenStream {
+     *     val ident = &input.ident;
+     *     val members = input.fields.members();
+     *     let (implGenerics, tyGenerics, whereClause) = input.generics.splitForImpl();
+     *     quote{
+     *         class #ident #tyGenerics #whereClause : #implGenerics Clone {
+     *             fun clone(&self) -> Self {
+     *                 Self {
+     *                     #(#members: self.#members.clone()),*
+     *                 }
+     *             }
+     *         }
+     *     }
+     * }
+     * ```
+     *
+     * For structs with named fields, it produces an expression like `Self { a:
+     * self.a.clone() }`. For structs with unnamed fields, `Self { 0:
+     * self.0.clone() }`. And for unit structs, `Self {}`.
+     */
     public fun members(): Members =
         Members(iter().asSequence().toList())
 }

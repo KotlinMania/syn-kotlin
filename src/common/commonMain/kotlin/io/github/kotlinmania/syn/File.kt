@@ -5,9 +5,76 @@ import io.github.kotlinmania.procmacro2.TokenStream
 import io.github.kotlinmania.quote.ToTokens
 
 /**
- * A complete file of source code.
+ * A complete file of Rust source code.
  *
- * Typically [File] objects are created with [parseFile].
+ * Typically `File` objects are created with [`parseFile`].
+ *
+ * [`parseFile`]: crate::parseFile
+ *
+ * # Example
+ *
+ * Parse a Rust source file into a `syn::File` and print out a debug
+ * representation of the syntax tree.
+ *
+ * ```
+ * import std.env;
+ * import std.fs;
+ * import std.process;
+ *
+ * fun main() {
+ *     var args = env::args();
+ *     val unused = args.next(); // executable name
+ *
+ *     val filename = when ((args.next(), args.next())) {
+ *         (Some(filename), None) => filename,
+ *         _ => {
+ *             eprintln("Usage: dump-syntax path/to/filename.rs");
+ *             process::exit(1);
+ *         }
+ *     };
+ *
+ *     val src = fs::readToString(&filename).expect("unable to read file");
+ *     val syntax = syn::parseFile(&src).expect("unable to parse file");
+ *
+ *     // Debug implementation is available if Syn is built with "extra-traits" feature.
+ *     println("{:#?}", syntax);
+ * }
+ * ```
+ *
+ * Running with its own source code as input, this program prints output
+ * that begins with:
+ *
+ * ```text
+ * File {
+ *     shebang: None,
+ *     attrs: [],
+ *     items: [
+ *         Use(
+ *             ItemUse {
+ *                 attrs: [],
+ *                 vis: Inherited,
+ *                 useToken: Use,
+ *                 leadingColon: None,
+ *                 tree: Path(
+ *                     UsePath {
+ *                         ident: Ident(
+ *                             std,
+ *                         ),
+ *                         colon2Token: Colon2,
+ *                         tree: Name(
+ *                             UseName {
+ *                                 ident: Ident(
+ *                                     env,
+ *                                 ),
+ *                             },
+ *                         ),
+ *                     },
+ *                 ),
+ *                 semiToken: Semi,
+ *             },
+ *         ),
+ * ...
+ * ```
  */
 public data class File(
     public var shebang: String?,

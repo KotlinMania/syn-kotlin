@@ -13,7 +13,15 @@ import io.github.kotlinmania.quote.ToTokens
 import io.github.kotlinmania.quote.append
 import io.github.kotlinmania.quote.toTokens
 
-/** A literal such as a string or integer or boolean. */
+/**
+ * A Rust literal such as a string or integer or boolean.
+ *
+ * # Syntax tree enum
+ *
+ * This type is a [syntax tree enum].
+ *
+ * [syntax tree enum]: crate::expr::Expr#syntax-tree-enums
+ */
 public sealed class Lit : ToTokens {
     public companion object {
         /** Interpret a literal token as a Syn literal. */
@@ -70,38 +78,67 @@ public sealed class Lit : ToTokens {
         }
     }
 
+    /**
+     * A UTF-8 string literal: `"foo"`.
+     */
     public data class Str(
         var value: LitStr,
     ) : Lit()
 
+    /**
+     * A byte string literal: `b"foo"`.
+     */
     public data class ByteStr(
         var value: LitByteStr,
     ) : Lit()
 
+    /**
+     * A nul-terminated C-string literal: `c"foo"`.
+     */
     public data class CStr(
         var value: LitCStr,
     ) : Lit()
 
+    /**
+     * A byte literal: `b'f'`.
+     */
     public data class Byte(
         var value: LitByte,
     ) : Lit()
 
+    /**
+     * A character literal: `'a'`.
+     */
     public data class Char(
         var value: LitChar,
     ) : Lit()
 
+    /**
+     * An integer literal: `1` or `1u16`.
+     */
     public data class Int(
         var value: LitInt,
     ) : Lit()
 
+    /**
+     * A floating point literal: `1f64` or `1.0e10f64`.
+     *
+     * Must be finite. May not be infinite or NaN.
+     */
     public data class Float(
         var value: LitFloat,
     ) : Lit()
 
+    /**
+     * A boolean literal: `true` or `false`.
+     */
     public data class Bool(
         var value: LitBool,
     ) : Lit()
 
+    /**
+     * A raw token literal not interpreted by Syn.
+     */
     public data class Verbatim(
         var value: Literal,
     ) : Lit() {
@@ -209,6 +246,21 @@ public class LitStr private constructor(
     public fun <T> parse(parser: (ParseStream) -> SynResult<T>): SynResult<T> =
         parseWith(parser)
 
+    /**
+     * Invoke parser on the content of this string literal.
+     *
+     * All spans in the syntax tree will point to the span of this `LitStr`.
+     *
+     * # Example
+     *
+     * ```
+     * val litStr: LitStr = / * ... * /;
+     *
+     * // Parse a string literal like "a::b::c" into a Path, not allowing
+     * // generic arguments on any of the path segments.
+     * val basicPath = litStr.parseWith(syn::Path::parseModStyle)?;
+     * ```
+     */
     public fun <T> parseWith(parser: (ParseStream) -> SynResult<T>): SynResult<T> {
         val span = span()
         val parseResult = TokenStream.fromString(value())
@@ -643,8 +695,16 @@ public data class LitBool(
 
 /** String literal spelling style. */
 public sealed class StrStyle {
+    /**
+     * An ordinary string like `"data"`.
+     */
     public data object Cooked : StrStyle()
 
+    /**
+     * A raw string like `r##"data"##`.
+     *
+     * The unsigned integer is the number of `#` symbols used.
+     */
     public data class Raw(
         public var pounds: Int,
     ) : StrStyle()
@@ -697,6 +757,10 @@ private data class DigitsLiteralParts(
     var suffix: String,
 )
 
+/**
+ * Get the byte at offset idx, or a default of `b'\0'` if we're looking
+ * past the end of the input buffer.
+ */
 private fun byte(s: String, index: Int): Int =
     s.getOrNull(index)?.code ?: 0
 
