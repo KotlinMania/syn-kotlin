@@ -114,10 +114,11 @@ class PunctuatedTest {
         sequence.pushValue(2)
         sequence.pushPunct(";")
         val visited = mutableListOf<Int>()
-        val rewritten = fold(sequence, visited) { state, value ->
-            state.add(value)
-            value + 10
-        }
+        val rewritten =
+            fold(sequence, visited) { state, value ->
+                state.add(value)
+                value + 10
+            }
         assertEquals(listOf(1, 2), visited)
         assertEquals(listOf(11, 12), rewritten.toList())
         assertEquals(",", rewritten.punct(0))
@@ -139,9 +140,10 @@ class PunctuatedTest {
         assertEquals(listOf(null, 2), sequence.clone(copyValue = { it }, copyPunctuation = { it }).toList())
         val pair = sequence.pairs().next().cloned(copyValue = { it }, copyPunct = { it })
         assertTrue(pair is Punctuated.Pair.Punctuated<*, *>)
-        val extended = Punctuated.fromPairs<Int?, String?>(
-            listOf(pair, Punctuated.Pair.End(3)),
-        )
+        val extended =
+            Punctuated.fromPairs<Int?, String?>(
+                listOf(pair, Punctuated.Pair.End(3)),
+            )
         assertEquals(listOf(null, 3), extended.toList())
         assertTrue(extended.pop() is Punctuated.Pair.End<*, *>)
         assertTrue(extended.pop() is Punctuated.Pair.Punctuated<*, *>)

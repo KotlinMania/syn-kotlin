@@ -868,26 +868,28 @@ public class Punctuated<T, P> private constructor(
     private val innerList: MutableList<RawPair<T, P>>,
     private var lastValue: LastValue<T>?,
 ) : Iterable<T> {
-    private data class LastValue<T>(val value: T)
+    private data class LastValue<T>(
+        val value: T,
+    )
 
     public constructor() : this(mutableListOf(), null)
 
     /**
- * A single syntax tree node of type `T` followed by its trailing punctuation
- * of type `P` if any.
- *
- * Refer to the [module documentation] for details about punctuated sequences.
- *
- * [module documentation]: self
- */
+     * A single syntax tree node of type `T` followed by its trailing punctuation
+     * of type `P` if any.
+     *
+     * Refer to the [module documentation] for details about punctuated sequences.
+     *
+     * [module documentation]: self
+     */
     public sealed class Pair<T, P> {
         public abstract fun intoValue(): T
 
         public abstract fun value(): T
 
         /**
-     * Mutably borrows the syntax tree node from this punctuated pair.
-     */
+         * Mutably borrows the syntax tree node from this punctuated pair.
+         */
         public fun valueMut(): T = value()
 
         public abstract fun punct(): P?
@@ -895,9 +897,9 @@ public class Punctuated<T, P> private constructor(
         public fun punctMut(): P? = punct()
 
         /**
-     * Produces this punctuated pair as a tuple of syntax tree node and
-     * optional following punctuation.
-     */
+         * Produces this punctuated pair as a tuple of syntax tree node and
+         * optional following punctuation.
+         */
         public fun intoTuple(): RawPair<T, P?> = value() to punct()
 
         public fun cloned(
@@ -999,12 +1001,12 @@ public class Punctuated<T, P> private constructor(
     }
 
     /**
- * An iterator over borrowed pairs of type `Pair<&T, &P>`.
- *
- * Refer to the [module documentation] for details about punctuated sequences.
- *
- * [module documentation]: self
- */
+     * An iterator over borrowed pairs of type `Pair<&T, &P>`.
+     *
+     * Refer to the [module documentation] for details about punctuated sequences.
+     *
+     * [module documentation]: self
+     */
     public class Pairs<T, P> private constructor(
         private val cursor: Cursor<Pair<T, P>>,
     ) : Iterator<Pair<T, P>>,
@@ -1030,12 +1032,12 @@ public class Punctuated<T, P> private constructor(
     }
 
     /**
- * An iterator over mutably borrowed pairs of type `Pair<&mut T, &mut P>`.
- *
- * Refer to the [module documentation] for details about punctuated sequences.
- *
- * [module documentation]: self
- */
+     * An iterator over mutably borrowed pairs of type `Pair<&mut T, &mut P>`.
+     *
+     * Refer to the [module documentation] for details about punctuated sequences.
+     *
+     * [module documentation]: self
+     */
     public class PairsMut<T, P> private constructor(
         private val cursor: Cursor<Pair<T, P>>,
     ) : Iterator<Pair<T, P>>,
@@ -1061,12 +1063,12 @@ public class Punctuated<T, P> private constructor(
     }
 
     /**
- * An iterator over owned pairs of type `Pair<T, P>`.
- *
- * Refer to the [module documentation] for details about punctuated sequences.
- *
- * [module documentation]: self
- */
+     * An iterator over owned pairs of type `Pair<T, P>`.
+     *
+     * Refer to the [module documentation] for details about punctuated sequences.
+     *
+     * [module documentation]: self
+     */
     public class IntoPairs<T, P> private constructor(
         private val cursor: Cursor<Pair<T, P>>,
     ) : Iterator<Pair<T, P>>,
@@ -1136,12 +1138,12 @@ public class Punctuated<T, P> private constructor(
     }
 
     /**
- * An iterator over borrowed values of type `&T`.
- *
- * Refer to the [module documentation] for details about punctuated sequences.
- *
- * [module documentation]: self
- */
+     * An iterator over borrowed values of type `&T`.
+     *
+     * Refer to the [module documentation] for details about punctuated sequences.
+     *
+     * [module documentation]: self
+     */
     public class Iter<T> private constructor(
         private val inner: IterTrait<T>,
     ) : Iterator<T>,
@@ -1167,12 +1169,12 @@ public class Punctuated<T, P> private constructor(
     }
 
     /**
- * An iterator over mutably borrowed values of type `&mut T`.
- *
- * Refer to the [module documentation] for details about punctuated sequences.
- *
- * [module documentation]: self
- */
+     * An iterator over mutably borrowed values of type `&mut T`.
+     *
+     * Refer to the [module documentation] for details about punctuated sequences.
+     *
+     * [module documentation]: self
+     */
     public class IterMut<T> private constructor(
         private val inner: PrivateIterMut<T>,
     ) : Iterator<T>,
@@ -1198,12 +1200,12 @@ public class Punctuated<T, P> private constructor(
     }
 
     /**
- * An iterator over owned values of type `T`.
- *
- * Refer to the [module documentation] for details about punctuated sequences.
- *
- * [module documentation]: self
- */
+     * An iterator over owned values of type `T`.
+     *
+     * Refer to the [module documentation] for details about punctuated sequences.
+     *
+     * [module documentation]: self
+     */
     public class IntoIter<T, P> private constructor(
         private val inner: IntoPairs<T, P>,
     ) : Iterator<T>,
@@ -1345,8 +1347,13 @@ public class Punctuated<T, P> private constructor(
         if (index < 0) {
             null
         } else {
-            if (index in innerList.indices) innerList[index].first
-            else if (index == innerList.size) lastValue?.value else null
+            if (index in innerList.indices) {
+                innerList[index].first
+            } else if (index == innerList.size) {
+                lastValue?.value
+            } else {
+                null
+            }
         }
 
     /**
@@ -1589,15 +1596,17 @@ public fun <T : ToTokens, P : ToTokens> Punctuated<T, P>.toTokens(tokens: TokenS
 
 internal fun <T : ToTokens, P : ToTokens> Punctuated<T, P>.toSynPunctuated(): SynPunctuated {
     val entries = pairs().iterator().asSequence().toList()
-    val punctuated = entries.mapNotNull { pair ->
-        when (pair) {
-            is Punctuated.Pair.Punctuated -> pair.value() to pair.punct()
-            is Punctuated.Pair.End -> null
+    val punctuated =
+        entries.mapNotNull { pair ->
+            when (pair) {
+                is Punctuated.Pair.Punctuated -> pair.value() to pair.punct()
+                is Punctuated.Pair.End -> null
+            }
         }
-    }
-    val trailing = entries.lastOrNull()?.let { pair ->
-        if (pair is Punctuated.Pair.End) pair.value() else null
-    }
+    val trailing =
+        entries.lastOrNull()?.let { pair ->
+            if (pair is Punctuated.Pair.End) pair.value() else null
+        }
     return GenericPunctuatedList(punctuated, trailing)
 }
 

@@ -34,37 +34,37 @@ public class Path(
         }
 
         /**
- * Parse a `Path` containing no path arguments on any of its segments.
- *
- * # Example
- *
- * ```
- * import syn..Path, Result, Token};
- * import syn.parse..Parse, ParseStream};
- *
- * // A simplified single `use` statement like:
- * //
- * //     import alloc.collections.HashMap;
- * //
- * // Note that generic parameters are not allowed in a `use` statement
- * // so the following must not be accepted.
- * //
- * //     import a.<b>::c;
- * struct SingleUse {
- *     useToken: token[use],
- *     path: Path,
- * }
- *
- * class SingleUse : Parse {
- *     fun parse(input: ParseStream) -> Result<Self> {
- *         Ok(SingleUse {
- *             useToken: input.parse()?,
- *             path: input.call(Path::parseModStyle)?,
- *         })
- *     }
- * }
- * ```
- */
+         * Parse a `Path` containing no path arguments on any of its segments.
+         *
+         * # Example
+         *
+         * ```
+         * import syn..Path, Result, Token};
+         * import syn.parse..Parse, ParseStream};
+         *
+         * // A simplified single `use` statement like:
+         * //
+         * //     import alloc.collections.HashMap;
+         * //
+         * // Note that generic parameters are not allowed in a `use` statement
+         * // so the following must not be accepted.
+         * //
+         * //     import a.<b>::c;
+         * struct SingleUse {
+         *     useToken: token[use],
+         *     path: Path,
+         * }
+         *
+         * class SingleUse : Parse {
+         *     fun parse(input: ParseStream) -> Result<Self> {
+         *         Ok(SingleUse {
+         *             useToken: input.parse()?,
+         *             path: input.call(Path::parseModStyle)?,
+         *         })
+         *     }
+         * }
+         * ```
+         */
         public fun parseModStyle(input: ParseStream): SynResult<Path> {
             val leadingColon =
                 if (input.peek(PathSepPeek)) {
@@ -279,11 +279,11 @@ public sealed class PathArguments : ToTokens {
     ) : PathArguments() {
         public companion object {
             /**
- * Parse `::<…>` with mandatory leading `::`.
- *
- * The ordinary [`Parse`] implementation for `AngleBracketedGenericArguments`
- * parses optional leading `::`.
- */
+             * Parse `::<…>` with mandatory leading `::`.
+             *
+             * The ordinary [`Parse`] implementation for `AngleBracketedGenericArguments`
+             * parses optional leading `::`.
+             */
             public fun parseTurbofish(input: ParseStream): SynResult<AngleBracketed> {
                 val colon2Token = PathSepParse.parse(input).getOrElse { return SynResult.failure(it) }
                 return doParse(colon2Token, input)
@@ -322,12 +322,12 @@ public sealed class PathArguments : ToTokens {
     public data class Parenthesized(
         public var parenToken: Paren,
         /**
-     * `(A, B)`
-     */
+         * `(A, B)`
+         */
         public var inputs: SynTypeList,
         /**
-     * `C`
-     */
+         * `C`
+         */
         public var output: ReturnType,
     ) : PathArguments()
 

@@ -542,8 +542,8 @@ public sealed class GenericParam : ToTokens {
     }
 
     /**
- * A scope definition: `'a:  +  + `.
- */
+     * A scope definition: `'a:  +  + `.
+     */
     public data class LifetimeParam(
         public var attrs: List<Attribute>,
         public var lifetime: Lifetime,
@@ -588,8 +588,8 @@ public sealed class GenericParam : ToTokens {
     }
 
     /**
- * A generic type parameter: `T: Into<String>`.
- */
+     * A generic type parameter: `T: Into<String>`.
+     */
     public data class TypeParam(
         public var attrs: List<Attribute>,
         public var ident: Ident,
@@ -658,8 +658,8 @@ public sealed class GenericParam : ToTokens {
     }
 
     /**
- * A const generic parameter: `const LENGTH: Int`.
- */
+     * A const generic parameter: `const LENGTH: Int`.
+     */
     public data class ConstParam(
         public var attrs: List<Attribute>,
         public var constToken: io.github.kotlinmania.syn.token.Const,
@@ -843,8 +843,8 @@ public sealed class WherePredicate : ToTokens {
     public data class TypePredicate(
         public var lifetimes: BoundLifetimes?,
         /**
-     * The type being bounded
-     */
+         * The type being bounded
+         */
         public var boundedTy: SynType,
         public var colonToken: Colon,
         public var bounds: TypeParamBoundList,

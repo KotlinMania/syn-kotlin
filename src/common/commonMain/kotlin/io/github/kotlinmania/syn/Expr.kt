@@ -1835,76 +1835,76 @@ internal value class AllowStruct(
 )
 
 /**
-         * An alternative to the primary `Expr::parse` parser (from the [`Parse`]
-         * trait) for ambiguous syntactic positions in which a trailing brace
-         * should not be taken as part of the expression.
-         *
-         * [`Parse`]: crate::parse::Parse
-         *
-         * Rust grammar has an ambiguity where braces sometimes turn a path
-         * expression into a struct initialization and sometimes do not. In the
-         * following code, the expression `S {}` is one expression. Presumably
-         * there is an empty struct `struct S {}` defined somewhere which it is
-         * instantiating.
-         *
-         * ```
-         * val unused = *S {};
-         *
-         * // parsed by rustc as: `*(S {})`
-         * ```
-         *
-         * We would want to parse the above using `Expr::parse` after the `=`
-         * token.
-         *
-         * But in the following, `S {}` is *not* a struct init expression.
-         *
-         * ```
-         * if *S {} {}
-         *
-         * // parsed by rustc as:
-         * //
-         * //    if (*S) {
-         * //        / * empty block * /
-         * //    }
-         * //    {
-         * //        / * another empty block * /
-         * //    }
-         * ```
-         *
-         * For that reason we would want to parse if-conditions using
-         * `Expr::parseWithoutEagerBrace` after the `if` token. Same for similar
-         * syntactic positions such as the condition expr after a `while` token or
-         * the expr at the top of a `match`.
-         *
-         * The Rust grammar's choices around which way this ambiguity is resolved
-         * at various syntactic positions is fairly arbitrary. Really either parse
-         * behavior could work in most positions, and language designers just
-         * decide each case based on which is more likely to be what the programmer
-         * had in mind most of the time.
-         *
-         * ```
-         * if return S {} {}
-         *
-         * // parsed by rustc as:
-         * //
-         * //    if (return (S {})) {
-         * //    }
-         * //
-         * // but could equally well have been this other arbitrary choice:
-         * //
-         * //    if (return S) {
-         * //    }
-         * //    {}
-         * ```
-         *
-         * Note the grammar ambiguity on trailing braces is distinct from
-         * precedence and is not captured by assigning a precedence level to the
-         * braced struct init expr in relation to other operators. This can be
-         * illustrated by `return 0..S {}` vs `when (0..S) {}`. The former parses as
-         * `return (0..(S {}))` implying tighter precedence for struct init than
-         * `..`, while the latter parses as `when ((0..S)) {}` implying tighter
-         * precedence for `..` than struct init, a contradiction.
-         */
+ * An alternative to the primary `Expr::parse` parser (from the [`Parse`]
+ * trait) for ambiguous syntactic positions in which a trailing brace
+ * should not be taken as part of the expression.
+ *
+ * [`Parse`]: crate::parse::Parse
+ *
+ * Rust grammar has an ambiguity where braces sometimes turn a path
+ * expression into a struct initialization and sometimes do not. In the
+ * following code, the expression `S {}` is one expression. Presumably
+ * there is an empty struct `struct S {}` defined somewhere which it is
+ * instantiating.
+ *
+ * ```
+ * val unused = *S {};
+ *
+ * // parsed by rustc as: `*(S {})`
+ * ```
+ *
+ * We would want to parse the above using `Expr::parse` after the `=`
+ * token.
+ *
+ * But in the following, `S {}` is *not* a struct init expression.
+ *
+ * ```
+ * if *S {} {}
+ *
+ * // parsed by rustc as:
+ * //
+ * //    if (*S) {
+ * //        / * empty block * /
+ * //    }
+ * //    {
+ * //        / * another empty block * /
+ * //    }
+ * ```
+ *
+ * For that reason we would want to parse if-conditions using
+ * `Expr::parseWithoutEagerBrace` after the `if` token. Same for similar
+ * syntactic positions such as the condition expr after a `while` token or
+ * the expr at the top of a `match`.
+ *
+ * The Rust grammar's choices around which way this ambiguity is resolved
+ * at various syntactic positions is fairly arbitrary. Really either parse
+ * behavior could work in most positions, and language designers just
+ * decide each case based on which is more likely to be what the programmer
+ * had in mind most of the time.
+ *
+ * ```
+ * if return S {} {}
+ *
+ * // parsed by rustc as:
+ * //
+ * //    if (return (S {})) {
+ * //    }
+ * //
+ * // but could equally well have been this other arbitrary choice:
+ * //
+ * //    if (return S) {
+ * //    }
+ * //    {}
+ * ```
+ *
+ * Note the grammar ambiguity on trailing braces is distinct from
+ * precedence and is not captured by assigning a precedence level to the
+ * braced struct init expr in relation to other operators. This can be
+ * illustrated by `return 0..S {}` vs `when (0..S) {}`. The former parses as
+ * `return (0..(S {}))` implying tighter precedence for struct init than
+ * `..`, while the latter parses as `when ((0..S)) {}` implying tighter
+ * precedence for `..` than struct init, a contradiction.
+ */
 public fun parseWithoutEagerBrace(input: ParseStream): SynResult<Expr> =
     ambiguousExprImpl(input, allowStruct = false)
 
@@ -1912,17 +1912,17 @@ public fun parseWithEarlierBoundaryRule(input: ParseStream): SynResult<Expr> =
     parseExprWithEarlierBoundaryRuleImpl(input)
 
 /**
-         * Returns whether the next token in the parse stream is one that might
-         * possibly form the beginning of an expr.
-         *
-         * This classification is a load-bearing part of the grammar of some Rust
-         * expressions, notably `return` and `break`. For example `return < …` will
-         * never parse `<` as a binary operator regardless of what comes after,
-         * because `<` is a legal starting token for an expression and so it's
-         * required to be continued as a return value, such as `return <Struct as
-         * Trait>::CONST`. Meanwhile `return > …` treats the `>` as a binary
-         * operator because it cannot be a starting token for any Rust expression.
-         */
+ * Returns whether the next token in the parse stream is one that might
+ * possibly form the beginning of an expr.
+ *
+ * This classification is a load-bearing part of the grammar of some Rust
+ * expressions, notably `return` and `break`. For example `return < …` will
+ * never parse `<` as a binary operator regardless of what comes after,
+ * because `<` is a legal starting token for an expression and so it's
+ * required to be continued as a return value, such as `return <Struct as
+ * Trait>::CONST`. Meanwhile `return > …` treats the `>` as a binary
+ * operator because it cannot be a starting token for any Rust expression.
+ */
 public fun peek(input: ParseStream): Boolean = peekExpr(input)
 
 public fun from(ident: io.github.kotlinmania.procmacro2.Ident): Member = Member.Named(ident)

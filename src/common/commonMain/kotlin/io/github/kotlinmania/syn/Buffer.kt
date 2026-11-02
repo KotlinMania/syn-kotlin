@@ -105,10 +105,11 @@ public class TokenBuffer internal constructor(
         }
 
         /**
-         * Creates a `TokenBuffer` containing all the tokens from the input
-         * `procMacro::TokenStream`.
+         * Creates a [TokenBuffer] containing all the tokens from the input
+         * procedural-macro token stream.
          */
-        public fun new(stream: TokenStream): TokenBuffer = new2(stream)
+        public fun new(stream: io.github.kotlinmania.procmacro.TokenStream): TokenBuffer =
+            new2(TokenStream.fromProcMacro(stream))
     }
 
     /**

@@ -940,8 +940,8 @@ public object LiteralParse {
 public interface Parser<Output> {
     public fun parse2(tokens: TokenStream): SynResult<Output>
 
-    public fun parse(tokens: TokenStream): SynResult<Output> =
-        parse2(tokens)
+    public fun parse(tokens: io.github.kotlinmania.procmacro.TokenStream): SynResult<Output> =
+        parse2(TokenStream.fromProcMacro(tokens))
 
     public fun parseStr(s: String): SynResult<Output> {
         val parseResult = TokenStream.fromString(s)
@@ -1015,6 +1015,15 @@ public object Nothing : ToTokens {
 
     public fun hash(): Int = 0
 }
+
+/**
+ * Parse procedural-macro tokens into the chosen syntax tree node, enforcing
+ * that the entire stream is consumed.
+ */
+public fun <T> parse(
+    parser: (ParseStream) -> SynResult<T>,
+    tokens: io.github.kotlinmania.procmacro.TokenStream,
+): SynResult<T> = parse2(parser, TokenStream.fromProcMacro(tokens))
 
 /**
  * Parse a [TokenStream] into the chosen syntax tree node, enforcing that the

@@ -25,31 +25,31 @@ public sealed class Pat : ToTokens {
             parseSingle(input)
 
         /**
- * Parse a pattern that does _not_ involve `|` at the top level.
- *
- * This parser matches the behavior of the `$:patParam` macroRules
- * matcher, and on editions prior to Rust 2021, the behavior of
- * `$:pat`.
- *
- * In Rust syntax, some examples of where this syntax would occur are
- * in the argument pattern of functions and closures. Patterns using
- * `|` are not allowed to occur in these positions.
- *
- * ```kotlin
- * fun f(Some(_) | None: Option<T>) {
- *     val unused = |Some(_) | None: Option<T>| {};
- *     //       ^^^^^^^^^^^^^^^^^^^^^^^^^??? :(
- * }
- * ```
- *
- * ```console
- * error: top-level or-patterns are not allowed in function parameters
- *  --> src/main.rs:1:6
- *   |
- * 1 | fun f(Some(_) | None: Option<T>) {
- *   |      ^^^^^^^^^^^^^^ help: wrap the pattern in parentheses: `(Some(_) | None)`
- * ```
- */
+         * Parse a pattern that does _not_ involve `|` at the top level.
+         *
+         * This parser matches the behavior of the `$:patParam` macroRules
+         * matcher, and on editions prior to Rust 2021, the behavior of
+         * `$:pat`.
+         *
+         * In Rust syntax, some examples of where this syntax would occur are
+         * in the argument pattern of functions and closures. Patterns using
+         * `|` are not allowed to occur in these positions.
+         *
+         * ```kotlin
+         * fun f(Some(_) | None: Option<T>) {
+         *     val unused = |Some(_) | None: Option<T>| {};
+         *     //       ^^^^^^^^^^^^^^^^^^^^^^^^^??? :(
+         * }
+         * ```
+         *
+         * ```console
+         * error: top-level or-patterns are not allowed in function parameters
+         *  --> src/main.rs:1:6
+         *   |
+         * 1 | fun f(Some(_) | None: Option<T>) {
+         *   |      ^^^^^^^^^^^^^^ help: wrap the pattern in parentheses: `(Some(_) | None)`
+         * ```
+         */
         fun parseSingle(input: ParseStream): SynResult<Pat> {
             val begin = input.fork()
             val lookahead = input.lookahead1()
@@ -106,40 +106,40 @@ public sealed class Pat : ToTokens {
             multiPatImpl(input, leadingVert = null)
 
         /**
- * Parse a pattern, possibly involving `|`, possibly including a
- * leading `|`.
- *
- * This parser matches the behavior of the Rust 2021 edition's `$:pat`
- * macroRules matcher.
- *
- * In Rust syntax, an example of where this syntax would occur is in
- * the pattern of a `match` arm, where the language permits an optional
- * leading `|`, although it is not idiomatic to write one there in
- * handwritten code.
- *
- * ```
- * when (wat) {
- *     | None | Some(false) => {}
- *     | Some(true) => {}
- * }
- * ```
- *
- * The compiler accepts it only to facilitate some situations in
- * macro-generated code where a macro author might need to write:
- *
- * ```
- * when ($value) {
- *     $(| $conditions1)* $(| $conditions2)* => $then
- * }
- * ```
- *
- * Expressing the same thing correctly in the case that either one (but
- * not both) of `$conditions1` and `$conditions2` might be empty,
- * without leading `|`, is complex.
- *
- * Use [`Pat::parseMulti`] instead if you are not intending to support
- * macro-generated macro input.
- */
+         * Parse a pattern, possibly involving `|`, possibly including a
+         * leading `|`.
+         *
+         * This parser matches the behavior of the Rust 2021 edition's `$:pat`
+         * macroRules matcher.
+         *
+         * In Rust syntax, an example of where this syntax would occur is in
+         * the pattern of a `match` arm, where the language permits an optional
+         * leading `|`, although it is not idiomatic to write one there in
+         * handwritten code.
+         *
+         * ```
+         * when (wat) {
+         *     | None | Some(false) => {}
+         *     | Some(true) => {}
+         * }
+         * ```
+         *
+         * The compiler accepts it only to facilitate some situations in
+         * macro-generated code where a macro author might need to write:
+         *
+         * ```
+         * when ($value) {
+         *     $(| $conditions1)* $(| $conditions2)* => $then
+         * }
+         * ```
+         *
+         * Expressing the same thing correctly in the case that either one (but
+         * not both) of `$conditions1` and `$conditions2` might be empty,
+         * without leading `|`, is complex.
+         *
+         * Use [`Pat::parseMulti`] instead if you are not intending to support
+         * macro-generated macro input.
+         */
         public fun parseMultiWithLeadingVert(input: ParseStream): SynResult<Pat> {
             val leadingVert =
                 if (input.peek(OrPeek) && !input.peek(OrOrPeek) && !input.peek(OrEqPeek)) {
