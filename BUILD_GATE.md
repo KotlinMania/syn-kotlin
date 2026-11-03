@@ -261,7 +261,7 @@ val swiftExportSmokeTest = tasks.register("swiftExportSmokeTest") {
             ))
         }.assertNormalExitValue()
         execOperations.exec {
-            workingDir = layout.projectDirectory.dir("swift-test-harness").asFile
+            workingDir = layout.projectDirectory.dir("src/swift/swift-test-harness").asFile
             commandLine("swift", "test")
         }.assertNormalExitValue()
     }
@@ -284,7 +284,7 @@ A complete repo also needs:
 
 - **`gradle.properties`** with `kotlin.native.parallelThreads=0` (see [AGENTS.md](file://../AGENTS.md#10-kotlinnative--kotlinjs-gotchas)).
 - **`gradle/npm/karma-webpack/package.json`** — vendored karma-webpack with hardened glob/rimraf/inflight pins (see [JS_SECURITY.md](file://../JS_SECURITY.md)).
-- **`swift-test-harness/Package.swift`** + at least one `Tests/.../*.swift` smoke test that does `import <RepoName>` (see [SWIFT.md](file://../SWIFT.md)).
+- **`src/swift/swift-test-harness/Package.swift`** + at least one `Tests/.../*.swift` smoke test that does `import <RepoName>` (see [SWIFT.md](file://../SWIFT.md)).
 - **`.github/workflows/{ci,codeql,publish,ios,macos,tvos,watchos,android,android-native,linux,windows,js,wasm,swift}.yml`** (triggers and reusable workflows).
 
 ---
@@ -341,7 +341,7 @@ If a target genuinely cannot compile (a real upstream impossibility, not "I don'
 
 2. **`.github/workflows/watchos.yml`** — delete the `compileKotlinWatchosArm32` line from the build step. Keep the three 64-bit `compileKotlinWatchos*` lines and any `watchosSimulatorArm64Test`.
 
-3. **Source sets with `actual` declarations** — delete `src/watchosArm32Main/` and `src/watchosArm32Test/` if either exists. If a repo used per-target `actual` (rather than a shared `watchosMain` actual), those files become orphan dead code after the target is removed. Inventory and delete:
+3. **Source sets with `actual` declarations** — delete `src/apple/watchos/watchosArm32Main/` and `src/watchosArm32Test/` if either exists. If a repo used per-target `actual` (rather than a shared `watchosMain` actual), those files become orphan dead code after the target is removed. Inventory and delete:
 
    ```bash
    find src -maxdepth 3 -type d -name 'watchosArm32*' 2>/dev/null

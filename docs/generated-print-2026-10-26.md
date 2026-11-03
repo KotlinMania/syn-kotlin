@@ -1,6 +1,6 @@
 # Generated print adoption
 
-Complete frozen `tmp/syn/src/print.rs` is emitted by rust-kotlin `c05f97e97314b6a651eff9491e104c323fdce9a3`. All four original top-level items are retained. `src/commonMain/kotlin/io/github/kotlinmania/syn/generated/print/Print.kt` contains the unchanged verified raw body, with only package and provenance lines added. Raw SHA-256: `90ce3bd473173a470d6459241d15b3390cd10b54c6926b45e50718c9af98d7d3`.
+Complete frozen `tmp/syn/src/print.rs` is emitted by rust-kotlin `c05f97e97314b6a651eff9491e104c323fdce9a3`. All four original top-level items are retained. `src/common/commonMain/kotlin/io/github/kotlinmania/syn/generated/print/Print.kt` contains the unchanged verified raw body, with only package and provenance lines added. Raw SHA-256: `90ce3bd473173a470d6459241d15b3390cd10b54c6926b45e50718c9af98d7d3`.
 
 `Print.kt` now supplies only the nullable Option representation and existing ToTokens/lazy Default witnesses. The handwritten matching implementation and DefaultTokens wrapper are removed. All six production uses in Item, Derive and Path call this adapter and execute the generated body. These APIs are internal; no target, FFI or public signature changed. The source Option remains immutable while borrowed; printing can be repeated. Defaults are never evaluated for Some and are newly evaluated on each None call.
 

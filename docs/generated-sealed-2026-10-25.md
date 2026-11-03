@@ -1,7 +1,7 @@
 # Generated sealed.rs adoption
 
 The complete parsing-enabled `tmp/syn/src/sealed.rs` is adopted in
-`src/commonMain/kotlin/io/github/kotlinmania/syn/Sealed.kt`. Its generated body is
+`src/common/commonMain/kotlin/io/github/kotlinmania/syn/Sealed.kt`. Its generated body is
 unchanged except for the existing ktfmt formatting step and package/provenance
 header. No items are excluded. This is the ninth of 55 adopted Syn source files.
 
