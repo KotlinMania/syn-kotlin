@@ -7,37 +7,35 @@ import io.github.kotlinmania.quote.ToTokens
 /**
  * A complete file of Rust source code.
  *
- * Typically `File` objects are created with [`parseFile`].
- *
- * [`parseFile`]: crate::parseFile
+ * Typically `File` objects are created with [parseFile].
  *
  * # Example
  *
- * Parse a Rust source file into a `syn::File` and print out a debug
+ * Parse a Rust source file into a `syn.File` and print out a debug
  * representation of the syntax tree.
  *
- * ```
- * import std.env;
- * import std.fs;
- * import std.process;
- *
+ * ```kotlin
  * fun main() {
- *     var args = env::args();
- *     val unused = args.next(); // executable name
- *
- *     val filename = when ((args.next(), args.next())) {
- *         (Some(filename), None) => filename,
- *         _ => {
- *             eprintln("Usage: dump-syntax path/to/filename.rs");
- *             process::exit(1);
+ *     var args = env.args()
+ *     args.next()
+ *     // executable name
+ *     val filename1 = run {
+ *         val matchVal = Pair(args.next(), args.next())
+ *         when {
+ *             matchVal.first != null && matchVal.second == null -> {
+ *                 val filename = matchVal.first
+ *                 filename
+ *             }
+ *             else -> {
+ *                 println("Usage: dump-syntax path/to/filename.rs")
+ *                 process.exit(1)
+ *             }
  *         }
- *     };
- *
- *     val src = fs::readToString(&filename).expect("unable to read file");
- *     val syntax = syn::parseFile(&src).expect("unable to parse file");
- *
- *     // Debug implementation is available if Syn is built with "extra-traits" feature.
- *     println("{:#?}", syntax);
+ *     }
+ *     val src = fs.readToString(filename1).expect("unable to read file")
+ *     val syntax = parseFile(src).getOrThrow()
+ *     // Debug representation is available on parsed syntax trees.
+ *     println("$syntax")
  * }
  * ```
  *

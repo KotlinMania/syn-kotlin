@@ -25,47 +25,61 @@ internal fun Expr.toTokensAsStmt(tokens: TokenStream) {
  * # Syntax tree enums
  *
  * This type is a syntax tree enum. In Syn this and other syntax tree enums
- * are designed to be traversed using the following rebinding idiom.
+ * are designed to be traversed using a `when` expression over the sealed variants:
  *
- * ```
- * val expr: Expr = / * ... * /;
- * when (expr) {
- *     Expr::MethodCall(expr) => {
- *         / * ... * /
+ * ```kotlin
+ * import syn.Expr
+ *
+ * fun visitExpr(expr: Expr) {
+ *     when (expr) {
+ *         is Expr.MethodCall -> {
+ *             // expr.receiver, expr.args, ...
+ *         }
+ *         is Expr.Cast -> {
+ *             // ...
+ *         }
+ *         is Expr.If -> {
+ *             // expr.cond, expr.thenBranch, expr.elseBranch
+ *         }
+ *         else -> {}
  *     }
- *     Expr::Cast(expr) => {
- *         / * ... * /
- *     }
- *     Expr::If(expr) => {
- *         / * ... * /
- *     }
- *
- *     / * ... * /
+ * }
  * ```
  *
- * We begin with a variable `expr` of type `Expr` that has no fields
- * (because it is an enum), and by matching on it and rebinding a variable
- * with the same name `expr` we effectively imbue our variable with all of
- * the data fields provided by the variant that it turned out to be. So for
- * example above if we ended up in the `MethodCall` case then we get to use
- * `expr.receiver`, `expr.args` etc; if we ended up in the `If` case we get
- * to use `expr.cond`, `expr.thenBranch`, `expr.elseBranch`.
+ * We begin with a variable `expr` of type `Expr`, and by smart-casting on it
+ * in each branch we get direct access to the variant's properties (`expr.receiver`,
+ * `expr.args`, `expr.cond`, `expr.thenBranch`, `expr.elseBranch`, etc.) without
+ * repetitive destructuring:
  *
- * This approach avoids repeating the variant names twice on every line.
+ * ```kotlin
+ * import syn.Expr
  *
- * ```
- * // Repetitive; recommend not doing this.
- * when (expr) {
- *     Expr::MethodCall(ExprMethodCall { method, args, .. }) => {
+ * fun example(expr: Expr) {
+ *     // Repetitive; prefer direct smart-cast property access instead.
+ *     when (expr) {
+ *         is Expr.MethodCall -> {
+ *             val method = expr.method
+ *             val args = expr.args
+ *         }
+ *         else -> {}
+ *     }
+ * }
  * ```
  *
  * In general, the name to which a syntax tree enum variant is bound should
- * be a suitable name for the complete syntax tree enum type.
+ * be a suitable name for the complete syntax tree enum type:
  *
- * ```
- * // Binding is called `base` which is the name I would use if I were
- * // assigning `*discriminant.base` without an `if let`.
- * if val expr::Tuple(base) = *discriminant.base {
+ * ```kotlin
+ * import syn.Expr
+ *
+ * fun example(discriminant: Expr.Field) {
+ *     when (val base = discriminant.base) {
+ *         is Expr.Tuple -> {
+ *             // base.elems
+ *         }
+ *         else -> {}
+ *     }
+ * }
  * ```
  *
  * A sign that you may not be choosing the right variable names is if you
@@ -513,7 +527,7 @@ public sealed class Expr : ToTokens {
     }
 
     /**
-     * A path like `core::mem::replace` possibly containing generic
+     * A path like `core.mem.replace` possibly containing generic
      * parameters and a qualified self-type.
      *
      * A plain identifier like `x` is a path of length 1.
@@ -1843,46 +1857,42 @@ internal value class AllowStruct(
 )
 
 /**
- * An alternative to the primary `Expr::parse` parser (from the [`Parse`]
- * trait) for ambiguous syntactic positions in which a trailing brace
- * should not be taken as part of the expression.
- *
- * [`Parse`]: crate::parse::Parse
+ * An alternative to the primary [ExprParse.parse] parser for ambiguous
+ * syntactic positions in which a trailing brace should not be taken as part of
+ * the expression.
  *
  * Rust grammar has an ambiguity where braces sometimes turn a path
  * expression into a struct initialization and sometimes do not. In the
  * following code, the expression `S {}` is one expression. Presumably
- * there is an empty struct `struct S {}` defined somewhere which it is
+ * there is an empty struct `class S` defined somewhere which it is
  * instantiating.
  *
- * ```
- * val unused = *S {};
- *
+ * ```kotlin
+ * S()
  * // parsed by rustc as: `*(S {})`
  * ```
  *
- * We would want to parse the above using `Expr::parse` after the `=`
+ * We would want to parse the above using [ExprParse.parse] after the `=`
  * token.
  *
  * But in the following, `S {}` is *not* a struct init expression.
  *
- * ```
- * if *S {} {}
- *
+ * ```kotlin
+ * if (s) {}
  * // parsed by rustc as:
  * //
  * //    if (*S) {
- * //        / * empty block * /
+ * //        // empty block
  * //    }
  * //    {
- * //        / * another empty block * /
+ * //        // another empty block
  * //    }
  * ```
  *
  * For that reason we would want to parse if-conditions using
- * `Expr::parseWithoutEagerBrace` after the `if` token. Same for similar
+ * [parseWithoutEagerBrace] after the `if` token. Same for similar
  * syntactic positions such as the condition expr after a `while` token or
- * the expr at the top of a `match`.
+ * the expr at the top of a `when`.
  *
  * The Rust grammar's choices around which way this ambiguity is resolved
  * at various syntactic positions is fairly arbitrary. Really either parse
@@ -1890,9 +1900,8 @@ internal value class AllowStruct(
  * decide each case based on which is more likely to be what the programmer
  * had in mind most of the time.
  *
- * ```
- * if return S {} {}
- *
+ * ```kotlin
+ * if (return S()) {}
  * // parsed by rustc as:
  * //
  * //    if (return (S {})) {
@@ -1927,8 +1936,8 @@ public fun parseWithEarlierBoundaryRule(input: ParseStream): SynResult<Expr> =
  * expressions, notably `return` and `break`. For example `return < …` will
  * never parse `<` as a binary operator regardless of what comes after,
  * because `<` is a legal starting token for an expression and so it's
- * required to be continued as a return value, such as `return <Struct as
- * Trait>::CONST`. Meanwhile `return > …` treats the `>` as a binary
+ * required to be continued as a return value, such as a qualified path
+ * constant. Meanwhile `return > …` treats the `>` as a binary
  * operator because it cannot be a starting token for any Rust expression.
  */
 public fun peek(input: ParseStream): Boolean = peekExpr(input)

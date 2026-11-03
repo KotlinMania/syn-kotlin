@@ -3,7 +3,7 @@ package io.github.kotlinmania.syn
 
 import io.github.kotlinmania.procmacro2.Span
 
-// Like Path::parseModStyle, but accepts keywords in the path.
+// Like Path.parseModStyle, but accepts keywords in the path.
 public fun parseMetaPath(input: ParseStream): SynResult<Path> {
     val leadingColon =
         if (input.peek(PathSepPeek)) {
@@ -35,25 +35,23 @@ public fun parseMetaPath(input: ParseStream): SynResult<Path> {
 }
 
 /**
- * Make a parser that is usable with `parseMacroInput!` in a
- * `` macro.
+ * Make a parser that is usable with `parseMacroInput` in a
+ * `@ProcMacroAttribute` macro.
  *
  * *Warning:* When parsing attribute args **other than** the
- * `procMacro::TokenStream` input of a `procMacroAttribute`, you do **not**
+ * `procMacro.TokenStream` input of a `procMacroAttribute`, you do **not**
  * need this function. In several cases your callers will get worse error
  * messages if you use this function, because the surrounding delimiter's span
  * is concealed from attribute macros by rustc. Use
- * [`Attribute::parseNestedMeta`] instead.
- *
- * [`Attribute::parseNestedMeta`]: crate::Attribute::parseNestedMeta
+ * [Attribute.parseNestedMeta] instead.
  *
  * # Example
  *
  * This example implements an attribute macro whose invocations look like this:
  *
- * ```
- *
- * struct Picard {...}
+ * ```kotlin
+ * @tea(kind = "EarlGrey", hot)
+ * public open class Picard
  * ```
  *
  * The "parameters" supported by the attribute are:
@@ -62,47 +60,48 @@ public fun parseMetaPath(input: ParseStream): SynResult<Path> {
  * - `hot`
  * - `with(sugar, milk, ...)`, a comma-separated list of ingredients
  *
- * ```
- * import procMacro.TokenStream;
- * import syn..parseMacroInput, LitStr, Path};
+ * ```kotlin
+ * import procmacro.TokenStream
+ * import syn.LitStr
+ * import syn.Path
+ * import syn.SynResult
+ * import syn.parseMacroInput
  *
- *
- * public fun tea(args: TokenStream, input: TokenStream) -> TokenStream {
- *     var kind: Option<LitStr> = None;
- *     var hot: bool = false;
- *     var with: Vec<Path> = Vec::new();
- *     val teaParser = syn::meta::parser(|meta| {
- *         if meta.path.isIdent("kind") {
- *             kind = Some(meta.value()?.parse()?);
- *             Ok(())
- *         } else if meta.path.isIdent("hot") {
- *             hot = true;
- *             Ok(())
- *         } else if meta.path.isIdent("with") {
- *             meta.parseNestedMeta(|meta| {
- *                 with.push(meta.path);
- *                 Ok(())
+ * @ProcMacroAttribute
+ * fun tea(args: TokenStream, input: TokenStream): TokenStream {
+ *     var kind: LitStr? = null
+ *     var hot: Boolean = false
+ *     var with: MutableList<Path> = mutableListOf()
+ *     val teaParser = parser(closure@{ meta ->
+ *         if (meta.path.isIdent("kind")) {
+ *             kind = meta.value().getOrElse { return@closure SynResult.failure(it) }.parse(LitStr::parse).getOrElse { return@closure SynResult.failure(it) }
+ *             SynResult.success(Unit)
+ *         } else if (meta.path.isIdent("hot")) {
+ *             hot = true
+ *             SynResult.success(Unit)
+ *         } else if (meta.path.isIdent("with")) {
+ *             meta.parseNestedMeta({ meta ->
+ *                 with.add(meta.path)
+ *                 SynResult.success(Unit)
  *             })
  *         } else {
- *             Err(meta.error("unsupported tea property"))
+ *             SynResult.failure(meta.error("unsupported tea property"))
  *         }
- *     });
- *
- *     parseMacroInput(args with teaParser);
- *     eprintln("kind={kind:?} hot={hot} with={with:?}");
- *
- *     / * ... * /
+ *     })
+ *     parseMacroInput(args, with, teaParser)
+ *     println("kind=$kind hot=$hot with=$with")
+ *     // ...
  * }
  * ```
  *
- * The `syn::meta` library will take care of dealing with the commas including
+ * The `syn.meta` library will take care of dealing with the commas including
  * trailing commas, and producing sensible error messages on unexpected input.
  *
  * ```console
  * error: expected `,`
  *  --> src/main.rs:3:37
  *   |
- * 3 |
+ * 3 | @tea(kind = "EarlGrey", with(sugar = "lol", milk))
  *   |                                     ^
  * ```
  *
@@ -110,35 +109,36 @@ public fun parseMetaPath(input: ParseStream): SynResult<Path> {
  *
  * Same as above but we factor out most of the logic into a separate function.
  *
- * ```
- * import procMacro.TokenStream;
- * import syn.meta.ParseNestedMeta;
- * import syn.parse..Parser, Result};
- * import syn..parseMacroInput, LitStr, Path};
+ * ```kotlin
+ * import procmacro.TokenStream
+ * import syn.LitStr
+ * import syn.Path
+ * import syn.SynResult
+ * import syn.meta.ParseNestedMeta
+ * import syn.parseMacroInput
  *
- *
- * public fun tea(args: TokenStream, input: TokenStream) -> TokenStream {
- *     var attrs = TeaAttributes::default();
- *     val teaParser = syn::meta::parser(|meta| attrs.parse(meta));
- *     parseMacroInput(args with teaParser);
- *
- *     / * ... * /
+ * @ProcMacroAttribute
+ * fun tea(args: TokenStream, input: TokenStream): TokenStream {
+ *     var attrs = TeaAttributes.default()
+ *     val teaParser = parser({ meta -> attrs.parse(meta) })
+ *     parseMacroInput(args, with, teaParser)
+ *     // ...
+ *     return TokenStream.new()
  * }
  *
- *
- * struct TeaAttributes {
- *     kind: Option<LitStr>,
- *     hot: bool,
- *     with: Vec<Path>,
- * }
- *
- * class TeaAttributes {
- *     fun parse(&mut self, meta: ParseNestedMeta) -> Result<()> {
- *         if meta.path.isIdent("kind") {
- *             self.kind = Some(meta.value()?.parse()?);
- *             Ok(())
- *         } else / * just like in last example * /
- *
+ * open class TeaAttributes(
+ *     public var kind: LitStr?,
+ *     public var hot: Boolean,
+ *     public var with: List<Path>,
+ * ) {
+ *     public open fun parse(meta: ParseNestedMeta): SynResult<Unit> {
+ *         return if (meta.path.isIdent("kind")) {
+ *             this.kind = meta.value().getOrElse { return SynResult.failure(it) }.parse(LitStr::parse).getOrElse { return SynResult.failure(it) }
+ *             SynResult.success(Unit)
+ *         } else {
+ *             // just like in last example
+ *             SynResult.success(Unit)
+ *         }
  *     }
  * }
  * ```
@@ -163,20 +163,17 @@ public fun metaParser(logic: (ParseNestedMeta) -> SynResult<Unit>): (ParseStream
  *
  * Refer to usage examples on the following two entry-points:
  *
- * - [`Attribute::parseNestedMeta`] if you have an entire `Attribute` to
+ * - [Attribute.parseNestedMeta] if you have an entire `Attribute` to
  *   parse. Always use this if possible. Generally this is able to produce
  *   better error messages because `Attribute` holds span information for all
  *   of the delimiters therein.
  *
- * - [`syn::meta::parser`] if you are implementing a `procMacroAttribute`
+ * - [parser] if you are implementing a `procMacroAttribute`
  *   macro and parsing the arguments to the attribute macro, i.e. the ones
  *   written in the same attribute that dispatched the macro invocation. Rustc
  *   does not pass span information for the surrounding delimiters into the
  *   attribute macro invocation in this situation, so error messages might be
  *   less precise.
- *
- * [`Attribute::parseNestedMeta`]: crate::Attribute::parseNestedMeta
- * [`syn::meta::parser`]: crate::meta::parser
  */
 public class ParseNestedMeta(
     public val path: Path,
@@ -187,31 +184,37 @@ public class ParseNestedMeta(
      *
      * All it does is advance `meta.input` past the `=` sign in the input. You
      * could accomplish the same effect by writing
-     * `meta.parse::<token[=]>()?`, so at most it is a minor convenience to
-     * use `meta.value()?`.
+     * `meta.parse<Eq>()`, so at most it is a minor convenience to
+     * use `meta.value()`.
      *
      * # Example
      *
-     * ```
-     * import syn..parseQuote, Attribute, LitStr};
+     * ```kotlin
+     * import syn.Attribute
+     * import syn.LitStr
+     * import syn.SynResult
+     * import syn.parseQuote
      *
-     * val attr: Attribute = parseQuote{
-     *
-     * };
-     *                                          // conceptually:
-     * if attr.path().isIdent("tea") {         // this parses the `tea`
-     *     attr.parseNestedMeta(|meta| {      // this parses the `(`
-     *         if meta.path.isIdent("kind") {  // this parses the `kind`
-     *             val value = meta.value()?;   // this parses the `=`
-     *             val s: LitStr = value.parse()?;  // this parses `"EarlGrey"`
-     *             if s.value() == "EarlGrey" {
+     * val attr: Attribute = parseQuote("@tea(kind = \"EarlGrey\")")
+     * // conceptually:
+     * if (attr.path().isIdent("tea")) {
+     *     // this parses the `tea`
+     *     attr.parseNestedMeta(closure@{ meta ->
+     *         // this parses the `(`
+     *         if (meta.path.isIdent("kind")) {
+     *             // this parses the `kind`
+     *             val value = meta.value().getOrElse { return@closure SynResult.failure(it) }
+     *             // this parses the `=`
+     *             val s: LitStr = value.parse(LitStr::parse).getOrElse { return@closure SynResult.failure(it) }
+     *             // this parses `"EarlGrey"`
+     *             if (s.value() == "EarlGrey") {
      *                 // ...
      *             }
-     *             Ok(())
+     *             SynResult.success(Unit)
      *         } else {
-     *             Err(meta.error("unsupported attribute"))
+     *             SynResult.failure(meta.error("unsupported attribute"))
      *         }
-     *     })?;
+     *     }).getOrElse { return SynResult.failure(it) }
      * }
      * ```
      */
@@ -227,30 +230,30 @@ public class ParseNestedMeta(
      *
      * # Example
      *
-     * ```
-     * import syn..parseQuote, Attribute};
+     * ```kotlin
+     * import syn.Attribute
+     * import syn.SynResult
+     * import syn.parseQuote
      *
-     * val attr: Attribute = parseQuote{
-     *
-     * };
-     *
-     * if attr.path().isIdent("tea") {
-     *     attr.parseNestedMeta(|meta| {
-     *         if meta.path.isIdent("with") {
-     *             meta.parseNestedMeta(|meta| {  // <---
-     *                 if meta.path.isIdent("sugar") {
+     * val attr: Attribute = parseQuote("@tea(with(sugar, milk))")
+     * if (attr.path().isIdent("tea")) {
+     *     attr.parseNestedMeta({ meta ->
+     *         if (meta.path.isIdent("with")) {
+     *             meta.parseNestedMeta({ meta ->
+     *                 // <---
+     *                 if (meta.path.isIdent("sugar")) {
      *                     // Here we can go even deeper if needed.
-     *                     Ok(())
-     *                 } else if meta.path.isIdent("milk") {
-     *                     Ok(())
+     *                     SynResult.success(Unit)
+     *                 } else if (meta.path.isIdent("milk")) {
+     *                     SynResult.success(Unit)
      *                 } else {
-     *                     Err(meta.error("unsupported ingredient"))
+     *                     SynResult.failure(meta.error("unsupported ingredient"))
      *                 }
      *             })
      *         } else {
-     *             Err(meta.error("unsupported tea property"))
+     *             SynResult.failure(meta.error("unsupported tea property"))
      *         }
-     *     })?;
+     *     }).getOrElse { return SynResult.failure(it) }
      * }
      * ```
      *
@@ -262,25 +265,25 @@ public class ParseNestedMeta(
      * arbitrary tokens within those parentheses so for the crazier stuff,
      * `parseNestedMeta` is not what you want.
      *
-     * ```
-     * import syn..parenthesized, parseQuote, Attribute, LitInt};
+     * ```kotlin
+     * import syn.Attribute
+     * import syn.LitInt
+     * import syn.SynResult
+     * import syn.parenthesized
+     * import syn.parseQuote
      *
-     * val attr: Attribute = parseQuote{
-     *
-     * };
-     *
-     * var align: Option<LitInt> = None;
-     * if attr.path().isIdent("repr") {
-     *     attr.parseNestedMeta(|meta| {
-     *         if meta.path.isIdent("align") {
-     *             val content;
-     *             parenthesized(content in meta.input);
-     *             align = Some(content.parse()?);
-     *             Ok(())
+     * val attr: Attribute = parseQuote("@repr(align(32))")
+     * var align: LitInt? = null
+     * if (attr.path().isIdent("repr")) {
+     *     attr.parseNestedMeta(closure@{ meta ->
+     *         if (meta.path.isIdent("align")) {
+     *             val content = parenthesized(meta.input).getOrElse { return@closure SynResult.failure(it) }.content
+     *             align = content.parse(LitInt::parse).getOrElse { return@closure SynResult.failure(it) }
+     *             SynResult.success(Unit)
      *         } else {
-     *             Err(meta.error("unsupported repr"))
+     *             SynResult.failure(meta.error("unsupported repr"))
      *         }
-     *     })?;
+     *     }).getOrElse { return SynResult.failure(it) }
      * }
      * ```
      */
@@ -300,73 +303,85 @@ public class ParseNestedMeta(
      * There are 2 ways you might call this. First, if `meta.path` is not
      * something you recognize:
      *
-     * ```
-     * attr.parseNestedMeta(|meta| {
-     *     if meta.path.isIdent("kind") {
+     * ```kotlin
+     * attr.parseNestedMeta({ meta ->
+     *     if (meta.path.isIdent("kind")) {
      *         // ...
-     *         Ok(())
+     *         SynResult.success(Unit)
      *     } else {
-     *         Err(meta.error("unsupported tea property"))
+     *         SynResult.failure(meta.error("unsupported tea property"))
      *     }
-     * })?;
+     * }).getOrElse { return SynResult.failure(it) }
      * ```
      *
      * In this case, it behaves exactly like
-     * `syn::Error::newSpanned(&meta.path, "message...")`.
+     * `SynError.newSpanned(meta.path, "message...")`.
      *
      * ```console
      * error: unsupported tea property
      *  --> src/main.rs:3:26
      *   |
-     * 3 |
+     * 3 | @tea(kind = "EarlGrey", wat = "foo")
      *   |                          ^^^
      * ```
      *
      * More usefully, the second place is if you've already parsed a value but
      * have decided not to accept the value:
      *
-     * ```
-     * import syn.Expr;
+     * ```kotlin
+     * import syn.Attribute
+     * import syn.Expr
+     * import syn.SynResult
      *
-     * attr.parseNestedMeta(|meta| {
-     *     if meta.path.isIdent("kind") {
-     *         val expr: Expr = meta.value()?.parse()?;
-     *         when (expr) {
-     *             Expr::Lit(expr) => / * ... * /
-     *             Expr::Path(expr) => / * ... * /
-     *             Expr::Macro(expr) => / * ... * /
-     *             _ => Err(meta.error("tea kind must be a string literal, path, or macro")),
+     * fun example(attr: Attribute): SynResult<Unit> {
+     *     attr.parseNestedMeta(closure@{ meta ->
+     *         if (meta.path.isIdent("kind")) {
+     *             val expr: Expr = meta.value().getOrElse { return@closure SynResult.failure(it) }.parse(Expr::parse).getOrElse { return@closure SynResult.failure(it) }
+     *             when (expr) {
+     *                 is Expr.Lit -> SynResult.success(Unit)
+     *                 is Expr.Path -> SynResult.success(Unit)
+     *                 is Expr.Macro -> SynResult.success(Unit)
+     *                 else -> SynResult.failure(meta.error("tea kind must be a string literal, path, or macro"))
+     *             }
+     *         } else {
+     *             SynResult.success(Unit)
      *         }
-     *     } else / * as above * /
-     *
-     * })?;
+     *     }).getOrElse { return SynResult.failure(it) }
+     *     return SynResult.success(Unit)
+     * }
      * ```
      *
      * ```console
      * error: tea kind must be a string literal, path, or macro
      *  --> src/main.rs:3:7
      *   |
-     * 3 |
+     * 3 | @tea(kind = async { replicator.await })
      *   |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
      * ```
      *
-     * Often you may want to use `syn::Error::newSpanned` even in this
+     * Often you may want to use `SynError.newSpanned` even in this
      * situation. In the above code, that would be:
      *
-     * ```
-     *     when (expr) {
-     *         Expr::Lit(expr) => / * ... * /
-     *         Expr::Path(expr) => / * ... * /
-     *         Expr::Macro(expr) => / * ... * /
-     *         _ => Err(Error::newSpanned(expr, "unsupported expression type for `kind`")),
+     * ```kotlin
+     * import syn.Expr
+     * import syn.SynError
+     * import syn.SynResult
+     *
+     * fun example(expr: Expr): SynResult<Unit> {
+     *     return when (expr) {
+     *         is Expr.Lit -> SynResult.success(Unit)
+     *         is Expr.Path -> SynResult.success(Unit)
+     *         is Expr.Macro -> SynResult.success(Unit)
+     *         else -> SynResult.failure(SynError.newSpanned(expr, "unsupported expression type for `kind`"))
      *     }
+     * }
      * ```
      *
      * ```console
      * error: unsupported expression type for `kind`
      *  --> src/main.rs:3:14
      *   |
-     * 3 |
+     * 3 | @tea(kind = async { replicator.await })
      *   |              ^^^^^^^^^^^^^^^^^^^^^^^^^^
      * ```
      */

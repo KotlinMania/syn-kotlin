@@ -11,9 +11,9 @@ import io.github.kotlinmania.quote.ToTokens
 import io.github.kotlinmania.quote.append
 
 /**
- * A Rust scope: `'a`.
+ * A Rust scope token.
  *
- * scope names must conform to the following rules:
+ * Scope names must conform to the following rules:
  *
  * - Must start with an apostrophe.
  * - Must not consist of just an apostrophe: `'`.
@@ -31,12 +31,13 @@ public data class Lifetime(
         /**
          * # Panics
          *
-         * Panics if the scope does not conform to the bulleted rules above.
+         * Throws an `IllegalArgumentException` if the scope does not conform
+         * to the bulleted rules above.
          *
          * # Invocation
          *
-         * ```
-         * scope::new("'a", Span::callSite())
+         * ```kotlin
+         * Lifetime.new(symbol, Span.callSite())
          * ```
          */
         public fun new(symbol: String, span: Span): Lifetime {

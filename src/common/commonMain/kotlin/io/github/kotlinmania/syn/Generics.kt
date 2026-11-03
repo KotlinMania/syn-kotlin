@@ -138,16 +138,18 @@ public data class Generics(
     }
 
     /**
-     * Split a type's generics into the pieces required for implementation'ing a trait
+     * Split a type's generics into the pieces required for implementing a trait
      * for that type.
      *
-     * ```
-     * let (implGenerics, tyGenerics, whereClause) = generics.splitForImpl();
-     * quote{
-     *     class #name #tyGenerics #whereClause : #implGenerics MyTrait {
-     *         // ...
-     *     }
-     * }
+     * ```kotlin
+     * val (implGenerics, tyGenerics, whereClause) = generics.splitForImpl()
+     * quote(
+     *     "impl `#`implGenerics MyTrait for `#`name `#`tyGenerics `#`whereClause {}",
+     *     "implGenerics" to implGenerics,
+     *     "name" to name,
+     *     "tyGenerics" to tyGenerics,
+     *     "whereClause" to whereClause,
+     * )
      * ```
      */
     public fun splitForImpl(): SplitForImpl =
@@ -255,7 +257,7 @@ public class ConstParamsMut(
 }
 
 /**
- * Returned by `Generics::splitForImpl`.
+ * Returned by [Generics.splitForImpl].
  */
 public data class ImplGenerics(
     public var generics: Generics,
@@ -275,7 +277,7 @@ public data class ImplGenerics(
 }
 
 /**
- * Returned by `Generics::splitForImpl`.
+ * Returned by [Generics.splitForImpl].
  */
 public data class TypeGenerics(
     public var generics: Generics,
@@ -290,7 +292,7 @@ public data class TypeGenerics(
         get() = generics.gtToken
 
     /**
-     * Turn a type's generics like `<X, Y>` into a turbofish like `::<X, Y>`.
+     * Turn a type's generics like `<X, Y>` into a turbofish generic argument list.
      */
     public fun asTurbofish(): Turbofish =
         Turbofish(generics)
@@ -304,7 +306,7 @@ public data class TypeGenerics(
 }
 
 /**
- * Returned by `TypeGenerics::asTurbofish`.
+ * Returned by [TypeGenerics.asTurbofish].
  */
 public data class Turbofish(
     public var generics: Generics,
@@ -506,13 +508,11 @@ private fun printGenericParams(params: GenericParamList, tokens: TokenStream) {
 
 /**
  * A generic type parameter, scope, or const generic: `T: Into<String>`,
- * `'a: `, `const LEN: Int`.
+ * `a: b`, `const LEN: Int`.
  *
  * # Syntax tree enum
  *
- * This type is a [syntax tree enum].
- *
- * [syntax tree enum]: crate::expr::Expr#syntax-tree-enums
+ * This type is a syntax tree enum; see [Expr].
  */
 public sealed class GenericParam : ToTokens {
     public abstract fun deepCopy(): GenericParam
@@ -791,9 +791,7 @@ internal fun printConstArgument(expr: Expr, tokens: TokenStream) {
  *
  * # Syntax tree enum
  *
- * This type is a [syntax tree enum].
- *
- * [syntax tree enum]: crate::expr::Expr#syntax-tree-enums
+ * This type is a syntax tree enum; see [Expr].
  */
 public sealed class WherePredicate : ToTokens {
     public abstract fun deepCopy(): WherePredicate

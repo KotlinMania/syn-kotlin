@@ -9,13 +9,28 @@ import io.github.kotlinmania.procmacro2.TokenStream
 import io.github.kotlinmania.procmacro2.TokenTree
 
 /**
- * Additional methods for `Ident` not provided by proc-macro2 or libprocMacro.
+ * Additional methods for `Ident` not provided by `proc-macro2`.
  *
  * This trait is sealed and cannot be implemented for types outside of Syn. It
- * is implemented only for `procMacro2::Ident`.
+ * is implemented only for `procmacro2.Ident`.
  */
 public sealed interface IdentExt {
-    /** Strips the raw marker prefix, if any, from the beginning of an identifier. */
+    /**
+     * Strips the raw marker prefix, if any, from the beginning of an identifier.
+     *
+     * # Example
+     *
+     * ```kotlin
+     * import procmacro2.Span
+     * import syn.Ident
+     * import syn.unraw
+     *
+     * fun identForGetter(variable: Ident): Ident {
+     *     val getter = "pyo3Get${variable.unraw()}"
+     *     return Ident.new(getter, Span.callSite())
+     * }
+     * ```
+     */
     public fun unraw(): Ident
 }
 
@@ -29,6 +44,24 @@ internal class IdentExtImpl(
  * Parses any identifier including keywords.
  *
  * This is useful when parsing macro input which allows keywords as identifiers.
+ *
+ * # Example
+ *
+ * ```kotlin
+ * import syn.Ident
+ * import syn.SynResult
+ * import syn.parse.ParseStream
+ * import syn.parseAny
+ *
+ * // Parses input that looks like `name = NAME` where `NAME` can be
+ * // any identifier.
+ * fun parseDsl(input: ParseStream): SynResult<Ident> {
+ *     NameParse.parse(input).getOrElse { return SynResult.failure(it) }
+ *     EqParse.parse(input).getOrElse { return SynResult.failure(it) }
+ *     val name = input.call(Ident::parseAny).getOrElse { return SynResult.failure(it) }
+ *     return SynResult.success(name)
+ * }
+ * ```
  */
 public fun Ident.Companion.parseAny(input: ParseStream): SynResult<Ident> =
     identParseAny(input)

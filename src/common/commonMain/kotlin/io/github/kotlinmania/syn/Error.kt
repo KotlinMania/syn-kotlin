@@ -104,12 +104,45 @@ public sealed class SynResult<out T> {
  * `compileError` in the generated code. This produces a better diagnostic
  * message than simply panicking the macro.
  *
- * When parsing macro input, the `parseMacroInput` helper handles the
+ * When parsing macro input, the [parseMacroInput] helper handles the
  * conversion to `compileError` automatically.
  *
+ * ```kotlin
+ * import procmacro2.TokenStream
+ * import syn.ItemFn
+ * import syn.SynResult
+ * import syn.parse.Parse
+ * import syn.parse.ParseStream
+ * import syn.parseMacroInput
+ *
+ * @ProcMacroAttribute
+ * public fun myAttr(args: TokenStream, input: TokenStream): TokenStream {
+ *     val parsedArgs = parseMacroInput((args as MyAttrArgs))
+ *     val parsedInput = parseMacroInput((input as ItemFn))
+ *     // ...
+ * }
+ *
+ * public open class MyAttrArgs : Parse<MyAttrArgs> {
+ *     public companion object {
+ *         public fun parse(input: ParseStream): SynResult<MyAttrArgs> {
+ *             // ...
+ *         }
+ *     }
+ * }
+ * ```
+ *
  * For errors that arise later than the initial parsing stage, the
- * `toCompileError` or `intoCompileError` methods can be used to perform an
+ * [toCompileError] or [intoCompileError] methods can be used to perform an
  * explicit conversion to `compileError`.
+ *
+ * ```kotlin
+ * @ProcMacroDerive(MyDerive)
+ * fun myDerive(input: TokenStream): TokenStream {
+ *     val deriveInput = parseMacroInput((input as DeriveInput))
+ *     // (DeriveInput) -> SynResult<TokenStream>
+ *     return expand(deriveInput).getOrElse { it.intoCompileError() }
+ * }
+ * ```
  */
 public class SynError private constructor(
     messages: List<ErrorMessage>,
@@ -126,12 +159,37 @@ public class SynError private constructor(
 
     public companion object {
         /**
-         * Usually the `ParseStream.error` method will be used instead, which
+         * Usually the [ParseStream.error] method will be used instead, which
          * automatically uses the correct span from the current position of the
          * parse stream.
          *
          * Use `SynError.new` when the error needs to be triggered on some span
          * other than where the parse stream is currently positioned.
+         *
+         * # Example
+         *
+         * ```kotlin
+         * import syn.Ident
+         * import syn.LitStr
+         * import syn.SynError
+         * import syn.SynResult
+         * import syn.parse.ParseStream
+         *
+         * // Parses input that looks like `name = "string"` where the key must be
+         * // the identifier `name` and the value may be any string literal.
+         * // Returns the string literal.
+         * fun parseName(input: ParseStream): SynResult<LitStr> {
+         *     val nameToken: Ident = input.parse(Ident::parse).getOrElse { return SynResult.failure(it) }
+         *     if (nameToken != "name") {
+         *         // Trigger an error not on the current position of the stream,
+         *         // but on the position of the unexpected identifier.
+         *         return SynResult.failure(SynError.new(nameToken.span(), "expected `name`"))
+         *     }
+         *     input.parse(Eq::parse).getOrElse { return SynResult.failure(it) }
+         *     val s: LitStr = input.parse(LitStr::parse).getOrElse { return SynResult.failure(it) }
+         *     return SynResult.success(s)
+         * }
+         * ```
          */
         public fun new(span: Span, message: String): SynError =
             SynError(
@@ -204,8 +262,8 @@ public class SynError private constructor(
     /**
      * The source location of the error.
      *
-     * Spans are not thread-safe so this function returns `Span::callSite()`
-     * if called from a different thread than the one on which the `Error` was
+     * Spans are not thread-safe so this function returns `Span.callSite()`
+     * if called from a different thread than the one on which the `SynError` was
      * originally created.
      */
     public fun span(): Span {
@@ -216,7 +274,7 @@ public class SynError private constructor(
     /**
      * Render the error as an invocation of `compileError`.
      *
-     * The `parseMacroInput` helper provides a convenient way to invoke this
+     * The [parseMacroInput] helper provides a convenient way to invoke this
      * method correctly from a procedural-macro handler.
      */
     public fun toCompileError(): TokenStream {
@@ -228,31 +286,25 @@ public class SynError private constructor(
     }
 
     /**
-     * Render the error as an invocation of [`compileError!`].
-     *
-     * [`compileError!`]: core::compileError!
+     * Render the error as an invocation of `compileError`.
      *
      * # Example
      *
-     * ```
-     * import procMacro.TokenStream;
-     * import syn..parseMacroInput, DeriveInput, Error};
+     * ```kotlin
+     * import procmacro2.TokenStream
+     * import syn.DeriveInput
+     * import syn.SynError
+     * import syn.SynResult
+     * import syn.parseMacroInput
      *
-     *
-     * public fun deriveMyTrait(input: TokenStream) -> TokenStream {
-     *     val input = parseMacroInput(input as DeriveInput);
-     *     myTrait::expand(input)
-     *         .unwrapOrElse(Error::intoCompileError)
-     *         .into()
+     * @ProcMacroDerive(MyTrait)
+     * fun deriveMyTrait(input: TokenStream): TokenStream {
+     *     val parsedInput = parseMacroInput((input as DeriveInput))
+     *     return expand(parsedInput).getOrElse(SynError::intoCompileError)
      * }
      *
-     * mod myTrait {
-     *     import procMacro2.TokenStream;
-     *     import syn..DeriveInput, Result};
-     *
-     *     public fun expand(input: DeriveInput) -> Result<TokenStream> {
-     *         / * ... * /
-     *     }
+     * internal fun expand(input: DeriveInput): SynResult<TokenStream> {
+     *     // ...
      * }
      * ```
      */

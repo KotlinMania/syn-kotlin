@@ -109,9 +109,7 @@ private fun repeatedSpans(span: Span, count: Int): List<Span> =
  * Usage:
  *
  * Don't try to remember the name of this type &mdash; use the
- * [`Token!`] macro instead.
- *
- * [`Token!`]: crate::token
+ * [Token] type definitions in `io.github.kotlinmania.syn.token` instead.
  */
 class Underscore private constructor(
     spans: List<Span>,
@@ -260,9 +258,7 @@ class Paren private constructor(
 /**
  *
  * Don't try to remember the name of this type &mdash; use the
- * [`Token!`] macro instead.
- *
- * [`Token!`]: crate::token
+ * [Token] type definitions in `io.github.kotlinmania.syn.token` instead.
  */
 class Abstract private constructor(
     span: Span,
@@ -281,9 +277,7 @@ class Abstract private constructor(
 /**
  *
  * Don't try to remember the name of this type &mdash; use the
- * [`Token!`] macro instead.
- *
- * [`Token!`]: crate::token
+ * [Token] type definitions in `io.github.kotlinmania.syn.token` instead.
  */
 class As private constructor(
     span: Span,
@@ -302,9 +296,7 @@ class As private constructor(
 /**
  *
  * Don't try to remember the name of this type &mdash; use the
- * [`Token!`] macro instead.
- *
- * [`Token!`]: crate::token
+ * [Token] type definitions in `io.github.kotlinmania.syn.token` instead.
  */
 class Async private constructor(
     span: Span,
@@ -323,9 +315,7 @@ class Async private constructor(
 /**
  *
  * Don't try to remember the name of this type &mdash; use the
- * [`Token!`] macro instead.
- *
- * [`Token!`]: crate::token
+ * [Token] type definitions in `io.github.kotlinmania.syn.token` instead.
  */
 class Auto private constructor(
     span: Span,
@@ -344,9 +334,7 @@ class Auto private constructor(
 /**
  *
  * Don't try to remember the name of this type &mdash; use the
- * [`Token!`] macro instead.
- *
- * [`Token!`]: crate::token
+ * [Token] type definitions in `io.github.kotlinmania.syn.token` instead.
  */
 class Await private constructor(
     span: Span,
@@ -365,9 +353,7 @@ class Await private constructor(
 /**
  *
  * Don't try to remember the name of this type &mdash; use the
- * [`Token!`] macro instead.
- *
- * [`Token!`]: crate::token
+ * [Token] type definitions in `io.github.kotlinmania.syn.token` instead.
  */
 class Become private constructor(
     span: Span,
@@ -386,9 +372,7 @@ class Become private constructor(
 /**
  *
  * Don't try to remember the name of this type &mdash; use the
- * [`Token!`] macro instead.
- *
- * [`Token!`]: crate::token
+ * [Token] type definitions in `io.github.kotlinmania.syn.token` instead.
  */
 class Box private constructor(
     span: Span,
@@ -407,9 +391,7 @@ class Box private constructor(
 /**
  *
  * Don't try to remember the name of this type &mdash; use the
- * [`Token!`] macro instead.
- *
- * [`Token!`]: crate::token
+ * [Token] type definitions in `io.github.kotlinmania.syn.token` instead.
  */
 class Break private constructor(
     span: Span,
@@ -428,9 +410,7 @@ class Break private constructor(
 /**
  *
  * Don't try to remember the name of this type &mdash; use the
- * [`Token!`] macro instead.
- *
- * [`Token!`]: crate::token
+ * [Token] type definitions in `io.github.kotlinmania.syn.token` instead.
  */
 class Const private constructor(
     span: Span,
@@ -449,9 +429,7 @@ class Const private constructor(
 /**
  *
  * Don't try to remember the name of this type &mdash; use the
- * [`Token!`] macro instead.
- *
- * [`Token!`]: crate::token
+ * [Token] type definitions in `io.github.kotlinmania.syn.token` instead.
  */
 class Continue private constructor(
     span: Span,
@@ -470,9 +448,7 @@ class Continue private constructor(
 /**
  *
  * Don't try to remember the name of this type &mdash; use the
- * [`Token!`] macro instead.
- *
- * [`Token!`]: crate::token
+ * [Token] type definitions in `io.github.kotlinmania.syn.token` instead.
  */
 class Crate private constructor(
     span: Span,
@@ -491,9 +467,7 @@ class Crate private constructor(
 /**
  *
  * Don't try to remember the name of this type &mdash; use the
- * [`Token!`] macro instead.
- *
- * [`Token!`]: crate::token
+ * [Token] type definitions in `io.github.kotlinmania.syn.token` instead.
  */
 class Default private constructor(
     span: Span,
@@ -512,9 +486,7 @@ class Default private constructor(
 /**
  *
  * Don't try to remember the name of this type &mdash; use the
- * [`Token!`] macro instead.
- *
- * [`Token!`]: crate::token
+ * [Token] type definitions in `io.github.kotlinmania.syn.token` instead.
  */
 class Do private constructor(
     span: Span,
@@ -533,9 +505,7 @@ class Do private constructor(
 /**
  *
  * Don't try to remember the name of this type &mdash; use the
- * [`Token!`] macro instead.
- *
- * [`Token!`]: crate::token
+ * [Token] type definitions in `io.github.kotlinmania.syn.token` instead.
  */
 class Dyn private constructor(
     span: Span,
@@ -554,9 +524,7 @@ class Dyn private constructor(
 /**
  *
  * Don't try to remember the name of this type &mdash; use the
- * [`Token!`] macro instead.
- *
- * [`Token!`]: crate::token
+ * [Token] type definitions in `io.github.kotlinmania.syn.token` instead.
  */
 class Else private constructor(
     span: Span,
@@ -575,9 +543,7 @@ class Else private constructor(
 /**
  *
  * Don't try to remember the name of this type &mdash; use the
- * [`Token!`] macro instead.
- *
- * [`Token!`]: crate::token
+ * [Token] type definitions in `io.github.kotlinmania.syn.token` instead.
  */
 class Enum private constructor(
     span: Span,
@@ -596,9 +562,7 @@ class Enum private constructor(
 /**
  *
  * Don't try to remember the name of this type &mdash; use the
- * [`Token!`] macro instead.
- *
- * [`Token!`]: crate::token
+ * [Token] type definitions in `io.github.kotlinmania.syn.token` instead.
  */
 class Extern private constructor(
     span: Span,
@@ -617,9 +581,7 @@ class Extern private constructor(
 /**
  *
  * Don't try to remember the name of this type &mdash; use the
- * [`Token!`] macro instead.
- *
- * [`Token!`]: crate::token
+ * [Token] type definitions in `io.github.kotlinmania.syn.token` instead.
  */
 class Final private constructor(
     span: Span,
@@ -638,9 +600,7 @@ class Final private constructor(
 /**
  *
  * Don't try to remember the name of this type &mdash; use the
- * [`Token!`] macro instead.
- *
- * [`Token!`]: crate::token
+ * [Token] type definitions in `io.github.kotlinmania.syn.token` instead.
  */
 class Fn private constructor(
     span: Span,
@@ -659,9 +619,7 @@ class Fn private constructor(
 /**
  *
  * Don't try to remember the name of this type &mdash; use the
- * [`Token!`] macro instead.
- *
- * [`Token!`]: crate::token
+ * [Token] type definitions in `io.github.kotlinmania.syn.token` instead.
  */
 class For private constructor(
     span: Span,
@@ -680,9 +638,7 @@ class For private constructor(
 /**
  *
  * Don't try to remember the name of this type &mdash; use the
- * [`Token!`] macro instead.
- *
- * [`Token!`]: crate::token
+ * [Token] type definitions in `io.github.kotlinmania.syn.token` instead.
  */
 class If private constructor(
     span: Span,
@@ -701,9 +657,7 @@ class If private constructor(
 /**
  *
  * Don't try to remember the name of this type &mdash; use the
- * [`Token!`] macro instead.
- *
- * [`Token!`]: crate::token
+ * [Token] type definitions in `io.github.kotlinmania.syn.token` instead.
  */
 class Impl private constructor(
     span: Span,
@@ -722,9 +676,7 @@ class Impl private constructor(
 /**
  *
  * Don't try to remember the name of this type &mdash; use the
- * [`Token!`] macro instead.
- *
- * [`Token!`]: crate::token
+ * [Token] type definitions in `io.github.kotlinmania.syn.token` instead.
  */
 class In private constructor(
     span: Span,
@@ -743,9 +695,7 @@ class In private constructor(
 /**
  *
  * Don't try to remember the name of this type &mdash; use the
- * [`Token!`] macro instead.
- *
- * [`Token!`]: crate::token
+ * [Token] type definitions in `io.github.kotlinmania.syn.token` instead.
  */
 class Let private constructor(
     span: Span,
@@ -764,9 +714,7 @@ class Let private constructor(
 /**
  *
  * Don't try to remember the name of this type &mdash; use the
- * [`Token!`] macro instead.
- *
- * [`Token!`]: crate::token
+ * [Token] type definitions in `io.github.kotlinmania.syn.token` instead.
  */
 class Loop private constructor(
     span: Span,
@@ -785,9 +733,7 @@ class Loop private constructor(
 /**
  *
  * Don't try to remember the name of this type &mdash; use the
- * [`Token!`] macro instead.
- *
- * [`Token!`]: crate::token
+ * [Token] type definitions in `io.github.kotlinmania.syn.token` instead.
  */
 class Macro private constructor(
     span: Span,
@@ -806,9 +752,7 @@ class Macro private constructor(
 /**
  *
  * Don't try to remember the name of this type &mdash; use the
- * [`Token!`] macro instead.
- *
- * [`Token!`]: crate::token
+ * [Token] type definitions in `io.github.kotlinmania.syn.token` instead.
  */
 class Match private constructor(
     span: Span,
@@ -827,9 +771,7 @@ class Match private constructor(
 /**
  *
  * Don't try to remember the name of this type &mdash; use the
- * [`Token!`] macro instead.
- *
- * [`Token!`]: crate::token
+ * [Token] type definitions in `io.github.kotlinmania.syn.token` instead.
  */
 class Mod private constructor(
     span: Span,
@@ -848,9 +790,7 @@ class Mod private constructor(
 /**
  *
  * Don't try to remember the name of this type &mdash; use the
- * [`Token!`] macro instead.
- *
- * [`Token!`]: crate::token
+ * [Token] type definitions in `io.github.kotlinmania.syn.token` instead.
  */
 class Move private constructor(
     span: Span,
@@ -869,9 +809,7 @@ class Move private constructor(
 /**
  *
  * Don't try to remember the name of this type &mdash; use the
- * [`Token!`] macro instead.
- *
- * [`Token!`]: crate::token
+ * [Token] type definitions in `io.github.kotlinmania.syn.token` instead.
  */
 class Mut private constructor(
     span: Span,
@@ -890,9 +828,7 @@ class Mut private constructor(
 /**
  *
  * Don't try to remember the name of this type &mdash; use the
- * [`Token!`] macro instead.
- *
- * [`Token!`]: crate::token
+ * [Token] type definitions in `io.github.kotlinmania.syn.token` instead.
  */
 class Override private constructor(
     span: Span,
@@ -911,9 +847,7 @@ class Override private constructor(
 /**
  *
  * Don't try to remember the name of this type &mdash; use the
- * [`Token!`] macro instead.
- *
- * [`Token!`]: crate::token
+ * [Token] type definitions in `io.github.kotlinmania.syn.token` instead.
  */
 class Priv private constructor(
     span: Span,
@@ -932,9 +866,7 @@ class Priv private constructor(
 /**
  *
  * Don't try to remember the name of this type &mdash; use the
- * [`Token!`] macro instead.
- *
- * [`Token!`]: crate::token
+ * [Token] type definitions in `io.github.kotlinmania.syn.token` instead.
  */
 class Pub private constructor(
     span: Span,
@@ -953,9 +885,7 @@ class Pub private constructor(
 /**
  *
  * Don't try to remember the name of this type &mdash; use the
- * [`Token!`] macro instead.
- *
- * [`Token!`]: crate::token
+ * [Token] type definitions in `io.github.kotlinmania.syn.token` instead.
  */
 class Raw private constructor(
     span: Span,
@@ -974,9 +904,7 @@ class Raw private constructor(
 /**
  *
  * Don't try to remember the name of this type &mdash; use the
- * [`Token!`] macro instead.
- *
- * [`Token!`]: crate::token
+ * [Token] type definitions in `io.github.kotlinmania.syn.token` instead.
  */
 class Ref private constructor(
     span: Span,
@@ -995,9 +923,7 @@ class Ref private constructor(
 /**
  *
  * Don't try to remember the name of this type &mdash; use the
- * [`Token!`] macro instead.
- *
- * [`Token!`]: crate::token
+ * [Token] type definitions in `io.github.kotlinmania.syn.token` instead.
  */
 class Return private constructor(
     span: Span,
@@ -1016,9 +942,7 @@ class Return private constructor(
 /**
  *
  * Don't try to remember the name of this type &mdash; use the
- * [`Token!`] macro instead.
- *
- * [`Token!`]: crate::token
+ * [Token] type definitions in `io.github.kotlinmania.syn.token` instead.
  */
 class SelfType private constructor(
     span: Span,
@@ -1037,9 +961,7 @@ class SelfType private constructor(
 /**
  *
  * Don't try to remember the name of this type &mdash; use the
- * [`Token!`] macro instead.
- *
- * [`Token!`]: crate::token
+ * [Token] type definitions in `io.github.kotlinmania.syn.token` instead.
  */
 class SelfValue private constructor(
     span: Span,
@@ -1058,9 +980,7 @@ class SelfValue private constructor(
 /**
  *
  * Don't try to remember the name of this type &mdash; use the
- * [`Token!`] macro instead.
- *
- * [`Token!`]: crate::token
+ * [Token] type definitions in `io.github.kotlinmania.syn.token` instead.
  */
 class Static private constructor(
     span: Span,
@@ -1079,9 +999,7 @@ class Static private constructor(
 /**
  *
  * Don't try to remember the name of this type &mdash; use the
- * [`Token!`] macro instead.
- *
- * [`Token!`]: crate::token
+ * [Token] type definitions in `io.github.kotlinmania.syn.token` instead.
  */
 class Struct private constructor(
     span: Span,
@@ -1100,9 +1018,7 @@ class Struct private constructor(
 /**
  *
  * Don't try to remember the name of this type &mdash; use the
- * [`Token!`] macro instead.
- *
- * [`Token!`]: crate::token
+ * [Token] type definitions in `io.github.kotlinmania.syn.token` instead.
  */
 class Super private constructor(
     span: Span,
@@ -1121,9 +1037,7 @@ class Super private constructor(
 /**
  *
  * Don't try to remember the name of this type &mdash; use the
- * [`Token!`] macro instead.
- *
- * [`Token!`]: crate::token
+ * [Token] type definitions in `io.github.kotlinmania.syn.token` instead.
  */
 class Trait private constructor(
     span: Span,
@@ -1142,9 +1056,7 @@ class Trait private constructor(
 /**
  *
  * Don't try to remember the name of this type &mdash; use the
- * [`Token!`] macro instead.
- *
- * [`Token!`]: crate::token
+ * [Token] type definitions in `io.github.kotlinmania.syn.token` instead.
  */
 class Try private constructor(
     span: Span,
@@ -1185,9 +1097,7 @@ class SynTypeToken private constructor(
 /**
  *
  * Don't try to remember the name of this type &mdash; use the
- * [`Token!`] macro instead.
- *
- * [`Token!`]: crate::token
+ * [Token] type definitions in `io.github.kotlinmania.syn.token` instead.
  */
 class Typeof private constructor(
     span: Span,
@@ -1206,9 +1116,7 @@ class Typeof private constructor(
 /**
  *
  * Don't try to remember the name of this type &mdash; use the
- * [`Token!`] macro instead.
- *
- * [`Token!`]: crate::token
+ * [Token] type definitions in `io.github.kotlinmania.syn.token` instead.
  */
 class Union private constructor(
     span: Span,
@@ -1227,9 +1135,7 @@ class Union private constructor(
 /**
  *
  * Don't try to remember the name of this type &mdash; use the
- * [`Token!`] macro instead.
- *
- * [`Token!`]: crate::token
+ * [Token] type definitions in `io.github.kotlinmania.syn.token` instead.
  */
 class Unsafe private constructor(
     span: Span,
@@ -1248,9 +1154,7 @@ class Unsafe private constructor(
 /**
  *
  * Don't try to remember the name of this type &mdash; use the
- * [`Token!`] macro instead.
- *
- * [`Token!`]: crate::token
+ * [Token] type definitions in `io.github.kotlinmania.syn.token` instead.
  */
 class Unsized private constructor(
     span: Span,
@@ -1269,9 +1173,7 @@ class Unsized private constructor(
 /**
  *
  * Don't try to remember the name of this type &mdash; use the
- * [`Token!`] macro instead.
- *
- * [`Token!`]: crate::token
+ * [Token] type definitions in `io.github.kotlinmania.syn.token` instead.
  */
 class Use private constructor(
     span: Span,
@@ -1290,9 +1192,7 @@ class Use private constructor(
 /**
  *
  * Don't try to remember the name of this type &mdash; use the
- * [`Token!`] macro instead.
- *
- * [`Token!`]: crate::token
+ * [Token] type definitions in `io.github.kotlinmania.syn.token` instead.
  */
 class Virtual private constructor(
     span: Span,
@@ -1311,9 +1211,7 @@ class Virtual private constructor(
 /**
  *
  * Don't try to remember the name of this type &mdash; use the
- * [`Token!`] macro instead.
- *
- * [`Token!`]: crate::token
+ * [Token] type definitions in `io.github.kotlinmania.syn.token` instead.
  */
 class Where private constructor(
     span: Span,
@@ -1332,9 +1230,7 @@ class Where private constructor(
 /**
  *
  * Don't try to remember the name of this type &mdash; use the
- * [`Token!`] macro instead.
- *
- * [`Token!`]: crate::token
+ * [Token] type definitions in `io.github.kotlinmania.syn.token` instead.
  */
 class While private constructor(
     span: Span,
@@ -1353,9 +1249,7 @@ class While private constructor(
 /**
  *
  * Don't try to remember the name of this type &mdash; use the
- * [`Token!`] macro instead.
- *
- * [`Token!`]: crate::token
+ * [Token] type definitions in `io.github.kotlinmania.syn.token` instead.
  */
 class Yield private constructor(
     span: Span,
@@ -1376,9 +1270,7 @@ class Yield private constructor(
  * Usage:
  *
  * Don't try to remember the name of this type &mdash; use the
- * [`Token!`] macro instead.
- *
- * [`Token!`]: crate::token
+ * [Token] type definitions in `io.github.kotlinmania.syn.token` instead.
  */
 class And private constructor(
     spans: List<Span>,
@@ -1399,9 +1291,7 @@ class And private constructor(
  * Usage:
  *
  * Don't try to remember the name of this type &mdash; use the
- * [`Token!`] macro instead.
- *
- * [`Token!`]: crate::token
+ * [Token] type definitions in `io.github.kotlinmania.syn.token` instead.
  */
 class AndAnd private constructor(
     spans: List<Span>,
@@ -1422,9 +1312,7 @@ class AndAnd private constructor(
  * Usage:
  *
  * Don't try to remember the name of this type &mdash; use the
- * [`Token!`] macro instead.
- *
- * [`Token!`]: crate::token
+ * [Token] type definitions in `io.github.kotlinmania.syn.token` instead.
  */
 class AndEq private constructor(
     spans: List<Span>,
@@ -1445,9 +1333,7 @@ class AndEq private constructor(
  * Usage:
  *
  * Don't try to remember the name of this type &mdash; use the
- * [`Token!`] macro instead.
- *
- * [`Token!`]: crate::token
+ * [Token] type definitions in `io.github.kotlinmania.syn.token` instead.
  */
 class At private constructor(
     spans: List<Span>,
@@ -1468,9 +1354,7 @@ class At private constructor(
  * Usage:
  *
  * Don't try to remember the name of this type &mdash; use the
- * [`Token!`] macro instead.
- *
- * [`Token!`]: crate::token
+ * [Token] type definitions in `io.github.kotlinmania.syn.token` instead.
  */
 class Caret private constructor(
     spans: List<Span>,
@@ -1491,9 +1375,7 @@ class Caret private constructor(
  * Usage:
  *
  * Don't try to remember the name of this type &mdash; use the
- * [`Token!`] macro instead.
- *
- * [`Token!`]: crate::token
+ * [Token] type definitions in `io.github.kotlinmania.syn.token` instead.
  */
 class CaretEq private constructor(
     spans: List<Span>,
@@ -1514,9 +1396,7 @@ class CaretEq private constructor(
  * Usage:
  *
  * Don't try to remember the name of this type &mdash; use the
- * [`Token!`] macro instead.
- *
- * [`Token!`]: crate::token
+ * [Token] type definitions in `io.github.kotlinmania.syn.token` instead.
  */
 class Colon private constructor(
     spans: List<Span>,
@@ -1537,9 +1417,7 @@ class Colon private constructor(
  * Usage:
  *
  * Don't try to remember the name of this type &mdash; use the
- * [`Token!`] macro instead.
- *
- * [`Token!`]: crate::token
+ * [Token] type definitions in `io.github.kotlinmania.syn.token` instead.
  */
 class Comma private constructor(
     spans: List<Span>,
@@ -1560,9 +1438,7 @@ class Comma private constructor(
  * Usage:
  *
  * Don't try to remember the name of this type &mdash; use the
- * [`Token!`] macro instead.
- *
- * [`Token!`]: crate::token
+ * [Token] type definitions in `io.github.kotlinmania.syn.token` instead.
  */
 class Dollar private constructor(
     spans: List<Span>,
@@ -1583,9 +1459,7 @@ class Dollar private constructor(
  * Usage:
  *
  * Don't try to remember the name of this type &mdash; use the
- * [`Token!`] macro instead.
- *
- * [`Token!`]: crate::token
+ * [Token] type definitions in `io.github.kotlinmania.syn.token` instead.
  */
 class Dot private constructor(
     spans: List<Span>,
@@ -1606,9 +1480,7 @@ class Dot private constructor(
  * Usage:
  *
  * Don't try to remember the name of this type &mdash; use the
- * [`Token!`] macro instead.
- *
- * [`Token!`]: crate::token
+ * [Token] type definitions in `io.github.kotlinmania.syn.token` instead.
  */
 class DotDot private constructor(
     spans: List<Span>,
@@ -1629,9 +1501,7 @@ class DotDot private constructor(
  * Usage:
  *
  * Don't try to remember the name of this type &mdash; use the
- * [`Token!`] macro instead.
- *
- * [`Token!`]: crate::token
+ * [Token] type definitions in `io.github.kotlinmania.syn.token` instead.
  */
 class DotDotDot private constructor(
     spans: List<Span>,
@@ -1652,9 +1522,7 @@ class DotDotDot private constructor(
  * Usage:
  *
  * Don't try to remember the name of this type &mdash; use the
- * [`Token!`] macro instead.
- *
- * [`Token!`]: crate::token
+ * [Token] type definitions in `io.github.kotlinmania.syn.token` instead.
  */
 class DotDotEq private constructor(
     spans: List<Span>,
@@ -1675,9 +1543,7 @@ class DotDotEq private constructor(
  * Usage:
  *
  * Don't try to remember the name of this type &mdash; use the
- * [`Token!`] macro instead.
- *
- * [`Token!`]: crate::token
+ * [Token] type definitions in `io.github.kotlinmania.syn.token` instead.
  */
 class Eq private constructor(
     spans: List<Span>,
@@ -1698,9 +1564,7 @@ class Eq private constructor(
  * Usage:
  *
  * Don't try to remember the name of this type &mdash; use the
- * [`Token!`] macro instead.
- *
- * [`Token!`]: crate::token
+ * [Token] type definitions in `io.github.kotlinmania.syn.token` instead.
  */
 class EqEq private constructor(
     spans: List<Span>,
@@ -1721,9 +1585,7 @@ class EqEq private constructor(
  * Usage:
  *
  * Don't try to remember the name of this type &mdash; use the
- * [`Token!`] macro instead.
- *
- * [`Token!`]: crate::token
+ * [Token] type definitions in `io.github.kotlinmania.syn.token` instead.
  */
 class FatArrow private constructor(
     spans: List<Span>,
@@ -1744,9 +1606,7 @@ class FatArrow private constructor(
  * Usage:
  *
  * Don't try to remember the name of this type &mdash; use the
- * [`Token!`] macro instead.
- *
- * [`Token!`]: crate::token
+ * [Token] type definitions in `io.github.kotlinmania.syn.token` instead.
  */
 class Ge private constructor(
     spans: List<Span>,
@@ -1767,9 +1627,7 @@ class Ge private constructor(
  * Usage:
  *
  * Don't try to remember the name of this type &mdash; use the
- * [`Token!`] macro instead.
- *
- * [`Token!`]: crate::token
+ * [Token] type definitions in `io.github.kotlinmania.syn.token` instead.
  */
 class Gt private constructor(
     spans: List<Span>,
@@ -1790,9 +1648,7 @@ class Gt private constructor(
  * Usage:
  *
  * Don't try to remember the name of this type &mdash; use the
- * [`Token!`] macro instead.
- *
- * [`Token!`]: crate::token
+ * [Token] type definitions in `io.github.kotlinmania.syn.token` instead.
  */
 class LArrow private constructor(
     spans: List<Span>,
@@ -1813,9 +1669,7 @@ class LArrow private constructor(
  * Usage:
  *
  * Don't try to remember the name of this type &mdash; use the
- * [`Token!`] macro instead.
- *
- * [`Token!`]: crate::token
+ * [Token] type definitions in `io.github.kotlinmania.syn.token` instead.
  */
 class Le private constructor(
     spans: List<Span>,
@@ -1836,9 +1690,7 @@ class Le private constructor(
  * Usage:
  *
  * Don't try to remember the name of this type &mdash; use the
- * [`Token!`] macro instead.
- *
- * [`Token!`]: crate::token
+ * [Token] type definitions in `io.github.kotlinmania.syn.token` instead.
  */
 class Lt private constructor(
     spans: List<Span>,
@@ -1859,9 +1711,7 @@ class Lt private constructor(
  * Usage:
  *
  * Don't try to remember the name of this type &mdash; use the
- * [`Token!`] macro instead.
- *
- * [`Token!`]: crate::token
+ * [Token] type definitions in `io.github.kotlinmania.syn.token` instead.
  */
 class Minus private constructor(
     spans: List<Span>,
@@ -1882,9 +1732,7 @@ class Minus private constructor(
  * Usage:
  *
  * Don't try to remember the name of this type &mdash; use the
- * [`Token!`] macro instead.
- *
- * [`Token!`]: crate::token
+ * [Token] type definitions in `io.github.kotlinmania.syn.token` instead.
  */
 class MinusEq private constructor(
     spans: List<Span>,
@@ -1905,9 +1753,7 @@ class MinusEq private constructor(
  * Usage:
  *
  * Don't try to remember the name of this type &mdash; use the
- * [`Token!`] macro instead.
- *
- * [`Token!`]: crate::token
+ * [Token] type definitions in `io.github.kotlinmania.syn.token` instead.
  */
 class Ne private constructor(
     spans: List<Span>,
@@ -1928,9 +1774,7 @@ class Ne private constructor(
  * Usage:
  *
  * Don't try to remember the name of this type &mdash; use the
- * [`Token!`] macro instead.
- *
- * [`Token!`]: crate::token
+ * [Token] type definitions in `io.github.kotlinmania.syn.token` instead.
  */
 class Not private constructor(
     spans: List<Span>,
@@ -1951,9 +1795,7 @@ class Not private constructor(
  * Usage:
  *
  * Don't try to remember the name of this type &mdash; use the
- * [`Token!`] macro instead.
- *
- * [`Token!`]: crate::token
+ * [Token] type definitions in `io.github.kotlinmania.syn.token` instead.
  */
 class Or private constructor(
     spans: List<Span>,
@@ -1974,9 +1816,7 @@ class Or private constructor(
  * Usage:
  *
  * Don't try to remember the name of this type &mdash; use the
- * [`Token!`] macro instead.
- *
- * [`Token!`]: crate::token
+ * [Token] type definitions in `io.github.kotlinmania.syn.token` instead.
  */
 class OrEq private constructor(
     spans: List<Span>,
@@ -1997,9 +1837,7 @@ class OrEq private constructor(
  * Usage:
  *
  * Don't try to remember the name of this type &mdash; use the
- * [`Token!`] macro instead.
- *
- * [`Token!`]: crate::token
+ * [Token] type definitions in `io.github.kotlinmania.syn.token` instead.
  */
 class OrOr private constructor(
     spans: List<Span>,
@@ -2020,9 +1858,7 @@ class OrOr private constructor(
  * Usage:
  *
  * Don't try to remember the name of this type &mdash; use the
- * [`Token!`] macro instead.
- *
- * [`Token!`]: crate::token
+ * [Token] type definitions in `io.github.kotlinmania.syn.token` instead.
  */
 class PathSep private constructor(
     spans: List<Span>,
@@ -2043,9 +1879,7 @@ class PathSep private constructor(
  * Usage:
  *
  * Don't try to remember the name of this type &mdash; use the
- * [`Token!`] macro instead.
- *
- * [`Token!`]: crate::token
+ * [Token] type definitions in `io.github.kotlinmania.syn.token` instead.
  */
 class Percent private constructor(
     spans: List<Span>,
@@ -2066,9 +1900,7 @@ class Percent private constructor(
  * Usage:
  *
  * Don't try to remember the name of this type &mdash; use the
- * [`Token!`] macro instead.
- *
- * [`Token!`]: crate::token
+ * [Token] type definitions in `io.github.kotlinmania.syn.token` instead.
  */
 class PercentEq private constructor(
     spans: List<Span>,
@@ -2089,9 +1921,7 @@ class PercentEq private constructor(
  * Usage:
  *
  * Don't try to remember the name of this type &mdash; use the
- * [`Token!`] macro instead.
- *
- * [`Token!`]: crate::token
+ * [Token] type definitions in `io.github.kotlinmania.syn.token` instead.
  */
 class Plus private constructor(
     spans: List<Span>,
@@ -2112,9 +1942,7 @@ class Plus private constructor(
  * Usage:
  *
  * Don't try to remember the name of this type &mdash; use the
- * [`Token!`] macro instead.
- *
- * [`Token!`]: crate::token
+ * [Token] type definitions in `io.github.kotlinmania.syn.token` instead.
  */
 class PlusEq private constructor(
     spans: List<Span>,
@@ -2135,9 +1963,7 @@ class PlusEq private constructor(
  * Usage:
  *
  * Don't try to remember the name of this type &mdash; use the
- * [`Token!`] macro instead.
- *
- * [`Token!`]: crate::token
+ * [Token] type definitions in `io.github.kotlinmania.syn.token` instead.
  */
 class Pound private constructor(
     spans: List<Span>,
@@ -2158,9 +1984,7 @@ class Pound private constructor(
  * Usage:
  *
  * Don't try to remember the name of this type &mdash; use the
- * [`Token!`] macro instead.
- *
- * [`Token!`]: crate::token
+ * [Token] type definitions in `io.github.kotlinmania.syn.token` instead.
  */
 class Question private constructor(
     spans: List<Span>,
@@ -2181,9 +2005,7 @@ class Question private constructor(
  * Usage:
  *
  * Don't try to remember the name of this type &mdash; use the
- * [`Token!`] macro instead.
- *
- * [`Token!`]: crate::token
+ * [Token] type definitions in `io.github.kotlinmania.syn.token` instead.
  */
 class RArrow private constructor(
     spans: List<Span>,
@@ -2204,9 +2026,7 @@ class RArrow private constructor(
  * Usage:
  *
  * Don't try to remember the name of this type &mdash; use the
- * [`Token!`] macro instead.
- *
- * [`Token!`]: crate::token
+ * [Token] type definitions in `io.github.kotlinmania.syn.token` instead.
  */
 class Semi private constructor(
     spans: List<Span>,
@@ -2227,9 +2047,7 @@ class Semi private constructor(
  * Usage:
  *
  * Don't try to remember the name of this type &mdash; use the
- * [`Token!`] macro instead.
- *
- * [`Token!`]: crate::token
+ * [Token] type definitions in `io.github.kotlinmania.syn.token` instead.
  */
 class Shl private constructor(
     spans: List<Span>,
@@ -2250,9 +2068,7 @@ class Shl private constructor(
  * Usage:
  *
  * Don't try to remember the name of this type &mdash; use the
- * [`Token!`] macro instead.
- *
- * [`Token!`]: crate::token
+ * [Token] type definitions in `io.github.kotlinmania.syn.token` instead.
  */
 class ShlEq private constructor(
     spans: List<Span>,
@@ -2273,9 +2089,7 @@ class ShlEq private constructor(
  * Usage:
  *
  * Don't try to remember the name of this type &mdash; use the
- * [`Token!`] macro instead.
- *
- * [`Token!`]: crate::token
+ * [Token] type definitions in `io.github.kotlinmania.syn.token` instead.
  */
 class Shr private constructor(
     spans: List<Span>,
@@ -2296,9 +2110,7 @@ class Shr private constructor(
  * Usage:
  *
  * Don't try to remember the name of this type &mdash; use the
- * [`Token!`] macro instead.
- *
- * [`Token!`]: crate::token
+ * [Token] type definitions in `io.github.kotlinmania.syn.token` instead.
  */
 class ShrEq private constructor(
     spans: List<Span>,
@@ -2319,9 +2131,7 @@ class ShrEq private constructor(
  * Usage:
  *
  * Don't try to remember the name of this type &mdash; use the
- * [`Token!`] macro instead.
- *
- * [`Token!`]: crate::token
+ * [Token] type definitions in `io.github.kotlinmania.syn.token` instead.
  */
 class Slash private constructor(
     spans: List<Span>,
@@ -2342,9 +2152,7 @@ class Slash private constructor(
  * Usage:
  *
  * Don't try to remember the name of this type &mdash; use the
- * [`Token!`] macro instead.
- *
- * [`Token!`]: crate::token
+ * [Token] type definitions in `io.github.kotlinmania.syn.token` instead.
  */
 class SlashEq private constructor(
     spans: List<Span>,
@@ -2365,9 +2173,7 @@ class SlashEq private constructor(
  * Usage:
  *
  * Don't try to remember the name of this type &mdash; use the
- * [`Token!`] macro instead.
- *
- * [`Token!`]: crate::token
+ * [Token] type definitions in `io.github.kotlinmania.syn.token` instead.
  */
 class Star private constructor(
     spans: List<Span>,
@@ -2388,9 +2194,7 @@ class Star private constructor(
  * Usage:
  *
  * Don't try to remember the name of this type &mdash; use the
- * [`Token!`] macro instead.
- *
- * [`Token!`]: crate::token
+ * [Token] type definitions in `io.github.kotlinmania.syn.token` instead.
  */
 class StarEq private constructor(
     spans: List<Span>,
@@ -2411,9 +2215,7 @@ class StarEq private constructor(
  * Usage:
  *
  * Don't try to remember the name of this type &mdash; use the
- * [`Token!`] macro instead.
- *
- * [`Token!`]: crate::token
+ * [Token] type definitions in `io.github.kotlinmania.syn.token` instead.
  */
 class Tilde private constructor(
     spans: List<Span>,

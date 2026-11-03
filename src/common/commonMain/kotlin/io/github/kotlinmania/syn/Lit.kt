@@ -18,9 +18,7 @@ import io.github.kotlinmania.quote.toTokens
  *
  * # Syntax tree enum
  *
- * This type is a [syntax tree enum].
- *
- * [syntax tree enum]: crate::expr::Expr#syntax-tree-enums
+ * This type is a syntax tree enum; see [Expr].
  */
 public sealed class Lit : ToTokens {
     public companion object {
@@ -299,12 +297,10 @@ public class LitStr private constructor(
      *
      * # Example
      *
-     * ```
-     * val litStr: LitStr = / * ... * /;
-     *
-     * // Parse a string literal like "a::b::c" into a Path, not allowing
+     * ```kotlin
+     * // Parse a string literal into a Path, not allowing
      * // generic arguments on any of the path segments.
-     * val basicPath = litStr.parseWith(Path::parseModStyle);
+     * val basicPath = litStr.parseWith(Path::parseModStyle).getOrElse { return SynResult.failure(it) }
      * ```
      */
     public fun <T> parseWith(parser: (ParseStream) -> SynResult<T>): SynResult<T> {
@@ -806,7 +802,7 @@ private data class StringLiteralParts(
 )
 
 private data class ByteStringLiteralParts(
-    var value: MutableList<UByte>,
+    val value: MutableList<UByte>,
     var suffix: String,
 )
 

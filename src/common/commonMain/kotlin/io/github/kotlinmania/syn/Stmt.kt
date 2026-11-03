@@ -101,8 +101,8 @@ public sealed class Stmt : ToTokens {
  * The expression assigned in a local `let` binding, including optional
  * diverging `else` block.
  *
- * `LocalInit` represents `= s.parse()?` in `val x: u64 = s.parse()?` and
- * `= r else { return }` in `val ok(x) = r else { return }`.
+ * `LocalInit` represents `= s.parse()` in `val x: ULong = s.parse()` and
+ * `= r ?: return` in a local binding with a diverging `else` block.
  */
 public data class LocalInit(
     public var eqToken: io.github.kotlinmania.syn.token.Eq,

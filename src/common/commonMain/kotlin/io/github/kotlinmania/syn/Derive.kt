@@ -99,9 +99,7 @@ public data class DeriveInput(
  *
  * # Syntax tree enum
  *
- * This type is a [syntax tree enum].
- *
- * [syntax tree enum]: crate::expr::Expr#syntax-tree-enums
+ * This type is a syntax tree enum; see [Expr].
  */
 public sealed class Data : ToTokens {
     public data class Struct(

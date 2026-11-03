@@ -589,13 +589,11 @@ public sealed class ModContent : ToTokens {
  *
  * # Syntax tree enum
  *
- * This type is a [syntax tree enum].
- *
- * [syntax tree enum]: crate::expr::Expr#syntax-tree-enums
+ * This type is a syntax tree enum; see [Expr].
  */
 public sealed class UseTree : ToTokens {
     /**
-     * A path prefix of imports in a `use` item: `core::...`.
+     * A path prefix of imports in a `use` item.
      */
     public data class Path(
         var ident: Ident,
@@ -844,9 +842,7 @@ public sealed class ForeignItem : ToTokens {
  *
  * # Syntax tree enum
  *
- * This type is a [syntax tree enum].
- *
- * [syntax tree enum]: crate::expr::Expr#syntax-tree-enums
+ * This type is a syntax tree enum; see [Expr].
  */
 public sealed class TraitItem : ToTokens {
     /** An associated constant within the definition of a trait. */
@@ -952,9 +948,7 @@ public sealed class TraitItem : ToTokens {
  *
  * # Syntax tree enum
  *
- * This type is a [syntax tree enum].
- *
- * [syntax tree enum]: crate::expr::Expr#syntax-tree-enums
+ * This type is a syntax tree enum; see [Expr].
  */
 public sealed class ImplItem : ToTokens {
     /** An associated constant within an impl block. */

@@ -14,36 +14,29 @@ import io.github.kotlinmania.quote.__span
 //
 // # Example
 //
-// Suppose in a procedural macro we have a [`Type`] that we want to assert
-// implements the [`Sync`] trait. Maybe this is the type of one of the fields
+// Suppose in a procedural macro we have a [SynType] that we want to assert
+// implements the `Sync` trait. Maybe this is the type of one of the fields
 // of a struct for which we are deriving a trait implementation, and we need to
 // be able to pass a reference to one of those fields across threads.
-//
-// [`Type`]: crate::Type
-// [`Sync`]: core::marker::Sync
 //
 // If the field type does *not* implement `Sync` as required, we want the
 // compiler to report an error pointing out exactly which type it was.
 //
-// The following macro code takes a variable `ty` of type `Type` and produces a
-// static assertion that `Sync` is implemented for that type.
+// The following macro code takes a variable `ty` of type `SynType` and produces
+// a static assertion that `Sync` is implemented for that type.
 //
-// ```
-// import procMacro.TokenStream;
-// import procMacro2.Span;
-// import quote.quoteSpanned;
-// import syn.Type;
-// import syn.spanned.Spanned;
+// ```kotlin
+// import procmacro2.Span
+// import procmacro2.TokenStream
+// import quote.quoteSpanned
+// import syn.SynType
+// import syn.span
 //
-//
-// public fun myMacro(input: TokenStream) -> TokenStream {
-//     / * ... * /
-//
-//     val assertSync = quoteSpanned{ty.span()=>
-//         struct _AssertSync where #ty: Sync;
-//     };
-//
-//     / * ... * /
+// @ProcMacroDerive(MyMacro)
+// fun myMacro(input: TokenStream): TokenStream {
+//     // ...
+//     val assertSync = quoteSpanned(ty.span(), "struct AssertSync where `#`ty : Sync ;", "ty" to ty)
+//     // ...
 // }
 // ```
 //
@@ -52,51 +45,43 @@ import io.github.kotlinmania.quote.__span
 // `Sync`. The errors they would see look like the following.
 //
 // ```text
-// error[E0277]: the trait bound `*const i32: core::marker::Sync` is not satisfied
+// error[E0277]: the trait bound `*const i32: core.marker.Sync` is not satisfied
 //   --> src/main.rs:10:21
 //    |
 // 10 |     badField: *const i32,
 //    |                ^^^^^^^^^^ `*const i32` cannot be shared between threads safely
 // ```
 //
-// In this technique, using the `Type`'s span for the error message makes the
+// In this technique, using the `SynType` span for the error message makes the
 // error appear in the correct place underlining the right type.
 //
 // <br>
 //
 // # Limitations
 //
-// The underlying [`procMacro::Span::join`] method is nightly-only. When
+// The underlying [Span.join] method is nightly-only in `proc-macro`. When
 // called from within a procedural macro in a nightly compiler, `Spanned` will
 // use `join` to produce the intended span. When not using a nightly compiler,
 // only the span of the *first token* of the syntax tree node is returned.
 //
 // In the common case of wanting to use the joined span as the span of a
-// `syn::Error`, consider instead using [`syn::Error::newSpanned`] which is
+// [SynError], consider instead using [SynError.newSpanned] which is
 // able to span the error correctly under the complete syntax tree node without
 // needing the unstable `join`.
-//
-// [`syn::Error::newSpanned`]: crate::Error::newSpanned
 
 /**
  * A trait that can provide the `Span` of the complete contents of a syntax
  * tree node.
  *
  * This trait is automatically implemented for all types that implement
- * [`ToTokens`] from the `quote` crate, as well as for `Span` itself.
+ * [ToTokens] from the `quote` crate, as well as for `Span` itself.
  *
- * [`ToTokens`]: quote::ToTokens
- *
- * See the [module documentation] for an example.
- *
- * [module documentation]: self
+ * See the module documentation above for an example.
  */
 public sealed interface Spanned {
     /**
      * Returns a `Span` covering the complete contents of this syntax tree
-     * node, or [`Span::callSite()`] if this node is empty.
-     *
-     * [`Span::callSite()`]: procMacro2::Span::callSite
+     * node, or [Span.callSite] if this node is empty.
      */
     public fun span(): Span
 }

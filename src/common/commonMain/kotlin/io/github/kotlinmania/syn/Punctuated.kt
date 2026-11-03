@@ -1399,7 +1399,7 @@ public class Punctuated<T, P> private constructor(
      * this punctuated sequence.
      */
     public fun insert(index: Int, value: T, defaultPunctuation: () -> P) {
-        require(index <= len()) { "Punctuated::insert: index out of range" }
+        require(index <= len()) { "Punctuated.insert: index out of range" }
         if (index == len()) {
             push(value, defaultPunctuation)
         } else {
@@ -1570,7 +1570,7 @@ private fun <T, P> doExtend(
 ) {
     var noMore = false
     for (pair in pairs) {
-        check(!noMore) { "punctuated extended with items after a Pair::End" }
+        check(!noMore) { "punctuated extended with items after a Pair.End" }
         when (pair) {
             is Punctuated.Pair.End -> {
                 punctuated.pushValue(pair.value())

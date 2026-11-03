@@ -83,29 +83,72 @@ private fun parseDelimited(
 /**
  * Parse a set of parentheses and expose their content to subsequent parsers.
  *
- * Mirrors the `parenthesized` macro. Callers write:
+ * # Example
  *
  * ```kotlin
- * val content;
- * val paren = parenthesized!(content in input);
- * ```
+ * import syn.Ident
+ * import syn.SynResult
+ * import syn.SynType
+ * import syn.TypeListComma
+ * import syn.TypeParse
+ * import syn.parenthesized
+ * import syn.parse.ParseStream
+ * import syn.token.Paren
+ * import syn.token.Semi
+ * import syn.token.Struct
  *
- * Kotlin callers write:
- *
- * ```kotlin
- * val parens = parenthesized(input).getOrThrow()
- * val paren = parens.token
- * val content = parens.content
+ * // Parse a simplified tuple struct syntax like:
+ * //
+ * // struct S(A, B);
+ * open class TupleStruct(
+ *     public var structToken: Struct,
+ *     public var ident: Ident,
+ *     public var parenToken: Paren,
+ *     public var fields: TypeListComma,
+ *     public var semiToken: Semi,
+ * ) {
+ *     public companion object {
+ *         public fun parse(input: ParseStream): SynResult<TupleStruct> {
+ *             val structToken = StructParse.parse(input).getOrElse { return SynResult.failure(it) }
+ *             val ident = IdentParse.parse(input).getOrElse { return SynResult.failure(it) }
+ *             val parens = parenthesized(input).getOrElse { return SynResult.failure(it) }
+ *             val fields = TypeListComma.parseTerminated(parens.content, TypeParse::parse).getOrElse { return SynResult.failure(it) }
+ *             parens.content.finishChildBuffer()
+ *             val semiToken = SemiParse.parse(input).getOrElse { return SynResult.failure(it) }
+ *             return SynResult.success(TupleStruct(structToken, ident, parens.token, fields, semiToken))
+ *         }
+ *     }
+ * }
  * ```
  *
  * The caller is responsible for invoking [ParseBuffer.finishChildBuffer] on
- * `content` at the end of its scope so that leftover-token diagnostics
+ * `parens.content` at the end of its scope so that leftover-token diagnostics
  * propagate up to the parent buffer.
  */
 public fun parenthesized(input: ParseBuffer): SynResult<Parens> = parseParens(input)
 
-/** Parse a set of curly braces and expose their content to subsequent parsers. */
+/**
+ * Parse a set of curly braces and expose their content to subsequent parsers.
+ *
+ * # Example
+ *
+ * ```kotlin
+ * val braces = braced(input).getOrElse { return SynResult.failure(it) }
+ * val braceToken = braces.token
+ * val content = braces.content
+ * ```
+ */
 public fun braced(input: ParseBuffer): SynResult<Braces> = parseBraces(input)
 
-/** Parse a set of square brackets and expose their content to subsequent parsers. */
+/**
+ * Parse a set of square brackets and expose their content to subsequent parsers.
+ *
+ * # Example
+ *
+ * ```kotlin
+ * val brackets = bracketed(input).getOrElse { return SynResult.failure(it) }
+ * val bracketToken = brackets.token
+ * val content = brackets.content
+ * ```
+ */
 public fun bracketed(input: ParseBuffer): SynResult<Brackets> = parseBrackets(input)
