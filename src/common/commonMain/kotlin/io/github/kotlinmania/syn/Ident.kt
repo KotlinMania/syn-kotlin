@@ -80,8 +80,8 @@ internal fun xidOk(symbol: String): Boolean {
     return true
 }
 
-private fun acceptAsIdent(ident: Ident): Boolean =
-    when (ident.toString()) {
+internal fun acceptAsIdent(repr: String): Boolean =
+    when (repr) {
         "_",
         // Based on https://doc.rust-lang.org/1.65.0/reference/keywords.html
         "abstract", "as", "async", "await", "become", "box", "break",
@@ -103,7 +103,7 @@ public object IdentParse {
             val pair = cursor.ident()
             if (pair != null) {
                 val (ident, rest) = pair
-                if (acceptAsIdent(ident)) {
+                if (acceptAsIdent(ident.toString())) {
                     SynResult.success(ident to rest)
                 } else {
                     SynResult.failure(cursor.error("expected identifier, found keyword `$ident`"))
@@ -117,7 +117,7 @@ public object IdentParse {
 public object IdentPeek : Peek {
     override fun peek(cursor: Cursor): Boolean {
         val pair = cursor.ident() ?: return false
-        return acceptAsIdent(pair.first)
+        return acceptAsIdent(pair.first.toString())
     }
 
     override fun display(): String = "identifier"

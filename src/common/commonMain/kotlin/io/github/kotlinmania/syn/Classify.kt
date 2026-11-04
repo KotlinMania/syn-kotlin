@@ -72,7 +72,7 @@ internal fun trailingUnparameterizedPath(ty: SynType): Boolean {
     var current = ty
     while (true) {
         when (val node = current) {
-            is SynType.BareFn ->
+            is SynType.FnPtr ->
                 when (val out = node.output) {
                     ReturnType.Default -> return false
                     is ReturnType.TypeReturn -> current = out.ty
@@ -265,7 +265,7 @@ private fun typeTrailingBrace(ty: SynType): Boolean {
     var current = ty
     while (true) {
         when (val node = current) {
-            is SynType.BareFn ->
+            is SynType.FnPtr ->
                 when (val out = node.output) {
                     ReturnType.Default -> return false
                     is ReturnType.TypeReturn -> current = out.ty

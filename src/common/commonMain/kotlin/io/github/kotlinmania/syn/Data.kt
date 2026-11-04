@@ -189,18 +189,22 @@ public object FieldsUnnamedParse {
 public data class Field(
     public var attrs: List<Attribute>,
     public var vis: Visibility,
-    public var mutability: FieldMutability,
+    public var modifiers: FieldModifiers,
     public var ident: Ident?,
     public var colonToken: Colon?,
     public var ty: SynType,
+    public var default: EqExpr? = null,
 ) : ToTokens {
     override fun toTokens(tokens: TokenStream) {
         for (attr in attrs) attr.toTokens(tokens)
         vis.toTokens(tokens)
-        mutability.toTokens(tokens)
-        ident?.toTokens(tokens)
-        colonToken?.toTokens(tokens)
+        val fieldIdent = ident
+        if (fieldIdent != null) {
+            fieldIdent.toTokens(tokens)
+            (colonToken ?: Colon.default()).toTokens(tokens)
+        }
         ty.toTokens(tokens)
+        default?.toTokens(tokens)
     }
 
     public companion object {
@@ -220,19 +224,28 @@ public data class Field(
             val colonToken = ColonParse.parse(input).getOrElse { return SynResult.failure(it) }
             val ty =
                 if (unnamedField && (input.peek(StructPeek) || (input.peek(UnionPeek) && input.peek2(BracePeek)))) {
-                    val begin = input.fork()
+                    val begin = input.cursor()
                     if (input.peek(StructPeek)) {
                         StructParse.parse(input).getOrElse { return SynResult.failure(it) }
                     } else {
                         UnionParse.parse(input).getOrElse { return SynResult.failure(it) }
                     }
                     FieldsNamedParse.parse(input).getOrElse { return SynResult.failure(it) }
-                    SynType.Verbatim(between(begin, input))
+                    SynType.Verbatim(between(begin, input.cursor()))
                 } else {
                     parseTypeFull(input).getOrElse { return SynResult.failure(it) }
                 }
 
-            return SynResult.success(Field(attrs, vis, FieldMutability.None, ident, colonToken, ty))
+            val default =
+                if (input.peek(EqPeek)) {
+                    val eqToken = EqParse.parse(input).getOrElse { return SynResult.failure(it) }
+                    val expr = parseExprFull(input).getOrElse { return SynResult.failure(it) }
+                    EqExpr(eqToken, expr)
+                } else {
+                    null
+                }
+
+            return SynResult.success(Field(attrs, vis, FieldModifiers(), ident, colonToken, ty, default))
         }
 
         /** Parses an unnamed field. */
@@ -240,9 +253,41 @@ public data class Field(
             val attrs = parseOuterAttributes(input).getOrElse { return SynResult.failure(it) }
             val vis = VisibilityParse.parse(input).getOrElse { return SynResult.failure(it) }
             val ty = parseTypeFull(input).getOrElse { return SynResult.failure(it) }
-            return SynResult.success(Field(attrs, vis, FieldMutability.None, null, null, ty))
+            if (input.peek(EqPeek)) {
+                EqParse.parse(input).getOrElse { return SynResult.failure(it) }
+                val exprStart = input.cursor()
+                parseExprFull(input).getOrElse { return SynResult.failure(it) }
+                val exprEnd = input.cursor()
+                return SynResult.failure(
+                    SynError.newRange(
+                        exprStart,
+                        exprEnd,
+                        "field default value is only supported in structs with named fields",
+                    ),
+                )
+            }
+            return SynResult.success(Field(attrs, vis, FieldModifiers(), null, null, ty, null))
         }
     }
+}
+
+/** Additional optional information about a field. */
+public class FieldModifiers {
+    public companion object {
+        public fun default(): FieldModifiers = FieldModifiers()
+    }
+
+    public fun requireEmpty(): SynResult<Unit> = SynResult.success(Unit)
+
+    public fun deepCopy(): FieldModifiers = FieldModifiers()
+
+    public fun clone(): FieldModifiers = FieldModifiers()
+
+    override fun equals(other: Any?): Boolean = other is FieldModifiers
+
+    override fun hashCode(): Int = 0
+
+    override fun toString(): String = "FieldModifiers"
 }
 
 private fun Field.tySpan(): io.github.kotlinmania.procmacro2.Span =
@@ -262,13 +307,13 @@ public object VariantParse {
         val discriminant =
             if (input.peek(EqPeek)) {
                 val eq = EqParse.parse(input).getOrElse { return SynResult.failure(it) }
-                val begin = input.fork()
+                val begin = input.cursor()
                 val ahead = input.fork()
                 var parsedExpr = parseExprFull(ahead)
                 if (parsedExpr.isSuccess && (ahead.isEmpty() || ahead.peek(CommaPeek))) {
                     input.advanceTo(ahead)
                 } else if (scanExpr(input).isSuccess) {
-                    parsedExpr = SynResult.success(Expr.Verbatim(between(begin, input)))
+                    parsedExpr = SynResult.success(Expr.Verbatim(between(begin, input.cursor())))
                 }
                 val expr = parsedExpr.getOrElse { return SynResult.failure(it) }
                 EqExpr(eq, expr)

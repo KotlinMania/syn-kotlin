@@ -69,7 +69,7 @@ sealed class KeywordToken(
         this::class.hashCode()
 
     override fun toString(): String =
-        this::class.simpleName ?: text
+        "Token![$text]"
 }
 
 sealed class PunctuationToken(
@@ -95,7 +95,7 @@ sealed class PunctuationToken(
         this::class.hashCode()
 
     override fun toString(): String =
-        this::class.simpleName ?: text
+        "Token![$text]"
 }
 
 private fun callSiteSpans(count: Int): List<Span> =
@@ -936,6 +936,25 @@ class Return private constructor(
         fun from(span: Span): Return = Return(span)
 
         operator fun invoke(span: Span): Return = from(span)
+    }
+}
+
+/**
+ *
+ * Don't try to remember the name of this type &mdash; use the
+ * [Token] type definitions in `io.github.kotlinmania.syn.token` instead.
+ */
+class Safe private constructor(
+    span: Span,
+) : KeywordToken(span) {
+    override val text: String = "safe"
+
+    companion object {
+        fun default(): Safe = Safe(Span.callSite())
+
+        fun from(span: Span): Safe = Safe(span)
+
+        operator fun invoke(span: Span): Safe = from(span)
     }
 }
 

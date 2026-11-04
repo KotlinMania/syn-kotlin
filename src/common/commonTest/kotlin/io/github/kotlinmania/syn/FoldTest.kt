@@ -615,4 +615,70 @@ class FoldTest {
         folded.toTokens(tokens)
         assertEquals("lhs_folded + rhs_folded", tokens.toString())
     }
+
+    @Test
+    fun syn3AstHooksDispatchThroughFold() {
+        val seen = mutableListOf<String>()
+        val folder =
+            object : Fold() {
+                override fun foldTypeFnPtr(ty: SynType.FnPtr): SynType.FnPtr {
+                    seen += "fnPtr"
+                    return super.foldTypeFnPtr(ty)
+                }
+
+                override fun foldNamedArg(arg: NamedArg): NamedArg {
+                    seen += "namedArg"
+                    return super.foldNamedArg(arg)
+                }
+
+                override fun foldFnPtrVariadic(variadic: FnPtrVariadic): FnPtrVariadic {
+                    seen += "fnPtrVariadic"
+                    return super.foldFnPtrVariadic(variadic)
+                }
+
+                override fun foldPatGuard(pat: Pat.Guard): Pat.Guard {
+                    seen += "patGuard"
+                    return super.foldPatGuard(pat)
+                }
+
+                override fun foldReceiverKind(kind: ReceiverKind): ReceiverKind {
+                    seen += "receiverKind"
+                    return super.foldReceiverKind(kind)
+                }
+
+                override fun foldSafety(safety: Safety): Safety {
+                    seen += "safety"
+                    return super.foldSafety(safety)
+                }
+
+                override fun foldFrontmatter(frontmatter: Frontmatter): Frontmatter {
+                    seen += "frontmatter"
+                    return super.foldFrontmatter(frontmatter)
+                }
+
+                override fun foldWhereClausePlacement(placement: WhereClausePlacement): WhereClausePlacement {
+                    seen += "wherePlacement:$placement"
+                    return super.foldWhereClausePlacement(placement)
+                }
+            }
+
+        val file =
+            parseFile(
+                """
+                type Callback = unsafe extern "C" fn(x: i32, ap: ...) where Self: Sized;
+                trait T {
+                    unsafe fn check(&self, v: i32) {
+                        match v {
+                            x if x > 0 => {}
+                            _ => {}
+                        }
+                    }
+                }
+                """.trimIndent(),
+            ).getOrThrow()
+        file.frontmatter = Frontmatter()
+
+        folder.foldFile(file)
+        assertTrue(seen.containsAll(listOf("fnPtr", "namedArg", "fnPtrVariadic", "patGuard", "receiverKind", "safety", "frontmatter", "wherePlacement:Late")), seen.toString())
+    }
 }

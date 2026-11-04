@@ -13,7 +13,7 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertNotSame
 import kotlin.test.assertTrue
 
-/** Regressions checked against the local original Rust Syn 2.0.114 parser. */
+/** Regressions checked against the local original Rust Syn 3.0.9 parser. */
 class ParserParityRegressionTest {
     private fun impl(source: String): Item.Impl =
         assertIs<Item.Impl>(parseStr(ItemParse::parse, source).getOrThrow())
@@ -29,7 +29,7 @@ class ParserParityRegressionTest {
         val value = assertIs<ImplItem.Const>(impl(source).items.single())
         assertEquals(listOf("first", "second"), value.attrs.map { it.path().getIdent().toString() })
         assertIs<Visibility.Restricted>(value.vis)
-        assertNotNull(value.defaultness)
+        assertNotNull(value.modifiers.defaultness)
         assertEquals("VALUE", value.ident.toString())
         assertRoundTrip(source)
         val documented = assertIs<ImplItem.Const>(impl("impl S { /// Kept with VALUE.\n pub const VALUE: bool = true; }").items.single())
@@ -144,7 +144,7 @@ class ParserParityRegressionTest {
 
     @Test
     fun closurePrefixesSurviveCopiesVisitorsAndFolds() {
-        val source = "for<'a> static move || -> u8 { 1 }"
+        val source = "for<'a> const async move || -> u8 { 1 }"
         val closure = assertIs<Expr.Closure>(parseStr(ExprParse::parse, source).getOrThrow())
         val expected = tokenShape(TokenStream.fromString(source).getOrThrow())
         assertEquals(expected, tokenShape(closure.toTokenStream()))

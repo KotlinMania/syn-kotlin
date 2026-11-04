@@ -71,6 +71,7 @@ import io.github.kotlinmania.syn.token.RArrow
 import io.github.kotlinmania.syn.token.Raw
 import io.github.kotlinmania.syn.token.Ref
 import io.github.kotlinmania.syn.token.Return
+import io.github.kotlinmania.syn.token.Safe
 import io.github.kotlinmania.syn.token.SelfType
 import io.github.kotlinmania.syn.token.SelfValue
 import io.github.kotlinmania.syn.token.Semi
@@ -102,6 +103,7 @@ import io.github.kotlinmania.syn.token.Yield
 
 // ── Keyword Peek / Parse ──────────────────────────────────────────────────
 
+private val SAFE_KW = charArrayOf('s', 'a', 'f', 'e').concatToString()
 private val UNSAFE_KW = charArrayOf('u', 'n', 's', 'a', 'f', 'e').concatToString()
 
 /** Peeks for the abstract keyword token. */
@@ -917,6 +919,30 @@ public object ReturnParse {
                 return@step SynResult.failure(cursor.error("expected `return`"))
             }
             SynResult.success(Return.from(ident.span()) to rest)
+        }
+}
+
+/** Peeks for the memory-safety keyword token. */
+public object SafePeek : Peek {
+    override fun peek(cursor: Cursor): Boolean {
+        val (ident, _) = cursor.ident() ?: return false
+        return ident.toString() == SAFE_KW
+    }
+
+    override fun display(): String = "`$SAFE_KW`"
+}
+
+/** Parses the memory-safety keyword token. */
+public object SafeParse {
+    fun parse(input: ParseStream): SynResult<Safe> =
+        input.step { cursor ->
+            val (ident, rest) =
+                cursor.ident()
+                    ?: return@step SynResult.failure(cursor.error("expected `$SAFE_KW`"))
+            if (ident.toString() != SAFE_KW) {
+                return@step SynResult.failure(cursor.error("expected `$SAFE_KW`"))
+            }
+            SynResult.success(Safe.from(ident.span()) to rest)
         }
 }
 

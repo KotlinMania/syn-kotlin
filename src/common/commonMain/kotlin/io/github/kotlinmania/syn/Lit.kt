@@ -600,11 +600,6 @@ public class LitInt private constructor(
         public fun new(digits: String, suffix: String, span: Span): LitInt =
             LitInt(digits, suffix, span)
 
-        public fun from(token: Literal): LitInt {
-            val parsed = parseLitInt(token.toString()) ?: error("not an integer literal: `$token`")
-            return from(token, parsed.digits, parsed.suffix)
-        }
-
         internal fun from(token: Literal, digits: String, suffix: String): LitInt =
             LitInt(LitIntRepr(token, digits, suffix))
 
@@ -664,11 +659,6 @@ public class LitFloat private constructor(
 
         public fun new(digits: String, suffix: String, span: Span): LitFloat =
             LitFloat(digits, suffix, span)
-
-        public fun from(token: Literal): LitFloat {
-            val parsed = parseLitFloat(token.toString()) ?: error("not a float literal: `$token`")
-            return from(token, parsed.digits, parsed.suffix)
-        }
 
         internal fun from(token: Literal, digits: String, suffix: String): LitFloat =
             LitFloat(LitFloatRepr(token, digits, suffix))
@@ -762,23 +752,6 @@ public data class LitBool(
     override fun hashCode(): Int = value.hashCode()
 }
 
-/** String literal spelling style. */
-public sealed class StrStyle {
-    /**
-     * An ordinary string like `"data"`.
-     */
-    public data object Cooked : StrStyle()
-
-    /**
-     * A raw string like `r##"data"##`.
-     *
-     * The unsigned integer is the number of `#` symbols used.
-     */
-    public data class Raw(
-        public var pounds: Int,
-    ) : StrStyle()
-}
-
 private fun respanTokenStream(stream: TokenStream, span: Span): TokenStream =
     TokenStream.fromTokenTrees(stream.map { respanTokenTree(it, span) })
 
@@ -798,7 +771,6 @@ private fun respanTokenTree(token: TokenTree, span: Span): TokenTree =
 private data class StringLiteralParts(
     var value: String,
     var suffix: String,
-    var style: StrStyle,
 )
 
 private data class ByteStringLiteralParts(
@@ -940,7 +912,7 @@ private fun parseLitStrCooked(s: String): StringLiteralParts? {
             }
         }
     }
-    return StringLiteralParts(content.toString(), s.substring(index + 1), StrStyle.Cooked)
+    return StringLiteralParts(content.toString(), s.substring(index + 1))
 }
 
 private fun parseLitStrRaw(s: String): StringLiteralParts? {
@@ -961,7 +933,6 @@ private fun parseLitStrRaw(s: String): StringLiteralParts? {
     return StringLiteralParts(
         value = s.substring(2 + pounds, close),
         suffix = s.substring(hashesEnd),
-        style = StrStyle.Raw(pounds),
     )
 }
 
@@ -1545,12 +1516,12 @@ private fun parseNegativeLit(neg: Punct, cursor: Cursor): Pair<Lit, Cursor>? {
     parseLitInt(repr)?.let {
         val token = Literal.fromStrUnchecked(repr)
         token.setSpan(span)
-        return Lit.Int(LitInt.from(token)) to rest
+        return Lit.Int(LitInt.from(token, it.digits, it.suffix)) to rest
     }
     parseLitFloat(repr)?.let {
         val token = Literal.fromStrUnchecked(repr)
         token.setSpan(span)
-        return Lit.Float(LitFloat.from(token)) to rest
+        return Lit.Float(LitFloat.from(token, it.digits, it.suffix)) to rest
     }
     return null
 }

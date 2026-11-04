@@ -571,4 +571,70 @@ class VisitMutTest {
         block.toTokens(tokens)
         assertEquals("{ let x = new_val + 1 ; }", tokens.toString())
     }
+
+    @Test
+    fun syn3AstHooksDispatchThroughVisitMut() {
+        val seen = mutableListOf<String>()
+        val visitor =
+            object : VisitMut() {
+                override fun visitTypeFnPtrMut(ty: SynType.FnPtr) {
+                    seen += "fnPtr"
+                    super.visitTypeFnPtrMut(ty)
+                }
+
+                override fun visitNamedArgMut(arg: NamedArg) {
+                    seen += "namedArg"
+                    super.visitNamedArgMut(arg)
+                }
+
+                override fun visitFnPtrVariadicMut(variadic: FnPtrVariadic) {
+                    seen += "fnPtrVariadic"
+                    super.visitFnPtrVariadicMut(variadic)
+                }
+
+                override fun visitPatGuardMut(pat: Pat.Guard) {
+                    seen += "patGuard"
+                    super.visitPatGuardMut(pat)
+                }
+
+                override fun visitReceiverKindMut(kind: ReceiverKind) {
+                    seen += "receiverKind"
+                    super.visitReceiverKindMut(kind)
+                }
+
+                override fun visitSafetyMut(safety: Safety) {
+                    seen += "safety"
+                    super.visitSafetyMut(safety)
+                }
+
+                override fun visitFrontmatterMut(f: Frontmatter) {
+                    seen += "frontmatter"
+                    super.visitFrontmatterMut(f)
+                }
+
+                override fun visitWhereClausePlacementMut(placement: WhereClausePlacement) {
+                    seen += "wherePlacement:$placement"
+                    super.visitWhereClausePlacementMut(placement)
+                }
+            }
+
+        val file =
+            parseFile(
+                """
+                type Callback = unsafe extern "C" fn(x: i32, ap: ...) where Self: Sized;
+                trait T {
+                    unsafe fn check(&self, v: i32) {
+                        match v {
+                            x if x > 0 => {}
+                            _ => {}
+                        }
+                    }
+                }
+                """.trimIndent(),
+            ).getOrThrow()
+        file.frontmatter = Frontmatter()
+
+        visitor.visitFileMut(file)
+        assertTrue(seen.containsAll(listOf("fnPtr", "namedArg", "fnPtrVariadic", "patGuard", "receiverKind", "safety", "frontmatter", "wherePlacement:Late")), seen.toString())
+    }
 }

@@ -45,6 +45,7 @@ import io.github.kotlinmania.quote.ToTokens
  * ```text
  * File {
  *     shebang: None,
+ *     frontmatter: None,
  *     attrs: [],
  *     items: [
  *         Use(
@@ -76,6 +77,7 @@ import io.github.kotlinmania.quote.ToTokens
  */
 public data class File(
     public var shebang: String?,
+    public var frontmatter: Frontmatter? = null,
     public var attrs: List<Attribute>,
     public var items: List<Item>,
 ) : ToTokens {
@@ -84,7 +86,26 @@ public data class File(
         for (item in items) item.toTokens(tokens)
     }
 
-    public fun deepCopy(): File = File(shebang, attrs.mapTo(mutableListOf()) { it.deepCopy() }, items.toMutableList())
+    public fun deepCopy(): File =
+        File(
+            shebang,
+            frontmatter?.deepCopy(),
+            attrs.mapTo(mutableListOf()) { it.deepCopy() },
+            items.toMutableList(),
+        )
+}
+
+/** A frontmatter section fenced by `---`. */
+public class Frontmatter {
+    public fun deepCopy(): Frontmatter = Frontmatter()
+
+    public fun clone(): Frontmatter = Frontmatter()
+
+    override fun equals(other: Any?): Boolean = other is Frontmatter
+
+    override fun hashCode(): Int = 0
+
+    override fun toString(): String = "Frontmatter"
 }
 
 public object FileParse {
@@ -94,7 +115,7 @@ public object FileParse {
         while (!input.isEmpty()) {
             items.add(ItemParse.parse(input).getOrElse { return SynResult.failure(it) })
         }
-        return SynResult.success(File(null, attrs, items.toMutableList()))
+        return SynResult.success(File(null, null, attrs, items.toMutableList()))
     }
 }
 

@@ -725,6 +725,15 @@ class ExprTest {
                 ?.toString(),
         )
 
+        val leadingColonBreak =
+            assertIs<Stmt.ExprStmt>(
+                parseStr(StmtParse::parse, "break 'outer ::lib::foo();").getOrThrow(),
+            )
+        val leadingColonBreakExpr = assertIs<Expr.Break>(leadingColonBreak.expr)
+        assertEquals("outer", leadingColonBreakExpr.label?.ident?.toString())
+        val callExpr = assertIs<Expr.Call>(leadingColonBreakExpr.expr)
+        assertPathExpr(callExpr.func, "lib", "foo")
+
         assertTrue(parseStr(StmtParse::parse, "break 'label: loop { break 'label 42; };").isFailure)
     }
 
@@ -996,9 +1005,9 @@ class ExprTest {
     fun testPermutations() {
         val guardedMatch = assertIs<Expr.Match>(parse("match x { _ if condition => {} }"))
         val guardedArm = guardedMatch.arms.single()
-        assertIs<Pat.Wild>(guardedArm.pat)
-        val guard = assertNotNull(guardedArm.guard)
-        assertPathExpr(guard.expr, "condition")
+        val guardedPat = assertIs<Pat.Guard>(guardedArm.pat)
+        assertIs<Pat.Wild>(guardedPat.pat)
+        assertPathExpr(guardedPat.guard, "condition")
         assertIs<Expr.BlockExpr>(guardedArm.body)
         assertPermutationRoundTrip(guardedMatch)
 
@@ -1071,13 +1080,13 @@ class ExprTest {
                 Expr.Closure(
                     attrs = mutableListOf(),
                     lifetimes = null,
-                    movability = null,
+                    modifiers = ClosureModifiers(),
                     constness = null,
                     asyncness = null,
                     capture = null,
-                    or1Token = Or.default(),
+                    inputsBegin = Or.default(),
                     inputs = PatList(),
-                    or2Token = Or.default(),
+                    inputsEnd = Or.default(),
                     output = ReturnType.Default,
                     body = expr.deepCopy(),
                 ),
@@ -1168,6 +1177,15 @@ class ExprTest {
         val whileOr = assertIs<Pat.Or>(whileCond.pat)
         assertNotNull(whileOr.leadingVert)
         assertEquals(2, whileOr.cases.len())
+    }
+
+    @Test
+    fun testAsyncClosure() {
+        val closure = assertIs<Expr.Closure>(parse("async || {}"))
+        assertNotNull(closure.asyncness)
+        assertIs<ReturnType.Default>(closure.output)
+        val body = assertIs<Expr.BlockExpr>(closure.body)
+        assertTrue(body.block.stmts.isEmpty())
     }
 
     private fun pathExpr(ident: String): Expr =

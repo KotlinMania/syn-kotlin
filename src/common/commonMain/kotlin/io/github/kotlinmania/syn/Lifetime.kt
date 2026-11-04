@@ -11,12 +11,12 @@ import io.github.kotlinmania.quote.ToTokens
 import io.github.kotlinmania.quote.append
 
 /**
- * A Rust scope token.
+ * A named scope label token prefixed by an apostrophe.
  *
  * Scope names must conform to the following rules:
  *
  * - Must start with an apostrophe.
- * - Must not consist of just an apostrophe: `'`.
+ * - Must not consist of just an apostrophe.
  * - Character after the apostrophe must be `_` or a Unicode code point with
  *   the XidStart property.
  * - All following characters must be Unicode code points with the XidContinue
@@ -29,32 +29,48 @@ public data class Lifetime(
     ToTokens {
     public companion object {
         /**
-         * # Panics
-         *
-         * Throws an `IllegalArgumentException` if the scope does not conform
+         * Throws an [IllegalArgumentException] if the symbol does not conform
          * to the bulleted rules above.
-         *
-         * # Invocation
-         *
-         * ```kotlin
-         * Lifetime.new(symbol, Span.callSite())
-         * ```
          */
         public fun new(symbol: String, span: Span): Lifetime {
             require(symbol.startsWith('\'')) {
-                "lifetime name must start with apostrophe"
+                "lifetime name must start with apostrophe as in \"'a\", got \"$symbol\""
             }
-            require(symbol != "'") {
+            val ident = symbol.substring(1)
+            val unraw = if (ident.startsWith("r#")) ident.substring(2) else null
+            val validate = unraw ?: ident
+            require(validate.isNotEmpty()) {
                 "lifetime name must not be empty"
             }
-            require(xidOk(symbol.substring(1))) {
-                "$symbol is not a valid lifetime name"
+            require(xidOk(validate)) {
+                "\"$symbol\" is not a valid lifetime name"
             }
             return Lifetime(
                 apostrophe = span,
-                ident = Ident.new(symbol.substring(1), span),
+                ident = if (unraw != null) Ident.newRaw(unraw, span) else Ident.new(ident, span),
             )
         }
+
+        public fun parseAny(input: ParseStream): SynResult<Lifetime> =
+            input.step { cursor: StepCursor ->
+                val pair: Pair<Lifetime, Cursor>? = cursor.lifetime()
+                if (pair == null) {
+                    SynResult.failure(cursor.error("expected lifetime"))
+                } else {
+                    SynResult.success(pair)
+                }
+            }
+
+        internal fun parseOptionalAny(input: ParseStream): Lifetime? =
+            input
+                .step { cursor: StepCursor ->
+                    val pair: Pair<Lifetime, Cursor>? = cursor.lifetime()
+                    if (pair != null) {
+                        SynResult.success(pair.first as Lifetime? to pair.second)
+                    } else {
+                        SynResult.success(null to cursor.raw)
+                    }
+                }.getOrThrow()
     }
 
     public fun span(): Span =
@@ -107,7 +123,12 @@ public object LifetimeParse {
                 SynResult.failure(cursor.error("expected lifetime"))
             } else {
                 val (lifetime, rest) = pair
-                SynResult.success(lifetime to rest)
+                val repr = lifetime.ident.toString()
+                if (acceptAsIdent(repr) || repr == "static" || repr == "_") {
+                    SynResult.success(lifetime to rest)
+                } else {
+                    SynResult.failure(cursor.error("unexpected keyword lifetime \"$lifetime\""))
+                }
             }
         }
 }

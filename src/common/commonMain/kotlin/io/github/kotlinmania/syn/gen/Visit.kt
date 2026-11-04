@@ -5,12 +5,11 @@ import io.github.kotlinmania.procmacro2.Ident
 import io.github.kotlinmania.procmacro2.Span
 import io.github.kotlinmania.procmacro2.TokenStream
 import io.github.kotlinmania.syn.Abi
+import io.github.kotlinmania.syn.Arm
 import io.github.kotlinmania.syn.AssocConst
 import io.github.kotlinmania.syn.AssocType
 import io.github.kotlinmania.syn.AttrStyle
 import io.github.kotlinmania.syn.Attribute
-import io.github.kotlinmania.syn.BareFnArg
-import io.github.kotlinmania.syn.BareVariadic
 import io.github.kotlinmania.syn.BinOp
 import io.github.kotlinmania.syn.Block
 import io.github.kotlinmania.syn.BoundLifetimes
@@ -24,7 +23,6 @@ import io.github.kotlinmania.syn.DeriveInput
 import io.github.kotlinmania.syn.ElseExpr
 import io.github.kotlinmania.syn.Expr
 import io.github.kotlinmania.syn.Field
-import io.github.kotlinmania.syn.FieldMutability
 import io.github.kotlinmania.syn.FieldPat
 import io.github.kotlinmania.syn.FieldValue
 import io.github.kotlinmania.syn.Fields
@@ -32,12 +30,13 @@ import io.github.kotlinmania.syn.FieldsNamed
 import io.github.kotlinmania.syn.FieldsUnnamed
 import io.github.kotlinmania.syn.File
 import io.github.kotlinmania.syn.FnArg
+import io.github.kotlinmania.syn.FnPtrVariadic
 import io.github.kotlinmania.syn.ForeignItem
+import io.github.kotlinmania.syn.Frontmatter
 import io.github.kotlinmania.syn.GenericArgument
 import io.github.kotlinmania.syn.GenericParam
 import io.github.kotlinmania.syn.Generics
 import io.github.kotlinmania.syn.ImplItem
-import io.github.kotlinmania.syn.ImplRestriction
 import io.github.kotlinmania.syn.Index
 import io.github.kotlinmania.syn.Item
 import io.github.kotlinmania.syn.Label
@@ -57,22 +56,23 @@ import io.github.kotlinmania.syn.MacroDelimiter
 import io.github.kotlinmania.syn.Member
 import io.github.kotlinmania.syn.Meta
 import io.github.kotlinmania.syn.ModContent
+import io.github.kotlinmania.syn.NamedArg
 import io.github.kotlinmania.syn.Pat
 import io.github.kotlinmania.syn.PatRest
 import io.github.kotlinmania.syn.PatType
 import io.github.kotlinmania.syn.Path
 import io.github.kotlinmania.syn.PathArguments
 import io.github.kotlinmania.syn.PathSegment
-import io.github.kotlinmania.syn.PathTrait
 import io.github.kotlinmania.syn.PointerMutability
 import io.github.kotlinmania.syn.QSelf
 import io.github.kotlinmania.syn.RangeLimits
+import io.github.kotlinmania.syn.ReceiverKind
 import io.github.kotlinmania.syn.ReturnType
+import io.github.kotlinmania.syn.Safety
 import io.github.kotlinmania.syn.Signature
 import io.github.kotlinmania.syn.StaticMutability
 import io.github.kotlinmania.syn.Stmt
 import io.github.kotlinmania.syn.SynType
-import io.github.kotlinmania.syn.TraitBoundModifier
 import io.github.kotlinmania.syn.TraitItem
 import io.github.kotlinmania.syn.TypeParamBound
 import io.github.kotlinmania.syn.UnOp
@@ -81,6 +81,7 @@ import io.github.kotlinmania.syn.Variadic
 import io.github.kotlinmania.syn.Variant
 import io.github.kotlinmania.syn.Visibility
 import io.github.kotlinmania.syn.WhereClause
+import io.github.kotlinmania.syn.WhereClausePlacement
 import io.github.kotlinmania.syn.WherePredicate
 
 /**
@@ -314,11 +315,11 @@ public open class Visit {
     public open fun visitAssocType(a: AssocType) =
         visitAssocType(this, a)
 
-    public open fun visitBareFnArg(a: BareFnArg) =
-        visitBareFnArg(this, a)
+    public open fun visitNamedArg(a: NamedArg) =
+        visitNamedArg(this, a)
 
-    public open fun visitBareVariadic(v: BareVariadic) =
-        visitBareVariadic(this, v)
+    public open fun visitFnPtrVariadic(v: FnPtrVariadic) =
+        visitFnPtrVariadic(this, v)
 
     public open fun visitBlock(b: Block) =
         visitBlock(this, b)
@@ -335,9 +336,6 @@ public open class Visit {
     public open fun visitFieldPat(f: FieldPat) =
         visitFieldPat(this, f)
 
-    public open fun visitFieldMutability(f: FieldMutability) =
-        visitFieldMutability(this, f)
-
     public open fun visitFields(f: Fields) =
         visitFields(this, f)
 
@@ -349,6 +347,9 @@ public open class Visit {
 
     public open fun visitFile(f: File) =
         visitFile(this, f)
+
+    public open fun visitFrontmatter(f: Frontmatter) =
+        visitFrontmatter(this, f)
 
     public open fun visitFnArg(a: FnArg) =
         visitFnArg(this, a)
@@ -410,9 +411,6 @@ public open class Visit {
     public open fun visitImplItemType(i: ImplItem.AssocType) =
         visitImplItemType(this, i)
 
-    public open fun visitImplRestriction(i: ImplRestriction) =
-        visitImplRestriction(this, i)
-
     public open fun visitItemConst(i: Item.Const) =
         visitItemConst(this, i)
 
@@ -470,6 +468,9 @@ public open class Visit {
     public open fun visitPatConst(p: Pat.Const) =
         visitPatConst(this, p)
 
+    public open fun visitPatGuard(p: Pat.Guard) =
+        visitPatGuard(this, p)
+
     public open fun visitPatIdent(p: Pat.Ident) =
         visitPatIdent(this, p)
 
@@ -521,16 +522,13 @@ public open class Visit {
     public open fun visitPatWild(p: Pat.Wild) =
         visitPatWild(this, p)
 
-    public open fun visitPathTrait(p: PathTrait) =
-        visitPathTrait(this, p)
-
     public open fun visitPathArguments(p: PathArguments) =
         visitPathArguments(this, p)
 
     public open fun visitPathSegment(p: PathSegment) =
         visitPathSegment(this, p)
 
-    public open fun visitArm(arm: io.github.kotlinmania.syn.Arm) =
+    public open fun visitArm(arm: Arm) =
         visitArm(this, arm)
 
     public open fun visitElseExpr(elseExpr: ElseExpr) =
@@ -560,8 +558,14 @@ public open class Visit {
     public open fun visitReceiver(r: FnArg.Receiver) =
         visitReceiver(this, r)
 
+    public open fun visitReceiverKind(r: ReceiverKind) =
+        visitReceiverKind(this, r)
+
     public open fun visitReturnType(r: ReturnType) =
         visitReturnType(this, r)
+
+    public open fun visitSafety(s: Safety) =
+        visitSafety(this, s)
 
     public open fun visitSignature(s: Signature) =
         visitSignature(this, s)
@@ -571,9 +575,6 @@ public open class Visit {
 
     public open fun visitTraitBound(t: TypeParamBound.Trait) =
         visitTraitBound(this, t)
-
-    public open fun visitTraitBoundModifier(t: TraitBoundModifier) =
-        visitTraitBoundModifier(this, t)
 
     public open fun visitTraitItem(t: TraitItem) =
         visitTraitItem(this, t)
@@ -590,8 +591,8 @@ public open class Visit {
     public open fun visitTraitItemType(t: TraitItem.AssocType) =
         visitTraitItemType(this, t)
 
-    public open fun visitTypeBareFn(t: SynType.BareFn) =
-        visitTypeBareFn(this, t)
+    public open fun visitTypeFnPtr(t: SynType.FnPtr) =
+        visitTypeFnPtr(this, t)
 
     public open fun visitTypeArray(t: SynType.Array) =
         visitTypeArray(this, t)
@@ -641,9 +642,6 @@ public open class Visit {
     public open fun visitBinOp(op: BinOp) =
         visitBinOp(this, op)
 
-    public open fun visitPointerMutability(mutability: io.github.kotlinmania.syn.token.Mut?) =
-        visitPointerMutability(this, mutability)
-
     public open fun visitPointerMutability(mutability: PointerMutability) =
         visitPointerMutability(this, mutability)
 
@@ -685,6 +683,9 @@ public open class Visit {
 
     public open fun visitWhereClause(w: WhereClause) =
         visitWhereClause(this, w)
+
+    public open fun visitWhereClausePlacement(w: WhereClausePlacement) =
+        visitWhereClausePlacement(this, w)
 
     public open fun visitWherePredicate(w: WherePredicate) =
         visitWherePredicate(this, w)
@@ -971,7 +972,7 @@ public fun visitExprYield(v: Visit, e: Expr.Yield) {
 public fun visitType(v: Visit, t: SynType) =
     when (t) {
         is SynType.Array -> v.visitTypeArray(t)
-        is SynType.BareFn -> v.visitTypeBareFn(t)
+        is SynType.FnPtr -> v.visitTypeFnPtr(t)
         is SynType.Group -> v.visitTypeGroup(t)
         is SynType.ImplTrait -> v.visitTypeImplTrait(t)
         is SynType.Infer -> v.visitTypeInfer(t)
@@ -994,6 +995,7 @@ public fun visitPath(v: Visit, p: Path) {
 public fun visitPat(v: Visit, p: Pat) =
     when (p) {
         is Pat.Const -> v.visitPatConst(p)
+        is Pat.Guard -> v.visitPatGuard(p)
         is Pat.Ident -> v.visitPatIdent(p)
         is Pat.Lit -> v.visitPatLit(p)
         is Pat.Macro -> v.visitPatMacro(p)
@@ -1200,13 +1202,13 @@ public fun visitAssocType(v: Visit, a: AssocType) {
     v.visitType(a.ty)
 }
 
-public fun visitBareFnArg(v: Visit, a: BareFnArg) {
+public fun visitNamedArg(v: Visit, a: NamedArg) {
     a.attrs.forEach { v.visitAttribute(it) }
     a.name?.let { v.visitIdent(it.ident) }
     v.visitType(a.ty)
 }
 
-public fun visitBareVariadic(v: Visit, node: BareVariadic) {
+public fun visitFnPtrVariadic(v: Visit, node: FnPtrVariadic) {
     node.attrs.forEach { v.visitAttribute(it) }
     node.name?.let { v.visitIdent(it.ident) }
 }
@@ -1228,9 +1230,9 @@ public fun visitConstraint(v: Visit, c: Constraint) {
 public fun visitField(v: Visit, f: Field) {
     f.attrs.forEach { v.visitAttribute(it) }
     v.visitVisibility(f.vis)
-    v.visitFieldMutability(f.mutability)
     f.ident?.let { v.visitIdent(it) }
     v.visitType(f.ty)
+    f.default?.let { v.visitExpr(it.expr) }
 }
 
 public fun visitFieldPat(v: Visit, f: FieldPat) {
@@ -1238,12 +1240,6 @@ public fun visitFieldPat(v: Visit, f: FieldPat) {
     v.visitMember(f.member)
     v.visitPat(f.pat)
 }
-
-public fun visitFieldMutability(v: Visit, f: FieldMutability) =
-    when (f) {
-        FieldMutability.None -> Unit
-        is FieldMutability.Mut -> Unit
-    }
 
 public fun visitFields(v: Visit, f: Fields) =
     when (f) {
@@ -1267,9 +1263,12 @@ public fun visitFieldsUnnamed(v: Visit, f: FieldsUnnamed) {
 }
 
 public fun visitFile(v: Visit, f: File) {
+    f.frontmatter?.let { v.visitFrontmatter(it) }
     f.attrs.forEach { v.visitAttribute(it) }
     f.items.forEach { v.visitItem(it) }
 }
+
+public fun visitFrontmatter(v: Visit, f: Frontmatter) = Unit
 
 public fun visitFnArg(v: Visit, a: FnArg) =
     when (a) {
@@ -1300,6 +1299,7 @@ public fun visitForeignItemMacro(v: Visit, i: ForeignItem.Macro) {
 public fun visitForeignItemStatic(v: Visit, i: ForeignItem.Static) {
     i.attrs.forEach { v.visitAttribute(it) }
     v.visitVisibility(i.vis)
+    v.visitSafety(i.safety)
     v.visitStaticMutability(i.mutability)
     v.visitIdent(i.ident)
     v.visitType(i.ty)
@@ -1333,7 +1333,7 @@ public fun visitConstParam(v: Visit, c: GenericParam.ConstParam) {
     c.attrs.forEach { v.visitAttribute(it) }
     v.visitIdent(c.ident)
     v.visitType(c.ty)
-    c.default?.let { v.visitExpr(it) }
+    c.default?.let { v.visitExpr(it.expr) }
 }
 
 public fun visitLifetimeParam(v: Visit, l: GenericParam.LifetimeParam) {
@@ -1346,7 +1346,7 @@ public fun visitTypeParam(v: Visit, t: GenericParam.TypeParam) {
     t.attrs.forEach { v.visitAttribute(it) }
     v.visitIdent(t.ident)
     t.bounds.toList().forEach { v.visitTypeParamBound(it) }
-    t.default?.let { v.visitType(it) }
+    t.default?.let { v.visitType(it.type) }
 }
 
 public fun visitMacro(v: Visit, m: Macro) {
@@ -1410,14 +1410,13 @@ public fun visitImplItemType(v: Visit, i: ImplItem.AssocType) {
     v.visitType(i.ty)
 }
 
-public fun visitImplRestriction(v: Visit, i: ImplRestriction) = Unit
-
 public fun visitItemConst(v: Visit, i: Item.Const) {
     i.attrs.forEach { v.visitAttribute(it) }
     v.visitVisibility(i.vis)
     v.visitIdent(i.ident)
+    v.visitGenerics(i.generics)
     v.visitType(i.ty)
-    i.expr?.let { v.visitExpr(it) }
+    v.visitExpr(i.expr)
 }
 
 public fun visitItemEnum(v: Visit, i: Item.Enum) {
@@ -1439,7 +1438,7 @@ public fun visitItemFn(v: Visit, i: Item.Fn) {
     i.attrs.forEach { v.visitAttribute(it) }
     v.visitVisibility(i.vis)
     v.visitSignature(i.sig)
-    i.block?.let { v.visitBlock(it) }
+    v.visitBlock(i.block)
 }
 
 public fun visitItemForeignMod(v: Visit, i: Item.ForeignMod) {
@@ -1451,7 +1450,7 @@ public fun visitItemForeignMod(v: Visit, i: Item.ForeignMod) {
 public fun visitItemImpl(v: Visit, i: Item.Impl) {
     i.attrs.forEach { v.visitAttribute(it) }
     v.visitGenerics(i.generics)
-    i.traitPath?.let { v.visitPathTrait(it) }
+    i.traitPath?.let { v.visitPath(it.path) }
     v.visitType(i.selfType)
     i.items.forEach { v.visitImplItem(it) }
 }
@@ -1489,7 +1488,6 @@ public fun visitItemStruct(v: Visit, i: Item.Struct) {
 public fun visitItemTrait(v: Visit, i: Item.Trait) {
     i.attrs.forEach { v.visitAttribute(it) }
     v.visitVisibility(i.vis)
-    i.restriction?.let { v.visitImplRestriction(it) }
     v.visitIdent(i.ident)
     v.visitGenerics(i.generics)
     i.supertraits.toList().forEach { v.visitTypeParamBound(it) }
@@ -1510,6 +1508,7 @@ public fun visitItemType(v: Visit, i: Item.ItemType) {
     v.visitIdent(i.ident)
     v.visitGenerics(i.generics)
     v.visitType(i.ty)
+    v.visitWhereClausePlacement(i.whereClausePlacement)
 }
 
 public fun visitItemUnion(v: Visit, i: Item.Union) {
@@ -1538,7 +1537,7 @@ public fun visitModContent(v: Visit, m: ModContent) =
     }
 
 public fun visitParenthesizedGenericArguments(v: Visit, p: PathArguments.Parenthesized) {
-    p.inputs.toList().forEach { v.visitType(it) }
+    p.inputs.toList().forEach { v.visitNamedArg(it) }
     v.visitReturnType(p.output)
 }
 
@@ -1547,9 +1546,14 @@ public fun visitPatConst(v: Visit, p: Pat.Const) {
     v.visitBlock(p.block)
 }
 
+public fun visitPatGuard(v: Visit, p: Pat.Guard) {
+    p.attrs.forEach { v.visitAttribute(it) }
+    v.visitPat(p.pat)
+    v.visitExpr(p.guard)
+}
+
 public fun visitPatIdent(v: Visit, p: Pat.Ident) {
     p.attrs.forEach { v.visitAttribute(it) }
-    v.visitFieldMutability(p.mutability)
     v.visitIdent(p.ident)
     p.subpat?.let { v.visitPat(it) }
 }
@@ -1589,7 +1593,6 @@ public fun visitPatRange(v: Visit, p: Pat.Range) {
 
 public fun visitPatReference(v: Visit, p: Pat.Reference) {
     p.attrs.forEach { v.visitAttribute(it) }
-    v.visitFieldMutability(p.mutability)
     v.visitPat(p.pat)
 }
 
@@ -1642,10 +1645,6 @@ public fun visitPatWild(v: Visit, p: Pat.Wild) {
     p.attrs.forEach { v.visitAttribute(it) }
 }
 
-public fun visitPathTrait(v: Visit, p: PathTrait) {
-    v.visitPath(p.path)
-}
-
 public fun visitPathArguments(v: Visit, p: PathArguments) =
     when (p) {
         PathArguments.None -> Unit
@@ -1664,10 +1663,9 @@ public fun visitPathSegment(v: Visit, p: PathSegment) {
     v.visitPathArguments(p.arguments)
 }
 
-public fun visitArm(v: Visit, arm: io.github.kotlinmania.syn.Arm) {
+public fun visitArm(v: Visit, arm: Arm) {
     arm.attrs.forEach { v.visitAttribute(it) }
     v.visitPat(arm.pat)
-    arm.guard?.let { v.visitExpr(it.expr) }
     v.visitExpr(arm.body)
 }
 
@@ -1682,11 +1680,13 @@ public fun visitFieldValue(v: Visit, fieldValue: FieldValue) {
 }
 
 public fun visitPredicateLifetime(v: Visit, p: WherePredicate.LifetimePredicate) {
+    p.attrs.forEach { v.visitAttribute(it) }
     v.visitLifetime(p.lifetime)
     p.bounds.toList().forEach { v.visitLifetime(it) }
 }
 
 public fun visitPredicateType(v: Visit, p: WherePredicate.TypePredicate) {
+    p.attrs.forEach { v.visitAttribute(it) }
     p.lifetimes?.let { v.visitBoundLifetimes(it) }
     v.visitType(p.boundedTy)
     p.bounds.toList().forEach { v.visitTypeParamBound(it) }
@@ -1712,9 +1712,21 @@ public fun visitRangeLimits(v: Visit, limits: RangeLimits) =
 
 public fun visitReceiver(v: Visit, r: FnArg.Receiver) {
     r.attrs.forEach { v.visitAttribute(it) }
-    r.reference?.lifetime?.let { v.visitLifetime(it) }
-    v.visitType(r.type)
+    v.visitReceiverKind(r.kind)
 }
+
+public fun visitReceiverKind(v: Visit, r: ReceiverKind) =
+    when (r) {
+        ReceiverKind.Value -> Unit
+
+        is ReceiverKind.Reference -> {
+            r.lifetime?.let { v.visitLifetime(it) }
+        }
+
+        is ReceiverKind.Typed -> {
+            v.visitType(r.ty)
+        }
+    }
 
 public fun visitReturnType(v: Visit, r: ReturnType) =
     when (r) {
@@ -1725,7 +1737,15 @@ public fun visitReturnType(v: Visit, r: ReturnType) =
         }
     }
 
+public fun visitSafety(v: Visit, s: Safety) =
+    when (s) {
+        is Safety.Safe -> Unit
+        is Safety.Unsafe -> Unit
+        Safety.Default -> Unit
+    }
+
 public fun visitSignature(v: Visit, s: Signature) {
+    v.visitSafety(s.safety)
     s.abi?.let { v.visitAbi(it) }
     v.visitIdent(s.ident)
     v.visitGenerics(s.generics)
@@ -1740,16 +1760,9 @@ public fun visitStmtMacro(v: Visit, s: Stmt.MacroStmt) {
 }
 
 public fun visitTraitBound(v: Visit, t: TypeParamBound.Trait) {
-    v.visitTraitBoundModifier(t.modifier)
     t.lifetimes?.let { v.visitBoundLifetimes(it) }
     v.visitPath(t.path)
 }
-
-public fun visitTraitBoundModifier(v: Visit, t: TraitBoundModifier) =
-    when (t) {
-        TraitBoundModifier.None -> Unit
-        is TraitBoundModifier.Maybe -> Unit
-    }
 
 public fun visitTraitItem(v: Visit, t: TraitItem) =
     when (t) {
@@ -1787,34 +1800,43 @@ public fun visitTraitItemType(v: Visit, t: TraitItem.AssocType) {
     t.default?.let { v.visitType(it.type) }
 }
 
-public fun visitTypeBareFn(v: Visit, t: SynType.BareFn) {
+public fun visitTypeFnPtr(v: Visit, t: SynType.FnPtr) {
+    t.attrs.forEach { v.visitAttribute(it) }
     t.lifetimes?.let { v.visitBoundLifetimes(it) }
     t.abi?.let { v.visitAbi(it) }
-    t.inputs.toList().forEach { v.visitBareFnArg(it) }
-    t.variadic?.let { v.visitBareVariadic(it) }
+    t.inputs.toList().forEach { v.visitNamedArg(it) }
+    t.variadic?.let { v.visitFnPtrVariadic(it) }
     v.visitReturnType(t.output)
 }
 
 public fun visitTypeArray(v: Visit, t: SynType.Array) {
+    t.attrs.forEach { v.visitAttribute(it) }
     v.visitType(t.elem)
     v.visitExpr(t.len)
 }
 
 public fun visitTypeGroup(v: Visit, t: SynType.Group) {
+    t.attrs.forEach { v.visitAttribute(it) }
     v.visitType(t.elem)
 }
 
 public fun visitTypeImplTrait(v: Visit, t: SynType.ImplTrait) {
+    t.attrs.forEach { v.visitAttribute(it) }
     t.bounds.toList().forEach { v.visitTypeParamBound(it) }
 }
 
-public fun visitTypeInfer(v: Visit, t: SynType.Infer) = Unit
+public fun visitTypeInfer(v: Visit, t: SynType.Infer) {
+    t.attrs.forEach { v.visitAttribute(it) }
+}
 
 public fun visitTypeMacro(v: Visit, t: SynType.Macro) {
+    t.attrs.forEach { v.visitAttribute(it) }
     v.visitMacro(t.mac)
 }
 
-public fun visitTypeNever(v: Visit, t: SynType.Never) = Unit
+public fun visitTypeNever(v: Visit, t: SynType.Never) {
+    t.attrs.forEach { v.visitAttribute(it) }
+}
 
 public fun visitTypeParamBound(v: Visit, t: TypeParamBound) =
     when (t) {
@@ -1825,33 +1847,40 @@ public fun visitTypeParamBound(v: Visit, t: TypeParamBound) =
     }
 
 public fun visitTypeParen(v: Visit, t: SynType.Paren) {
+    t.attrs.forEach { v.visitAttribute(it) }
     v.visitType(t.elem)
 }
 
 public fun visitTypePath(v: Visit, t: SynType.Path) {
+    t.attrs.forEach { v.visitAttribute(it) }
     t.qself?.let { v.visitQself(it) }
     v.visitPath(t.path)
 }
 
 public fun visitTypePtr(v: Visit, t: SynType.Ptr) {
+    t.attrs.forEach { v.visitAttribute(it) }
     v.visitPointerMutability(t.mutability)
     v.visitType(t.elem)
 }
 
 public fun visitTypeReference(v: Visit, t: SynType.Reference) {
+    t.attrs.forEach { v.visitAttribute(it) }
     t.lifetime?.let { v.visitLifetime(it) }
     v.visitType(t.elem)
 }
 
 public fun visitTypeSlice(v: Visit, t: SynType.Slice) {
+    t.attrs.forEach { v.visitAttribute(it) }
     v.visitType(t.elem)
 }
 
 public fun visitTypeTraitObject(v: Visit, t: SynType.TraitObject) {
+    t.attrs.forEach { v.visitAttribute(it) }
     t.bounds.toList().forEach { v.visitTypeParamBound(it) }
 }
 
 public fun visitTypeTuple(v: Visit, t: SynType.Tuple) {
+    t.attrs.forEach { v.visitAttribute(it) }
     t.elems.toList().forEach { v.visitType(it) }
 }
 
@@ -1893,8 +1922,6 @@ public fun visitBinOp(v: Visit, op: BinOp) =
         is BinOp.ShlAssign -> Unit
         is BinOp.ShrAssign -> Unit
     }
-
-public fun visitPointerMutability(v: Visit, mutability: io.github.kotlinmania.syn.token.Mut?) = Unit
 
 public fun visitPointerMutability(v: Visit, mutability: PointerMutability) =
     when (mutability) {
@@ -1985,6 +2012,12 @@ public fun visitVisibility(v: Visit, node: Visibility) =
 public fun visitWhereClause(v: Visit, w: WhereClause) {
     w.predicates.toList().forEach { v.visitWherePredicate(it) }
 }
+
+public fun visitWhereClausePlacement(v: Visit, w: WhereClausePlacement) =
+    when (w) {
+        WhereClausePlacement.Early -> Unit
+        WhereClausePlacement.Late -> Unit
+    }
 
 public fun visitWherePredicate(v: Visit, w: WherePredicate) =
     when (w) {

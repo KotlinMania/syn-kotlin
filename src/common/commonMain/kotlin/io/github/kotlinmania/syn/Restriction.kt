@@ -53,22 +53,6 @@ public sealed class Visibility : ToTokens {
     public fun isSome(): Boolean = this !is Inherited
 }
 
-/** Field mutability marker. Reserved for RFC 3323. */
-public sealed class FieldMutability : ToTokens {
-    public data object None : FieldMutability()
-
-    public data class Mut(
-        var token: io.github.kotlinmania.syn.token.Mut,
-    ) : FieldMutability()
-
-    override fun toTokens(tokens: TokenStream) {
-        when (this) {
-            None -> Unit
-            is Mut -> token.toTokens(tokens)
-        }
-    }
-}
-
 /** Strongly-typed parser for visibility. */
 public object VisibilityParse {
     fun parse(input: ParseStream): SynResult<Visibility> {

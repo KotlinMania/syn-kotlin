@@ -42,6 +42,7 @@ public sealed class Stmt : ToTokens {
     public data class Local(
         public var attrs: List<Attribute>,
         public var letToken: Let,
+        public var modifiers: LocalModifiers,
         public var pat: Pat,
         public var init: LocalInit?,
         public var semiToken: Semi,
@@ -54,7 +55,15 @@ public sealed class Stmt : ToTokens {
             semiToken.toTokens(tokens)
         }
 
-        override fun deepCopy(): Local = Local(attrs.mapTo(mutableListOf()) { it.deepCopy() }, letToken, pat.deepCopy(), init?.deepCopy(), semiToken)
+        override fun deepCopy(): Local =
+            Local(
+                attrs.mapTo(mutableListOf()) { it.deepCopy() },
+                letToken,
+                modifiers.deepCopy(),
+                pat.deepCopy(),
+                init?.deepCopy(),
+                semiToken,
+            )
     }
 
     /** An item definition. */
@@ -118,6 +127,25 @@ public data class LocalInit(
     public fun deepCopy(): LocalInit = LocalInit(eqToken, expr.deepCopy(), diverge?.let { it.copy(expr = it.expr.deepCopy()) })
 }
 
+/** Additional optional information about a `let`-binding. */
+public class LocalModifiers {
+    public companion object {
+        public fun default(): LocalModifiers = LocalModifiers()
+    }
+
+    public fun requireEmpty(): SynResult<Unit> = SynResult.success(Unit)
+
+    public fun deepCopy(): LocalModifiers = LocalModifiers()
+
+    public fun clone(): LocalModifiers = LocalModifiers()
+
+    override fun equals(other: Any?): Boolean = other is LocalModifiers
+
+    override fun hashCode(): Int = 0
+
+    override fun toString(): String = "LocalModifiers"
+}
+
 public object StmtParse {
     fun parse(input: ParseStream): SynResult<Stmt> =
         parseStmt(input)
@@ -174,7 +202,7 @@ internal fun stmtLocal(input: ParseStream): SynResult<Stmt.Local> {
         init = LocalInit(eq, expr, diverge)
     }
     val semi = SemiParse.parse(input).getOrElse { return SynResult.failure(it) }
-    return SynResult.success(Stmt.Local(attrs, letToken, pat, init, semi))
+    return SynResult.success(Stmt.Local(attrs, letToken, LocalModifiers(), pat, init, semi))
 }
 
 internal fun stmtExpr(input: ParseStream): SynResult<Stmt.ExprStmt> {

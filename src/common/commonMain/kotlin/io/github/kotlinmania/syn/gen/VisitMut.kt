@@ -10,8 +10,6 @@ import io.github.kotlinmania.syn.AssocConst
 import io.github.kotlinmania.syn.AssocType
 import io.github.kotlinmania.syn.AttrStyle
 import io.github.kotlinmania.syn.Attribute
-import io.github.kotlinmania.syn.BareFnArg
-import io.github.kotlinmania.syn.BareVariadic
 import io.github.kotlinmania.syn.BinOp
 import io.github.kotlinmania.syn.Block
 import io.github.kotlinmania.syn.BoundLifetimes
@@ -25,7 +23,6 @@ import io.github.kotlinmania.syn.DeriveInput
 import io.github.kotlinmania.syn.ElseExpr
 import io.github.kotlinmania.syn.Expr
 import io.github.kotlinmania.syn.Field
-import io.github.kotlinmania.syn.FieldMutability
 import io.github.kotlinmania.syn.FieldPat
 import io.github.kotlinmania.syn.FieldValue
 import io.github.kotlinmania.syn.Fields
@@ -33,12 +30,13 @@ import io.github.kotlinmania.syn.FieldsNamed
 import io.github.kotlinmania.syn.FieldsUnnamed
 import io.github.kotlinmania.syn.File
 import io.github.kotlinmania.syn.FnArg
+import io.github.kotlinmania.syn.FnPtrVariadic
 import io.github.kotlinmania.syn.ForeignItem
+import io.github.kotlinmania.syn.Frontmatter
 import io.github.kotlinmania.syn.GenericArgument
 import io.github.kotlinmania.syn.GenericParam
 import io.github.kotlinmania.syn.Generics
 import io.github.kotlinmania.syn.ImplItem
-import io.github.kotlinmania.syn.ImplRestriction
 import io.github.kotlinmania.syn.Index
 import io.github.kotlinmania.syn.Item
 import io.github.kotlinmania.syn.Label
@@ -58,22 +56,23 @@ import io.github.kotlinmania.syn.MacroDelimiter
 import io.github.kotlinmania.syn.Member
 import io.github.kotlinmania.syn.Meta
 import io.github.kotlinmania.syn.ModContent
+import io.github.kotlinmania.syn.NamedArg
 import io.github.kotlinmania.syn.Pat
 import io.github.kotlinmania.syn.PatRest
 import io.github.kotlinmania.syn.PatType
 import io.github.kotlinmania.syn.Path
 import io.github.kotlinmania.syn.PathArguments
 import io.github.kotlinmania.syn.PathSegment
-import io.github.kotlinmania.syn.PathTrait
 import io.github.kotlinmania.syn.PointerMutability
 import io.github.kotlinmania.syn.QSelf
 import io.github.kotlinmania.syn.RangeLimits
+import io.github.kotlinmania.syn.ReceiverKind
 import io.github.kotlinmania.syn.ReturnType
+import io.github.kotlinmania.syn.Safety
 import io.github.kotlinmania.syn.Signature
 import io.github.kotlinmania.syn.StaticMutability
 import io.github.kotlinmania.syn.Stmt
 import io.github.kotlinmania.syn.SynType
-import io.github.kotlinmania.syn.TraitBoundModifier
 import io.github.kotlinmania.syn.TraitItem
 import io.github.kotlinmania.syn.TypeParamBound
 import io.github.kotlinmania.syn.UnOp
@@ -82,6 +81,7 @@ import io.github.kotlinmania.syn.Variadic
 import io.github.kotlinmania.syn.Variant
 import io.github.kotlinmania.syn.Visibility
 import io.github.kotlinmania.syn.WhereClause
+import io.github.kotlinmania.syn.WhereClausePlacement
 import io.github.kotlinmania.syn.WherePredicate
 
 /**
@@ -223,6 +223,9 @@ public open class VisitMut {
     public open fun visitFile(f: File) =
         visitFileMut(this, f)
 
+    public open fun visitFrontmatter(f: Frontmatter) =
+        visitFrontmatterMut(this, f)
+
     public open fun visitAttribute(a: Attribute) =
         visitAttributeMut(this, a)
 
@@ -307,6 +310,9 @@ public open class VisitMut {
     public open fun visitSignature(sig: Signature) =
         visitSignatureMut(this, sig)
 
+    public open fun visitSafety(safety: Safety) =
+        visitSafetyMut(this, safety)
+
     public open fun visitAbi(a: Abi) =
         visitAbiMut(this, a)
 
@@ -334,8 +340,14 @@ public open class VisitMut {
     public open fun visitReceiver(receiver: FnArg.Receiver) =
         visitReceiverMut(this, receiver)
 
+    public open fun visitReceiverKind(kind: ReceiverKind) =
+        visitReceiverKindMut(this, kind)
+
     public open fun visitPatType(patType: PatType) =
         visitPatTypeMut(this, patType)
+
+    public open fun visitPatGuard(pat: Pat.Guard) =
+        visitPatGuardMut(this, pat)
 
     public open fun visitPatIdent(patIdent: Pat.Ident) =
         visitPatIdentMut(this, patIdent)
@@ -403,17 +415,14 @@ public open class VisitMut {
     public open fun visitPointerMutability(mutability: PointerMutability) =
         visitPointerMutabilityMut(this, mutability)
 
-    public open fun visitPointerMutabilityMut(mutability: io.github.kotlinmania.syn.token.Mut?) =
-        visitPointerMutabilityMut(this, mutability)
+    public open fun visitTypeFnPtr(ty: SynType.FnPtr) =
+        visitTypeFnPtrMut(this, ty)
 
-    public open fun visitTypeBareFn(ty: SynType.BareFn) =
-        visitTypeBareFnMut(this, ty)
+    public open fun visitNamedArg(arg: NamedArg) =
+        visitNamedArgMut(this, arg)
 
-    public open fun visitBareFnArg(arg: BareFnArg) =
-        visitBareFnArgMut(this, arg)
-
-    public open fun visitBareVariadic(variadic: BareVariadic) =
-        visitBareVariadicMut(this, variadic)
+    public open fun visitFnPtrVariadic(variadic: FnPtrVariadic) =
+        visitFnPtrVariadicMut(this, variadic)
 
     public open fun visitTypeParen(ty: SynType.Paren) =
         visitTypeParenMut(this, ty)
@@ -460,9 +469,6 @@ public open class VisitMut {
     public open fun visitTraitBound(bound: TypeParamBound.Trait) =
         visitTraitBoundMut(this, bound)
 
-    public open fun visitTraitBoundModifier(modifier: TraitBoundModifier) =
-        visitTraitBoundModifierMut(this, modifier)
-
     public open fun visitBinOp(op: BinOp) =
         visitBinOpMut(this, op)
 
@@ -508,9 +514,6 @@ public open class VisitMut {
     public open fun visitField(field: Field) =
         visitFieldMut(this, field)
 
-    public open fun visitFieldMutability(fieldMutability: FieldMutability) =
-        visitFieldMutabilityMut(this, fieldMutability)
-
     public open fun visitFields(fields: Fields) =
         visitFieldsMut(this, fields)
 
@@ -534,9 +537,6 @@ public open class VisitMut {
 
     public open fun visitImplItemType(item: ImplItem.AssocType) =
         visitImplItemTypeMut(this, item)
-
-    public open fun visitImplRestriction(restriction: ImplRestriction) =
-        visitImplRestrictionMut(this, restriction)
 
     public open fun visitItemConst(item: Item.Const) =
         visitItemConstMut(this, item)
@@ -613,9 +613,6 @@ public open class VisitMut {
     public open fun visitQselfMut(qself: QSelf) =
         visitQselfMut(this, qself)
 
-    public open fun visitPathTrait(pathTrait: PathTrait) =
-        visitPathTraitMut(this, pathTrait)
-
     public open fun visitTraitItem(item: TraitItem) =
         visitTraitItemMut(this, item)
 
@@ -664,6 +661,9 @@ public open class VisitMut {
     public open fun visitWhereClause(whereClause: WhereClause) =
         visitWhereClauseMut(this, whereClause)
 
+    public open fun visitWhereClausePlacement(placement: WhereClausePlacement) =
+        visitWhereClausePlacementMut(this, placement)
+
     public open fun visitWherePredicate(wherePredicate: WherePredicate) =
         visitWherePredicateMut(this, wherePredicate)
 
@@ -699,6 +699,9 @@ public open class VisitMut {
 
     public open fun visitFileMut(f: File) =
         visitFile(f)
+
+    public open fun visitFrontmatterMut(f: Frontmatter) =
+        visitFrontmatter(f)
 
     public open fun visitAttributeMut(a: Attribute) =
         visitAttribute(a)
@@ -754,6 +757,9 @@ public open class VisitMut {
     public open fun visitSignatureMut(sig: Signature) =
         visitSignature(sig)
 
+    public open fun visitSafetyMut(safety: Safety) =
+        visitSafety(safety)
+
     public open fun visitAbiMut(a: Abi) =
         visitAbi(a)
 
@@ -766,8 +772,14 @@ public open class VisitMut {
     public open fun visitReceiverMut(receiver: FnArg.Receiver) =
         visitReceiver(receiver)
 
+    public open fun visitReceiverKindMut(kind: ReceiverKind) =
+        visitReceiverKind(kind)
+
     public open fun visitPatTypeMut(patType: PatType) =
         visitPatType(patType)
+
+    public open fun visitPatGuardMut(pat: Pat.Guard) =
+        visitPatGuard(pat)
 
     public open fun visitPatIdentMut(patIdent: Pat.Ident) =
         visitPatIdent(patIdent)
@@ -802,14 +814,14 @@ public open class VisitMut {
     public open fun visitPointerMutabilityMut(mutability: PointerMutability) =
         visitPointerMutability(mutability)
 
-    public open fun visitTypeBareFnMut(ty: SynType.BareFn) =
-        visitTypeBareFn(ty)
+    public open fun visitTypeFnPtrMut(ty: SynType.FnPtr) =
+        visitTypeFnPtr(ty)
 
-    public open fun visitBareFnArgMut(arg: BareFnArg) =
-        visitBareFnArg(arg)
+    public open fun visitNamedArgMut(arg: NamedArg) =
+        visitNamedArg(arg)
 
-    public open fun visitBareVariadicMut(variadic: BareVariadic) =
-        visitBareVariadic(variadic)
+    public open fun visitFnPtrVariadicMut(variadic: FnPtrVariadic) =
+        visitFnPtrVariadic(variadic)
 
     public open fun visitTypeParenMut(ty: SynType.Paren) =
         visitTypeParen(ty)
@@ -856,9 +868,6 @@ public open class VisitMut {
     public open fun visitTraitBoundMut(bound: TypeParamBound.Trait) =
         visitTraitBound(bound)
 
-    public open fun visitTraitBoundModifierMut(modifier: TraitBoundModifier) =
-        visitTraitBoundModifier(modifier)
-
     public open fun visitBinOpMut(op: BinOp) =
         visitBinOp(op)
 
@@ -888,9 +897,6 @@ public open class VisitMut {
 
     public open fun visitFieldMut(field: Field) =
         visitField(field)
-
-    public open fun visitFieldMutabilityMut(fieldMutability: FieldMutability) =
-        visitFieldMutability(fieldMutability)
 
     public open fun visitFieldsMut(fields: Fields) =
         visitFields(fields)
@@ -930,9 +936,6 @@ public open class VisitMut {
 
     public open fun visitForeignItemTypeMut(item: ForeignItem.ItemType) =
         visitForeignItemType(item)
-
-    public open fun visitImplRestrictionMut(restriction: ImplRestriction) =
-        visitImplRestriction(restriction)
 
     public open fun visitItemConstMut(item: Item.Const) =
         visitItemConst(item)
@@ -994,9 +997,6 @@ public open class VisitMut {
     public open fun visitQSelfMut(qself: QSelf) =
         visitQSelf(qself)
 
-    public open fun visitPathTraitMut(pathTrait: PathTrait) =
-        visitPathTrait(pathTrait)
-
     public open fun visitTraitItemMut(item: TraitItem) =
         visitTraitItem(item)
 
@@ -1041,6 +1041,9 @@ public open class VisitMut {
 
     public open fun visitWhereClauseMut(whereClause: WhereClause) =
         visitWhereClause(whereClause)
+
+    public open fun visitWhereClausePlacementMut(placement: WhereClausePlacement) =
+        visitWhereClausePlacement(placement)
 
     public open fun visitWherePredicateMut(wherePredicate: WherePredicate) =
         visitWherePredicate(wherePredicate)
@@ -1320,8 +1323,8 @@ public fun visitTypeMut(v: VisitMut, t: SynType) =
             v.visitTypeArrayMut(t)
         }
 
-        is SynType.BareFn -> {
-            v.visitTypeBareFnMut(t)
+        is SynType.FnPtr -> {
+            v.visitTypeFnPtrMut(t)
         }
 
         is SynType.Group -> {
@@ -1386,6 +1389,10 @@ public fun visitPatMut(v: VisitMut, p: Pat) =
         is Pat.Const -> {
             v.visitAttributesMut(p.attrs)
             v.visitBlockMut(p.block)
+        }
+
+        is Pat.Guard -> {
+            v.visitPatGuardMut(p)
         }
 
         is Pat.Ident -> {
@@ -1528,9 +1535,12 @@ public fun visitItemMut(v: VisitMut, i: Item) =
     }
 
 public fun visitFileMut(v: VisitMut, f: File) {
+    f.frontmatter?.let { v.visitFrontmatterMut(it) }
     v.visitAttributesMut(f.attrs)
     for (i in f.items.indices) v.visitItemMut(f.items[i])
 }
+
+public fun visitFrontmatterMut(v: VisitMut, f: Frontmatter) = Unit
 
 public fun visitAttributeMut(v: VisitMut, a: Attribute) {
     v.visitAttrStyleMut(a.style)
@@ -1713,6 +1723,7 @@ public fun visitAttributesMut(v: VisitMut, attrs: List<Attribute>) {
 }
 
 public fun visitSignatureMut(v: VisitMut, sig: Signature) {
+    v.visitSafetyMut(sig.safety)
     sig.abi?.let { v.visitAbiMut(it) }
     v.visitIdentMut(sig.ident)
     v.visitGenericsMut(sig.generics)
@@ -1720,6 +1731,13 @@ public fun visitSignatureMut(v: VisitMut, sig: Signature) {
     sig.variadic?.let { v.visitVariadicMut(it) }
     v.visitReturnTypeMut(sig.output)
 }
+
+public fun visitSafetyMut(v: VisitMut, safety: Safety) =
+    when (safety) {
+        is Safety.Safe -> Unit
+        is Safety.Unsafe -> Unit
+        Safety.Default -> Unit
+    }
 
 public fun visitAbiMut(v: VisitMut, a: Abi) {
     val name = a.name
@@ -1785,6 +1803,7 @@ public fun visitForeignItemMacroMut(v: VisitMut, item: ForeignItem.Macro) {
 public fun visitForeignItemStaticMut(v: VisitMut, item: ForeignItem.Static) {
     v.visitAttributesMut(item.attrs)
     v.visitVisibilityMut(item.vis)
+    v.visitSafetyMut(item.safety)
     v.visitStaticMutabilityMut(item.mutability)
     v.visitIdentMut(item.ident)
     v.visitTypeMut(item.ty)
@@ -1799,13 +1818,32 @@ public fun visitForeignItemTypeMut(v: VisitMut, item: ForeignItem.ItemType) {
 
 public fun visitReceiverMut(v: VisitMut, receiver: FnArg.Receiver) {
     v.visitAttributesMut(receiver.attrs)
-    receiver.reference?.let { it.lifetime?.let { lt -> v.visitLifetimeMut(lt) } }
-    v.visitTypeMut(receiver.type)
+    v.visitReceiverKindMut(receiver.kind)
 }
 
+public fun visitReceiverKindMut(v: VisitMut, kind: ReceiverKind) =
+    when (kind) {
+        ReceiverKind.Value -> Unit
+
+        is ReceiverKind.Reference -> {
+            kind.lifetime?.let { v.visitLifetimeMut(it) }
+        }
+
+        is ReceiverKind.Typed -> {
+            v.visitTypeMut(kind.ty)
+        }
+    }
+
 public fun visitPatTypeMut(v: VisitMut, patType: PatType) {
+    v.visitAttributesMut(patType.attrs)
     v.visitPatMut(patType.pat)
     v.visitTypeMut(patType.ty)
+}
+
+public fun visitPatGuardMut(v: VisitMut, pat: Pat.Guard) {
+    v.visitAttributesMut(pat.attrs)
+    v.visitPatMut(pat.pat)
+    pat.guard = v.visitExprMut(pat.guard)
 }
 
 public fun visitPatIdentMut(v: VisitMut, patIdent: Pat.Ident) {
@@ -1873,77 +1911,91 @@ public fun visitPatTypeMut(v: VisitMut, pat: Pat.TypeAscription) {
 }
 
 public fun visitTypePathMut(v: VisitMut, typePath: SynType.Path) {
+    v.visitAttributesMut(typePath.attrs)
     typePath.qself?.let { v.visitQSelfMut(it) }
     v.visitPathMut(typePath.path)
 }
 
 public fun visitTypeReferenceMut(v: VisitMut, ty: SynType.Reference) {
+    v.visitAttributesMut(ty.attrs)
     ty.lifetime?.let { v.visitLifetimeMut(it) }
     v.visitTypeMut(ty.elem)
 }
 
 public fun visitTypeArrayMut(v: VisitMut, ty: SynType.Array) {
+    v.visitAttributesMut(ty.attrs)
     v.visitTypeMut(ty.elem)
     ty.len = v.visitExprMut(ty.len)
 }
 
 public fun visitTypeGroupMut(v: VisitMut, ty: SynType.Group) {
+    v.visitAttributesMut(ty.attrs)
     v.visitTypeMut(ty.elem)
 }
 
 public fun visitTypeImplTraitMut(v: VisitMut, ty: SynType.ImplTrait) {
+    v.visitAttributesMut(ty.attrs)
     for (i in 0 until ty.bounds.size) v.visitTypeParamBoundMut(ty.bounds[i])
 }
 
-public fun visitTypeInferMut(v: VisitMut, ty: SynType.Infer) = Unit
+public fun visitTypeInferMut(v: VisitMut, ty: SynType.Infer) {
+    v.visitAttributesMut(ty.attrs)
+}
 
 public fun visitTypeMacroMut(v: VisitMut, ty: SynType.Macro) {
+    v.visitAttributesMut(ty.attrs)
     v.visitMacroMut(ty.mac)
 }
 
-public fun visitTypeNeverMut(v: VisitMut, ty: SynType.Never) = Unit
+public fun visitTypeNeverMut(v: VisitMut, ty: SynType.Never) {
+    v.visitAttributesMut(ty.attrs)
+}
 
 public fun visitTypePtrMut(v: VisitMut, ty: SynType.Ptr) {
+    v.visitAttributesMut(ty.attrs)
     v.visitPointerMutabilityMut(ty.mutability)
     v.visitTypeMut(ty.elem)
 }
 
 public fun visitPointerMutabilityMut(v: VisitMut, mutability: PointerMutability) = Unit
 
-public fun visitPointerMutabilityMut(v: VisitMut, mutability: io.github.kotlinmania.syn.token.Mut?) = Unit
-
-public fun visitTypeBareFnMut(v: VisitMut, ty: SynType.BareFn) {
+public fun visitTypeFnPtrMut(v: VisitMut, ty: SynType.FnPtr) {
+    v.visitAttributesMut(ty.attrs)
     ty.lifetimes?.let { v.visitBoundLifetimesMut(it) }
     ty.abi?.let { v.visitAbiMut(it) }
-    for (i in 0 until ty.inputs.size) v.visitBareFnArgMut(ty.inputs[i])
-    ty.variadic?.let { v.visitBareVariadicMut(it) }
+    for (i in 0 until ty.inputs.size) v.visitNamedArgMut(ty.inputs[i])
+    ty.variadic?.let { v.visitFnPtrVariadicMut(it) }
     v.visitReturnTypeMut(ty.output)
 }
 
-public fun visitBareFnArgMut(v: VisitMut, arg: BareFnArg) {
+public fun visitNamedArgMut(v: VisitMut, arg: NamedArg) {
     v.visitAttributesMut(arg.attrs)
     arg.name?.let { v.visitIdentMut(it.ident) }
     v.visitTypeMut(arg.ty)
 }
 
-public fun visitBareVariadicMut(v: VisitMut, variadic: BareVariadic) {
+public fun visitFnPtrVariadicMut(v: VisitMut, variadic: FnPtrVariadic) {
     v.visitAttributesMut(variadic.attrs)
     variadic.name?.let { v.visitIdentMut(it.ident) }
 }
 
 public fun visitTypeParenMut(v: VisitMut, ty: SynType.Paren) {
+    v.visitAttributesMut(ty.attrs)
     v.visitTypeMut(ty.elem)
 }
 
 public fun visitTypeSliceMut(v: VisitMut, ty: SynType.Slice) {
+    v.visitAttributesMut(ty.attrs)
     v.visitTypeMut(ty.elem)
 }
 
 public fun visitTypeTraitObjectMut(v: VisitMut, ty: SynType.TraitObject) {
+    v.visitAttributesMut(ty.attrs)
     for (i in 0 until ty.bounds.size) v.visitTypeParamBoundMut(ty.bounds[i])
 }
 
 public fun visitTypeTupleMut(v: VisitMut, ty: SynType.Tuple) {
+    v.visitAttributesMut(ty.attrs)
     for (i in 0 until ty.elems.size) v.visitTypeMut(ty.elems[i])
 }
 
@@ -1977,7 +2029,7 @@ public fun visitAngleBracketedGenericArgumentsMut(v: VisitMut, pathArgs: PathArg
 }
 
 public fun visitParenthesizedGenericArgumentsMut(v: VisitMut, pathArgs: PathArguments.Parenthesized) {
-    for (i in 0 until pathArgs.inputs.size) v.visitTypeMut(pathArgs.inputs[i])
+    for (i in 0 until pathArgs.inputs.size) v.visitNamedArgMut(pathArgs.inputs[i])
     v.visitReturnTypeMut(pathArgs.output)
 }
 
@@ -2046,12 +2098,9 @@ public fun visitTypeParamBoundMut(v: VisitMut, bound: TypeParamBound) =
     }
 
 public fun visitTraitBoundMut(v: VisitMut, bound: TypeParamBound.Trait) {
-    v.visitTraitBoundModifierMut(bound.modifier)
     bound.lifetimes?.let { v.visitBoundLifetimesMut(it) }
     v.visitPathMut(bound.path)
 }
-
-public fun visitTraitBoundModifierMut(v: VisitMut, modifier: TraitBoundModifier) = Unit
 
 public fun visitBinOpMut(v: VisitMut, op: BinOp) = Unit
 
@@ -2084,7 +2133,6 @@ public fun visitPathSegmentMut(v: VisitMut, segment: PathSegment) {
 public fun visitArmMut(v: VisitMut, arm: Arm) {
     v.visitAttributesMut(arm.attrs)
     v.visitPatMut(arm.pat)
-    arm.guard?.let { it.expr = v.visitExprMut(it.expr) }
     arm.body = v.visitExprMut(arm.body)
 }
 
@@ -2121,25 +2169,23 @@ public fun visitTypeParamMut(v: VisitMut, param: GenericParam.TypeParam) {
     v.visitAttributesMut(param.attrs)
     v.visitIdentMut(param.ident)
     for (i in 0 until param.bounds.size) v.visitTypeParamBoundMut(param.bounds[i])
-    param.default?.let { v.visitTypeMut(it) }
+    param.default?.let { v.visitTypeMut(it.type) }
 }
 
 public fun visitConstParamMut(v: VisitMut, param: GenericParam.ConstParam) {
     v.visitAttributesMut(param.attrs)
     v.visitIdentMut(param.ident)
     v.visitTypeMut(param.ty)
-    param.default = param.default?.let { v.visitExprMut(it) }
+    param.default?.let { it.expr = v.visitExprMut(it.expr) }
 }
 
 public fun visitFieldMut(v: VisitMut, field: Field) {
     v.visitAttributesMut(field.attrs)
     v.visitVisibilityMut(field.vis)
-    v.visitFieldMutabilityMut(field.mutability)
     field.ident?.let { v.visitIdentMut(it) }
     v.visitTypeMut(field.ty)
+    field.default?.let { it.expr = v.visitExprMut(it.expr) }
 }
-
-public fun visitFieldMutabilityMut(v: VisitMut, fieldMutability: FieldMutability) = Unit
 
 public fun visitFieldsMut(v: VisitMut, fields: Fields) =
     when (fields) {
@@ -2214,14 +2260,13 @@ public fun visitImplItemTypeMut(v: VisitMut, item: ImplItem.AssocType) {
     v.visitTypeMut(item.ty)
 }
 
-public fun visitImplRestrictionMut(v: VisitMut, restriction: ImplRestriction) = Unit
-
 public fun visitItemConstMut(v: VisitMut, item: Item.Const) {
     v.visitAttributesMut(item.attrs)
     v.visitVisibilityMut(item.vis)
     v.visitIdentMut(item.ident)
+    v.visitGenericsMut(item.generics)
     v.visitTypeMut(item.ty)
-    item.expr = item.expr?.let { v.visitExprMut(it) }
+    item.expr = v.visitExprMut(item.expr)
 }
 
 public fun visitItemEnumMut(v: VisitMut, item: Item.Enum) {
@@ -2243,7 +2288,7 @@ public fun visitItemFnMut(v: VisitMut, item: Item.Fn) {
     v.visitAttributesMut(item.attrs)
     v.visitVisibilityMut(item.vis)
     v.visitSignatureMut(item.sig)
-    item.block?.let { v.visitBlockMut(it) }
+    v.visitBlockMut(item.block)
 }
 
 public fun visitItemForeignModMut(v: VisitMut, item: Item.ForeignMod) {
@@ -2255,7 +2300,7 @@ public fun visitItemForeignModMut(v: VisitMut, item: Item.ForeignMod) {
 public fun visitItemImplMut(v: VisitMut, item: Item.Impl) {
     v.visitAttributesMut(item.attrs)
     v.visitGenericsMut(item.generics)
-    item.traitPath?.let { v.visitPathTraitMut(it) }
+    item.traitPath?.let { v.visitPathMut(it.path) }
     v.visitTypeMut(item.selfType)
     for (i in item.items.indices) v.visitImplItemMut(item.items[i])
 }
@@ -2293,7 +2338,6 @@ public fun visitItemStructMut(v: VisitMut, item: Item.Struct) {
 public fun visitItemTraitMut(v: VisitMut, item: Item.Trait) {
     v.visitAttributesMut(item.attrs)
     v.visitVisibilityMut(item.vis)
-    item.restriction?.let { v.visitImplRestrictionMut(it) }
     v.visitIdentMut(item.ident)
     v.visitGenericsMut(item.generics)
     for (i in 0 until item.supertraits.size) v.visitTypeParamBoundMut(item.supertraits[i])
@@ -2314,6 +2358,7 @@ public fun visitItemTypeMut(v: VisitMut, item: Item.ItemType) {
     v.visitIdentMut(item.ident)
     v.visitGenericsMut(item.generics)
     v.visitTypeMut(item.ty)
+    v.visitWhereClausePlacementMut(item.whereClausePlacement)
 }
 
 public fun visitItemUnionMut(v: VisitMut, item: Item.Union) {
@@ -2377,10 +2422,6 @@ public fun visitQSelfMut(v: VisitMut, qself: QSelf) {
 
 public fun visitQselfMut(v: VisitMut, qself: QSelf) {
     v.visitQSelfMut(qself)
-}
-
-public fun visitPathTraitMut(v: VisitMut, pathTrait: PathTrait) {
-    v.visitPathMut(pathTrait.path)
 }
 
 public fun visitTraitItemMut(v: VisitMut, item: TraitItem) =
@@ -2507,6 +2548,12 @@ public fun visitWhereClauseMut(v: VisitMut, whereClause: WhereClause) {
     for (i in 0 until whereClause.predicates.size) v.visitWherePredicateMut(whereClause.predicates[i])
 }
 
+public fun visitWhereClausePlacementMut(v: VisitMut, placement: WhereClausePlacement) =
+    when (placement) {
+        WhereClausePlacement.Early -> Unit
+        WhereClausePlacement.Late -> Unit
+    }
+
 public fun visitWherePredicateMut(v: VisitMut, wherePredicate: WherePredicate) =
     when (wherePredicate) {
         is WherePredicate.LifetimePredicate -> v.visitPredicateLifetimeMut(wherePredicate)
@@ -2514,11 +2561,13 @@ public fun visitWherePredicateMut(v: VisitMut, wherePredicate: WherePredicate) =
     }
 
 public fun visitPredicateLifetimeMut(v: VisitMut, predicate: WherePredicate.LifetimePredicate) {
+    v.visitAttributesMut(predicate.attrs)
     v.visitLifetimeMut(predicate.lifetime)
     for (i in 0 until predicate.bounds.size) v.visitLifetimeMut(predicate.bounds[i])
 }
 
 public fun visitPredicateTypeMut(v: VisitMut, predicate: WherePredicate.TypePredicate) {
+    v.visitAttributesMut(predicate.attrs)
     predicate.lifetimes?.let { v.visitBoundLifetimesMut(it) }
     v.visitTypeMut(predicate.boundedTy)
     for (i in 0 until predicate.bounds.size) v.visitTypeParamBoundMut(predicate.bounds[i])

@@ -42,12 +42,22 @@ class ItemTest {
         assertTrue(item.generics.params.isEmpty())
         assertIs<ReturnType.Default>(item.output)
         assertTrue(item.inputs.isEmpty())
+        assertTrue(item.block.stmts.isEmpty())
+    }
+
+    @Test
+    fun testAsyncFn() {
+        val item = assertIs<Item.Fn>(parseItem("async fn process() {}"))
+        assertIs<Visibility.Inherited>(item.vis)
+        assertNotNull(item.sig.asyncness)
+        assertIs<Safety.Default>(item.sig.safety)
+        assertEquals("process", item.sig.ident.toString())
         assertTrue(
-            item.block
-                ?.stmts
-                .orEmpty()
+            item.sig.generics.params
                 .isEmpty(),
         )
+        assertIs<ReturnType.Default>(item.sig.output)
+        assertTrue(item.block.stmts.isEmpty())
     }
 
     @Test
@@ -74,8 +84,8 @@ class ItemTest {
         assertEquals("inherent impls cannot be negative", failure.exceptionOrNull()?.toString())
 
         val negativeTrait = assertIs<Item.Impl>(parseItem("impl !Trait for T {}"))
+        assertNotNull(negativeTrait.modifiers.polarity)
         val traitPath = assertNotNull(negativeTrait.traitPath)
-        assertNotNull(traitPath.polarity)
         assertPath(traitPath.path, "Trait")
         assertTypePath(negativeTrait.selfType, "T")
     }
@@ -94,8 +104,8 @@ class ItemTest {
             )
 
         val item = assertIs<Item.Impl>(parseItem(tokens))
+        assertNull(item.modifiers.polarity)
         val traitPath = assertNotNull(item.traitPath)
-        assertNull(traitPath.polarity)
         assertPath(traitPath.path, "Trait")
         val group = assertIs<SynType.Group>(item.selfType)
         assertTypePath(group.elem, "Type")
@@ -189,8 +199,9 @@ class ItemTest {
                     """
                     unsafe extern "C" {
                         #![allow(improper_ctypes)]
-                        pub fn puts(s: *const c_char);
-                        static errno: i32;
+                        pub safe fn puts(s: *const c_char);
+                        unsafe static errno: i32;
+                        safe static safe_errno: i32;
                         type Opaque;
                         callback!();
                     }
@@ -202,26 +213,31 @@ class ItemTest {
         assertEquals("C", assertNotNull(item.abi.name).value())
         assertEquals(1, item.attrs.size)
         assertIs<AttrStyle.Inner>(item.attrs.single().style)
-        assertEquals(4, item.items.size)
+        assertEquals(5, item.items.size)
 
         val fn = assertIs<ForeignItem.Fn>(item.items[0])
         assertIs<Visibility.Public>(fn.vis)
+        assertIs<Safety.Safe>(fn.sig.safety)
         assertEquals("puts", fn.sig.ident.toString())
         val arg = assertIs<FnArg.Typed>(fn.sig.inputs.single())
         val ptr = assertIs<SynType.Ptr>(arg.patType.ty)
-        assertNotNull(ptr.constToken)
-        assertNull(ptr.mutability)
+        assertIs<PointerMutability.Const>(ptr.mutability)
 
         val static = assertIs<ForeignItem.Static>(item.items[1])
+        assertIs<Safety.Unsafe>(static.safety)
         assertIs<StaticMutability.None>(static.mutability)
         assertEquals("errno", static.ident.toString())
         assertTypePath(static.ty, "i32")
 
-        val type = assertIs<ForeignItem.ItemType>(item.items[2])
+        val safeStatic = assertIs<ForeignItem.Static>(item.items[2])
+        assertIs<Safety.Safe>(safeStatic.safety)
+        assertEquals("safe_errno", safeStatic.ident.toString())
+
+        val type = assertIs<ForeignItem.ItemType>(item.items[3])
         assertEquals("Opaque", type.ident.toString())
         assertTrue(type.generics.params.isEmpty())
 
-        val macro = assertIs<ForeignItem.Macro>(item.items[3])
+        val macro = assertIs<ForeignItem.Macro>(item.items[4])
         assertPath(macro.mac.path, "callback")
         assertNotNull(macro.semiToken)
     }
@@ -234,7 +250,6 @@ class ItemTest {
                     """
                     extern "C" {
                         fn has_body() {}
-                        unsafe static MUTABLE: i32;
                         static VALUE: i32 = 1;
                         type Bounded: Sized;
                     }
@@ -242,7 +257,7 @@ class ItemTest {
                 ),
             )
 
-        assertEquals(4, item.items.size)
+        assertEquals(3, item.items.size)
         item.items.forEach { assertIs<ForeignItem.Verbatim>(it) }
     }
 
@@ -283,7 +298,7 @@ class ItemTest {
 
         assertEquals("Bar", assocType.ident.toString())
         assertIs<Visibility.Inherited>(assocType.vis)
-        assertNotNull(assocType.defaultness)
+        assertNotNull(assocType.modifiers.defaultness)
         val implParam =
             assertIs<GenericParam.TypeParam>(
                 assocType.generics.params
@@ -301,6 +316,7 @@ class ItemTest {
 
         assertIs<Visibility.Public>(item.vis)
         assertEquals("Alias", item.ident.toString())
+        assertEquals(WhereClausePlacement.Early, item.whereClausePlacement)
         val param =
             assertIs<GenericParam.TypeParam>(
                 item.generics.params
@@ -310,6 +326,10 @@ class ItemTest {
         assertEquals("T", param.ident.toString())
         assertNotNull(item.generics.whereClause)
         assertTypePath(item.ty, "T")
+
+        val lateItem = assertIs<Item.ItemType>(parseItem("pub type LateAlias<T> = T where T: Copy;"))
+        assertEquals(WhereClausePlacement.Late, lateItem.whereClausePlacement)
+        assertEquals("pub type LateAlias < T > = T where T : Copy ;", lateItem.toTokenStream().toString())
     }
 
     @Test
@@ -391,7 +411,7 @@ class ItemTest {
     fun testFunctionSignatureBareVariadic() {
         val item = assertIs<Item.Fn>(parseItem("""unsafe extern "C" fn call(#[cold] arg: u8, ...) {}"""))
 
-        assertNotNull(item.sig.unsafety)
+        assertIs<Safety.Unsafe>(item.sig.safety)
         assertEquals("C", assertNotNull(item.sig.abi?.name).value())
         val arg = assertIs<FnArg.Typed>(item.sig.inputs.single())
         assertEquals(1, arg.patType.attrs.size)
@@ -420,7 +440,7 @@ class ItemTest {
         assertPath(item.attrs[0].path(), "outer")
         assertIs<AttrStyle.Inner>(item.attrs[1].style)
         assertPath(item.attrs[1].path(), "inner")
-        assertTrue(assertNotNull(item.block).stmts.isEmpty())
+        assertTrue(item.block.stmts.isEmpty())
     }
 
     @Test
@@ -434,15 +454,28 @@ class ItemTest {
         assertIs<AttrStyle.Inner>(fn.attrs[1].style)
         assertPath(fn.attrs[1].path(), "inner")
         assertIs<Visibility.Public>(fn.vis)
-        assertNotNull(fn.defaultness)
+        assertNotNull(fn.modifiers.defaultness)
         assertEquals("f", fn.sig.ident.toString())
         assertTrue(fn.block.stmts.isEmpty())
     }
 
     @Test
-    fun testImplVisibility() {
-        val item = assertIs<Item.Verbatim>(parseItem("pub default unsafe impl union {}"))
-        assertEquals("pub default unsafe impl union { }", item.tokens.toString())
+    fun testImplVisibilityAndConstTraitOrImplVerbatim() {
+        assertTrue(parseStr(ItemParse::parse, "pub default unsafe impl union {}").isFailure)
+        val defaultImpl = assertIs<Item.Impl>(parseItem("default unsafe impl union {}"))
+        assertNotNull(defaultImpl.modifiers.defaultness)
+        assertNotNull(defaultImpl.unsafety)
+        assertNull(defaultImpl.traitPath)
+        assertTrue(defaultImpl.modifiers.requireEmpty().isFailure)
+
+        val verbatimImpl = assertIs<Item.Verbatim>(parseItem("impl () for union {}"))
+        assertEquals("impl () for union { }", verbatimImpl.tokens.toString())
+
+        val constTrait = assertIs<Item.Verbatim>(parseItem("pub const trait Add { fn add(self) -> Self; }"))
+        assertTrue(constTrait.tokens.toString().startsWith("pub const trait Add"))
+
+        val constImpl = assertIs<Item.Verbatim>(parseItem("const impl Add for i32 { fn add(self) -> Self { self } }"))
+        assertTrue(constImpl.tokens.toString().startsWith("const impl Add for i32"))
     }
 
     @Test
@@ -457,8 +490,8 @@ class ItemTest {
                     .single(),
             )
         assertEquals("T", typeParam.ident.toString())
-        assertNotNull(typeParam.eqToken)
-        assertIs<SynType.Tuple>(typeParam.default)
+        val default = assertNotNull(typeParam.default)
+        assertIs<SynType.Tuple>(default.type)
     }
 
     @Test
@@ -469,12 +502,28 @@ class ItemTest {
         assertEquals(1, implTrait.bounds.size)
         assertTraitBound(implTrait.bounds.toList().single(), "Sized")
         assertTrue(implTrait.bounds.trailingPunct())
-        assertTrue(
-            item.block
-                ?.stmts
-                .orEmpty()
-                .isEmpty(),
-        )
+        assertTrue(item.block.stmts.isEmpty())
+    }
+
+    @Test
+    fun testNestedReceiverClassificationAndRequireEmptyModifiers() {
+        var nested = "fn foo()"
+        repeat(22) {
+            nested = "fn foo(self: foo<{ $nested }>)"
+        }
+        assertTrue(parseFile("$nested {}").isFailure)
+
+        var validNested = "fn foo() {}"
+        repeat(22) {
+            validNested = "fn foo(self: foo<{ $validNested }>) {}"
+        }
+        val file = parseFile(validNested).getOrThrow()
+        assertEquals(1, file.items.size)
+        val fnItem = assertIs<Item.Fn>(file.items.single())
+        assertTrue(fnItem.modifiers.requireEmpty().isSuccess)
+
+        val negativeImpl = assertIs<Item.Impl>(parseItem("impl !Trait for T {}"))
+        assertTrue(negativeImpl.modifiers.requireEmpty().isFailure)
     }
 
     private fun parseItem(source: String): Item =
@@ -498,7 +547,7 @@ class ItemTest {
 
     private fun assertTraitBound(bound: TypeParamBound, vararg segments: String): TypeParamBound.Trait {
         val trait = assertIs<TypeParamBound.Trait>(bound)
-        assertIs<TraitBoundModifier.None>(trait.modifier)
+        assertNull(trait.maybe)
         assertNull(trait.lifetimes)
         assertNull(trait.parenToken)
         assertPath(trait.path, *segments)

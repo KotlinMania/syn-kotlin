@@ -10,6 +10,7 @@ import io.github.kotlinmania.syn.token.As
 import io.github.kotlinmania.syn.token.Colon
 import io.github.kotlinmania.syn.token.Else
 import io.github.kotlinmania.syn.token.Eq
+import io.github.kotlinmania.syn.token.For
 import io.github.kotlinmania.syn.token.If
 
 public data class EqExpr(
@@ -20,6 +21,8 @@ public data class EqExpr(
         eqToken.toTokens(tokens)
         expr.toTokens(tokens)
     }
+
+    public fun deepCopy(): EqExpr = EqExpr(eqToken, expr.deepCopy())
 }
 
 public data class EqSynType(
@@ -30,6 +33,20 @@ public data class EqSynType(
         eqToken.toTokens(tokens)
         type.toTokens(tokens)
     }
+
+    public fun deepCopy(): EqSynType = EqSynType(eqToken, type.deepCopy())
+}
+
+public data class PathForPair(
+    public var path: Path,
+    public var forToken: For,
+) : ToTokens {
+    override fun toTokens(tokens: TokenStream) {
+        path.toTokens(tokens)
+        forToken.toTokens(tokens)
+    }
+
+    public fun deepCopy(): PathForPair = PathForPair(path.deepCopy(), forToken)
 }
 
 public data class ElseExpr(

@@ -2,7 +2,6 @@
 package io.github.kotlinmania.syn
 
 import io.github.kotlinmania.procmacro2.Ident
-import io.github.kotlinmania.procmacro2.Span
 import io.github.kotlinmania.procmacro2.TokenStream
 import io.github.kotlinmania.quote.ToTokens
 import io.github.kotlinmania.quote.toTokens
@@ -34,6 +33,7 @@ public sealed class SynType : ToTokens {
         var len: Expr,
         var bracketToken: Bracket = Bracket.default(),
         var semiToken: Semi = Semi.default(),
+        public var attrs: List<Attribute> = mutableListOf(),
     ) : SynType() {
         override fun toTokens(tokens: TokenStream) {
             bracketToken.surround(tokens) { inner ->
@@ -43,21 +43,29 @@ public sealed class SynType : ToTokens {
             }
         }
 
-        override fun deepCopy(): Array = Array(elem.deepCopy(), len.deepCopy(), Bracket.from(bracketToken.span), Semi.from(semiToken.span))
+        override fun deepCopy(): Array =
+            Array(
+                elem.deepCopy(),
+                len.deepCopy(),
+                Bracket.from(bracketToken.span),
+                Semi.from(semiToken.span),
+                attrs.mapTo(mutableListOf()) { it.deepCopy() },
+            )
     }
 
     /**
-     * A bare function type: `fn(Int) -> bool`.
+     * A function pointer type: `fn(Int) -> bool`.
      */
-    public data class BareFn(
+    public data class FnPtr(
         var lifetimes: BoundLifetimes?,
         var unsafety: io.github.kotlinmania.syn.token.Unsafe?,
         var abi: Abi?,
         var fnToken: io.github.kotlinmania.syn.token.Fn,
         var parenToken: io.github.kotlinmania.syn.token.Paren,
-        var inputs: BareFnArgList,
-        var variadic: BareVariadic?,
+        var inputs: NamedArgList,
+        var variadic: FnPtrVariadic?,
         var output: ReturnType,
+        public var attrs: List<Attribute> = mutableListOf(),
     ) : SynType() {
         override fun toTokens(tokens: TokenStream) {
             lifetimes?.toTokens(tokens)
@@ -79,8 +87,8 @@ public sealed class SynType : ToTokens {
             output.toTokens(tokens)
         }
 
-        override fun deepCopy(): BareFn =
-            BareFn(
+        override fun deepCopy(): FnPtr =
+            FnPtr(
                 lifetimes?.deepCopy(),
                 unsafety,
                 abi,
@@ -89,6 +97,7 @@ public sealed class SynType : ToTokens {
                 inputs.copy({ it.deepCopy() }, { it }),
                 variadic?.deepCopy(),
                 output.deepCopy(),
+                attrs.mapTo(mutableListOf()) { it.deepCopy() },
             )
     }
 
@@ -98,12 +107,14 @@ public sealed class SynType : ToTokens {
     public data class Group(
         var groupToken: io.github.kotlinmania.syn.token.Group,
         var elem: SynType,
+        public var attrs: List<Attribute> = mutableListOf(),
     ) : SynType() {
         override fun toTokens(tokens: TokenStream) {
             groupToken.surround(tokens) { inner -> elem.toTokens(inner) }
         }
 
-        override fun deepCopy(): Group = Group(groupToken, elem.deepCopy())
+        override fun deepCopy(): Group =
+            Group(groupToken, elem.deepCopy(), attrs.mapTo(mutableListOf()) { it.deepCopy() })
     }
 
     /**
@@ -113,6 +124,7 @@ public sealed class SynType : ToTokens {
     public data class ImplTrait(
         var implToken: io.github.kotlinmania.syn.token.Impl,
         var bounds: TypeParamBoundList,
+        public var attrs: List<Attribute> = mutableListOf(),
     ) : SynType() {
         public companion object {
             fun parse(input: ParseStream): SynResult<ImplTrait> =
@@ -127,7 +139,8 @@ public sealed class SynType : ToTokens {
             bounds.toTokens(tokens)
         }
 
-        override fun deepCopy(): ImplTrait = ImplTrait(implToken, bounds.copy({ it.deepCopy() }, { it }))
+        override fun deepCopy(): ImplTrait =
+            ImplTrait(implToken, bounds.copy({ it.deepCopy() }, { it }), attrs.mapTo(mutableListOf()) { it.deepCopy() })
     }
 
     /**
@@ -135,12 +148,14 @@ public sealed class SynType : ToTokens {
      */
     public data class Infer(
         var underscoreToken: io.github.kotlinmania.syn.token.Underscore,
+        public var attrs: List<Attribute> = mutableListOf(),
     ) : SynType() {
         override fun toTokens(tokens: TokenStream) {
             underscoreToken.toTokens(tokens)
         }
 
-        override fun deepCopy(): Infer = this
+        override fun deepCopy(): Infer =
+            Infer(underscoreToken, attrs.mapTo(mutableListOf()) { it.deepCopy() })
     }
 
     /**
@@ -148,12 +163,14 @@ public sealed class SynType : ToTokens {
      */
     public data class Macro(
         var mac: io.github.kotlinmania.syn.Macro,
+        public var attrs: List<Attribute> = mutableListOf(),
     ) : SynType() {
         override fun toTokens(tokens: TokenStream) {
             mac.toTokens(tokens)
         }
 
-        override fun deepCopy(): Macro = Macro(mac.deepCopy())
+        override fun deepCopy(): Macro =
+            Macro(mac.deepCopy(), attrs.mapTo(mutableListOf()) { it.deepCopy() })
     }
 
     /**
@@ -161,17 +178,20 @@ public sealed class SynType : ToTokens {
      */
     public data class Never(
         var bangToken: io.github.kotlinmania.syn.token.Not,
+        public var attrs: List<Attribute> = mutableListOf(),
     ) : SynType() {
         override fun toTokens(tokens: TokenStream) {
             bangToken.toTokens(tokens)
         }
 
-        override fun deepCopy(): Never = this
+        override fun deepCopy(): Never =
+            Never(bangToken, attrs.mapTo(mutableListOf()) { it.deepCopy() })
     }
 
     public data class Paren(
         var parenToken: io.github.kotlinmania.syn.token.Paren,
         var elem: SynType,
+        public var attrs: List<Attribute> = mutableListOf(),
     ) : SynType() {
         override fun toTokens(tokens: TokenStream) {
             parenToken.surround(tokens) { inner ->
@@ -179,7 +199,8 @@ public sealed class SynType : ToTokens {
             }
         }
 
-        override fun deepCopy(): Paren = Paren(parenToken, elem.deepCopy())
+        override fun deepCopy(): Paren =
+            Paren(parenToken, elem.deepCopy(), attrs.mapTo(mutableListOf()) { it.deepCopy() })
     }
 
     /**
@@ -189,12 +210,14 @@ public sealed class SynType : ToTokens {
     public data class Path(
         var qself: QSelf?,
         var path: io.github.kotlinmania.syn.Path,
+        public var attrs: List<Attribute> = mutableListOf(),
     ) : SynType() {
         override fun toTokens(tokens: TokenStream) {
             printQpath(tokens, qself, path, PathStyle.AsWritten)
         }
 
-        override fun deepCopy(): Path = Path(qself, path.deepCopy())
+        override fun deepCopy(): Path =
+            Path(qself?.deepCopy(), path.deepCopy(), attrs.mapTo(mutableListOf()) { it.deepCopy() })
     }
 
     /**
@@ -202,18 +225,18 @@ public sealed class SynType : ToTokens {
      */
     public data class Ptr(
         var starToken: io.github.kotlinmania.syn.token.Star,
-        var constToken: io.github.kotlinmania.syn.token.Const?,
-        var mutability: io.github.kotlinmania.syn.token.Mut?,
+        var mutability: PointerMutability,
         var elem: SynType,
+        public var attrs: List<Attribute> = mutableListOf(),
     ) : SynType() {
         override fun toTokens(tokens: TokenStream) {
             starToken.toTokens(tokens)
-            val mutToken = mutability
-            if (mutToken != null) mutToken.toTokens(tokens) else constToken?.toTokens(tokens)
+            mutability.toTokens(tokens)
             elem.toTokens(tokens)
         }
 
-        override fun deepCopy(): Ptr = Ptr(starToken, constToken, mutability, elem.deepCopy())
+        override fun deepCopy(): Ptr =
+            Ptr(starToken, mutability.deepCopy(), elem.deepCopy(), attrs.mapTo(mutableListOf()) { it.deepCopy() })
     }
 
     /**
@@ -224,6 +247,7 @@ public sealed class SynType : ToTokens {
         var lifetime: Lifetime?,
         var mutability: io.github.kotlinmania.syn.token.Mut?,
         var elem: SynType,
+        public var attrs: List<Attribute> = mutableListOf(),
     ) : SynType() {
         override fun toTokens(tokens: TokenStream) {
             andToken.toTokens(tokens)
@@ -232,7 +256,8 @@ public sealed class SynType : ToTokens {
             elem.toTokens(tokens)
         }
 
-        override fun deepCopy(): Reference = Reference(andToken, lifetime?.deepCopy(), mutability, elem.deepCopy())
+        override fun deepCopy(): Reference =
+            Reference(andToken, lifetime?.deepCopy(), mutability, elem.deepCopy(), attrs.mapTo(mutableListOf()) { it.deepCopy() })
     }
 
     /**
@@ -240,14 +265,17 @@ public sealed class SynType : ToTokens {
      */
     public data class Slice(
         var elem: SynType,
+        var bracketToken: Bracket = Bracket.default(),
+        public var attrs: List<Attribute> = mutableListOf(),
     ) : SynType() {
         override fun toTokens(tokens: TokenStream) {
-            Bracket.default().surround(tokens) { inner ->
+            bracketToken.surround(tokens) { inner ->
                 elem.toTokens(inner)
             }
         }
 
-        override fun deepCopy(): Slice = Slice(elem.deepCopy())
+        override fun deepCopy(): Slice =
+            Slice(elem.deepCopy(), Bracket.from(bracketToken.span), attrs.mapTo(mutableListOf()) { it.deepCopy() })
     }
 
     /**
@@ -257,6 +285,7 @@ public sealed class SynType : ToTokens {
     public data class TraitObject(
         var dynToken: io.github.kotlinmania.syn.token.Dyn?,
         var bounds: TypeParamBoundList,
+        public var attrs: List<Attribute> = mutableListOf(),
     ) : SynType() {
         public companion object {
             fun parse(input: ParseStream): SynResult<TraitObject> =
@@ -266,7 +295,7 @@ public sealed class SynType : ToTokens {
                 parseTypeTraitObject(input, allowPlus = false)
 
             internal fun parseBounds(
-                dynSpan: Span,
+                dynBegin: Cursor,
                 input: ParseStream,
                 allowPlus: Boolean,
             ): SynResult<TypeParamBoundList> {
@@ -277,7 +306,6 @@ public sealed class SynType : ToTokens {
                         allowPreciseCapture = false,
                         allowConst = false,
                     ).getOrElse { return SynResult.failure(it) }
-                var lastLifetimeSpan: Span? = null
                 var atLeastOneTrait = false
                 for (bound in bounds.toList()) {
                     when (bound) {
@@ -286,10 +314,7 @@ public sealed class SynType : ToTokens {
                             break
                         }
 
-                        is TypeParamBound.LifetimeBound -> {
-                            lastLifetimeSpan = bound.lifetime.ident.span()
-                        }
-
+                        is TypeParamBound.LifetimeBound,
                         is TypeParamBound.PreciseCapture,
                         is TypeParamBound.Verbatim,
                         -> {}
@@ -297,9 +322,9 @@ public sealed class SynType : ToTokens {
                 }
                 if (!atLeastOneTrait) {
                     return SynResult.failure(
-                        SynError.new2(
-                            dynSpan,
-                            lastLifetimeSpan ?: dynSpan,
+                        SynError.newRange(
+                            dynBegin,
+                            input.cursor(),
                             "at least one trait is required for an object type",
                         ),
                     )
@@ -313,7 +338,8 @@ public sealed class SynType : ToTokens {
             bounds.toTokens(tokens)
         }
 
-        override fun deepCopy(): TraitObject = TraitObject(dynToken, bounds.copy({ it.deepCopy() }, { it }))
+        override fun deepCopy(): TraitObject =
+            TraitObject(dynToken, bounds.copy({ it.deepCopy() }, { it }), attrs.mapTo(mutableListOf()) { it.deepCopy() })
     }
 
     /**
@@ -322,14 +348,21 @@ public sealed class SynType : ToTokens {
     public data class Tuple(
         var parenToken: io.github.kotlinmania.syn.token.Paren,
         var elems: SynTypeList,
+        public var attrs: List<Attribute> = mutableListOf(),
     ) : SynType() {
         override fun toTokens(tokens: TokenStream) {
             parenToken.surround(tokens) { inner ->
                 elems.toTokens(inner)
+                if (elems.len() == 1 && !elems.trailingPunct()) {
+                    io.github.kotlinmania.syn.token.Comma
+                        .default()
+                        .toTokens(inner)
+                }
             }
         }
 
-        override fun deepCopy(): Tuple = Tuple(parenToken, elems.copy({ it.deepCopy() }, { it }))
+        override fun deepCopy(): Tuple =
+            Tuple(parenToken, elems.copy({ it.deepCopy() }, { it }), attrs.mapTo(mutableListOf()) { it.deepCopy() })
     }
 
     /**
@@ -342,24 +375,63 @@ public sealed class SynType : ToTokens {
             tokens.extendTokenStreams(listOf(this.tokens))
         }
 
-        override fun deepCopy(): Verbatim = this
+        override fun deepCopy(): Verbatim = copy(tokens = tokens.clone())
     }
 
     public abstract fun deepCopy(): SynType
 }
 
 /**
+ * Mutability of a raw pointer (`*const T`, `*mut T`), in which non-mutable
+ * isn't the implicit default.
+ */
+public sealed class PointerMutability : ToTokens {
+    public companion object {
+        public fun parse(input: ParseStream): SynResult<PointerMutability> {
+            val lookahead = input.lookahead1()
+            return when {
+                lookahead.peek(ConstPeek) -> ConstParse.parse(input).map(::Const)
+                lookahead.peek(MutPeek) -> MutParse.parse(input).map(::Mut)
+                else -> SynResult.failure(lookahead.error())
+            }
+        }
+    }
+
+    public data class Const(
+        var token: io.github.kotlinmania.syn.token.Const,
+    ) : PointerMutability() {
+        override fun toTokens(tokens: TokenStream) {
+            token.toTokens(tokens)
+        }
+
+        override fun deepCopy(): Const = this
+    }
+
+    public data class Mut(
+        var token: io.github.kotlinmania.syn.token.Mut,
+    ) : PointerMutability() {
+        override fun toTokens(tokens: TokenStream) {
+            token.toTokens(tokens)
+        }
+
+        override fun deepCopy(): Mut = this
+    }
+
+    public abstract fun deepCopy(): PointerMutability
+}
+
+/**
  * An argument in a function type: the `Int` in `fn(Int) -> bool`.
  */
-public data class BareFnArg(
+public data class NamedArg(
     public var attrs: List<Attribute>,
     public var name: IdentColon?,
     public var ty: SynType,
 ) : ToTokens {
     public companion object {
-        fun parse(input: ParseStream): SynResult<BareFnArg> {
+        fun parse(input: ParseStream): SynResult<NamedArg> {
             val allowSelf = false
-            return parseBareFnArg(input, allowSelf)
+            return parseFnPtrArg(input, allowSelf)
         }
     }
 
@@ -370,12 +442,12 @@ public data class BareFnArg(
         ty.toTokens(tokens)
     }
 
-    public fun deepCopy(): BareFnArg =
-        BareFnArg(attrs.mapTo(mutableListOf()) { it.deepCopy() }, name, ty.deepCopy())
+    public fun deepCopy(): NamedArg =
+        NamedArg(attrs.mapTo(mutableListOf()) { it.deepCopy() }, name, ty.deepCopy())
 }
 
 /** The variadic argument of a function pointer. */
-public data class BareVariadic(
+public data class FnPtrVariadic(
     public var attrs: List<Attribute>,
     public var name: IdentColon?,
     public var dots: io.github.kotlinmania.syn.token.DotDotDot,
@@ -389,7 +461,7 @@ public data class BareVariadic(
         comma?.toTokens(tokens)
     }
 
-    public fun deepCopy(): BareVariadic = BareVariadic(attrs.mapTo(mutableListOf()) { it.deepCopy() }, name, dots, comma)
+    public fun deepCopy(): FnPtrVariadic = FnPtrVariadic(attrs.mapTo(mutableListOf()) { it.deepCopy() }, name, dots, comma)
 }
 
 /**
@@ -432,20 +504,23 @@ public sealed class ReturnType : ToTokens {
     public abstract fun deepCopy(): ReturnType
 }
 
-internal fun parseBareFnArg(
+internal fun typeAsNamedArg(input: ParseStream): SynResult<NamedArg> =
+    parseTypeFull(input).map { NamedArg(mutableListOf(), null, it) }
+
+internal fun parseFnPtrArg(
     input: ParseStream,
     allowSelf: Boolean,
-): SynResult<BareFnArg> {
+): SynResult<NamedArg> {
     val attrs = parseOuterAttributes(input).getOrElse { return SynResult.failure(it) }
-    return parseBareFnArg(input, attrs, allowSelf)
+    return parseFnPtrArg(input, attrs, allowSelf)
 }
 
-internal fun parseBareFnArg(
+internal fun parseFnPtrArg(
     input: ParseStream,
     attrs: List<Attribute>,
     allowSelf: Boolean,
-): SynResult<BareFnArg> {
-    val begin = input.fork()
+): SynResult<NamedArg> {
+    val begin = input.cursor()
     val hasMutSelf = allowSelf && input.peek(MutPeek) && input.peek2(SelfValuePeek)
     if (hasMutSelf) {
         MutParse.parse(input).getOrElse { return SynResult.failure(it) }
@@ -464,7 +539,7 @@ internal fun parseBareFnArg(
             input.peek2(ColonPeek) &&
             !input.peek2(PathSepPeek)
         ) {
-            val ident = parseBareFnName(input).getOrElse { return SynResult.failure(it) }
+            val ident = parseFnPtrName(input).getOrElse { return SynResult.failure(it) }
             val colon = ColonParse.parse(input).getOrElse { return SynResult.failure(it) }
             IdentColon(ident, colon)
         } else {
@@ -489,18 +564,18 @@ internal fun parseBareFnArg(
             parsedTy
         } else {
             name = null
-            SynType.Verbatim(between(begin, input))
+            SynType.Verbatim(between(begin, input.cursor()))
         }
-    return SynResult.success(BareFnArg(attrs, name, ty))
+    return SynResult.success(NamedArg(attrs, name, ty))
 }
 
-internal fun parseBareVariadic(
+internal fun parseFnPtrVariadic(
     input: ParseStream,
     attrs: List<Attribute>,
-): SynResult<BareVariadic> {
+): SynResult<FnPtrVariadic> {
     val name =
         if (input.peek(IdentPeek) || input.peek(UnderscorePeek)) {
-            val ident = parseBareFnName(input).getOrElse { return SynResult.failure(it) }
+            val ident = parseFnPtrName(input).getOrElse { return SynResult.failure(it) }
             val colon = ColonParse.parse(input).getOrElse { return SynResult.failure(it) }
             IdentColon(ident, colon)
         } else {
@@ -508,10 +583,10 @@ internal fun parseBareVariadic(
         }
     val dots = DotDotDotParse.parse(input).getOrElse { return SynResult.failure(it) }
     val comma = CommaParse.parse(input).getOrNull()
-    return SynResult.success(BareVariadic(attrs, name, dots, comma))
+    return SynResult.success(FnPtrVariadic(attrs, name, dots, comma))
 }
 
-private fun parseBareFnName(input: ParseStream): SynResult<Ident> {
+private fun parseFnPtrName(input: ParseStream): SynResult<Ident> {
     if (input.peek(UnderscorePeek)) {
         val underscore = UnderscoreParse.parse(input).getOrElse { return SynResult.failure(it) }
         return SynResult.success(from(underscore))
@@ -579,7 +654,7 @@ private fun ambigTyImpl(
     allowPlus: Boolean,
     allowGroupGeneric: Boolean,
 ): SynResult<SynType> {
-    val begin = input.fork()
+    val begin = input.cursor()
     val groupAhead = input.fork()
     val groupResult = parseGroup(groupAhead)
     if (groupResult.isSuccess) {
@@ -692,10 +767,39 @@ private fun ambigTyImpl(
         return SynResult.success(SynType.Paren(parensVal.token, first))
     }
 
+    if (input.peek(UnsafePeek) && input.peek2(GenericsLtPeek)) {
+        UnsafeParse.parse(input).getOrElse { return SynResult.failure(it) }
+        GenericsLtParse.parse(input).getOrElse { return SynResult.failure(it) }
+        while (!input.peek(GenericsGtPeek)) {
+            Lifetime.parseAny(input).getOrElse { return SynResult.failure(it) }
+            if (input.peek(GenericsGtPeek)) break
+            CommaParse.parse(input).getOrElse { return SynResult.failure(it) }
+        }
+        GenericsGtParse.parse(input).getOrElse { return SynResult.failure(it) }
+        ambigTyImpl(input, allowPlus, allowGroupGeneric).getOrElse { return SynResult.failure(it) }
+        return SynResult.success(SynType.Verbatim(between(begin, input.cursor())))
+    }
+
     if (input.peek(FnPeek) || input.peek(UnsafePeek) || input.peek(ExternPeek)) {
-        return parseBareFnType(input, lifetimes).getOrElse { return SynResult.failure(it) }.let {
+        return parseFnPtrType(input, lifetimes).getOrElse { return SynResult.failure(it) }.let {
             SynResult.success(it)
         }
+    }
+
+    if (input.cursor().peekKeyword("builtin") && input.peek2(PoundPeek)) {
+        val builtinStep =
+            input.step { cursor ->
+                val (ident, rest) = cursor.ident() ?: return@step SynResult.failure(cursor.error("expected `builtin`"))
+                if (ident.toString() != "builtin") return@step SynResult.failure(cursor.error("expected `builtin`"))
+                SynResult.success(Unit to rest)
+            }
+        builtinStep.getOrElse { return SynResult.failure(it) }
+        PoundParse.parse(input).getOrElse { return SynResult.failure(it) }
+        IdentParse.parse(input).getOrElse { return SynResult.failure(it) }
+        val args = parenthesized(input).getOrElse { return SynResult.failure(it) }
+        TokenStreamParse.parse(args.content).getOrElse { return SynResult.failure(it) }
+        args.content.finishChildBuffer()
+        return SynResult.success(SynType.Verbatim(between(begin, input.cursor())))
     }
 
     if (input.peek(IdentPeek) ||
@@ -719,7 +823,7 @@ private fun ambigTyImpl(
         }
         if (lifetimes != null || (allowPlus && input.peek(PlusPeek))) {
             val bounds = TypeParamBoundList()
-            bounds.pushValue(TypeParamBound.Trait(null, TraitBoundModifier.None, lifetimes, path))
+            bounds.pushValue(TypeParamBound.Trait(null, lifetimes, TraitBoundModifiers(), null, path))
             parseOuterTraitObjectBounds(input, bounds, allowPlus).getOrElse { return SynResult.failure(it) }
             return SynResult.success(SynType.TraitObject(null, bounds))
         }
@@ -727,11 +831,12 @@ private fun ambigTyImpl(
     }
 
     if (input.peek(DynPeek)) {
+        val dynBegin = input.cursor()
         val dynToken = DynParse.parse(input).getOrElse { return SynResult.failure(it) }
         val starToken = StarParse.parse(input).getOrNull()
-        val bounds = parseTraitObjectBounds(input, allowPlus).getOrElse { return SynResult.failure(it) }
+        val bounds = SynType.TraitObject.parseBounds(dynBegin, input, allowPlus).getOrElse { return SynResult.failure(it) }
         return if (starToken != null) {
-            SynResult.success(SynType.Verbatim(between(begin, input)))
+            SynResult.success(SynType.Verbatim(between(begin, input.cursor())))
         } else {
             SynResult.success(SynType.TraitObject(dynToken, bounds))
         }
@@ -749,37 +854,20 @@ private fun ambigTyImpl(
             return SynResult.success(SynType.Array(elem, len, bracketsVal.token, semiToken))
         }
         bracketsVal.content.finishChildBuffer()
-        return SynResult.success(SynType.Slice(elem))
+        return SynResult.success(SynType.Slice(elem, bracketsVal.token))
     }
 
     if (input.peek(StarPeek)) {
         val starToken = StarParse.parse(input).getOrThrow()
-        val constToken: io.github.kotlinmania.syn.token.Const?
-        val mutability: io.github.kotlinmania.syn.token.Mut?
-        when {
-            input.peek(ConstPeek) -> {
-                constToken = ConstParse.parse(input).getOrElse { return SynResult.failure(it) }
-                mutability = null
-            }
-
-            input.peek(MutPeek) -> {
-                constToken = null
-                mutability = MutParse.parse(input).getOrElse { return SynResult.failure(it) }
-            }
-
-            else -> {
-                return SynResult.failure(input.error("expected `const` or `mut`"))
-            }
-        }
+        val mutability = PointerMutability.parse(input).getOrElse { return SynResult.failure(it) }
         val inner = parseTypeWithoutPlus(input)
         if (inner.isFailure) return inner.asFailure()
-        return SynResult.success(SynType.Ptr(starToken, constToken, mutability, inner.getOrThrow()))
+        return SynResult.success(SynType.Ptr(starToken, mutability, inner.getOrThrow()))
     }
 
     if (input.peek(AndPeek)) {
         val andToken = AndParse.parse(input).getOrThrow()
-        val ltResult = LifetimeParse.parse(input)
-        val lifetime = if (ltResult.isSuccess) ltResult.getOrThrow() else null
+        val lifetime = Lifetime.parseOptionalAny(input)
         val mutResult = MutParse.parse(input)
         val mutability = if (mutResult.isSuccess) mutResult.getOrThrow() else null
         val inner = parseTypeWithoutPlus(input)
@@ -829,7 +917,7 @@ private fun parenthesizedTypeAsBound(
     when (ty) {
         is SynType.Path -> {
             if (ty.qself == null) {
-                TypeParamBound.Trait(parenToken, TraitBoundModifier.None, null, ty.path)
+                TypeParamBound.Trait(parenToken, null, TraitBoundModifiers(), null, ty.path)
             } else {
                 null
             }
@@ -839,7 +927,10 @@ private fun parenthesizedTypeAsBound(
             if (ty.dynToken == null && ty.bounds.size == 1 && !ty.bounds.trailingPunct()) {
                 when (val bound = ty.bounds.first()) {
                     is TypeParamBound.Trait -> bound.copy(parenToken = parenToken)
-                    is TypeParamBound.LifetimeBound -> bound
+                    is TypeParamBound.LifetimeBound,
+                    is TypeParamBound.PreciseCapture,
+                    is TypeParamBound.Verbatim,
+                    -> bound
                     else -> null
                 }
             } else {
@@ -871,14 +962,6 @@ private fun parseOuterTraitObjectBounds(
         break
     }
     return SynResult.success(Unit)
-}
-
-private fun parseTraitObjectBounds(
-    input: ParseStream,
-    allowPlus: Boolean,
-): SynResult<TypeParamBoundList> {
-    val dynSpan = input.span()
-    return SynType.TraitObject.parseBounds(dynSpan, input, allowPlus)
 }
 
 private fun canStartTypeParamBound(
@@ -919,8 +1002,9 @@ internal fun parseTypeTraitObject(
     input: ParseStream,
     allowPlus: Boolean,
 ): SynResult<SynType.TraitObject> {
+    val dynBegin = input.cursor()
     val dynToken = DynParse.parse(input).getOrNull()
-    val bounds = parseTraitObjectBounds(input, allowPlus).getOrElse { return SynResult.failure(it) }
+    val bounds = SynType.TraitObject.parseBounds(dynBegin, input, allowPlus).getOrElse { return SynResult.failure(it) }
     return SynResult.success(SynType.TraitObject(dynToken, bounds))
 }
 
@@ -928,6 +1012,7 @@ internal fun parseTypeImplTrait(
     input: ParseStream,
     allowPlus: Boolean,
 ): SynResult<SynType.ImplTrait> {
+    val implBegin = input.cursor()
     val implToken = ImplParse.parse(input).getOrElse { return SynResult.failure(it) }
     val bounds =
         parseTypeParamBoundsMultiple(
@@ -937,7 +1022,13 @@ internal fun parseTypeImplTrait(
             allowConst = true,
         ).getOrElse { return SynResult.failure(it) }
     if (!bounds.hasTraitLikeImplBound()) {
-        return SynResult.failure(input.error("at least one trait must be specified"))
+        return SynResult.failure(
+            SynError.newRange(
+                implBegin,
+                input.cursor(),
+                "at least one trait must be specified",
+            ),
+        )
     }
     return SynResult.success(SynType.ImplTrait(implToken, bounds))
 }
@@ -945,10 +1036,10 @@ internal fun parseTypeImplTrait(
 private fun TypeParamBoundList.hasTraitLikeImplBound(): Boolean =
     toList().any { it is TypeParamBound.Trait || it is TypeParamBound.Verbatim }
 
-private fun parseBareFnType(
+private fun parseFnPtrType(
     input: ParseStream,
     lifetimes: BoundLifetimes?,
-): SynResult<SynType.BareFn> {
+): SynResult<SynType.FnPtr> {
     val unsafety = UnsafeParse.parse(input).getOrNull()
     val abi =
         if (input.peek(ExternPeek)) {
@@ -958,8 +1049,8 @@ private fun parseBareFnType(
         }
     val fnToken = FnParse.parse(input).getOrElse { return SynResult.failure(it) }
     val parens = parenthesized(input).getOrElse { return SynResult.failure(it) }
-    val inputs = BareFnArgList()
-    var variadic: BareVariadic? = null
+    val inputs = NamedArgList()
+    var variadic: FnPtrVariadic? = null
     val args = parens.content
     while (!args.isEmpty()) {
         val attrs = parseOuterAttributes(args).getOrElse { return SynResult.failure(it) }
@@ -973,11 +1064,11 @@ private fun parseBareFnType(
                     )
             )
         ) {
-            variadic = parseBareVariadic(args, attrs).getOrElse { return SynResult.failure(it) }
+            variadic = parseFnPtrVariadic(args, attrs).getOrElse { return SynResult.failure(it) }
             break
         }
         val arg =
-            parseBareFnArg(args, attrs, allowSelf = inputs.isEmpty()).getOrElse {
+            parseFnPtrArg(args, attrs, allowSelf = inputs.isEmpty()).getOrElse {
                 return SynResult.failure(it)
             }
         inputs.pushValue(arg)
@@ -987,7 +1078,7 @@ private fun parseBareFnType(
     }
     args.finishChildBuffer()
     val output = parseReturnTypeWithoutPlus(input).getOrElse { return SynResult.failure(it) }
-    return SynResult.success(SynType.BareFn(lifetimes, unsafety, abi, fnToken, parens.token, inputs, variadic, output))
+    return SynResult.success(SynType.FnPtr(lifetimes, unsafety, abi, fnToken, parens.token, inputs, variadic, output))
 }
 
 private fun parsePathRest(input: ParseStream, path: Path): SynResult<Unit> {

@@ -284,7 +284,7 @@ public sealed class PathArguments : ToTokens {
         /**
          * `(A, B)`
          */
-        public var inputs: SynTypeList,
+        public var inputs: NamedArgList,
         /**
          * `C`
          */
@@ -600,7 +600,7 @@ public object GenericArgumentParse {
     fun parse(input: ParseStream): SynResult<GenericArgument> {
         val lifetimePair = input.cursor().lifetime()
         if (lifetimePair != null && !PlusPeek.peek(lifetimePair.second)) {
-            return SynResult.success(GenericArgument.LifetimeArg(LifetimeParse.parse(input).getOrElse { return SynResult.failure(it) }))
+            return SynResult.success(GenericArgument.LifetimeArg(Lifetime.parseAny(input).getOrElse { return SynResult.failure(it) }))
         }
 
         if (input.peek(LitPeek) || input.peek(BracePeek)) {
@@ -695,10 +695,10 @@ private fun parseGenericLt(input: ParseStream): SynResult<Lt> =
 
 internal fun parseParenthesizedPathArguments(input: ParseStream): SynResult<PathArguments.Parenthesized> {
     val parens = parenthesized(input).getOrElse { return SynResult.failure(it) }
-    val inputs = SynTypeList()
+    val inputs = NamedArgList()
     while (!parens.content.isEmpty()) {
-        val ty = parseTypeFull(parens.content).getOrElse { return SynResult.failure(it) }
-        inputs.pushValue(ty)
+        val arg = typeAsNamedArg(parens.content).getOrElse { return SynResult.failure(it) }
+        inputs.pushValue(arg)
         if (parens.content.isEmpty()) break
         val comma = CommaParse.parse(parens.content).getOrElse { return SynResult.failure(it) }
         inputs.pushPunct(comma)

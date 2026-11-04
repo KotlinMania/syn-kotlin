@@ -9,12 +9,13 @@ import io.github.kotlinmania.syn.AssocConst
 import io.github.kotlinmania.syn.AssocType
 import io.github.kotlinmania.syn.AttrStyle
 import io.github.kotlinmania.syn.Attribute
-import io.github.kotlinmania.syn.BareFnArg
-import io.github.kotlinmania.syn.BareVariadic
 import io.github.kotlinmania.syn.BinOp
 import io.github.kotlinmania.syn.Block
+import io.github.kotlinmania.syn.BlockModifiers
 import io.github.kotlinmania.syn.BoundLifetimes
 import io.github.kotlinmania.syn.CapturedParam
+import io.github.kotlinmania.syn.ClosureModifiers
+import io.github.kotlinmania.syn.ConstModifiers
 import io.github.kotlinmania.syn.Constraint
 import io.github.kotlinmania.syn.Data
 import io.github.kotlinmania.syn.DataEnum
@@ -26,7 +27,7 @@ import io.github.kotlinmania.syn.EqExpr
 import io.github.kotlinmania.syn.EqSynType
 import io.github.kotlinmania.syn.Expr
 import io.github.kotlinmania.syn.Field
-import io.github.kotlinmania.syn.FieldMutability
+import io.github.kotlinmania.syn.FieldModifiers
 import io.github.kotlinmania.syn.FieldPat
 import io.github.kotlinmania.syn.FieldValue
 import io.github.kotlinmania.syn.Fields
@@ -34,14 +35,17 @@ import io.github.kotlinmania.syn.FieldsNamed
 import io.github.kotlinmania.syn.FieldsUnnamed
 import io.github.kotlinmania.syn.File
 import io.github.kotlinmania.syn.FnArg
+import io.github.kotlinmania.syn.FnModifiers
+import io.github.kotlinmania.syn.FnPtrVariadic
 import io.github.kotlinmania.syn.ForeignItem
+import io.github.kotlinmania.syn.Frontmatter
 import io.github.kotlinmania.syn.GenericArgument
 import io.github.kotlinmania.syn.GenericParam
 import io.github.kotlinmania.syn.Generics
 import io.github.kotlinmania.syn.IdentColon
 import io.github.kotlinmania.syn.IfExpr
 import io.github.kotlinmania.syn.ImplItem
-import io.github.kotlinmania.syn.ImplRestriction
+import io.github.kotlinmania.syn.ImplModifiers
 import io.github.kotlinmania.syn.Index
 import io.github.kotlinmania.syn.Item
 import io.github.kotlinmania.syn.Label
@@ -56,30 +60,36 @@ import io.github.kotlinmania.syn.LitFloat
 import io.github.kotlinmania.syn.LitInt
 import io.github.kotlinmania.syn.LitStr
 import io.github.kotlinmania.syn.LocalInit
+import io.github.kotlinmania.syn.LocalModifiers
 import io.github.kotlinmania.syn.Macro
 import io.github.kotlinmania.syn.MacroDelimiter
 import io.github.kotlinmania.syn.Member
 import io.github.kotlinmania.syn.Meta
 import io.github.kotlinmania.syn.ModContent
+import io.github.kotlinmania.syn.NamedArg
 import io.github.kotlinmania.syn.Pat
 import io.github.kotlinmania.syn.PatColon
 import io.github.kotlinmania.syn.PatRest
 import io.github.kotlinmania.syn.PatType
 import io.github.kotlinmania.syn.Path
 import io.github.kotlinmania.syn.PathArguments
+import io.github.kotlinmania.syn.PathForPair
 import io.github.kotlinmania.syn.PathSegment
-import io.github.kotlinmania.syn.PathTrait
 import io.github.kotlinmania.syn.PointerMutability
 import io.github.kotlinmania.syn.QSelf
 import io.github.kotlinmania.syn.RangeLimits
+import io.github.kotlinmania.syn.ReceiverKind
 import io.github.kotlinmania.syn.ReturnType
+import io.github.kotlinmania.syn.Safety
 import io.github.kotlinmania.syn.Signature
 import io.github.kotlinmania.syn.StaticMutability
 import io.github.kotlinmania.syn.Stmt
 import io.github.kotlinmania.syn.SynPunctuated
 import io.github.kotlinmania.syn.SynType
-import io.github.kotlinmania.syn.TraitBoundModifier
+import io.github.kotlinmania.syn.TraitBoundModifiers
 import io.github.kotlinmania.syn.TraitItem
+import io.github.kotlinmania.syn.TraitModifiers
+import io.github.kotlinmania.syn.TypeModifiers
 import io.github.kotlinmania.syn.TypeParamBound
 import io.github.kotlinmania.syn.UnOp
 import io.github.kotlinmania.syn.UseTree
@@ -87,6 +97,7 @@ import io.github.kotlinmania.syn.Variadic
 import io.github.kotlinmania.syn.Variant
 import io.github.kotlinmania.syn.Visibility
 import io.github.kotlinmania.syn.WhereClause
+import io.github.kotlinmania.syn.WhereClausePlacement
 import io.github.kotlinmania.syn.WherePredicate
 import io.github.kotlinmania.syn.tokenStreamEq
 
@@ -131,7 +142,6 @@ public fun AndLifetime.eq(other: AndLifetime): Boolean =
 public fun Arm.eq(other: Arm): Boolean =
     eqList(attrs, other.attrs) { a, b -> a.eq(b) } &&
         pat.eq(other.pat) &&
-        eqOpt(guard, other.guard) { a, b -> a.eq(b) } &&
         body.eq(other.body) &&
         comma == other.comma
 
@@ -152,12 +162,12 @@ public fun Attribute.eq(other: Attribute): Boolean =
     style.eq(other.style) &&
         meta.eq(other.meta)
 
-public fun BareFnArg.eq(other: BareFnArg): Boolean =
+public fun NamedArg.eq(other: NamedArg): Boolean =
     eqList(attrs, other.attrs) { a, b -> a.eq(b) } &&
         eqOpt(name, other.name) { a, b -> a.eq(b) } &&
         ty.eq(other.ty)
 
-public fun BareVariadic.eq(other: BareVariadic): Boolean =
+public fun FnPtrVariadic.eq(other: FnPtrVariadic): Boolean =
     eqList(attrs, other.attrs) { a, b -> a.eq(b) } &&
         eqOpt(name, other.name) { a, b -> a.eq(b) } &&
         comma == other.comma
@@ -165,8 +175,15 @@ public fun BareVariadic.eq(other: BareVariadic): Boolean =
 public fun Block.eq(other: Block): Boolean =
     eqList(stmts, other.stmts) { a, b -> a.eq(b) }
 
+public fun BlockModifiers.eq(other: BlockModifiers): Boolean = true
+
 public fun BoundLifetimes.eq(other: BoundLifetimes): Boolean =
     eqPunct(lifetimes, other.lifetimes, lifetimes.toList(), other.lifetimes.toList()) { a, b -> a.eq(b) }
+
+public fun ClosureModifiers.eq(other: ClosureModifiers): Boolean = true
+
+public fun ConstModifiers.eq(other: ConstModifiers): Boolean =
+    defaultness == other.defaultness
 
 public fun Constraint.eq(other: Constraint): Boolean =
     ident == other.ident &&
@@ -211,6 +228,7 @@ private fun Expr.Assign.eqVariant(other: Expr.Assign): Boolean =
 private fun Expr.Async.eqVariant(other: Expr.Async): Boolean =
     eqList(attrs, other.attrs) { a, b -> a.eq(b) } &&
         capture == other.capture &&
+        modifiers.eq(other.modifiers) &&
         block.eq(other.block)
 
 private fun Expr.Await.eqVariant(other: Expr.Await): Boolean =
@@ -246,8 +264,8 @@ private fun Expr.Cast.eqVariant(other: Expr.Cast): Boolean =
 private fun Expr.Closure.eqVariant(other: Expr.Closure): Boolean =
     eqList(attrs, other.attrs) { a, b -> a.eq(b) } &&
         eqOpt(lifetimes, other.lifetimes) { a, b -> a.eq(b) } &&
+        modifiers.eq(other.modifiers) &&
         constness == other.constness &&
-        movability == other.movability &&
         asyncness == other.asyncness &&
         capture == other.capture &&
         eqPunct(inputs, other.inputs, inputs.toList(), other.inputs.toList()) { a, b -> a.eq(b) } &&
@@ -256,6 +274,7 @@ private fun Expr.Closure.eqVariant(other: Expr.Closure): Boolean =
 
 private fun Expr.Const.eqVariant(other: Expr.Const): Boolean =
     eqList(attrs, other.attrs) { a, b -> a.eq(b) } &&
+        modifiers.eq(other.modifiers) &&
         block.eq(other.block)
 
 private fun Expr.Continue.eqVariant(other: Expr.Continue): Boolean =
@@ -370,6 +389,7 @@ private fun Expr.Try.eqVariant(other: Expr.Try): Boolean =
 
 private fun Expr.TryBlock.eqVariant(other: Expr.TryBlock): Boolean =
     eqList(attrs, other.attrs) { a, b -> a.eq(b) } &&
+        modifiers.eq(other.modifiers) &&
         block.eq(other.block)
 
 private fun Expr.Tuple.eqVariant(other: Expr.Tuple): Boolean =
@@ -398,10 +418,13 @@ private fun Expr.Yield.eqVariant(other: Expr.Yield): Boolean =
 public fun Field.eq(other: Field): Boolean =
     eqList(attrs, other.attrs) { a, b -> a.eq(b) } &&
         vis.eq(other.vis) &&
-        mutability.eq(other.mutability) &&
+        modifiers.eq(other.modifiers) &&
         ident == other.ident &&
         colonToken == other.colonToken &&
-        ty.eq(other.ty)
+        ty.eq(other.ty) &&
+        eqOpt(default, other.default) { a, b -> a.eq(b) }
+
+public fun FieldModifiers.eq(other: FieldModifiers): Boolean = true
 
 public fun FieldPat.eq(other: FieldPat): Boolean =
     eqList(attrs, other.attrs) { a, b -> a.eq(b) } &&
@@ -423,19 +446,22 @@ public fun FieldsUnnamed.eq(other: FieldsUnnamed): Boolean =
 
 public fun File.eq(other: File): Boolean =
     shebang == other.shebang &&
+        eqOpt(frontmatter, other.frontmatter) { a, b -> a.eq(b) } &&
         eqList(attrs, other.attrs) { a, b -> a.eq(b) } &&
         eqList(items, other.items) { a, b -> a.eq(b) }
 
 public fun FnArg.Receiver.eq(other: FnArg.Receiver): Boolean =
     eqList(attrs, other.attrs) { a, b -> a.eq(b) } &&
-        eqOpt(reference, other.reference) { a, b -> a.eq(b) } &&
         mutability == other.mutability &&
-        colonToken == other.colonToken &&
-        type.eq(other.type)
+        kind.eq(other.kind)
+
+public fun FnModifiers.eq(other: FnModifiers): Boolean =
+    defaultness == other.defaultness
 
 public fun ForeignItem.Fn.eq(other: ForeignItem.Fn): Boolean =
     eqList(attrs, other.attrs) { a, b -> a.eq(b) } &&
         vis.eq(other.vis) &&
+        modifiers.eq(other.modifiers) &&
         sig.eq(other.sig)
 
 public fun ForeignItem.Macro.eq(other: ForeignItem.Macro): Boolean =
@@ -446,6 +472,7 @@ public fun ForeignItem.Macro.eq(other: ForeignItem.Macro): Boolean =
 public fun ForeignItem.Static.eq(other: ForeignItem.Static): Boolean =
     eqList(attrs, other.attrs) { a, b -> a.eq(b) } &&
         vis.eq(other.vis) &&
+        safety.eq(other.safety) &&
         mutability.eq(other.mutability) &&
         ident == other.ident &&
         ty.eq(other.ty)
@@ -453,14 +480,16 @@ public fun ForeignItem.Static.eq(other: ForeignItem.Static): Boolean =
 public fun ForeignItem.ItemType.eq(other: ForeignItem.ItemType): Boolean =
     eqList(attrs, other.attrs) { a, b -> a.eq(b) } &&
         vis.eq(other.vis) &&
+        modifiers.eq(other.modifiers) &&
         ident == other.ident &&
         generics.eq(other.generics)
+
+public fun Frontmatter.eq(other: Frontmatter): Boolean = true
 
 public fun GenericParam.ConstParam.eq(other: GenericParam.ConstParam): Boolean =
     eqList(attrs, other.attrs) { a, b -> a.eq(b) } &&
         ident == other.ident &&
         ty.eq(other.ty) &&
-        eqToken == other.eqToken &&
         eqOpt(default, other.default) { a, b -> a.eq(b) }
 
 public fun GenericParam.LifetimeParam.eq(other: GenericParam.LifetimeParam): Boolean =
@@ -474,7 +503,6 @@ public fun GenericParam.TypeParam.eq(other: GenericParam.TypeParam): Boolean =
         ident == other.ident &&
         colonToken == other.colonToken &&
         eqPunct(bounds, other.bounds, bounds.toList(), other.bounds.toList()) { a, b -> a.eq(b) } &&
-        eqToken == other.eqToken &&
         eqOpt(default, other.default) { a, b -> a.eq(b) }
 
 public fun Generics.eq(other: Generics): Boolean =
@@ -492,7 +520,7 @@ public fun IfExpr.eq(other: IfExpr): Boolean =
 public fun ImplItem.Const.eq(other: ImplItem.Const): Boolean =
     eqList(attrs, other.attrs) { a, b -> a.eq(b) } &&
         vis.eq(other.vis) &&
-        defaultness == other.defaultness &&
+        modifiers.eq(other.modifiers) &&
         ident == other.ident &&
         generics.eq(other.generics) &&
         ty.eq(other.ty) &&
@@ -501,7 +529,7 @@ public fun ImplItem.Const.eq(other: ImplItem.Const): Boolean =
 public fun ImplItem.Fn.eq(other: ImplItem.Fn): Boolean =
     eqList(attrs, other.attrs) { a, b -> a.eq(b) } &&
         vis.eq(other.vis) &&
-        defaultness == other.defaultness &&
+        modifiers.eq(other.modifiers) &&
         sig.eq(other.sig) &&
         block.eq(other.block)
 
@@ -513,10 +541,14 @@ public fun ImplItem.Macro.eq(other: ImplItem.Macro): Boolean =
 public fun ImplItem.AssocType.eq(other: ImplItem.AssocType): Boolean =
     eqList(attrs, other.attrs) { a, b -> a.eq(b) } &&
         vis.eq(other.vis) &&
-        defaultness == other.defaultness &&
+        modifiers.eq(other.modifiers) &&
         ident == other.ident &&
         generics.eq(other.generics) &&
         ty.eq(other.ty)
+
+public fun ImplModifiers.eq(other: ImplModifiers): Boolean =
+    defaultness == other.defaultness &&
+        polarity == other.polarity
 
 public fun Index.eq(other: Index): Boolean =
     index == other.index
@@ -524,11 +556,11 @@ public fun Index.eq(other: Index): Boolean =
 public fun Item.Const.eq(other: Item.Const): Boolean =
     eqList(attrs, other.attrs) { a, b -> a.eq(b) } &&
         vis.eq(other.vis) &&
+        modifiers.eq(other.modifiers) &&
         ident == other.ident &&
-        colonToken == other.colonToken &&
+        generics.eq(other.generics) &&
         ty.eq(other.ty) &&
-        eqToken == other.eqToken &&
-        eqOpt(expr, other.expr) { a, b -> a.eq(b) }
+        expr.eq(other.expr)
 
 public fun Item.Enum.eq(other: Item.Enum): Boolean =
     eqList(attrs, other.attrs) { a, b -> a.eq(b) } &&
@@ -546,8 +578,9 @@ public fun Item.ExternCrate.eq(other: Item.ExternCrate): Boolean =
 public fun Item.Fn.eq(other: Item.Fn): Boolean =
     eqList(attrs, other.attrs) { a, b -> a.eq(b) } &&
         vis.eq(other.vis) &&
+        modifiers.eq(other.modifiers) &&
         sig.eq(other.sig) &&
-        eqOpt(block, other.block) { a, b -> a.eq(b) }
+        block.eq(other.block)
 
 public fun Item.ForeignMod.eq(other: Item.ForeignMod): Boolean =
     eqList(attrs, other.attrs) { a, b -> a.eq(b) } &&
@@ -557,7 +590,7 @@ public fun Item.ForeignMod.eq(other: Item.ForeignMod): Boolean =
 
 public fun Item.Impl.eq(other: Item.Impl): Boolean =
     eqList(attrs, other.attrs) { a, b -> a.eq(b) } &&
-        defaultness == other.defaultness &&
+        modifiers.eq(other.modifiers) &&
         unsafety == other.unsafety &&
         generics.eq(other.generics) &&
         eqOpt(traitPath, other.traitPath) { a, b -> a.eq(b) } &&
@@ -596,9 +629,8 @@ public fun Item.Struct.eq(other: Item.Struct): Boolean =
 public fun Item.Trait.eq(other: Item.Trait): Boolean =
     eqList(attrs, other.attrs) { a, b -> a.eq(b) } &&
         vis.eq(other.vis) &&
+        modifiers.eq(other.modifiers) &&
         unsafety == other.unsafety &&
-        autoToken == other.autoToken &&
-        eqOpt(restriction, other.restriction) { a, b -> a.eq(b) } &&
         ident == other.ident &&
         generics.eq(other.generics) &&
         colonToken == other.colonToken &&
@@ -615,9 +647,11 @@ public fun Item.TraitAlias.eq(other: Item.TraitAlias): Boolean =
 public fun Item.ItemType.eq(other: Item.ItemType): Boolean =
     eqList(attrs, other.attrs) { a, b -> a.eq(b) } &&
         vis.eq(other.vis) &&
+        modifiers.eq(other.modifiers) &&
         ident == other.ident &&
         generics.eq(other.generics) &&
-        ty.eq(other.ty)
+        ty.eq(other.ty) &&
+        whereClausePlacement.eq(other.whereClausePlacement)
 
 public fun Item.Union.eq(other: Item.Union): Boolean =
     eqList(attrs, other.attrs) { a, b -> a.eq(b) } &&
@@ -639,6 +673,8 @@ public fun LocalInit.eq(other: LocalInit): Boolean =
     expr.eq(other.expr) &&
         eqOpt(diverge, other.diverge) { a, b -> a.eq(b) }
 
+public fun LocalModifiers.eq(other: LocalModifiers): Boolean = true
+
 public fun Macro.eq(other: Macro): Boolean =
     path.eq(other.path) &&
         delimiter.eq(other.delimiter) &&
@@ -657,12 +693,16 @@ public fun Pat.Const.eq(other: Pat.Const): Boolean =
     eqList(attrs, other.attrs) { a, b -> a.eq(b) } &&
         block.eq(other.block)
 
+public fun Pat.Guard.eq(other: Pat.Guard): Boolean =
+    eqList(attrs, other.attrs) { a, b -> a.eq(b) } &&
+        pat.eq(other.pat) &&
+        guard.eq(other.guard)
+
 public fun Pat.Ident.eq(other: Pat.Ident): Boolean =
     eqList(attrs, other.attrs) { a, b -> a.eq(b) } &&
         byRef == other.byRef &&
-        mutability.eq(other.mutability) &&
+        mutability == other.mutability &&
         ident == other.ident &&
-        atToken == other.atToken &&
         eqOpt(subpat, other.subpat) { a, b -> a.eq(b) }
 
 public fun Pat.Lit.eq(other: Pat.Lit): Boolean =
@@ -695,7 +735,7 @@ public fun Pat.Range.eq(other: Pat.Range): Boolean =
 
 public fun Pat.Reference.eq(other: Pat.Reference): Boolean =
     eqList(attrs, other.attrs) { a, b -> a.eq(b) } &&
-        mutability.eq(other.mutability) &&
+        mutability == other.mutability &&
         pat.eq(other.pat)
 
 public fun Pat.Rest.eq(other: Pat.Rest): Boolean =
@@ -755,23 +795,44 @@ public fun PathArguments.Parenthesized.eq(other: PathArguments.Parenthesized): B
     eqPunct(inputs, other.inputs, inputs.toList(), other.inputs.toList()) { a, b -> a.eq(b) } &&
         output.eq(other.output)
 
+public fun PathForPair.eq(other: PathForPair): Boolean =
+    path.eq(other.path)
+
 public fun PathSegment.eq(other: PathSegment): Boolean =
     ident == other.ident &&
         arguments.eq(other.arguments)
-
-public fun PathTrait.eq(other: PathTrait): Boolean =
-    polarity == other.polarity &&
-        path.eq(other.path)
 
 public fun QSelf.eq(other: QSelf): Boolean =
     ty.eq(other.ty) &&
         position == other.position &&
         asToken == other.asToken
 
+public fun ReceiverKind.eq(other: ReceiverKind): Boolean =
+    when {
+        this is ReceiverKind.Value && other is ReceiverKind.Value -> true
+
+        this is ReceiverKind.Reference && other is ReceiverKind.Reference -> {
+            eqOpt(lifetime, other.lifetime) { a, b -> a.eq(b) } &&
+                mutability == other.mutability
+        }
+
+        this is ReceiverKind.Typed && other is ReceiverKind.Typed -> ty.eq(other.ty)
+
+        else -> false
+    }
+
+public fun Safety.eq(other: Safety): Boolean =
+    when {
+        this is Safety.Safe && other is Safety.Safe -> true
+        this is Safety.Unsafe && other is Safety.Unsafe -> true
+        this is Safety.Default && other is Safety.Default -> true
+        else -> false
+    }
+
 public fun Signature.eq(other: Signature): Boolean =
     constness == other.constness &&
         asyncness == other.asyncness &&
-        unsafety == other.unsafety &&
+        safety.eq(other.safety) &&
         eqOpt(abi, other.abi) { a, b -> a.eq(b) } &&
         ident == other.ident &&
         generics.eq(other.generics) &&
@@ -781,6 +842,7 @@ public fun Signature.eq(other: Signature): Boolean =
 
 public fun Stmt.Local.eq(other: Stmt.Local): Boolean =
     eqList(attrs, other.attrs) { a, b -> a.eq(b) } &&
+        modifiers.eq(other.modifiers) &&
         pat.eq(other.pat) &&
         eqOpt(init, other.init) { a, b -> a.eq(b) }
 
@@ -790,11 +852,13 @@ public fun Stmt.MacroStmt.eq(other: Stmt.MacroStmt): Boolean =
         semiToken == other.semiToken
 
 public fun SynType.Array.eq(other: SynType.Array): Boolean =
-    elem.eq(other.elem) &&
+    eqList(attrs, other.attrs) { a, b -> a.eq(b) } &&
+        elem.eq(other.elem) &&
         len.eq(other.len)
 
-public fun SynType.BareFn.eq(other: SynType.BareFn): Boolean =
-    eqOpt(lifetimes, other.lifetimes) { a, b -> a.eq(b) } &&
+public fun SynType.FnPtr.eq(other: SynType.FnPtr): Boolean =
+    eqList(attrs, other.attrs) { a, b -> a.eq(b) } &&
+        eqOpt(lifetimes, other.lifetimes) { a, b -> a.eq(b) } &&
         unsafety == other.unsafety &&
         eqOpt(abi, other.abi) { a, b -> a.eq(b) } &&
         eqPunct(inputs, other.inputs, inputs.toList(), other.inputs.toList()) { a, b -> a.eq(b) } &&
@@ -802,47 +866,61 @@ public fun SynType.BareFn.eq(other: SynType.BareFn): Boolean =
         output.eq(other.output)
 
 public fun SynType.Group.eq(other: SynType.Group): Boolean =
-    elem.eq(other.elem)
+    eqList(attrs, other.attrs) { a, b -> a.eq(b) } &&
+        elem.eq(other.elem)
 
 public fun SynType.ImplTrait.eq(other: SynType.ImplTrait): Boolean =
-    eqPunct(bounds, other.bounds, bounds.toList(), other.bounds.toList()) { a, b -> a.eq(b) }
+    eqList(attrs, other.attrs) { a, b -> a.eq(b) } &&
+        eqPunct(bounds, other.bounds, bounds.toList(), other.bounds.toList()) { a, b -> a.eq(b) }
 
-public fun SynType.Infer.eq(other: SynType.Infer): Boolean = true
+public fun SynType.Infer.eq(other: SynType.Infer): Boolean =
+    eqList(attrs, other.attrs) { a, b -> a.eq(b) }
 
 public fun SynType.Macro.eq(other: SynType.Macro): Boolean =
-    mac.eq(other.mac)
+    eqList(attrs, other.attrs) { a, b -> a.eq(b) } &&
+        mac.eq(other.mac)
 
-public fun SynType.Never.eq(other: SynType.Never): Boolean = true
+public fun SynType.Never.eq(other: SynType.Never): Boolean =
+    eqList(attrs, other.attrs) { a, b -> a.eq(b) }
 
 public fun SynType.Paren.eq(other: SynType.Paren): Boolean =
-    elem.eq(other.elem)
+    eqList(attrs, other.attrs) { a, b -> a.eq(b) } &&
+        elem.eq(other.elem)
 
 public fun SynType.Path.eq(other: SynType.Path): Boolean =
-    eqOpt(qself, other.qself) { a, b -> a.eq(b) } &&
+    eqList(attrs, other.attrs) { a, b -> a.eq(b) } &&
+        eqOpt(qself, other.qself) { a, b -> a.eq(b) } &&
         path.eq(other.path)
 
 public fun SynType.Ptr.eq(other: SynType.Ptr): Boolean =
-    constToken == other.constToken &&
-        mutability == other.mutability &&
+    eqList(attrs, other.attrs) { a, b -> a.eq(b) } &&
+        mutability.eq(other.mutability) &&
         elem.eq(other.elem)
 
 public fun SynType.Reference.eq(other: SynType.Reference): Boolean =
-    eqOpt(lifetime, other.lifetime) { a, b -> a.eq(b) } &&
+    eqList(attrs, other.attrs) { a, b -> a.eq(b) } &&
+        eqOpt(lifetime, other.lifetime) { a, b -> a.eq(b) } &&
         mutability == other.mutability &&
         elem.eq(other.elem)
 
 public fun SynType.Slice.eq(other: SynType.Slice): Boolean =
-    elem.eq(other.elem)
+    eqList(attrs, other.attrs) { a, b -> a.eq(b) } &&
+        elem.eq(other.elem)
 
 public fun SynType.TraitObject.eq(other: SynType.TraitObject): Boolean =
-    dynToken == other.dynToken &&
+    eqList(attrs, other.attrs) { a, b -> a.eq(b) } &&
+        dynToken == other.dynToken &&
         eqPunct(bounds, other.bounds, bounds.toList(), other.bounds.toList()) { a, b -> a.eq(b) }
 
 public fun SynType.Tuple.eq(other: SynType.Tuple): Boolean =
-    eqPunct(elems, other.elems, elems.toList(), other.elems.toList()) { a, b -> a.eq(b) }
+    eqList(attrs, other.attrs) { a, b -> a.eq(b) } &&
+        eqPunct(elems, other.elems, elems.toList(), other.elems.toList()) { a, b -> a.eq(b) }
+
+public fun TraitBoundModifiers.eq(other: TraitBoundModifiers): Boolean = true
 
 public fun TraitItem.Const.eq(other: TraitItem.Const): Boolean =
     eqList(attrs, other.attrs) { a, b -> a.eq(b) } &&
+        modifiers.eq(other.modifiers) &&
         ident == other.ident &&
         generics.eq(other.generics) &&
         ty.eq(other.ty) &&
@@ -850,6 +928,7 @@ public fun TraitItem.Const.eq(other: TraitItem.Const): Boolean =
 
 public fun TraitItem.Fn.eq(other: TraitItem.Fn): Boolean =
     eqList(attrs, other.attrs) { a, b -> a.eq(b) } &&
+        modifiers.eq(other.modifiers) &&
         sig.eq(other.sig) &&
         eqOpt(default, other.default) { a, b -> a.eq(b) } &&
         semiToken == other.semiToken
@@ -861,19 +940,27 @@ public fun TraitItem.Macro.eq(other: TraitItem.Macro): Boolean =
 
 public fun TraitItem.AssocType.eq(other: TraitItem.AssocType): Boolean =
     eqList(attrs, other.attrs) { a, b -> a.eq(b) } &&
+        modifiers.eq(other.modifiers) &&
         ident == other.ident &&
         generics.eq(other.generics) &&
         colonToken == other.colonToken &&
         eqPunct(bounds, other.bounds, bounds.toList(), other.bounds.toList()) { a, b -> a.eq(b) } &&
         eqOpt(default, other.default) { a, b -> a.eq(b) }
 
+public fun TraitModifiers.eq(other: TraitModifiers): Boolean =
+    autoToken == other.autoToken
+
+public fun TypeModifiers.eq(other: TypeModifiers): Boolean =
+    defaultness == other.defaultness
+
 public fun TypeParamBound.PreciseCapture.eq(other: TypeParamBound.PreciseCapture): Boolean =
     eqPunct(params, other.params, params.toList(), other.params.toList()) { a, b -> a.eq(b) }
 
 public fun TypeParamBound.Trait.eq(other: TypeParamBound.Trait): Boolean =
     parenToken == other.parenToken &&
-        modifier.eq(other.modifier) &&
         eqOpt(lifetimes, other.lifetimes) { a, b -> a.eq(b) } &&
+        modifiers.eq(other.modifiers) &&
+        maybe == other.maybe &&
         path.eq(other.path)
 
 public fun UseTree.Glob.eq(other: UseTree.Glob): Boolean = true
@@ -908,12 +995,17 @@ public fun Visibility.Restricted.eq(other: Visibility.Restricted): Boolean =
 public fun WhereClause.eq(other: WhereClause): Boolean =
     eqPunct(predicates, other.predicates, predicates.toList(), other.predicates.toList()) { a, b -> a.eq(b) }
 
+public fun WhereClausePlacement.eq(other: WhereClausePlacement): Boolean =
+    this == other
+
 public fun WherePredicate.LifetimePredicate.eq(other: WherePredicate.LifetimePredicate): Boolean =
-    lifetime.eq(other.lifetime) &&
+    eqList(attrs, other.attrs) { a, b -> a.eq(b) } &&
+        lifetime.eq(other.lifetime) &&
         eqPunct(bounds, other.bounds, bounds.toList(), other.bounds.toList()) { a, b -> a.eq(b) }
 
 public fun WherePredicate.TypePredicate.eq(other: WherePredicate.TypePredicate): Boolean =
-    eqOpt(lifetimes, other.lifetimes) { a, b -> a.eq(b) } &&
+    eqList(attrs, other.attrs) { a, b -> a.eq(b) } &&
+        eqOpt(lifetimes, other.lifetimes) { a, b -> a.eq(b) } &&
         boundedTy.eq(other.boundedTy) &&
         eqPunct(bounds, other.bounds, bounds.toList(), other.bounds.toList()) { a, b -> a.eq(b) }
 
@@ -1065,13 +1157,6 @@ internal fun exprEq(left: Expr, right: Expr): Boolean =
         else -> false
     }
 
-public fun FieldMutability.eq(other: FieldMutability): Boolean =
-    when {
-        this is FieldMutability.None && other is FieldMutability.None -> true
-        this is FieldMutability.Mut && other is FieldMutability.Mut -> true
-        else -> false
-    }
-
 public fun Fields.eq(other: Fields): Boolean =
     when {
         this is Fields.Named && other is Fields.Named -> fields.eq(other.fields)
@@ -1128,8 +1213,6 @@ public fun ImplItem.eq(other: ImplItem): Boolean =
         this is ImplItem.Verbatim && other is ImplItem.Verbatim -> this.eq(other)
         else -> false
     }
-
-public fun ImplRestriction.eq(other: ImplRestriction): Boolean = true
 
 public fun Item.eq(other: Item): Boolean =
     when {
@@ -1202,6 +1285,7 @@ public fun ModContent.eq(other: ModContent): Boolean =
 public fun Pat.eq(other: Pat): Boolean =
     when {
         this is Pat.Const && other is Pat.Const -> this.eq(other)
+        this is Pat.Guard && other is Pat.Guard -> this.eq(other)
         this is Pat.Ident && other is Pat.Ident -> this.eq(other)
         this is Pat.Lit && other is Pat.Lit -> this.eq(other)
         this is Pat.Macro && other is Pat.Macro -> this.eq(other)
@@ -1275,7 +1359,7 @@ public fun Stmt.ExprStmt.eq(other: Stmt.ExprStmt): Boolean =
 public fun SynType.eq(other: SynType): Boolean =
     when {
         this is SynType.Array && other is SynType.Array -> this.eq(other)
-        this is SynType.BareFn && other is SynType.BareFn -> this.eq(other)
+        this is SynType.FnPtr && other is SynType.FnPtr -> this.eq(other)
         this is SynType.Group && other is SynType.Group -> this.eq(other)
         this is SynType.ImplTrait && other is SynType.ImplTrait -> this.eq(other)
         this is SynType.Infer && other is SynType.Infer -> this.eq(other)
@@ -1289,13 +1373,6 @@ public fun SynType.eq(other: SynType): Boolean =
         this is SynType.TraitObject && other is SynType.TraitObject -> this.eq(other)
         this is SynType.Tuple && other is SynType.Tuple -> this.eq(other)
         this is SynType.Verbatim && other is SynType.Verbatim -> this.eq(other)
-        else -> false
-    }
-
-public fun TraitBoundModifier.eq(other: TraitBoundModifier): Boolean =
-    when {
-        this is TraitBoundModifier.None && other is TraitBoundModifier.None -> true
-        this is TraitBoundModifier.Maybe && other is TraitBoundModifier.Maybe -> true
         else -> false
     }
 
@@ -1362,7 +1439,6 @@ private fun anyAstEq(left: Any?, right: Any?): Boolean =
     when {
         left === right -> true
         left == null || right == null -> false
-        left is BareFnArg && right is BareFnArg -> left.eq(right)
         left is CapturedParam && right is CapturedParam -> left.eq(right)
         left is Expr && right is Expr -> left.eq(right)
         left is Field && right is Field -> left.eq(right)
@@ -1372,6 +1448,7 @@ private fun anyAstEq(left: Any?, right: Any?): Boolean =
         left is GenericArgument && right is GenericArgument -> left.eq(right)
         left is GenericParam && right is GenericParam -> left.eq(right)
         left is Lifetime && right is Lifetime -> left.eq(right)
+        left is NamedArg && right is NamedArg -> left.eq(right)
         left is Pat && right is Pat -> left.eq(right)
         left is PathSegment && right is PathSegment -> left.eq(right)
         left is SynType && right is SynType -> left.eq(right)

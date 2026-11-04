@@ -86,6 +86,7 @@ private val INIT: List<ScanRule> =
         ScanRule(Input.Keyword("move"), Action.SetState { CLOSURE }),
         ScanRule(Input.Keyword("return"), Action.SetState { RETURN }),
         ScanRule(Input.Keyword("static"), Action.SetState { CLOSURE }),
+        ScanRule(Input.Keyword("try"), Action.SetState { BLOCK }),
         ScanRule(Input.Keyword("unsafe"), Action.SetState { BLOCK }),
         ScanRule(Input.Keyword("while"), Action.IncDepth),
         ScanRule(Input.Keyword("yield"), Action.SetState { RETURN }),
@@ -167,6 +168,7 @@ private val CLOSURE_RET: List<ScanRule> =
 
 private val CONST: List<ScanRule> =
     listOf(
+        ScanRule(Input.Keyword("move"), Action.SetState { CLOSURE }),
         ScanRule(Input.Punct("|"), Action.SetState { CLOSURE_ARGS }),
         ScanRule(Input.ConsumeBrace, Action.SetState { POSTFIX }),
     )

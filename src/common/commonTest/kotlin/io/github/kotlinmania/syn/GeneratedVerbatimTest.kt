@@ -59,12 +59,12 @@ class GeneratedVerbatimTest {
             move(end, "e")
             val before = begin.cursor()
             val after = end.cursor()
-            assertEquals("b c", between(begin, end).toString())
+            assertEquals("b c", between(begin.cursor(), end.cursor()).toString())
             assertEquals(before, begin.cursor())
             assertEquals(after, end.cursor())
-            assertTrue(between(begin, begin).isEmpty())
+            assertTrue(between(begin.cursor(), begin.cursor()).isEmpty())
         }
-        withInput(TokenStream.new()) { assertTrue(between(it, it).isEmpty()) }
+        withInput(TokenStream.new()) { assertTrue(between(it.cursor(), it.cursor()).isEmpty()) }
     }
 
     @Test
@@ -72,12 +72,12 @@ class GeneratedVerbatimTest {
         withInput(none(none(tokens("a b")))) { input ->
             val end = input.fork()
             move(end, "ggn")
-            assertEquals("a", between(input, end).toString())
+            assertEquals("a", between(input.cursor(), end.cursor()).toString())
         }
         withInput(none(tokens("a b"))) { input ->
             val end = input.fork()
             move(end, "e")
-            val tree = between(input, end).single() as TokenTree.Group
+            val tree = between(input.cursor(), end.cursor()).single() as TokenTree.Group
             assertEquals(Delimiter.None, tree.value.delimiter())
             assertEquals("a b", tree.value.stream().toString())
         }
@@ -86,7 +86,7 @@ class GeneratedVerbatimTest {
             move(end, "e")
             assertEquals(
                 Delimiter.None,
-                (between(input, end).single() as TokenTree.Group).value.delimiter(),
+                (between(input.cursor(), end.cursor()).single() as TokenTree.Group).value.delimiter(),
             )
         }
     }
@@ -97,7 +97,7 @@ class GeneratedVerbatimTest {
             withInput(tokens("a")) { b ->
                 assertEquals(
                     "assertion failed: sameBuffer(end, cursor)",
-                    assertFailsWith<IllegalStateException> { between(a, b) }.message,
+                    assertFailsWith<IllegalStateException> { between(a.cursor(), b.cursor()) }.message,
                 )
             }
         }
@@ -107,7 +107,7 @@ class GeneratedVerbatimTest {
             val original = input.cursor()
             assertEquals(
                 "verbatim end must not be inside a delimited group",
-                assertFailsWith<IllegalStateException> { between(input, end) }.message,
+                assertFailsWith<IllegalStateException> { between(input.cursor(), end.cursor()) }.message,
             )
             assertEquals(original, input.cursor())
         }
@@ -116,7 +116,7 @@ class GeneratedVerbatimTest {
             move(begin, "n")
             assertEquals(
                 "verbatim end must not be inside a delimited group",
-                assertFailsWith<IllegalStateException> { between(begin, input) }.message,
+                assertFailsWith<IllegalStateException> { between(begin.cursor(), input.cursor()) }.message,
             )
         }
     }
@@ -128,7 +128,7 @@ class GeneratedVerbatimTest {
             move(begin, "e")
             assertEquals(
                 "called unwrap on a null value",
-                assertFailsWith<IllegalStateException> { between(begin, input) }.message,
+                assertFailsWith<IllegalStateException> { between(begin.cursor(), input.cursor()) }.message,
             )
         }
     }
@@ -139,7 +139,7 @@ class GeneratedVerbatimTest {
             val end = input.fork()
             move(end, "e")
             val original = input.cursor().tokenStream().toList()
-            val result = between(input, end).toList()
+            val result = between(input.cursor(), end.cursor()).toList()
             assertEquals(original.map { it.toString() }, result.map { it.toString() })
             assertEquals(
                 original.map { it.span().start() to it.span().end() },

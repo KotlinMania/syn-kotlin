@@ -122,6 +122,7 @@ public sealed class Expr : ToTokens {
         public var attrs: List<Attribute>,
         public var asyncToken: io.github.kotlinmania.syn.token.Async,
         public var capture: io.github.kotlinmania.syn.token.Move?,
+        public var modifiers: BlockModifiers = BlockModifiers(),
         public var block: Block,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
@@ -131,7 +132,7 @@ public sealed class Expr : ToTokens {
             block.toTokens(tokens)
         }
 
-        override fun deepCopy(): Async = Async(attrs.mapTo(mutableListOf()) { it.deepCopy() }, asyncToken, capture, block.deepCopy())
+        override fun deepCopy(): Async = Async(attrs.mapTo(mutableListOf()) { it.deepCopy() }, asyncToken, capture, modifiers.deepCopy(), block.deepCopy())
     }
 
     /** An await expression: `fut.await`. */
@@ -226,13 +227,13 @@ public sealed class Expr : ToTokens {
     public data class Closure(
         public var attrs: List<Attribute>,
         public var lifetimes: BoundLifetimes?,
+        public var modifiers: ClosureModifiers = ClosureModifiers(),
         public var constness: io.github.kotlinmania.syn.token.Const?,
-        public var movability: io.github.kotlinmania.syn.token.Static?,
         public var asyncness: io.github.kotlinmania.syn.token.Async?,
         public var capture: io.github.kotlinmania.syn.token.Move?,
-        public var or1Token: io.github.kotlinmania.syn.token.Or,
+        public var inputsBegin: io.github.kotlinmania.syn.token.Or,
         public var inputs: PatList,
-        public var or2Token: io.github.kotlinmania.syn.token.Or,
+        public var inputsEnd: io.github.kotlinmania.syn.token.Or,
         public var output: ReturnType,
         public var body: Expr,
     ) : Expr() {
@@ -240,13 +241,14 @@ public sealed class Expr : ToTokens {
             printExprClosure(this, tokens, FixupContext.NONE)
         }
 
-        override fun deepCopy(): Closure = Closure(attrs.mapTo(mutableListOf()) { it.deepCopy() }, lifetimes?.deepCopy(), constness, movability, asyncness, capture, or1Token, inputs.copy({ it.deepCopy() }, { it }), or2Token, output.deepCopy(), body.deepCopy())
+        override fun deepCopy(): Closure = Closure(attrs.mapTo(mutableListOf()) { it.deepCopy() }, lifetimes?.deepCopy(), modifiers.deepCopy(), constness, asyncness, capture, inputsBegin, inputs.copy({ it.deepCopy() }, { it }), inputsEnd, output.deepCopy(), body.deepCopy())
     }
 
     /** A const block: `const { ... }`. */
     public data class Const(
         public var attrs: List<Attribute>,
         public var constToken: io.github.kotlinmania.syn.token.Const,
+        public var modifiers: BlockModifiers = BlockModifiers(),
         public var block: Block,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
@@ -258,7 +260,7 @@ public sealed class Expr : ToTokens {
             }
         }
 
-        override fun deepCopy(): Const = Const(attrs.mapTo(mutableListOf()) { it.deepCopy() }, constToken, block.deepCopy())
+        override fun deepCopy(): Const = Const(attrs.mapTo(mutableListOf()) { it.deepCopy() }, constToken, modifiers.deepCopy(), block.deepCopy())
     }
 
     /** A `continue`, with an optional label. */
@@ -571,7 +573,7 @@ public sealed class Expr : ToTokens {
             printExprRawAddr(this, tokens, FixupContext.NONE)
         }
 
-        override fun deepCopy(): RawAddr = RawAddr(attrs.mapTo(mutableListOf()) { it.deepCopy() }, andToken, raw, mutability, expr.deepCopy())
+        override fun deepCopy(): RawAddr = RawAddr(attrs.mapTo(mutableListOf()) { it.deepCopy() }, andToken, raw, mutability.deepCopy(), expr.deepCopy())
     }
 
     /** A referencing operation. */
@@ -674,6 +676,7 @@ public sealed class Expr : ToTokens {
     public data class TryBlock(
         public var attrs: List<Attribute>,
         public var tryToken: io.github.kotlinmania.syn.token.Try,
+        public var modifiers: BlockModifiers = BlockModifiers(),
         public var block: Block,
     ) : Expr() {
         override fun toTokens(tokens: TokenStream) {
@@ -682,7 +685,7 @@ public sealed class Expr : ToTokens {
             block.toTokens(tokens)
         }
 
-        override fun deepCopy(): TryBlock = TryBlock(attrs.mapTo(mutableListOf()) { it.deepCopy() }, tryToken, block.deepCopy())
+        override fun deepCopy(): TryBlock = TryBlock(attrs.mapTo(mutableListOf()) { it.deepCopy() }, tryToken, modifiers.deepCopy(), block.deepCopy())
     }
 
     /** A tuple expression: `(a, b, c, d)`. */
@@ -872,7 +875,6 @@ public data class Label(
 public data class Arm(
     public var attrs: List<Attribute>,
     public var pat: Pat,
-    public var guard: IfExpr?,
     public var fatArrowToken: io.github.kotlinmania.syn.token.FatArrow,
     public var body: Expr,
     public var comma: io.github.kotlinmania.syn.token.Comma?,
@@ -880,13 +882,50 @@ public data class Arm(
     override fun toTokens(tokens: TokenStream) {
         for (attr in attrs) attr.toTokens(tokens)
         pat.toTokens(tokens)
-        guard?.toTokens(tokens)
         fatArrowToken.toTokens(tokens)
         printExpr(body, tokens, FixupContext.newMatchArm())
         comma?.toTokens(tokens)
     }
 
-    public fun deepCopy(): Arm = Arm(attrs.mapTo(mutableListOf()) { it.deepCopy() }, pat.deepCopy(), guard?.let { it.copy(expr = it.expr.deepCopy()) }, fatArrowToken, body.deepCopy(), comma)
+    public fun deepCopy(): Arm = Arm(attrs.mapTo(mutableListOf()) { it.deepCopy() }, pat.deepCopy(), fatArrowToken, body.deepCopy(), comma)
+}
+
+/** Additional optional information about a closure. */
+public class ClosureModifiers {
+    public fun requireEmpty(): SynResult<Unit> = SynResult.success(Unit)
+
+    public fun deepCopy(): ClosureModifiers = ClosureModifiers()
+
+    public fun clone(): ClosureModifiers = ClosureModifiers()
+
+    override fun equals(other: Any?): Boolean = other is ClosureModifiers
+
+    override fun hashCode(): Int = 0
+
+    override fun toString(): String = "ClosureModifiers"
+
+    public companion object {
+        public fun default(): ClosureModifiers = ClosureModifiers()
+    }
+}
+
+/** Additional optional information about a block. */
+public class BlockModifiers {
+    public fun requireEmpty(): SynResult<Unit> = SynResult.success(Unit)
+
+    public fun deepCopy(): BlockModifiers = BlockModifiers()
+
+    public fun clone(): BlockModifiers = BlockModifiers()
+
+    override fun equals(other: Any?): Boolean = other is BlockModifiers
+
+    override fun hashCode(): Int = 0
+
+    override fun toString(): String = "BlockModifiers"
+
+    public companion object {
+        public fun default(): BlockModifiers = BlockModifiers()
+    }
 }
 
 /** Limit types of a range, inclusive or exclusive. */
@@ -908,28 +947,6 @@ public sealed class RangeLimits : ToTokens {
     public data class Closed(
         var token: io.github.kotlinmania.syn.token.DotDotEq,
     ) : RangeLimits() {
-        override fun toTokens(tokens: TokenStream) {
-            token.toTokens(tokens)
-        }
-    }
-}
-
-/**
- * Mutability of a raw pointer (`*const T`, `*mut T`), in which non-mutable
- * isn't the implicit default.
- */
-public sealed class PointerMutability : ToTokens {
-    public data class Const(
-        var token: io.github.kotlinmania.syn.token.Const,
-    ) : PointerMutability() {
-        override fun toTokens(tokens: TokenStream) {
-            token.toTokens(tokens)
-        }
-    }
-
-    public data class Mut(
-        var token: io.github.kotlinmania.syn.token.Mut,
-    ) : PointerMutability() {
         override fun toTokens(tokens: TokenStream) {
             token.toTokens(tokens)
         }
@@ -1221,12 +1238,11 @@ internal fun printExprClosure(e: Expr.Closure, tokens: TokenStream, fixup: Fixup
     outerAttrsToTokens(e.attrs, tokens)
     e.lifetimes?.toTokens(tokens)
     e.constness?.toTokens(tokens)
-    e.movability?.toTokens(tokens)
     e.asyncness?.toTokens(tokens)
     e.capture?.toTokens(tokens)
-    e.or1Token.toTokens(tokens)
+    e.inputsBegin.toTokens(tokens)
     e.inputs.toTokens(tokens)
-    e.or2Token.toTokens(tokens)
+    e.inputsEnd.toTokens(tokens)
     e.output.toTokens(tokens)
     if (e.output == ReturnType.Default ||
         e.body.let { body -> body is Expr.BlockExpr && body.attrs.isEmpty() && body.label == null }
@@ -1397,7 +1413,7 @@ public fun indexFromUSize(index: Int): Index {
 }
 
 public fun atomLabeled(input: ParseStream): SynResult<Expr> {
-    val labelResult = LifetimeParse.parse(input)
+    val labelResult = Lifetime.parseAny(input)
     if (labelResult.isFailure) return SynResult.failure((labelResult as SynResult.Failure).error)
     val theLabel = labelResult.getOrThrow()
     val colonResult = ColonParse.parse(input)
@@ -1453,7 +1469,7 @@ internal fun parseExprLoopLabeled(input: ParseStream): SynResult<Expr> =
     parseExprLoop(input)
 
 public fun exprBuiltin(input: ParseStream): SynResult<Expr> {
-    val begin = input.fork()
+    val begin = input.cursor()
     val kwResult = keyword(input, "builtin")
     if (kwResult.isFailure) return SynResult.failure((kwResult as SynResult.Failure).error)
     val poundResult = PoundParse.parse(input)
@@ -1463,8 +1479,19 @@ public fun exprBuiltin(input: ParseStream): SynResult<Expr> {
     val parens = parenthesized(input)
     if (parens.isFailure) return SynResult.failure((parens as SynResult.Failure).error)
     val parensVal = parens.getOrThrow()
+    while (!parensVal.content.isEmpty()) {
+        val stepResult =
+            parensVal.content.step { cursor: StepCursor ->
+                val pair = cursor.tokenTree() ?: return@step SynResult.failure(cursor.error("unexpected end of input"))
+                SynResult.success(Unit to pair.second)
+            }
+        if (stepResult.isFailure) {
+            parensVal.content.finishChildBuffer()
+            return SynResult.failure((stepResult as SynResult.Failure).error)
+        }
+    }
     parensVal.content.finishChildBuffer()
-    val tokens = between(begin, input)
+    val tokens = between(begin, input.cursor())
     return SynResult.success(Expr.Verbatim(tokens))
 }
 
@@ -1575,12 +1602,12 @@ public fun exprUnary(input: ParseStream, attrs: List<Attribute>, allowStruct: Bo
 }
 
 public fun exprBecome(input: ParseStream): SynResult<Expr> {
-    val begin = input.fork()
+    val begin = input.cursor()
     val becomeResult = BecomeParse.parse(input)
     if (becomeResult.isFailure) return SynResult.failure((becomeResult as SynResult.Failure).error)
     val exprResult = parseExprFull(input)
     if (exprResult.isFailure) return SynResult.failure((exprResult as SynResult.Failure).error)
-    val tokens = between(begin, input)
+    val tokens = between(begin, input.cursor())
     return SynResult.success(Expr.Verbatim(tokens))
 }
 
@@ -1588,13 +1615,11 @@ internal fun exprClosure(input: ParseStream, allowStruct: Boolean): SynResult<Ex
     val lifetimes: BoundLifetimes? = BoundLifetimes.parseOptional(input).getOrElse { return SynResult.failure(it) }
     val constness: io.github.kotlinmania.syn.token.Const? =
         if (input.peek(ConstPeek)) ConstParse.parse(input).getOrElse { return SynResult.failure(it) } else null
-    val movability: io.github.kotlinmania.syn.token.Static? =
-        if (input.peek(StaticPeek)) StaticParse.parse(input).getOrElse { return SynResult.failure(it) } else null
     val asyncness: io.github.kotlinmania.syn.token.Async? =
         if (input.peek(AsyncPeek)) AsyncParse.parse(input).getOrElse { return SynResult.failure(it) } else null
     val capture: io.github.kotlinmania.syn.token.Move? =
         if (input.peek(MovePeek)) MoveParse.parse(input).getOrElse { return SynResult.failure(it) } else null
-    val or1Token: io.github.kotlinmania.syn.token.Or = OrParse.parse(input).getOrElse { return SynResult.failure(it) }
+    val inputsBegin: io.github.kotlinmania.syn.token.Or = OrParse.parse(input).getOrElse { return SynResult.failure(it) }
 
     val inputs = PatList()
     while (true) {
@@ -1610,7 +1635,7 @@ internal fun exprClosure(input: ParseStream, allowStruct: Boolean): SynResult<Ex
         inputs.pushPunct(punct)
     }
 
-    val or2Token: io.github.kotlinmania.syn.token.Or = OrParse.parse(input).getOrElse { return SynResult.failure(it) }
+    val inputsEnd: io.github.kotlinmania.syn.token.Or = OrParse.parse(input).getOrElse { return SynResult.failure(it) }
 
     val (output, body) =
         if (input.peek(RArrowPeek)) {
@@ -1637,13 +1662,13 @@ internal fun exprClosure(input: ParseStream, allowStruct: Boolean): SynResult<Ex
         Expr.Closure(
             attrs = mutableListOf(),
             lifetimes = lifetimes,
+            modifiers = ClosureModifiers(),
             constness = constness,
-            movability = movability,
             asyncness = asyncness,
             capture = capture,
-            or1Token = or1Token,
+            inputsBegin = inputsBegin,
             inputs = inputs,
-            or2Token = or2Token,
+            inputsEnd = inputsEnd,
             output = output,
             body = body,
         ),
@@ -1651,6 +1676,7 @@ internal fun exprClosure(input: ParseStream, allowStruct: Boolean): SynResult<Ex
 }
 
 public fun closureArg(input: ParseStream): SynResult<Pat> {
+    val attrs = Attribute.parseOuter(input).getOrElse { return SynResult.failure(it) }
     val patResult = parsePatSingle(input)
     if (patResult.isFailure) return patResult
     val pat = patResult.getOrThrow()
@@ -1659,21 +1685,42 @@ public fun closureArg(input: ParseStream): SynResult<Pat> {
         if (colonResult.isFailure) return SynResult.failure((colonResult as SynResult.Failure).error)
         val tyResult = parseTypeFull(input)
         if (tyResult.isFailure) return SynResult.failure((tyResult as SynResult.Failure).error)
-        return SynResult.success(Pat.TypeAscription(mutableListOf(), pat, colonResult.getOrThrow(), tyResult.getOrThrow()))
+        return SynResult.success(Pat.TypeAscription(attrs, pat, colonResult.getOrThrow(), tyResult.getOrThrow()))
     }
-    return SynResult.success(pat)
+    return SynResult.success(
+        when (pat) {
+            is Pat.Const -> pat.copy(attrs = attrs)
+            is Pat.Guard -> pat
+            is Pat.Ident -> pat.copy(attrs = attrs)
+            is Pat.Lit -> pat.copy(attrs = attrs)
+            is Pat.Macro -> pat.copy(attrs = attrs)
+            is Pat.Or -> pat.copy(attrs = attrs)
+            is Pat.PatParen -> pat.copy(attrs = attrs)
+            is Pat.Path -> pat.copy(attrs = attrs)
+            is Pat.Range -> pat.copy(attrs = attrs)
+            is Pat.Reference -> pat.copy(attrs = attrs)
+            is Pat.Rest -> pat.copy(attrs = attrs)
+            is Pat.Slice -> pat.copy(attrs = attrs)
+            is Pat.Struct -> pat.copy(attrs = attrs)
+            is Pat.Tuple -> pat.copy(attrs = attrs)
+            is Pat.TupleStruct -> pat.copy(attrs = attrs)
+            is Pat.TypeAscription -> pat
+            is Pat.Verbatim -> pat
+            is Pat.Wild -> pat.copy(attrs = attrs)
+        },
+    )
 }
 
 public fun exprBreak(input: ParseStream, allowStruct: Boolean): SynResult<Expr.Break> {
     val breakResult = BreakParse.parse(input)
     if (breakResult.isFailure) return SynResult.failure((breakResult as SynResult.Failure).error)
     val ahead = input.fork()
-    val labelResult = LifetimeParse.parse(ahead)
-    val label = if (labelResult.isSuccess) labelResult.getOrThrow() else null
-    if (label != null && ahead.peek(ColonPeek)) {
+    val labelBegin = ahead.cursor()
+    val label = Lifetime.parseOptionalAny(ahead)
+    if (label != null && ahead.peek(ColonPeek) && !ahead.peek(PathSepPeek)) {
         val exprResult = parseExprFull(input)
         if (exprResult.isFailure) return SynResult.failure((exprResult as SynResult.Failure).error)
-        return SynResult.failure(SynError.new2(label.apostrophe, input.span(), "parentheses required"))
+        return SynResult.failure(SynError.newRange(labelBegin, input.cursor(), "parentheses required"))
     }
     input.advanceTo(ahead)
     val expr: Expr? =
@@ -1719,15 +1766,7 @@ public object RangeLimitsParse {
 public object ArmParse {
     fun parse(input: ParseStream): SynResult<Arm> {
         val attrs = parseOuterAttributes(input).getOrElse { return SynResult.failure(it) }
-        val pat = parsePatMultiWithLeadingVert(input).getOrElse { return SynResult.failure(it) }
-        val guard =
-            if (input.peek(IfPeek)) {
-                val ifToken = IfParse.parse(input).getOrElse { return SynResult.failure(it) }
-                val guardExpr = parseExprFull(input).getOrElse { return SynResult.failure(it) }
-                IfExpr(ifToken, guardExpr)
-            } else {
-                null
-            }
+        val pat = parsePatMultiWithLeadingVertAndGuard(input).getOrElse { return SynResult.failure(it) }
         val fatArrowToken = FatArrowParse.parse(input).getOrElse { return SynResult.failure(it) }
         val body = parseWithEarlierBoundaryRule(input).getOrElse { return SynResult.failure(it) }
         val comma =
@@ -1740,7 +1779,6 @@ public object ArmParse {
             Arm(
                 attrs,
                 pat,
-                guard,
                 fatArrowToken,
                 body,
                 comma,
@@ -1967,7 +2005,7 @@ internal fun parseExprWithEarlierBoundaryRuleImpl(input: ParseStream): SynResult
     val attrs = exprAttrsImpl(input).getOrElse { return SynResult.failure(it) }
     var expr =
         when {
-            startsWithNoneGroup(input) -> {
+            startsWithExprGroup(input) -> {
                 val atom = parseExprGroupImpl(input).getOrElse { return SynResult.failure(it) }
                 if (continueParsingEarlyImpl(atom)) {
                     trailerHelperImpl(input, atom).getOrElse { return SynResult.failure(it) }
@@ -2074,6 +2112,10 @@ internal fun parseExprBinaryImpl(
             val castCheck = checkCastImpl(input)
             if (castCheck.isFailure) return castCheck.asFailure()
             current = Expr.Cast(mutableListOf(), current, asResult.getOrThrow(), tyResult.getOrThrow())
+        } else if (input.peek(LArrowPeek)) {
+            return SynResult.failure(
+                input.error("unexpected operator `<-`, if this is intended to be a comparison against a negative then a space is required: `< -`"),
+            )
         } else {
             break
         }
@@ -2154,9 +2196,10 @@ internal fun exprAttrsImpl(input: ParseStream): SynResult<List<Attribute>> {
 }
 
 internal fun unaryExprImpl(input: ParseStream, allowStruct: Boolean): SynResult<Expr> {
+    val begin = input.cursor()
     val attrs = exprAttrsImpl(input).getOrElse { return SynResult.failure(it) }
     if (peekExprGroup(input, allowStruct)) {
-        return trailerExprImpl(input, allowStruct, attrs)
+        return trailerExprImpl(input, allowStruct, attrs, begin)
     }
     if (input.peek(AndPeek)) {
         val andToken = AndParse.parse(input)
@@ -2192,15 +2235,23 @@ internal fun unaryExprImpl(input: ParseStream, allowStruct: Boolean): SynResult<
         if (inner.isFailure) return inner
         return SynResult.success(Expr.Unary(attrs, opResult.getOrThrow(), inner.getOrThrow()))
     }
-    return trailerExprImpl(input, allowStruct, attrs)
+    return trailerExprImpl(input, allowStruct, attrs, begin)
 }
 
-internal fun trailerExprImpl(input: ParseStream, allowStruct: Boolean, attrs: List<Attribute> = mutableListOf()): SynResult<Expr> {
+internal fun trailerExprImpl(
+    input: ParseStream,
+    allowStruct: Boolean,
+    attrs: List<Attribute> = mutableListOf(),
+    begin: Cursor? = null,
+): SynResult<Expr> {
     val atomResult = atomExprImpl(input, allowStruct)
     if (atomResult.isFailure) return atomResult
     val trailed = trailerHelperImpl(input, atomResult.getOrThrow())
     if (trailed.isFailure) return trailed
     val expr = trailed.getOrThrow()
+    if (expr is Expr.Verbatim && begin != null) {
+        return SynResult.success(Expr.Verbatim(between(begin, input.cursor())))
+    }
     if (attrs.isEmpty()) return SynResult.success(expr)
     if (expr is Expr.Range && expr.start == null) {
         return SynResult.failure(input.error("attributes are not allowed on range expressions starting with `..`"))
@@ -2249,7 +2300,15 @@ private fun Expr.withPrependedAttrs(attrs: List<Attribute>): Expr =
         is Expr.Unsafe -> copy(attrs = (attrs + this.attrs).toMutableList())
         is Expr.While -> copy(attrs = (attrs + this.attrs).toMutableList())
         is Expr.Yield -> copy(attrs = (attrs + this.attrs).toMutableList())
-        is Expr.Verbatim -> this
+        is Expr.Verbatim ->
+            if (attrs.isEmpty()) {
+                this
+            } else {
+                val combined = TokenStream.new()
+                for (attr in attrs) attr.toTokens(combined)
+                combined.extendTokenStreams(listOf(this.tokens))
+                Expr.Verbatim(combined)
+            }
     }
 
 internal fun trailerHelperImpl(input: ParseStream, e: Expr): SynResult<Expr> {
@@ -2475,27 +2534,15 @@ internal fun atomExprImpl(input: ParseStream, allowStruct: Boolean): SynResult<E
         return SynResult.success(Expr.Yield(mutableListOf(), yldToken.getOrThrow(), expr.getOrThrow()))
     }
     if (input.peek(LetPeek)) return parseExprLetImpl(input, allowStruct)
-    if (input.peek(BreakPeek)) {
-        val brkToken = BreakParse.parse(input)
-        if (brkToken.isFailure) return brkToken.asFailure()
-        val labelResult = LifetimeParse.parse(input)
-        val label = if (labelResult.isSuccess) labelResult.getOrThrow() else null
-        val expr =
-            if (peekExpr(input) && (allowStruct || !input.peek(BracePeek))) {
-                parseExprFull(input)
-            } else {
-                SynResult.success(null)
-            }
-        if (expr.isFailure) return expr.asFailure()
-        return SynResult.success(Expr.Break(mutableListOf(), brkToken.getOrThrow(), label, expr.getOrThrow()))
-    }
+    if (input.peek(BreakPeek)) return exprBreak(input, allowStruct)
     if (input.peek(ContinuePeek)) {
         val contToken = ContinueParse.parse(input)
         if (contToken.isFailure) return contToken.asFailure()
-        val labelResult = LifetimeParse.parse(input)
-        val label = if (labelResult.isSuccess) labelResult.getOrThrow() else null
+        val label = Lifetime.parseOptionalAny(input)
         return SynResult.success(Expr.Continue(mutableListOf(), contToken.getOrThrow(), label))
     }
+    if (input.peek(BecomePeek)) return exprBecome(input)
+    if (input.cursor().peekKeyword("builtin") && input.peek2(PoundPeek)) return exprBuiltin(input)
     if (input.peek(DotDotPeek) || input.peek(DotDotEqPeek)) {
         return parseExprRange(input, null, allowStruct)
     }
@@ -2540,7 +2587,9 @@ internal fun parseExprLetImpl(input: ParseStream, allowStruct: Boolean): SynResu
 
 private fun peekExprGroup(input: ParseStream, allowStruct: Boolean): Boolean {
     val ahead = input.fork()
-    if (parseGroup(ahead).isFailure) return false
+    val group = parseGroup(ahead).getOrElse { return false }
+    val check = group.content.fork()
+    if (Lifetime.parseAny(check).isSuccess && check.isEmpty()) return false
     if (ahead.peek(NotPeek) || ahead.peek(PathSepPeek)) return false
     if (allowStruct && ahead.peek(BracePeek)) return false
     return true
@@ -2555,7 +2604,7 @@ internal fun parseExprGroupImpl(input: ParseStream): SynResult<Expr> {
 
 private fun parseLabeledLoopOrWhile(input: ParseStream): SynResult<Expr> {
     val ahead = input.fork()
-    val lifetime = LifetimeParse.parse(ahead).getOrElse { return SynResult.failure(it) }
+    val lifetime = Lifetime.parseAny(ahead).getOrElse { return SynResult.failure(it) }
     val colon = ColonParse.parse(ahead).getOrElse { return SynResult.failure(it) }
     if (!ahead.peek(LoopPeek) && !ahead.peek(WhilePeek) && !ahead.peek(ForPeek) && !ahead.peek(BracePeek)) {
         return SynResult.failure(input.error("expected loop or block expression"))
@@ -2800,14 +2849,14 @@ private fun parseExprAsync(input: ParseStream): SynResult<Expr> {
     if (stmtsResult.isFailure) return stmtsResult.asFailure()
     val stmts = stmtsResult.getOrThrow()
     content.finishChildBuffer()
-    return SynResult.success(Expr.Async(mutableListOf(), asyncToken, capture, Block(brace, stmts)))
+    return SynResult.success(Expr.Async(mutableListOf(), asyncToken, capture, BlockModifiers(), Block(brace, stmts)))
 }
 
 // expr.rs:2510: ExprTryBlock uses the existing Block parser (no inner attrs).
 private fun parseExprTryBlock(input: ParseStream): SynResult<Expr> {
     val tryToken = TryParse.parse(input).getOrElse { return SynResult.failure(it) }
     val block = parseBlock(input).getOrElse { return SynResult.failure(it) }
-    return SynResult.success(Expr.TryBlock(emptyList(), tryToken, block))
+    return SynResult.success(Expr.TryBlock(mutableListOf(), tryToken, BlockModifiers(), block))
 }
 
 private fun parseExprUnsafe(input: ParseStream): SynResult<Expr> {
@@ -2837,7 +2886,7 @@ private fun parseExprConst(input: ParseStream): SynResult<Expr> {
     if (stmtsResult.isFailure) return stmtsResult.asFailure()
     val stmts = stmtsResult.getOrThrow()
     content.finishChildBuffer()
-    return SynResult.success(Expr.Const(attrs, constToken, Block(brace, stmts)))
+    return SynResult.success(Expr.Const(attrs, constToken, BlockModifiers(), Block(brace, stmts)))
 }
 
 internal fun parseExprBlock(input: ParseStream): SynResult<Expr> {
@@ -2893,7 +2942,7 @@ internal fun parseStmtFull(input: ParseStream): SynResult<Stmt> {
                 null
             }
         val semi = SemiParse.parse(input).getOrThrow()
-        return SynResult.success(Stmt.Local(stmtAttrs, letToken, pat, init, semi))
+        return SynResult.success(Stmt.Local(stmtAttrs, letToken, LocalModifiers(), pat, init, semi))
     }
     // If we consumed outer attrs but the statement is an item or expression,
     // reset to before the attrs so the item/expr parsers see the full input.
@@ -2924,6 +2973,12 @@ internal fun parseStmtFull(input: ParseStream): SynResult<Stmt> {
 
 private fun startsWithNoneGroup(input: ParseStream): Boolean =
     parseGroup(input.fork()).isSuccess
+
+private fun startsWithExprGroup(input: ParseStream): Boolean {
+    val group = parseGroup(input.fork()).getOrElse { return false }
+    val check = group.content.fork()
+    return !(Lifetime.parseAny(check).isSuccess && check.isEmpty())
+}
 
 private fun peekItemStatement(input: ParseStream): Boolean {
     val ahead = input.fork()

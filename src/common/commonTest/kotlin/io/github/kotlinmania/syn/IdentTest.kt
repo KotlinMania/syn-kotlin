@@ -103,4 +103,36 @@ class IdentTest {
         val raw = Ident.newRaw("move", Span.callSite())
         assertEquals("move", raw.unraw().toString())
     }
+
+    @Test
+    fun lifetimeRawAndKeywordValidation() {
+        val rawLifetime = Lifetime.new("'r#async", Span.callSite())
+        assertEquals("'r#async", rawLifetime.toString())
+        assertEquals("r#async", rawLifetime.ident.toString())
+
+        val parsedRaw = parseStr(LifetimeParse::parse, "'r#move").getOrThrow()
+        assertEquals("'r#move", parsedRaw.toString())
+
+        val staticLifetime = Lifetime.new("'static", Span.callSite())
+        assertEquals("'static", staticLifetime.toString())
+        val anonLifetime = Lifetime.new("'_", Span.callSite())
+        assertEquals("'_", anonLifetime.toString())
+        val keywordNew = Lifetime.new("'async", Span.callSite())
+        assertEquals("'async", keywordNew.toString())
+
+        assertFailsWith<IllegalArgumentException> {
+            Lifetime.new("'", Span.callSite())
+        }
+        assertFailsWith<IllegalArgumentException> {
+            Lifetime.new("'r#", Span.callSite())
+        }
+        assertFailsWith<IllegalArgumentException> {
+            Lifetime.new("'r#self", Span.callSite())
+        }
+        assertFailsWith<IllegalArgumentException> {
+            Lifetime.new("'255", Span.callSite())
+        }
+        assertTrue(parseStr(LifetimeParse::parse, "'async").isFailure)
+        assertTrue(parseStr(LifetimeParse::parse, "'r#crate").isFailure)
+    }
 }

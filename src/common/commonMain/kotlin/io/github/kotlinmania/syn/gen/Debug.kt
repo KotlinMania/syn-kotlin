@@ -9,12 +9,13 @@ import io.github.kotlinmania.syn.AssocConst
 import io.github.kotlinmania.syn.AssocType
 import io.github.kotlinmania.syn.AttrStyle
 import io.github.kotlinmania.syn.Attribute
-import io.github.kotlinmania.syn.BareFnArg
-import io.github.kotlinmania.syn.BareVariadic
 import io.github.kotlinmania.syn.BinOp
 import io.github.kotlinmania.syn.Block
+import io.github.kotlinmania.syn.BlockModifiers
 import io.github.kotlinmania.syn.BoundLifetimes
 import io.github.kotlinmania.syn.CapturedParam
+import io.github.kotlinmania.syn.ClosureModifiers
+import io.github.kotlinmania.syn.ConstModifiers
 import io.github.kotlinmania.syn.Constraint
 import io.github.kotlinmania.syn.Data
 import io.github.kotlinmania.syn.DataEnum
@@ -26,7 +27,7 @@ import io.github.kotlinmania.syn.EqExpr
 import io.github.kotlinmania.syn.EqSynType
 import io.github.kotlinmania.syn.Expr
 import io.github.kotlinmania.syn.Field
-import io.github.kotlinmania.syn.FieldMutability
+import io.github.kotlinmania.syn.FieldModifiers
 import io.github.kotlinmania.syn.FieldPat
 import io.github.kotlinmania.syn.FieldValue
 import io.github.kotlinmania.syn.Fields
@@ -34,14 +35,17 @@ import io.github.kotlinmania.syn.FieldsNamed
 import io.github.kotlinmania.syn.FieldsUnnamed
 import io.github.kotlinmania.syn.File
 import io.github.kotlinmania.syn.FnArg
+import io.github.kotlinmania.syn.FnModifiers
+import io.github.kotlinmania.syn.FnPtrVariadic
 import io.github.kotlinmania.syn.ForeignItem
+import io.github.kotlinmania.syn.Frontmatter
 import io.github.kotlinmania.syn.GenericArgument
 import io.github.kotlinmania.syn.GenericParam
 import io.github.kotlinmania.syn.Generics
 import io.github.kotlinmania.syn.IdentColon
 import io.github.kotlinmania.syn.IfExpr
 import io.github.kotlinmania.syn.ImplItem
-import io.github.kotlinmania.syn.ImplRestriction
+import io.github.kotlinmania.syn.ImplModifiers
 import io.github.kotlinmania.syn.Index
 import io.github.kotlinmania.syn.Item
 import io.github.kotlinmania.syn.Label
@@ -56,30 +60,36 @@ import io.github.kotlinmania.syn.LitFloat
 import io.github.kotlinmania.syn.LitInt
 import io.github.kotlinmania.syn.LitStr
 import io.github.kotlinmania.syn.LocalInit
+import io.github.kotlinmania.syn.LocalModifiers
 import io.github.kotlinmania.syn.Macro
 import io.github.kotlinmania.syn.MacroDelimiter
 import io.github.kotlinmania.syn.Member
 import io.github.kotlinmania.syn.Meta
 import io.github.kotlinmania.syn.ModContent
+import io.github.kotlinmania.syn.NamedArg
 import io.github.kotlinmania.syn.Pat
 import io.github.kotlinmania.syn.PatColon
 import io.github.kotlinmania.syn.PatRest
 import io.github.kotlinmania.syn.PatType
 import io.github.kotlinmania.syn.Path
 import io.github.kotlinmania.syn.PathArguments
+import io.github.kotlinmania.syn.PathForPair
 import io.github.kotlinmania.syn.PathSegment
-import io.github.kotlinmania.syn.PathTrait
 import io.github.kotlinmania.syn.PointerMutability
 import io.github.kotlinmania.syn.QSelf
 import io.github.kotlinmania.syn.RangeLimits
+import io.github.kotlinmania.syn.ReceiverKind
 import io.github.kotlinmania.syn.ReturnType
+import io.github.kotlinmania.syn.Safety
 import io.github.kotlinmania.syn.Signature
 import io.github.kotlinmania.syn.StaticMutability
 import io.github.kotlinmania.syn.Stmt
 import io.github.kotlinmania.syn.SynPunctuated
 import io.github.kotlinmania.syn.SynType
-import io.github.kotlinmania.syn.TraitBoundModifier
+import io.github.kotlinmania.syn.TraitBoundModifiers
 import io.github.kotlinmania.syn.TraitItem
+import io.github.kotlinmania.syn.TraitModifiers
+import io.github.kotlinmania.syn.TypeModifiers
 import io.github.kotlinmania.syn.TypeParamBound
 import io.github.kotlinmania.syn.UnOp
 import io.github.kotlinmania.syn.UseTree
@@ -87,6 +97,7 @@ import io.github.kotlinmania.syn.Variadic
 import io.github.kotlinmania.syn.Variant
 import io.github.kotlinmania.syn.Visibility
 import io.github.kotlinmania.syn.WhereClause
+import io.github.kotlinmania.syn.WhereClausePlacement
 import io.github.kotlinmania.syn.WherePredicate
 
 private fun debugStruct(
@@ -118,12 +129,13 @@ private fun debugValue(value: Any?): String =
         is AssocType -> value.debug()
         is AttrStyle -> value.debug()
         is Attribute -> value.debug()
-        is BareFnArg -> value.debug()
-        is BareVariadic -> value.debug()
         is BinOp -> value.debug()
         is Block -> value.debug()
+        is BlockModifiers -> value.debug()
         is BoundLifetimes -> value.debug()
         is CapturedParam -> value.debug()
+        is ClosureModifiers -> value.debug()
+        is ConstModifiers -> value.debug()
         is Constraint -> value.debug()
         is Data -> value.debug()
         is DataEnum -> value.debug()
@@ -135,7 +147,7 @@ private fun debugValue(value: Any?): String =
         is EqSynType -> value.debug()
         is Expr -> value.debug()
         is Field -> value.debug()
-        is FieldMutability -> value.debug()
+        is FieldModifiers -> value.debug()
         is FieldPat -> value.debug()
         is FieldValue -> value.debug()
         is Fields -> value.debug()
@@ -143,14 +155,17 @@ private fun debugValue(value: Any?): String =
         is FieldsUnnamed -> value.debug()
         is File -> value.debug()
         is FnArg -> value.debug()
+        is FnModifiers -> value.debug()
+        is FnPtrVariadic -> value.debug()
         is ForeignItem -> value.debug()
+        is Frontmatter -> value.debug()
         is GenericArgument -> value.debug()
         is GenericParam -> value.debug()
         is Generics -> value.debug()
         is IdentColon -> value.debug()
         is IfExpr -> value.debug()
         is ImplItem -> value.debug()
-        is ImplRestriction -> value.debug()
+        is ImplModifiers -> value.debug()
         is Index -> value.debug()
         is Item -> value.debug()
         is Label -> value.debug()
@@ -165,29 +180,35 @@ private fun debugValue(value: Any?): String =
         is LitInt -> value.debug()
         is LitStr -> value.debug()
         is LocalInit -> value.debug()
+        is LocalModifiers -> value.debug()
         is Macro -> value.debug()
         is MacroDelimiter -> value.debug()
         is Member -> value.debug()
         is Meta -> value.debug()
         is ModContent -> value.debug()
+        is NamedArg -> value.debug()
         is Pat -> value.debug()
         is PatColon -> value.debug()
         is PatRest -> value.debug()
         is PatType -> value.debug()
         is Path -> value.debug()
         is PathArguments -> value.debug()
+        is PathForPair -> value.debug()
         is PathSegment -> value.debug()
-        is PathTrait -> value.debug()
         is PointerMutability -> value.debug()
         is QSelf -> value.debug()
         is RangeLimits -> value.debug()
+        is ReceiverKind -> value.debug()
         is ReturnType -> value.debug()
+        is Safety -> value.debug()
         is Signature -> value.debug()
         is StaticMutability -> value.debug()
         is Stmt -> value.debug()
         is SynType -> value.debug()
-        is TraitBoundModifier -> value.debug()
+        is TraitBoundModifiers -> value.debug()
         is TraitItem -> value.debug()
+        is TraitModifiers -> value.debug()
+        is TypeModifiers -> value.debug()
         is TypeParamBound -> value.debug()
         is UnOp -> value.debug()
         is UseTree -> value.debug()
@@ -195,6 +216,7 @@ private fun debugValue(value: Any?): String =
         is Variant -> value.debug()
         is Visibility -> value.debug()
         is WhereClause -> value.debug()
+        is WhereClausePlacement -> value.debug()
         is WherePredicate -> value.debug()
         is Iterable<*> -> value.joinToString(prefix = "[", postfix = "]") { debugValue(it) }
         else -> value.toString()
@@ -228,7 +250,6 @@ public fun Arm.debug(): String =
         listOf(
             "attrs" to attrs,
             "pat" to pat,
-            "guard" to guard,
             "fat_arrow_token" to fatArrowToken,
             "body" to body,
             "comma" to comma,
@@ -277,9 +298,9 @@ public fun Attribute.debug(): String =
         ),
     )
 
-public fun BareFnArg.debug(): String =
+public fun NamedArg.debug(): String =
     debugStruct(
-        "BareFnArg",
+        "NamedArg",
         listOf(
             "attrs" to attrs,
             "name" to name,
@@ -287,9 +308,9 @@ public fun BareFnArg.debug(): String =
         ),
     )
 
-public fun BareVariadic.debug(): String =
+public fun FnPtrVariadic.debug(): String =
     debugStruct(
-        "BareVariadic",
+        "FnPtrVariadic",
         listOf(
             "attrs" to attrs,
             "name" to name,
@@ -307,6 +328,9 @@ public fun Block.debug(): String =
         ),
     )
 
+public fun BlockModifiers.debug(): String =
+    debugStruct("BlockModifiers", emptyList())
+
 public fun BoundLifetimes.debug(): String =
     debugStruct(
         "BoundLifetimes",
@@ -315,6 +339,17 @@ public fun BoundLifetimes.debug(): String =
             "lt_token" to ltToken,
             "lifetimes" to lifetimes,
             "gt_token" to gtToken,
+        ),
+    )
+
+public fun ClosureModifiers.debug(): String =
+    debugStruct("ClosureModifiers", emptyList())
+
+public fun ConstModifiers.debug(): String =
+    debugStruct(
+        "ConstModifiers",
+        listOf(
+            "defaultness" to defaultness,
         ),
     )
 
@@ -443,6 +478,7 @@ public fun Expr.Async.debug(name: String): String =
             "attrs" to attrs,
             "async_token" to asyncToken,
             "capture" to capture,
+            "modifiers" to modifiers,
             "block" to block,
         ),
     )
@@ -539,13 +575,13 @@ public fun Expr.Closure.debug(name: String): String =
         listOf(
             "attrs" to attrs,
             "lifetimes" to lifetimes,
+            "modifiers" to modifiers,
             "constness" to constness,
-            "movability" to movability,
             "asyncness" to asyncness,
             "capture" to capture,
-            "or1_token" to or1Token,
+            "inputs_begin" to inputsBegin,
             "inputs" to inputs,
-            "or2_token" to or2Token,
+            "inputs_end" to inputsEnd,
             "output" to output,
             "body" to body,
         ),
@@ -560,6 +596,7 @@ public fun Expr.Const.debug(name: String): String =
         listOf(
             "attrs" to attrs,
             "const_token" to constToken,
+            "modifiers" to modifiers,
             "block" to block,
         ),
     )
@@ -883,6 +920,7 @@ public fun Expr.TryBlock.debug(name: String): String =
         listOf(
             "attrs" to attrs,
             "try_token" to tryToken,
+            "modifiers" to modifiers,
             "block" to block,
         ),
     )
@@ -960,12 +998,16 @@ public fun Field.debug(): String =
         listOf(
             "attrs" to attrs,
             "vis" to vis,
-            "mutability" to mutability,
+            "modifiers" to modifiers,
             "ident" to ident,
             "colon_token" to colonToken,
             "ty" to ty,
+            "default" to default,
         ),
     )
+
+public fun FieldModifiers.debug(): String =
+    debugStruct("FieldModifiers", emptyList())
 
 public fun FieldPat.debug(): String =
     debugStruct(
@@ -1018,6 +1060,7 @@ public fun File.debug(): String =
         "File",
         listOf(
             "shebang" to shebang,
+            "frontmatter" to frontmatter,
             "attrs" to attrs,
             "items" to items,
         ),
@@ -1031,11 +1074,17 @@ public fun FnArg.Receiver.debug(name: String): String =
         name,
         listOf(
             "attrs" to attrs,
-            "reference" to reference,
             "mutability" to mutability,
             "self_token" to selfToken,
-            "colon_token" to colonToken,
-            "ty" to type,
+            "kind" to kind,
+        ),
+    )
+
+public fun FnModifiers.debug(): String =
+    debugStruct(
+        "FnModifiers",
+        listOf(
+            "defaultness" to defaultness,
         ),
     )
 
@@ -1048,6 +1097,7 @@ public fun ForeignItem.Fn.debug(name: String): String =
         listOf(
             "attrs" to attrs,
             "vis" to vis,
+            "modifiers" to modifiers,
             "sig" to sig,
             "semi_token" to semiToken,
         ),
@@ -1075,6 +1125,7 @@ public fun ForeignItem.Static.debug(name: String): String =
         listOf(
             "attrs" to attrs,
             "vis" to vis,
+            "safety" to safety,
             "static_token" to staticToken,
             "mutability" to mutability,
             "ident" to ident,
@@ -1093,12 +1144,16 @@ public fun ForeignItem.ItemType.debug(name: String): String =
         listOf(
             "attrs" to attrs,
             "vis" to vis,
+            "modifiers" to modifiers,
             "type_token" to typeToken,
             "ident" to ident,
             "generics" to generics,
             "semi_token" to semiToken,
         ),
     )
+
+public fun Frontmatter.debug(): String =
+    debugStruct("Frontmatter", emptyList())
 
 public fun GenericParam.ConstParam.debug(): String =
     debug("ConstParam")
@@ -1112,7 +1167,6 @@ public fun GenericParam.ConstParam.debug(name: String): String =
             "ident" to ident,
             "colon_token" to colonToken,
             "ty" to ty,
-            "eq_token" to eqToken,
             "default" to default,
         ),
     )
@@ -1142,7 +1196,6 @@ public fun GenericParam.TypeParam.debug(name: String): String =
             "ident" to ident,
             "colon_token" to colonToken,
             "bounds" to bounds,
-            "eq_token" to eqToken,
             "default" to default,
         ),
     )
@@ -1185,7 +1238,7 @@ public fun ImplItem.Const.debug(name: String): String =
         listOf(
             "attrs" to attrs,
             "vis" to vis,
-            "defaultness" to defaultness,
+            "modifiers" to modifiers,
             "const_token" to constToken,
             "ident" to ident,
             "generics" to generics,
@@ -1206,7 +1259,7 @@ public fun ImplItem.Fn.debug(name: String): String =
         listOf(
             "attrs" to attrs,
             "vis" to vis,
-            "defaultness" to defaultness,
+            "modifiers" to modifiers,
             "sig" to sig,
             "block" to block,
         ),
@@ -1234,13 +1287,22 @@ public fun ImplItem.AssocType.debug(name: String): String =
         listOf(
             "attrs" to attrs,
             "vis" to vis,
-            "defaultness" to defaultness,
+            "modifiers" to modifiers,
             "type_token" to typeToken,
             "ident" to ident,
             "generics" to generics,
             "eq_token" to eqToken,
             "ty" to ty,
             "semi_token" to semiToken,
+        ),
+    )
+
+public fun ImplModifiers.debug(): String =
+    debugStruct(
+        "ImplModifiers",
+        listOf(
+            "defaultness" to defaultness,
+            "polarity" to polarity,
         ),
     )
 
@@ -1262,8 +1324,10 @@ public fun Item.Const.debug(name: String): String =
         listOf(
             "attrs" to attrs,
             "vis" to vis,
+            "modifiers" to modifiers,
             "const_token" to constToken,
             "ident" to ident,
+            "generics" to generics,
             "colon_token" to colonToken,
             "ty" to ty,
             "eq_token" to eqToken,
@@ -1315,6 +1379,7 @@ public fun Item.Fn.debug(name: String): String =
         listOf(
             "attrs" to attrs,
             "vis" to vis,
+            "modifiers" to modifiers,
             "sig" to sig,
             "block" to block,
         ),
@@ -1343,7 +1408,7 @@ public fun Item.Impl.debug(name: String): String =
         name,
         listOf(
             "attrs" to attrs,
-            "defaultness" to defaultness,
+            "modifiers" to modifiers,
             "unsafety" to unsafety,
             "impl_token" to implToken,
             "generics" to generics,
@@ -1430,9 +1495,8 @@ public fun Item.Trait.debug(name: String): String =
         listOf(
             "attrs" to attrs,
             "vis" to vis,
+            "modifiers" to modifiers,
             "unsafety" to unsafety,
-            "auto_token" to autoToken,
-            "restriction" to restriction,
             "trait_token" to traitToken,
             "ident" to ident,
             "generics" to generics,
@@ -1470,12 +1534,14 @@ public fun Item.ItemType.debug(name: String): String =
         listOf(
             "attrs" to attrs,
             "vis" to vis,
+            "modifiers" to modifiers,
             "type_token" to typeToken,
             "ident" to ident,
             "generics" to generics,
             "eq_token" to eqToken,
             "ty" to ty,
             "semi_token" to semiToken,
+            "where_clause_placement" to whereClausePlacement,
         ),
     )
 
@@ -1530,6 +1596,9 @@ public fun LocalInit.debug(): String =
         ),
     )
 
+public fun LocalModifiers.debug(): String =
+    debugStruct("LocalModifiers", emptyList())
+
 public fun Macro.debug(): String =
     debugStruct(
         "Macro",
@@ -1580,6 +1649,20 @@ public fun Pat.Const.debug(name: String): String =
         ),
     )
 
+public fun Pat.Guard.debug(): String =
+    debug("PatGuard")
+
+public fun Pat.Guard.debug(name: String): String =
+    debugStruct(
+        name,
+        listOf(
+            "attrs" to attrs,
+            "pat" to pat,
+            "if_token" to ifToken,
+            "guard" to guard,
+        ),
+    )
+
 public fun Pat.Ident.debug(): String =
     debug("PatIdent")
 
@@ -1591,7 +1674,6 @@ public fun Pat.Ident.debug(name: String): String =
             "by_ref" to byRef,
             "mutability" to mutability,
             "ident" to ident,
-            "at_token" to atToken,
             "subpat" to subpat,
         ),
     )
@@ -1854,22 +1936,21 @@ public fun PathArguments.Parenthesized.debug(name: String): String =
         ),
     )
 
+public fun PathForPair.debug(): String =
+    debugStruct(
+        "PathForPair",
+        listOf(
+            "path" to path,
+            "for_token" to forToken,
+        ),
+    )
+
 public fun PathSegment.debug(): String =
     debugStruct(
         "PathSegment",
         listOf(
             "ident" to ident,
             "arguments" to arguments,
-        ),
-    )
-
-public fun PathTrait.debug(): String =
-    debugStruct(
-        "PathTrait",
-        listOf(
-            "polarity" to polarity,
-            "path" to path,
-            "for_token" to forToken,
         ),
     )
 
@@ -1885,13 +1966,29 @@ public fun QSelf.debug(): String =
         ),
     )
 
+public fun ReceiverKind.debug(): String =
+    "ReceiverKind::" +
+        when (this) {
+            ReceiverKind.Value -> "Value"
+            is ReceiverKind.Reference -> debugTuple("Reference", listOf(andToken, lifetime, mutability))
+            is ReceiverKind.Typed -> debugTuple("Typed", listOf(colonToken, ty))
+        }
+
+public fun Safety.debug(): String =
+    "Safety::" +
+        when (this) {
+            is Safety.Safe -> debugTuple("Safe", listOf(token))
+            is Safety.Unsafe -> debugTuple("Unsafe", listOf(token))
+            Safety.Default -> "Default"
+        }
+
 public fun Signature.debug(): String =
     debugStruct(
         "Signature",
         listOf(
             "constness" to constness,
             "asyncness" to asyncness,
-            "unsafety" to unsafety,
+            "safety" to safety,
             "abi" to abi,
             "fn_token" to fnToken,
             "ident" to ident,
@@ -1912,6 +2009,7 @@ public fun Stmt.Local.debug(name: String): String =
         listOf(
             "attrs" to attrs,
             "let_token" to letToken,
+            "modifiers" to modifiers,
             "pat" to pat,
             "init" to init,
             "semi_token" to semiToken,
@@ -1938,6 +2036,7 @@ public fun SynType.Array.debug(name: String): String =
     debugStruct(
         name,
         listOf(
+            "attrs" to attrs,
             "bracket_token" to bracketToken,
             "elem" to elem,
             "semi_token" to semiToken,
@@ -1945,13 +2044,14 @@ public fun SynType.Array.debug(name: String): String =
         ),
     )
 
-public fun SynType.BareFn.debug(): String =
-    debug("TypeBareFn")
+public fun SynType.FnPtr.debug(): String =
+    debug("TypeFnPtr")
 
-public fun SynType.BareFn.debug(name: String): String =
+public fun SynType.FnPtr.debug(name: String): String =
     debugStruct(
         name,
         listOf(
+            "attrs" to attrs,
             "lifetimes" to lifetimes,
             "unsafety" to unsafety,
             "abi" to abi,
@@ -1970,6 +2070,7 @@ public fun SynType.Group.debug(name: String): String =
     debugStruct(
         name,
         listOf(
+            "attrs" to attrs,
             "group_token" to groupToken,
             "elem" to elem,
         ),
@@ -1982,6 +2083,7 @@ public fun SynType.ImplTrait.debug(name: String): String =
     debugStruct(
         name,
         listOf(
+            "attrs" to attrs,
             "impl_token" to implToken,
             "bounds" to bounds,
         ),
@@ -1994,6 +2096,7 @@ public fun SynType.Infer.debug(name: String): String =
     debugStruct(
         name,
         listOf(
+            "attrs" to attrs,
             "underscore_token" to underscoreToken,
         ),
     )
@@ -2005,6 +2108,7 @@ public fun SynType.Macro.debug(name: String): String =
     debugStruct(
         name,
         listOf(
+            "attrs" to attrs,
             "mac" to mac,
         ),
     )
@@ -2016,6 +2120,7 @@ public fun SynType.Never.debug(name: String): String =
     debugStruct(
         name,
         listOf(
+            "attrs" to attrs,
             "bang_token" to bangToken,
         ),
     )
@@ -2027,6 +2132,7 @@ public fun SynType.Paren.debug(name: String): String =
     debugStruct(
         name,
         listOf(
+            "attrs" to attrs,
             "paren_token" to parenToken,
             "elem" to elem,
         ),
@@ -2039,6 +2145,7 @@ public fun SynType.Path.debug(name: String): String =
     debugStruct(
         name,
         listOf(
+            "attrs" to attrs,
             "qself" to qself,
             "path" to path,
         ),
@@ -2051,8 +2158,8 @@ public fun SynType.Ptr.debug(name: String): String =
     debugStruct(
         name,
         listOf(
+            "attrs" to attrs,
             "star_token" to starToken,
-            "const_token" to constToken,
             "mutability" to mutability,
             "elem" to elem,
         ),
@@ -2065,6 +2172,7 @@ public fun SynType.Reference.debug(name: String): String =
     debugStruct(
         name,
         listOf(
+            "attrs" to attrs,
             "and_token" to andToken,
             "lifetime" to lifetime,
             "mutability" to mutability,
@@ -2079,6 +2187,8 @@ public fun SynType.Slice.debug(name: String): String =
     debugStruct(
         name,
         listOf(
+            "attrs" to attrs,
+            "bracket_token" to bracketToken,
             "elem" to elem,
         ),
     )
@@ -2090,6 +2200,7 @@ public fun SynType.TraitObject.debug(name: String): String =
     debugStruct(
         name,
         listOf(
+            "attrs" to attrs,
             "dyn_token" to dynToken,
             "bounds" to bounds,
         ),
@@ -2102,10 +2213,14 @@ public fun SynType.Tuple.debug(name: String): String =
     debugStruct(
         name,
         listOf(
+            "attrs" to attrs,
             "paren_token" to parenToken,
             "elems" to elems,
         ),
     )
+
+public fun TraitBoundModifiers.debug(): String =
+    debugStruct("TraitBoundModifiers", emptyList())
 
 public fun TraitItem.Const.debug(): String =
     debug("TraitItemConst")
@@ -2115,6 +2230,7 @@ public fun TraitItem.Const.debug(name: String): String =
         name,
         listOf(
             "attrs" to attrs,
+            "modifiers" to modifiers,
             "const_token" to constToken,
             "ident" to ident,
             "generics" to generics,
@@ -2133,6 +2249,7 @@ public fun TraitItem.Fn.debug(name: String): String =
         name,
         listOf(
             "attrs" to attrs,
+            "modifiers" to modifiers,
             "sig" to sig,
             "default" to default,
             "semi_token" to semiToken,
@@ -2160,6 +2277,7 @@ public fun TraitItem.AssocType.debug(name: String): String =
         name,
         listOf(
             "attrs" to attrs,
+            "modifiers" to modifiers,
             "type_token" to typeToken,
             "ident" to ident,
             "generics" to generics,
@@ -2167,6 +2285,22 @@ public fun TraitItem.AssocType.debug(name: String): String =
             "bounds" to bounds,
             "default" to default,
             "semi_token" to semiToken,
+        ),
+    )
+
+public fun TraitModifiers.debug(): String =
+    debugStruct(
+        "TraitModifiers",
+        listOf(
+            "auto_token" to autoToken,
+        ),
+    )
+
+public fun TypeModifiers.debug(): String =
+    debugStruct(
+        "TypeModifiers",
+        listOf(
+            "defaultness" to defaultness,
         ),
     )
 
@@ -2192,8 +2326,9 @@ public fun TypeParamBound.Trait.debug(name: String): String =
         name,
         listOf(
             "paren_token" to parenToken,
-            "modifier" to modifier,
             "lifetimes" to lifetimes,
+            "modifiers" to modifiers,
+            "maybe" to maybe,
             "path" to path,
         ),
     )
@@ -2291,6 +2426,12 @@ public fun WhereClause.debug(): String =
         ),
     )
 
+public fun WhereClausePlacement.debug(): String =
+    when (this) {
+        WhereClausePlacement.Early -> "WhereClausePlacement::Early"
+        WhereClausePlacement.Late -> "WhereClausePlacement::Late"
+    }
+
 public fun WherePredicate.LifetimePredicate.debug(): String =
     debug("PredicateLifetime")
 
@@ -2298,6 +2439,7 @@ public fun WherePredicate.LifetimePredicate.debug(name: String): String =
     debugStruct(
         name,
         listOf(
+            "attrs" to attrs,
             "lifetime" to lifetime,
             "colon_token" to colonToken,
             "bounds" to bounds,
@@ -2311,6 +2453,7 @@ public fun WherePredicate.TypePredicate.debug(name: String): String =
     debugStruct(
         name,
         listOf(
+            "attrs" to attrs,
             "lifetimes" to lifetimes,
             "bounded_ty" to boundedTy,
             "colon_token" to colonToken,
@@ -2475,13 +2618,6 @@ public fun Expr.debug(): String =
             is Expr.Verbatim -> debugTuple("Verbatim", listOf(tokens))
         }
 
-public fun FieldMutability.debug(): String =
-    "FieldMutability::" +
-        when (this) {
-            FieldMutability.None -> "None"
-            is FieldMutability.Mut -> debugTuple("Mut", listOf(token))
-        }
-
 public fun Fields.debug(): String =
     "Fields::" +
         when (this) {
@@ -2538,8 +2674,6 @@ public fun ImplItem.debug(): String =
             is ImplItem.Macro -> this.debug("Macro")
             is ImplItem.Verbatim -> debugTuple("Verbatim", listOf(tokens))
         }
-
-public fun ImplRestriction.debug(): String = "ImplRestriction"
 
 public fun Item.debug(): String =
     "Item::" +
@@ -2613,6 +2747,7 @@ public fun Pat.debug(): String =
     "Pat::" +
         when (this) {
             is Pat.Const -> this.debug("Const")
+            is Pat.Guard -> this.debug("Guard")
             is Pat.Ident -> this.debug("Ident")
             is Pat.Lit -> this.debug("Lit")
             is Pat.Macro -> this.debug("Macro")
@@ -2686,7 +2821,7 @@ public fun SynType.debug(): String =
     "Type::" +
         when (this) {
             is SynType.Array -> this.debug("Array")
-            is SynType.BareFn -> this.debug("BareFn")
+            is SynType.FnPtr -> this.debug("FnPtr")
             is SynType.Group -> this.debug("Group")
             is SynType.ImplTrait -> this.debug("ImplTrait")
             is SynType.Infer -> this.debug("Infer")
@@ -2700,13 +2835,6 @@ public fun SynType.debug(): String =
             is SynType.TraitObject -> this.debug("TraitObject")
             is SynType.Tuple -> this.debug("Tuple")
             is SynType.Verbatim -> debugTuple("Verbatim", listOf(tokens))
-        }
-
-public fun TraitBoundModifier.debug(): String =
-    "TraitBoundModifier::" +
-        when (this) {
-            TraitBoundModifier.None -> "None"
-            is TraitBoundModifier.Maybe -> debugTuple("Maybe", listOf(token))
         }
 
 public fun TraitItem.debug(): String =

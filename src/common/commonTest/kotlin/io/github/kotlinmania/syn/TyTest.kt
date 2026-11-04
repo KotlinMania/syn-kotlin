@@ -28,7 +28,7 @@ import kotlin.test.assertTrue
 class TyTest {
     @Test
     fun testMutSelf() {
-        val mutSelf = assertIs<SynType.BareFn>(parseType("fn(mut self)"))
+        val mutSelf = assertIs<SynType.FnPtr>(parseType("fn(mut self)"))
         assertNull(mutSelf.lifetimes)
         assertNull(mutSelf.unsafety)
         assertNull(mutSelf.abi)
@@ -38,12 +38,12 @@ class TyTest {
         assertNull(mutSelf.variadic)
         assertIs<ReturnType.Default>(mutSelf.output)
 
-        val trailing = assertIs<SynType.BareFn>(parseType("fn(mut self,)"))
+        val trailing = assertIs<SynType.FnPtr>(parseType("fn(mut self,)"))
         assertEquals(1, trailing.inputs.size)
         assertTrue(trailing.inputs.trailingPunct())
         assertEquals("mut self", assertIs<SynType.Verbatim>(trailing.inputs.first()!!.ty).tokens.toString())
 
-        val typed = assertIs<SynType.BareFn>(parseType("fn(mut self: ())"))
+        val typed = assertIs<SynType.FnPtr>(parseType("fn(mut self: ())"))
         assertEquals(1, typed.inputs.size)
         assertNull(typed.inputs.first()!!.name)
         assertEquals("mut self : ()", assertIs<SynType.Verbatim>(typed.inputs.first()!!.ty).tokens.toString())
@@ -54,21 +54,30 @@ class TyTest {
     }
 
     @Test
-    fun testBareFnArgParse() {
-        val named = parseStr(BareFnArg::parse, "#[cfg(test)] arg: T").getOrThrow()
+    fun testNamedArgAndFnPtrVariadicParse() {
+        val named = parseStr(NamedArg::parse, "#[cfg(test)] arg: T").getOrThrow()
         assertEquals(1, named.attrs.size)
         assertEquals("arg", named.name?.ident.toString())
         assertPath(assertIs<SynType.Path>(named.ty).path, "T")
 
-        val unnamed = parseStr(BareFnArg::parse, "T").getOrThrow()
+        val unnamed = parseStr(NamedArg::parse, "T").getOrThrow()
         assertNull(unnamed.name)
         assertPath(assertIs<SynType.Path>(unnamed.ty).path, "T")
 
-        val underscore = parseStr(BareFnArg::parse, "_: usize").getOrThrow()
+        val underscore = parseStr(NamedArg::parse, "_: usize").getOrThrow()
         assertEquals("_", underscore.name?.ident.toString())
         assertPath(assertIs<SynType.Path>(underscore.ty).path, "usize")
 
-        assertTrue(parseStr(BareFnArg::parse, "mut self").isFailure)
+        assertTrue(parseStr(NamedArg::parse, "mut self").isFailure)
+
+        val variadicFn = assertIs<SynType.FnPtr>(parseType("""unsafe extern "C" fn(x: i32, #[cold] ap: ...,)"""))
+        assertNotNull(variadicFn.unsafety)
+        assertEquals("C", variadicFn.abi?.name?.value())
+        assertEquals(1, variadicFn.inputs.size)
+        val variadic = assertNotNull(variadicFn.variadic)
+        assertEquals(1, variadic.attrs.size)
+        assertEquals("ap", variadic.name?.ident.toString())
+        assertNotNull(variadic.comma)
     }
 
     @Test
@@ -260,7 +269,7 @@ class TyTest {
         val maybeTrait = assertIs<TypeParamBound.Trait>(maybeBounds[0])
         assertPath(maybeTrait.path, "Trait")
         assertNotNull(maybeTrait.parenToken)
-        assertIs<TraitBoundModifier.Maybe>(maybeTrait.modifier)
+        assertNotNull(maybeTrait.maybe)
         assertTraitBound(maybeBounds[1], "Send")
     }
 
@@ -275,13 +284,11 @@ class TyTest {
     @Test
     fun testPointerTypeRequiresMutabilityKeyword() {
         val constPtr = assertIs<SynType.Ptr>(parseType("*const T"))
-        assertNotNull(constPtr.constToken)
-        assertNull(constPtr.mutability)
+        assertIs<PointerMutability.Const>(constPtr.mutability)
         assertPath(assertIs<SynType.Path>(constPtr.elem).path, "T")
 
         val mutPtr = assertIs<SynType.Ptr>(parseType("*mut T"))
-        assertNull(mutPtr.constToken)
-        assertNotNull(mutPtr.mutability)
+        assertIs<PointerMutability.Mut>(mutPtr.mutability)
         assertPath(assertIs<SynType.Path>(mutPtr.elem).path, "T")
 
         assertTrue(parseStr(SynTypeParseExpr::parse, "*T").isFailure)
@@ -405,7 +412,7 @@ class TyTest {
 
     private fun assertTraitBound(bound: TypeParamBound, vararg segments: String): TypeParamBound.Trait {
         val trait = assertIs<TypeParamBound.Trait>(bound)
-        assertIs<TraitBoundModifier.None>(trait.modifier)
+        assertNull(trait.maybe)
         assertPath(trait.path, *segments)
         return trait
     }

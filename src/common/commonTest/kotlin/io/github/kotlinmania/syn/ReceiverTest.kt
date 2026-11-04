@@ -46,112 +46,98 @@ class ReceiverTest {
     @Test
     fun testByValue() {
         val receiver = receiver("fn by_value(self: Self);")
-        assertNull(receiver.reference)
         assertNull(receiver.mutability)
-        assertNotNull(receiver.colonToken)
-        assertPathType(receiver.type, "Self")
+        val kind = assertIs<ReceiverKind.Typed>(receiver.kind)
+        assertPathType(kind.ty, "Self")
     }
 
     @Test
     fun testByMutValue() {
         val receiver = receiver("fn by_mut(mut self: Self);")
-        assertNull(receiver.reference)
         assertNotNull(receiver.mutability)
-        assertNotNull(receiver.colonToken)
-        assertPathType(receiver.type, "Self")
+        val kind = assertIs<ReceiverKind.Typed>(receiver.kind)
+        assertPathType(kind.ty, "Self")
     }
 
     @Test
     fun testByRef() {
         val receiver = receiver("fn by_ref(self: &Self);")
-        assertNull(receiver.reference)
         assertNull(receiver.mutability)
-        assertNotNull(receiver.colonToken)
-        assertReferenceToSelf(receiver.type)
+        val kind = assertIs<ReceiverKind.Typed>(receiver.kind)
+        assertReferenceToSelf(kind.ty)
     }
 
     @Test
     fun testByBox() {
         val receiver = receiver("fn by_box(self: Box<Self>);")
-        assertNull(receiver.reference)
         assertNull(receiver.mutability)
-        assertNotNull(receiver.colonToken)
-        assertGenericPathType(receiver.type, "Box", "Self")
+        val kind = assertIs<ReceiverKind.Typed>(receiver.kind)
+        assertGenericPathType(kind.ty, "Box", "Self")
     }
 
     @Test
     fun testByPin() {
         val receiver = receiver("fn by_pin(self: Pin<Self>);")
-        assertNull(receiver.reference)
         assertNull(receiver.mutability)
-        assertNotNull(receiver.colonToken)
-        assertGenericPathType(receiver.type, "Pin", "Self")
+        val kind = assertIs<ReceiverKind.Typed>(receiver.kind)
+        assertGenericPathType(kind.ty, "Pin", "Self")
     }
 
     @Test
     fun testExplicitType() {
         val receiver = receiver("fn explicit_type(self: Pin<MyType>);")
-        assertNull(receiver.reference)
         assertNull(receiver.mutability)
-        assertNotNull(receiver.colonToken)
-        assertGenericPathType(receiver.type, "Pin", "MyType")
+        val kind = assertIs<ReceiverKind.Typed>(receiver.kind)
+        assertGenericPathType(kind.ty, "Pin", "MyType")
     }
 
     @Test
     fun testValueShorthand() {
         val receiver = receiver("fn value_shorthand(self);")
-        assertNull(receiver.reference)
         assertNull(receiver.mutability)
-        assertNull(receiver.colonToken)
-        assertPathType(receiver.type, "Self")
+        assertEquals(ReceiverKind.Value, receiver.kind)
     }
 
     @Test
     fun testMutValueShorthand() {
         val receiver = receiver("fn mut_value_shorthand(mut self);")
-        assertNull(receiver.reference)
         assertNotNull(receiver.mutability)
-        assertNull(receiver.colonToken)
-        assertPathType(receiver.type, "Self")
+        assertEquals(ReceiverKind.Value, receiver.kind)
     }
 
     @Test
     fun testRefShorthand() {
         val receiver = receiver("fn ref_shorthand(&self);")
-        val reference = assertNotNull(receiver.reference)
-        assertNull(reference.lifetime)
         assertNull(receiver.mutability)
-        assertNull(receiver.colonToken)
-        assertReferenceToSelf(receiver.type)
+        val kind = assertIs<ReceiverKind.Reference>(receiver.kind)
+        assertNull(kind.lifetime)
+        assertNull(kind.mutability)
     }
 
     @Test
     fun testRefShorthandWithLifetime() {
         val receiver = receiver("fn ref_shorthand(&'a self);")
-        val reference = assertNotNull(receiver.reference)
-        assertEquals("a", reference.lifetime?.ident?.toString())
         assertNull(receiver.mutability)
-        assertNull(receiver.colonToken)
-        assertReferenceToSelf(receiver.type, lifetime = "a")
+        val kind = assertIs<ReceiverKind.Reference>(receiver.kind)
+        assertEquals("a", kind.lifetime?.ident?.toString())
+        assertNull(kind.mutability)
     }
 
     @Test
     fun testRefMutShorthand() {
         val receiver = receiver("fn ref_mut_shorthand(&mut self);")
-        val reference = assertNotNull(receiver.reference)
-        assertNull(reference.lifetime)
-        assertNotNull(receiver.mutability)
-        assertNull(receiver.colonToken)
-        assertReferenceToSelf(receiver.type, mutable = true)
+        assertNull(receiver.mutability)
+        val kind = assertIs<ReceiverKind.Reference>(receiver.kind)
+        assertNull(kind.lifetime)
+        assertNotNull(kind.mutability)
     }
 
     @Test
     fun testRefMutShorthandWithLifetime() {
         val receiver = receiver("fn ref_mut_shorthand(&'a mut self);")
-        val reference = assertNotNull(receiver.reference)
-        assertEquals("a", reference.lifetime?.ident?.toString())
-        assertNotNull(receiver.mutability)
-        assertNull(receiver.colonToken)
-        assertReferenceToSelf(receiver.type, lifetime = "a", mutable = true)
+        assertNull(receiver.mutability)
+        val kind = assertIs<ReceiverKind.Reference>(receiver.kind)
+        assertEquals("a", kind.lifetime?.ident?.toString())
+        assertNotNull(kind.mutability)
     }
 }

@@ -224,6 +224,14 @@ public class Cursor internal constructor(
         }
     }
 
+    internal fun peekKeyword(token: String): Boolean {
+        val c = ignoreNone()
+        return when (val e = c.entry()) {
+            is Entry.IdentEntry -> e.ident.toString() == token
+            else -> false
+        }
+    }
+
     /**
      * If the cursor is pointing at a [Punct], returns it along with a cursor
      * pointing at the next [TokenTree].
@@ -236,6 +244,25 @@ public class Cursor internal constructor(
         } else {
             null
         }
+    }
+
+    internal fun peekPunct(token: String): Boolean {
+        var cursor = this
+        for ((i, ch) in token.withIndex()) {
+            cursor = cursor.ignoreNone()
+            val e = cursor.entry()
+            if (e is Entry.PunctEntry && e.punct.asChar() == ch) {
+                if (i == token.length - 1) {
+                    return true
+                } else if (e.punct.spacing() != Spacing.Joint) {
+                    break
+                }
+                cursor = cursor.bumpIgnoreGroup()
+            } else {
+                break
+            }
+        }
+        return false
     }
 
     /**
@@ -406,7 +433,7 @@ public class Cursor internal constructor(
      * Returns the [Span] of the token immediately prior to the position of
      * this cursor, or of the current token if there is no previous one.
      */
-    internal fun prevSpan(): Span {
+    public fun prevSpan(): Span {
         val startIndex = startOfBuffer(this)
         val target = if (startIndex < index) Cursor(entries, index - 1, scope) else this
         return target.span()

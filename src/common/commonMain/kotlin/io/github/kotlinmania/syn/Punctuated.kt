@@ -79,6 +79,15 @@ public sealed class SynPunctuated :
         last = null
     }
 
+    internal fun retainRaw(predicate: (ToTokens) -> Boolean) {
+        inner.removeAll { (value, _) -> !predicate(value) }
+        val tail = last
+        if (tail != null && !predicate(tail)) {
+            val secondLast = inner.removeLastOrNull()
+            last = secondLast?.first
+        }
+    }
+
     override fun iterator(): Iterator<ToTokens> =
         sequence {
             for ((value, _) in inner) yield(value)
@@ -167,6 +176,10 @@ public class VariantList : SynPunctuated {
 
     public fun pop(): Variant? = popRaw() as? Variant
 
+    public fun retain(predicate: (Variant) -> Boolean) {
+        retainRaw { predicate(it as Variant) }
+    }
+
     public operator fun set(index: Int, value: Variant) {
         super.setRaw(index, value)
     }
@@ -205,6 +218,10 @@ public class FieldList : SynPunctuated {
     }
 
     public fun pop(): Field? = popRaw() as? Field
+
+    public fun retain(predicate: (Field) -> Boolean) {
+        retainRaw { predicate(it as Field) }
+    }
 
     public operator fun set(index: Int, value: Field) {
         super.setRaw(index, value)
@@ -245,6 +262,10 @@ public class FnArgList : SynPunctuated {
 
     public fun pop(): FnArg? = popRaw() as? FnArg
 
+    public fun retain(predicate: (FnArg) -> Boolean) {
+        retainRaw { predicate(it as FnArg) }
+    }
+
     public operator fun set(index: Int, value: FnArg) {
         super.setRaw(index, value)
     }
@@ -283,6 +304,10 @@ public class ExprList : SynPunctuated {
     }
 
     public fun pop(): Expr? = popRaw() as? Expr
+
+    public fun retain(predicate: (Expr) -> Boolean) {
+        retainRaw { predicate(it as Expr) }
+    }
 
     public operator fun set(index: Int, value: Expr) {
         super.setRaw(index, value)
@@ -374,6 +399,10 @@ public class PatList : SynPunctuated {
 
     public fun pop(): Pat? = popRaw() as? Pat
 
+    public fun retain(predicate: (Pat) -> Boolean) {
+        retainRaw { predicate(it as Pat) }
+    }
+
     public operator fun set(index: Int, value: Pat) {
         super.setRaw(index, value)
     }
@@ -412,6 +441,10 @@ public class FieldPatList : SynPunctuated {
     }
 
     public fun pop(): FieldPat? = popRaw() as? FieldPat
+
+    public fun retain(predicate: (FieldPat) -> Boolean) {
+        retainRaw { predicate(it as FieldPat) }
+    }
 
     public operator fun set(index: Int, value: FieldPat) {
         super.setRaw(index, value)
@@ -452,6 +485,10 @@ public class FieldValueList : SynPunctuated {
 
     public fun pop(): FieldValue? = popRaw() as? FieldValue
 
+    public fun retain(predicate: (FieldValue) -> Boolean) {
+        retainRaw { predicate(it as FieldValue) }
+    }
+
     public operator fun set(index: Int, value: FieldValue) {
         super.setRaw(index, value)
     }
@@ -490,6 +527,10 @@ public class GenericParamList : SynPunctuated {
     }
 
     public fun pop(): GenericParam? = popRaw() as? GenericParam
+
+    public fun retain(predicate: (GenericParam) -> Boolean) {
+        retainRaw { predicate(it as GenericParam) }
+    }
 
     public operator fun set(index: Int, value: GenericParam) {
         super.setRaw(index, value)
@@ -530,6 +571,10 @@ public class GenericArgumentList : SynPunctuated {
 
     public fun pop(): GenericArgument? = popRaw() as? GenericArgument
 
+    public fun retain(predicate: (GenericArgument) -> Boolean) {
+        retainRaw { predicate(it as GenericArgument) }
+    }
+
     public operator fun set(index: Int, value: GenericArgument) {
         super.setRaw(index, value)
     }
@@ -568,6 +613,10 @@ public class LifetimeList : SynPunctuated {
     }
 
     public fun pop(): Lifetime? = popRaw() as? Lifetime
+
+    public fun retain(predicate: (Lifetime) -> Boolean) {
+        retainRaw { predicate(it as Lifetime) }
+    }
 
     public operator fun set(index: Int, value: Lifetime) {
         super.setRaw(index, value)
@@ -608,6 +657,10 @@ public class TypeParamBoundList : SynPunctuated {
 
     public fun pop(): TypeParamBound? = popRaw() as? TypeParamBound
 
+    public fun retain(predicate: (TypeParamBound) -> Boolean) {
+        retainRaw { predicate(it as TypeParamBound) }
+    }
+
     public operator fun set(index: Int, value: TypeParamBound) {
         super.setRaw(index, value)
     }
@@ -646,6 +699,10 @@ public class CapturedParamList : SynPunctuated {
     }
 
     public fun pop(): CapturedParam? = popRaw() as? CapturedParam
+
+    public fun retain(predicate: (CapturedParam) -> Boolean) {
+        retainRaw { predicate(it as CapturedParam) }
+    }
 
     public operator fun set(index: Int, value: CapturedParam) {
         super.setRaw(index, value)
@@ -686,6 +743,10 @@ public class WherePredicateList : SynPunctuated {
 
     public fun pop(): WherePredicate? = popRaw() as? WherePredicate
 
+    public fun retain(predicate: (WherePredicate) -> Boolean) {
+        retainRaw { predicate(it as WherePredicate) }
+    }
+
     public operator fun set(index: Int, value: WherePredicate) {
         super.setRaw(index, value)
     }
@@ -724,6 +785,10 @@ public class PathSegmentList : SynPunctuated {
     }
 
     public fun pop(): PathSegment? = popRaw() as? PathSegment
+
+    public fun retain(predicate: (PathSegment) -> Boolean) {
+        retainRaw { predicate(it as PathSegment) }
+    }
 
     public operator fun set(index: Int, value: PathSegment) {
         super.setRaw(index, value)
@@ -772,23 +837,27 @@ public class UseTreeList : SynPunctuated {
         for (i in 0 until size) this[i] = transform(this[i])
     }
 
+    public fun retain(predicate: (UseTree) -> Boolean) {
+        retainRaw { predicate(it as UseTree) }
+    }
+
     public fun copy(copyValue: (UseTree) -> UseTree = { it }, copyPunct: (ToTokens) -> ToTokens = { it }): UseTreeList =
         UseTreeList(super.inner.mapTo(mutableListOf()) { (v, p) -> copyValue(v as UseTree) to copyPunct(p) }, super.last?.let { copyValue(it as UseTree) })
 }
 
-public class BareFnArgList : SynPunctuated {
+public class NamedArgList : SynPunctuated {
     public constructor() : super()
     internal constructor(values: List<RawPair<ToTokens, ToTokens>>, trailing: ToTokens?) : super(values, trailing)
 
-    public fun first(): BareFnArg? = super.inner.firstOrNull()?.first as? BareFnArg ?: super.last as? BareFnArg
+    public fun first(): NamedArg? = super.inner.firstOrNull()?.first as? NamedArg ?: super.last as? NamedArg
 
-    public fun last(): BareFnArg? = super.last as? BareFnArg ?: super.inner.lastOrNull()?.first as? BareFnArg
+    public fun last(): NamedArg? = super.last as? NamedArg ?: super.inner.lastOrNull()?.first as? NamedArg
 
-    public operator fun get(index: Int): BareFnArg = super.index(index) as BareFnArg
+    public operator fun get(index: Int): NamedArg = super.index(index) as NamedArg
 
-    public fun toList(): List<BareFnArg> = map { it as BareFnArg }
+    public fun toList(): List<NamedArg> = map { it as NamedArg }
 
-    public fun pushValue(value: BareFnArg) {
+    public fun pushValue(value: NamedArg) {
         pushValueRaw(value)
     }
 
@@ -796,23 +865,27 @@ public class BareFnArgList : SynPunctuated {
         pushPunctRaw(punctuation)
     }
 
-    public fun push(value: BareFnArg, defaultPunctuation: () -> ToTokens) {
+    public fun push(value: NamedArg, defaultPunctuation: () -> ToTokens) {
         if (!emptyOrTrailing()) pushPunct(defaultPunctuation())
         pushValue(value)
     }
 
-    public fun pop(): BareFnArg? = popRaw() as? BareFnArg
+    public fun pop(): NamedArg? = popRaw() as? NamedArg
 
-    public operator fun set(index: Int, value: BareFnArg) {
+    public operator fun set(index: Int, value: NamedArg) {
         super.setRaw(index, value)
     }
 
-    public fun mapValuesInPlace(transform: (BareFnArg) -> BareFnArg) {
+    public fun mapValuesInPlace(transform: (NamedArg) -> NamedArg) {
         for (i in 0 until size) this[i] = transform(this[i])
     }
 
-    public fun copy(copyValue: (BareFnArg) -> BareFnArg = { it }, copyPunct: (ToTokens) -> ToTokens = { it }): BareFnArgList =
-        BareFnArgList(super.inner.mapTo(mutableListOf()) { (v, p) -> copyValue(v as BareFnArg) to copyPunct(p) }, super.last?.let { copyValue(it as BareFnArg) })
+    public fun retain(predicate: (NamedArg) -> Boolean) {
+        retainRaw { predicate(it as NamedArg) }
+    }
+
+    public fun copy(copyValue: (NamedArg) -> NamedArg = { it }, copyPunct: (ToTokens) -> ToTokens = { it }): NamedArgList =
+        NamedArgList(super.inner.mapTo(mutableListOf()) { (v, p) -> copyValue(v as NamedArg) to copyPunct(p) }, super.last?.let { copyValue(it as NamedArg) })
 }
 
 public class SynTypeList : SynPunctuated {
@@ -848,6 +921,10 @@ public class SynTypeList : SynPunctuated {
 
     public fun mapValuesInPlace(transform: (SynType) -> SynType) {
         for (i in 0 until size) this[i] = transform(this[i])
+    }
+
+    public fun retain(predicate: (SynType) -> Boolean) {
+        retainRaw { predicate(it as SynType) }
     }
 
     public fun copy(copyValue: (SynType) -> SynType = { it }, copyPunct: (ToTokens) -> ToTokens = { it }): SynTypeList =
@@ -1370,6 +1447,18 @@ public class Punctuated<T, P> private constructor(
         lastValue = null
     }
 
+    /**
+     * Retains only the elements specified by the predicate.
+     */
+    public fun retain(predicate: (T) -> Boolean) {
+        innerList.removeAll { (value, _) -> !predicate(value) }
+        val tail = lastValue
+        if (tail != null && !predicate(tail.value)) {
+            val secondLast = innerList.removeLastOrNull()
+            lastValue = secondLast?.let { LastValue(it.first) }
+        }
+    }
+
     public fun trailingPunct(): Boolean = lastValue == null && !isEmpty()
 
     public fun emptyOrTrailing(): Boolean = lastValue == null
@@ -1412,7 +1501,25 @@ public class Punctuated<T, P> private constructor(
         pushValue(value)
     }
 
-    public fun pop(): Pair<T, P>? {
+    /**
+     * Removes the last element from this sequence, discarding the trailing
+     * punctuation if any.
+     */
+    public fun pop(): T? {
+        val tail = lastValue
+        return if (tail != null) {
+            lastValue = null
+            tail.value
+        } else {
+            innerList.removeLastOrNull()?.first
+        }
+    }
+
+    /**
+     * Removes the last punctuated pair from this sequence, or `null` if the
+     * sequence is empty.
+     */
+    public fun popPair(): Pair<T, P>? {
         val tail = lastValue
         return if (tail != null) {
             lastValue = null

@@ -255,6 +255,35 @@ public class SynError private constructor(
                 ),
             )
 
+        /**
+         * Creates an error spanning the given cursor range.
+         */
+        public fun newRange(span: CursorRange, message: String): SynError {
+            check(sameBuffer(span.start, span.end)) {
+                "assertion failed: sameBuffer(span.start, span.end)"
+            }
+            check(cmpAssumingSameBuffer(span.start, span.end) <= 0) {
+                "assertion failed: span.start <= span.end"
+            }
+            return SynError(
+                mutableListOf(
+                    ErrorMessage(
+                        span =
+                            ThreadBound.new(
+                                SpanRange(
+                                    start = span.start.span(),
+                                    end = if (span.start == span.end) span.end.span() else span.end.prevSpan(),
+                                ),
+                            ),
+                        message = message,
+                    ),
+                ),
+            )
+        }
+
+        public fun newRange(start: Cursor, end: Cursor, message: String): SynError =
+            newRange(CursorRange(start, end), message)
+
         public fun from(err: io.github.kotlinmania.procmacro2.TokenStreamParseResult): SynError =
             new(Span.callSite(), err.error ?: "cannot parse string")
     }
@@ -435,6 +464,12 @@ private data class ErrorMessage(
 private data class SpanRange(
     var start: Span,
     var end: Span,
+)
+
+/** A cursor range spanning from [start] to [end] within the same token buffer. */
+public data class CursorRange(
+    public var start: Cursor,
+    public var end: Cursor,
 )
 
 internal fun newAt(scope: Span, cursor: Cursor, message: String): SynError =

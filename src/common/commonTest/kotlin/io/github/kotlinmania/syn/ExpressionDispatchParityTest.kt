@@ -49,7 +49,7 @@ class ExpressionDispatchParityTest {
         assertIs<Pat.Or>(assertIs<Pat.PatParen>(binding.subpat).pat)
         assertEquals(shape(TokenStream.fromString(source).getOrThrow()), shape(match.toTokenStream()))
         val function = assertIs<Item.Fn>(parseFile("fn f() { let x @ Some(_) = source; }").getOrThrow().items.single())
-        val local = assertIs<Stmt.Local>(function.block!!.stmts.single())
+        val local = assertIs<Stmt.Local>(function.block.stmts.single())
         assertIs<Pat.TupleStruct>(assertIs<Pat.Ident>(local.pat).subpat)
     }
 

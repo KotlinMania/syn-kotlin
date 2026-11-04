@@ -10,12 +10,13 @@ import io.github.kotlinmania.syn.AssocConst
 import io.github.kotlinmania.syn.AssocType
 import io.github.kotlinmania.syn.AttrStyle
 import io.github.kotlinmania.syn.Attribute
-import io.github.kotlinmania.syn.BareFnArg
-import io.github.kotlinmania.syn.BareVariadic
 import io.github.kotlinmania.syn.BinOp
 import io.github.kotlinmania.syn.Block
+import io.github.kotlinmania.syn.BlockModifiers
 import io.github.kotlinmania.syn.BoundLifetimes
 import io.github.kotlinmania.syn.CapturedParam
+import io.github.kotlinmania.syn.ClosureModifiers
+import io.github.kotlinmania.syn.ConstModifiers
 import io.github.kotlinmania.syn.Constraint
 import io.github.kotlinmania.syn.Data
 import io.github.kotlinmania.syn.DataEnum
@@ -27,7 +28,7 @@ import io.github.kotlinmania.syn.EqExpr
 import io.github.kotlinmania.syn.EqSynType
 import io.github.kotlinmania.syn.Expr
 import io.github.kotlinmania.syn.Field
-import io.github.kotlinmania.syn.FieldMutability
+import io.github.kotlinmania.syn.FieldModifiers
 import io.github.kotlinmania.syn.FieldPat
 import io.github.kotlinmania.syn.FieldValue
 import io.github.kotlinmania.syn.Fields
@@ -35,14 +36,17 @@ import io.github.kotlinmania.syn.FieldsNamed
 import io.github.kotlinmania.syn.FieldsUnnamed
 import io.github.kotlinmania.syn.File
 import io.github.kotlinmania.syn.FnArg
+import io.github.kotlinmania.syn.FnModifiers
+import io.github.kotlinmania.syn.FnPtrVariadic
 import io.github.kotlinmania.syn.ForeignItem
+import io.github.kotlinmania.syn.Frontmatter
 import io.github.kotlinmania.syn.GenericArgument
 import io.github.kotlinmania.syn.GenericParam
 import io.github.kotlinmania.syn.Generics
 import io.github.kotlinmania.syn.IdentColon
 import io.github.kotlinmania.syn.IfExpr
 import io.github.kotlinmania.syn.ImplItem
-import io.github.kotlinmania.syn.ImplRestriction
+import io.github.kotlinmania.syn.ImplModifiers
 import io.github.kotlinmania.syn.Index
 import io.github.kotlinmania.syn.Item
 import io.github.kotlinmania.syn.Label
@@ -57,30 +61,36 @@ import io.github.kotlinmania.syn.LitFloat
 import io.github.kotlinmania.syn.LitInt
 import io.github.kotlinmania.syn.LitStr
 import io.github.kotlinmania.syn.LocalInit
+import io.github.kotlinmania.syn.LocalModifiers
 import io.github.kotlinmania.syn.Macro
 import io.github.kotlinmania.syn.MacroDelimiter
 import io.github.kotlinmania.syn.Member
 import io.github.kotlinmania.syn.Meta
 import io.github.kotlinmania.syn.ModContent
+import io.github.kotlinmania.syn.NamedArg
 import io.github.kotlinmania.syn.Pat
 import io.github.kotlinmania.syn.PatColon
 import io.github.kotlinmania.syn.PatRest
 import io.github.kotlinmania.syn.PatType
 import io.github.kotlinmania.syn.Path
 import io.github.kotlinmania.syn.PathArguments
+import io.github.kotlinmania.syn.PathForPair
 import io.github.kotlinmania.syn.PathSegment
-import io.github.kotlinmania.syn.PathTrait
 import io.github.kotlinmania.syn.PointerMutability
 import io.github.kotlinmania.syn.QSelf
 import io.github.kotlinmania.syn.RangeLimits
+import io.github.kotlinmania.syn.ReceiverKind
 import io.github.kotlinmania.syn.ReturnType
+import io.github.kotlinmania.syn.Safety
 import io.github.kotlinmania.syn.Signature
 import io.github.kotlinmania.syn.StaticMutability
 import io.github.kotlinmania.syn.Stmt
 import io.github.kotlinmania.syn.SynPunctuated
 import io.github.kotlinmania.syn.SynType
-import io.github.kotlinmania.syn.TraitBoundModifier
+import io.github.kotlinmania.syn.TraitBoundModifiers
 import io.github.kotlinmania.syn.TraitItem
+import io.github.kotlinmania.syn.TraitModifiers
+import io.github.kotlinmania.syn.TypeModifiers
 import io.github.kotlinmania.syn.TypeParamBound
 import io.github.kotlinmania.syn.UnOp
 import io.github.kotlinmania.syn.UseTree
@@ -88,6 +98,7 @@ import io.github.kotlinmania.syn.Variadic
 import io.github.kotlinmania.syn.Variant
 import io.github.kotlinmania.syn.Visibility
 import io.github.kotlinmania.syn.WhereClause
+import io.github.kotlinmania.syn.WhereClausePlacement
 import io.github.kotlinmania.syn.WherePredicate
 import io.github.kotlinmania.syn.tokenStreamHash
 
@@ -165,16 +176,6 @@ public class SynHasher {
                 value.hash(this)
             }
 
-            is BareFnArg -> {
-                writeU8(1)
-                value.hash(this)
-            }
-
-            is BareVariadic -> {
-                writeU8(1)
-                value.hash(this)
-            }
-
             is BinOp -> {
                 writeU8(1)
                 value.hash(this)
@@ -185,12 +186,27 @@ public class SynHasher {
                 value.hash(this)
             }
 
+            is BlockModifiers -> {
+                writeU8(1)
+                value.hash(this)
+            }
+
             is BoundLifetimes -> {
                 writeU8(1)
                 value.hash(this)
             }
 
             is CapturedParam -> {
+                writeU8(1)
+                value.hash(this)
+            }
+
+            is ClosureModifiers -> {
+                writeU8(1)
+                value.hash(this)
+            }
+
+            is ConstModifiers -> {
                 writeU8(1)
                 value.hash(this)
             }
@@ -250,7 +266,7 @@ public class SynHasher {
                 value.hash(this)
             }
 
-            is FieldMutability -> {
+            is FieldModifiers -> {
                 writeU8(1)
                 value.hash(this)
             }
@@ -290,7 +306,22 @@ public class SynHasher {
                 value.hash(this)
             }
 
+            is FnModifiers -> {
+                writeU8(1)
+                value.hash(this)
+            }
+
+            is FnPtrVariadic -> {
+                writeU8(1)
+                value.hash(this)
+            }
+
             is ForeignItem -> {
+                writeU8(1)
+                value.hash(this)
+            }
+
+            is Frontmatter -> {
                 writeU8(1)
                 value.hash(this)
             }
@@ -325,7 +356,7 @@ public class SynHasher {
                 value.hash(this)
             }
 
-            is ImplRestriction -> {
+            is ImplModifiers -> {
                 writeU8(1)
                 value.hash(this)
             }
@@ -400,6 +431,11 @@ public class SynHasher {
                 value.hash(this)
             }
 
+            is LocalModifiers -> {
+                writeU8(1)
+                value.hash(this)
+            }
+
             is Macro -> {
                 writeU8(1)
                 value.hash(this)
@@ -421,6 +457,11 @@ public class SynHasher {
             }
 
             is ModContent -> {
+                writeU8(1)
+                value.hash(this)
+            }
+
+            is NamedArg -> {
                 writeU8(1)
                 value.hash(this)
             }
@@ -455,12 +496,12 @@ public class SynHasher {
                 value.hash(this)
             }
 
-            is PathSegment -> {
+            is PathForPair -> {
                 writeU8(1)
                 value.hash(this)
             }
 
-            is PathTrait -> {
+            is PathSegment -> {
                 writeU8(1)
                 value.hash(this)
             }
@@ -480,7 +521,17 @@ public class SynHasher {
                 value.hash(this)
             }
 
+            is ReceiverKind -> {
+                writeU8(1)
+                value.hash(this)
+            }
+
             is ReturnType -> {
+                writeU8(1)
+                value.hash(this)
+            }
+
+            is Safety -> {
                 writeU8(1)
                 value.hash(this)
             }
@@ -505,12 +556,22 @@ public class SynHasher {
                 value.hash(this)
             }
 
-            is TraitBoundModifier -> {
+            is TraitBoundModifiers -> {
                 writeU8(1)
                 value.hash(this)
             }
 
             is TraitItem -> {
+                writeU8(1)
+                value.hash(this)
+            }
+
+            is TraitModifiers -> {
+                writeU8(1)
+                value.hash(this)
+            }
+
+            is TypeModifiers -> {
                 writeU8(1)
                 value.hash(this)
             }
@@ -546,6 +607,11 @@ public class SynHasher {
             }
 
             is WhereClause -> {
+                writeU8(1)
+                value.hash(this)
+            }
+
+            is WhereClausePlacement -> {
                 writeU8(1)
                 value.hash(this)
             }
@@ -600,7 +666,6 @@ public fun AndLifetime.hash(): Int =
 public fun Arm.hash(state: SynHasher) {
     state.write(attrs)
     state.write(pat)
-    state.write(guard)
     state.write(body)
     state.write(comma)
 }
@@ -641,22 +706,22 @@ public fun Attribute.hash(state: SynHasher) {
 public fun Attribute.hash(): Int =
     hashToInt { hash(it) }
 
-public fun BareFnArg.hash(state: SynHasher) {
+public fun NamedArg.hash(state: SynHasher) {
     state.write(attrs)
     state.write(name)
     state.write(ty)
 }
 
-public fun BareFnArg.hash(): Int =
+public fun NamedArg.hash(): Int =
     hashToInt { hash(it) }
 
-public fun BareVariadic.hash(state: SynHasher) {
+public fun FnPtrVariadic.hash(state: SynHasher) {
     state.write(attrs)
     state.write(name)
     state.write(comma)
 }
 
-public fun BareVariadic.hash(): Int =
+public fun FnPtrVariadic.hash(): Int =
     hashToInt { hash(it) }
 
 public fun Block.hash(state: SynHasher) {
@@ -666,11 +731,28 @@ public fun Block.hash(state: SynHasher) {
 public fun Block.hash(): Int =
     hashToInt { hash(it) }
 
+public fun BlockModifiers.hash(state: SynHasher) = Unit
+
+public fun BlockModifiers.hash(): Int =
+    hashToInt { hash(it) }
+
 public fun BoundLifetimes.hash(state: SynHasher) {
     state.write(lifetimes)
 }
 
 public fun BoundLifetimes.hash(): Int =
+    hashToInt { hash(it) }
+
+public fun ClosureModifiers.hash(state: SynHasher) = Unit
+
+public fun ClosureModifiers.hash(): Int =
+    hashToInt { hash(it) }
+
+public fun ConstModifiers.hash(state: SynHasher) {
+    state.write(defaultness)
+}
+
+public fun ConstModifiers.hash(): Int =
     hashToInt { hash(it) }
 
 public fun Constraint.hash(state: SynHasher) {
@@ -750,6 +832,7 @@ public fun Expr.Assign.hash(state: SynHasher) {
 public fun Expr.Async.hash(state: SynHasher) {
     state.write(attrs)
     state.write(capture)
+    state.write(modifiers)
     state.write(block)
 }
 
@@ -792,8 +875,8 @@ public fun Expr.Cast.hash(state: SynHasher) {
 public fun Expr.Closure.hash(state: SynHasher) {
     state.write(attrs)
     state.write(lifetimes)
+    state.write(modifiers)
     state.write(constness)
-    state.write(movability)
     state.write(asyncness)
     state.write(capture)
     state.write(inputs)
@@ -803,6 +886,7 @@ public fun Expr.Closure.hash(state: SynHasher) {
 
 public fun Expr.Const.hash(state: SynHasher) {
     state.write(attrs)
+    state.write(modifiers)
     state.write(block)
 }
 
@@ -940,6 +1024,7 @@ public fun Expr.Try.hash(state: SynHasher) {
 
 public fun Expr.TryBlock.hash(state: SynHasher) {
     state.write(attrs)
+    state.write(modifiers)
     state.write(block)
 }
 
@@ -974,13 +1059,19 @@ public fun Expr.Yield.hash(state: SynHasher) {
 public fun Field.hash(state: SynHasher) {
     state.write(attrs)
     state.write(vis)
-    state.write(mutability)
+    state.write(modifiers)
     state.write(ident)
     state.write(colonToken)
     state.write(ty)
+    state.write(default)
 }
 
 public fun Field.hash(): Int =
+    hashToInt { hash(it) }
+
+public fun FieldModifiers.hash(state: SynHasher) = Unit
+
+public fun FieldModifiers.hash(): Int =
     hashToInt { hash(it) }
 
 public fun FieldPat.hash(state: SynHasher) {
@@ -1019,6 +1110,7 @@ public fun FieldsUnnamed.hash(): Int =
 
 public fun File.hash(state: SynHasher) {
     state.write(shebang)
+    state.write(frontmatter)
     state.write(attrs)
     state.write(items)
 }
@@ -1028,18 +1120,24 @@ public fun File.hash(): Int =
 
 public fun FnArg.Receiver.hash(state: SynHasher) {
     state.write(attrs)
-    state.write(reference)
     state.write(mutability)
-    state.write(colonToken)
-    state.write(type)
+    state.write(kind)
 }
 
 public fun FnArg.Receiver.hash(): Int =
     hashToInt { hash(it) }
 
+public fun FnModifiers.hash(state: SynHasher) {
+    state.write(defaultness)
+}
+
+public fun FnModifiers.hash(): Int =
+    hashToInt { hash(it) }
+
 public fun ForeignItem.Fn.hash(state: SynHasher) {
     state.write(attrs)
     state.write(vis)
+    state.write(modifiers)
     state.write(sig)
 }
 
@@ -1058,6 +1156,7 @@ public fun ForeignItem.Macro.hash(): Int =
 public fun ForeignItem.Static.hash(state: SynHasher) {
     state.write(attrs)
     state.write(vis)
+    state.write(safety)
     state.write(mutability)
     state.write(ident)
     state.write(ty)
@@ -1069,6 +1168,7 @@ public fun ForeignItem.Static.hash(): Int =
 public fun ForeignItem.ItemType.hash(state: SynHasher) {
     state.write(attrs)
     state.write(vis)
+    state.write(modifiers)
     state.write(ident)
     state.write(generics)
 }
@@ -1076,11 +1176,15 @@ public fun ForeignItem.ItemType.hash(state: SynHasher) {
 public fun ForeignItem.ItemType.hash(): Int =
     hashToInt { hash(it) }
 
+public fun Frontmatter.hash(state: SynHasher) = Unit
+
+public fun Frontmatter.hash(): Int =
+    hashToInt { hash(it) }
+
 public fun GenericParam.ConstParam.hash(state: SynHasher) {
     state.write(attrs)
     state.write(ident)
     state.write(ty)
-    state.write(eqToken)
     state.write(default)
 }
 
@@ -1102,7 +1206,6 @@ public fun GenericParam.TypeParam.hash(state: SynHasher) {
     state.write(ident)
     state.write(colonToken)
     state.write(bounds)
-    state.write(eqToken)
     state.write(default)
 }
 
@@ -1136,7 +1239,7 @@ public fun IfExpr.hash(): Int =
 public fun ImplItem.Const.hash(state: SynHasher) {
     state.write(attrs)
     state.write(vis)
-    state.write(defaultness)
+    state.write(modifiers)
     state.write(ident)
     state.write(generics)
     state.write(ty)
@@ -1149,7 +1252,7 @@ public fun ImplItem.Const.hash(): Int =
 public fun ImplItem.Fn.hash(state: SynHasher) {
     state.write(attrs)
     state.write(vis)
-    state.write(defaultness)
+    state.write(modifiers)
     state.write(sig)
     state.write(block)
 }
@@ -1169,13 +1272,21 @@ public fun ImplItem.Macro.hash(): Int =
 public fun ImplItem.AssocType.hash(state: SynHasher) {
     state.write(attrs)
     state.write(vis)
-    state.write(defaultness)
+    state.write(modifiers)
     state.write(ident)
     state.write(generics)
     state.write(ty)
 }
 
 public fun ImplItem.AssocType.hash(): Int =
+    hashToInt { hash(it) }
+
+public fun ImplModifiers.hash(state: SynHasher) {
+    state.write(defaultness)
+    state.write(polarity)
+}
+
+public fun ImplModifiers.hash(): Int =
     hashToInt { hash(it) }
 
 public fun Index.hash(state: SynHasher) {
@@ -1188,10 +1299,10 @@ public fun Index.hash(): Int =
 public fun Item.Const.hash(state: SynHasher) {
     state.write(attrs)
     state.write(vis)
+    state.write(modifiers)
     state.write(ident)
-    state.write(colonToken)
+    state.write(generics)
     state.write(ty)
-    state.write(eqToken)
     state.write(expr)
 }
 
@@ -1222,6 +1333,7 @@ public fun Item.ExternCrate.hash(): Int =
 public fun Item.Fn.hash(state: SynHasher) {
     state.write(attrs)
     state.write(vis)
+    state.write(modifiers)
     state.write(sig)
     state.write(block)
 }
@@ -1241,7 +1353,7 @@ public fun Item.ForeignMod.hash(): Int =
 
 public fun Item.Impl.hash(state: SynHasher) {
     state.write(attrs)
-    state.write(defaultness)
+    state.write(modifiers)
     state.write(unsafety)
     state.write(generics)
     state.write(traitPath)
@@ -1300,9 +1412,8 @@ public fun Item.Struct.hash(): Int =
 public fun Item.Trait.hash(state: SynHasher) {
     state.write(attrs)
     state.write(vis)
+    state.write(modifiers)
     state.write(unsafety)
-    state.write(autoToken)
-    state.write(restriction)
     state.write(ident)
     state.write(generics)
     state.write(colonToken)
@@ -1327,9 +1438,11 @@ public fun Item.TraitAlias.hash(): Int =
 public fun Item.ItemType.hash(state: SynHasher) {
     state.write(attrs)
     state.write(vis)
+    state.write(modifiers)
     state.write(ident)
     state.write(generics)
     state.write(ty)
+    state.write(whereClausePlacement)
 }
 
 public fun Item.ItemType.hash(): Int =
@@ -1371,6 +1484,11 @@ public fun LocalInit.hash(state: SynHasher) {
 public fun LocalInit.hash(): Int =
     hashToInt { hash(it) }
 
+public fun LocalModifiers.hash(state: SynHasher) = Unit
+
+public fun LocalModifiers.hash(): Int =
+    hashToInt { hash(it) }
+
 public fun Macro.hash(state: SynHasher) {
     state.write(path)
     state.write(delimiter)
@@ -1405,12 +1523,20 @@ public fun Pat.Const.hash(state: SynHasher) {
 public fun Pat.Const.hash(): Int =
     hashToInt { hash(it) }
 
+public fun Pat.Guard.hash(state: SynHasher) {
+    state.write(attrs)
+    state.write(pat)
+    state.write(guard)
+}
+
+public fun Pat.Guard.hash(): Int =
+    hashToInt { hash(it) }
+
 public fun Pat.Ident.hash(state: SynHasher) {
     state.write(attrs)
     state.write(byRef)
     state.write(mutability)
     state.write(ident)
-    state.write(atToken)
     state.write(subpat)
 }
 
@@ -1587,20 +1713,19 @@ public fun PathArguments.Parenthesized.hash(state: SynHasher) {
 public fun PathArguments.Parenthesized.hash(): Int =
     hashToInt { hash(it) }
 
+public fun PathForPair.hash(state: SynHasher) {
+    state.write(path)
+}
+
+public fun PathForPair.hash(): Int =
+    hashToInt { hash(it) }
+
 public fun PathSegment.hash(state: SynHasher) {
     state.write(ident)
     state.write(arguments)
 }
 
 public fun PathSegment.hash(): Int =
-    hashToInt { hash(it) }
-
-public fun PathTrait.hash(state: SynHasher) {
-    state.write(polarity)
-    state.write(path)
-}
-
-public fun PathTrait.hash(): Int =
     hashToInt { hash(it) }
 
 public fun QSelf.hash(state: SynHasher) {
@@ -1612,10 +1737,43 @@ public fun QSelf.hash(state: SynHasher) {
 public fun QSelf.hash(): Int =
     hashToInt { hash(it) }
 
+public fun ReceiverKind.hash(state: SynHasher) {
+    when (this) {
+        ReceiverKind.Value -> {
+            state.writeU8(0)
+        }
+
+        is ReceiverKind.Reference -> {
+            state.writeU8(1)
+            state.write(lifetime)
+            state.write(mutability)
+        }
+
+        is ReceiverKind.Typed -> {
+            state.writeU8(2)
+            state.write(ty)
+        }
+    }
+}
+
+public fun ReceiverKind.hash(): Int =
+    hashToInt { hash(it) }
+
+public fun Safety.hash(state: SynHasher) {
+    when (this) {
+        is Safety.Safe -> state.writeU8(0)
+        is Safety.Unsafe -> state.writeU8(1)
+        Safety.Default -> state.writeU8(2)
+    }
+}
+
+public fun Safety.hash(): Int =
+    hashToInt { hash(it) }
+
 public fun Signature.hash(state: SynHasher) {
     state.write(constness)
     state.write(asyncness)
-    state.write(unsafety)
+    state.write(safety)
     state.write(abi)
     state.write(ident)
     state.write(generics)
@@ -1629,6 +1787,7 @@ public fun Signature.hash(): Int =
 
 public fun Stmt.Local.hash(state: SynHasher) {
     state.write(attrs)
+    state.write(modifiers)
     state.write(pat)
     state.write(init)
 }
@@ -1646,6 +1805,7 @@ public fun Stmt.MacroStmt.hash(): Int =
     hashToInt { hash(it) }
 
 public fun SynType.Array.hash(state: SynHasher) {
+    state.write(attrs)
     state.write(elem)
     state.write(len)
 }
@@ -1653,7 +1813,8 @@ public fun SynType.Array.hash(state: SynHasher) {
 public fun SynType.Array.hash(): Int =
     hashToInt { hash(it) }
 
-public fun SynType.BareFn.hash(state: SynHasher) {
+public fun SynType.FnPtr.hash(state: SynHasher) {
+    state.write(attrs)
     state.write(lifetimes)
     state.write(unsafety)
     state.write(abi)
@@ -1662,10 +1823,11 @@ public fun SynType.BareFn.hash(state: SynHasher) {
     state.write(output)
 }
 
-public fun SynType.BareFn.hash(): Int =
+public fun SynType.FnPtr.hash(): Int =
     hashToInt { hash(it) }
 
 public fun SynType.Group.hash(state: SynHasher) {
+    state.write(attrs)
     state.write(elem)
 }
 
@@ -1673,30 +1835,37 @@ public fun SynType.Group.hash(): Int =
     hashToInt { hash(it) }
 
 public fun SynType.ImplTrait.hash(state: SynHasher) {
+    state.write(attrs)
     state.write(bounds)
 }
 
 public fun SynType.ImplTrait.hash(): Int =
     hashToInt { hash(it) }
 
-public fun SynType.Infer.hash(state: SynHasher) = Unit
+public fun SynType.Infer.hash(state: SynHasher) {
+    state.write(attrs)
+}
 
 public fun SynType.Infer.hash(): Int =
     hashToInt { hash(it) }
 
 public fun SynType.Macro.hash(state: SynHasher) {
+    state.write(attrs)
     state.write(mac)
 }
 
 public fun SynType.Macro.hash(): Int =
     hashToInt { hash(it) }
 
-public fun SynType.Never.hash(state: SynHasher) = Unit
+public fun SynType.Never.hash(state: SynHasher) {
+    state.write(attrs)
+}
 
 public fun SynType.Never.hash(): Int =
     hashToInt { hash(it) }
 
 public fun SynType.Paren.hash(state: SynHasher) {
+    state.write(attrs)
     state.write(elem)
 }
 
@@ -1704,6 +1873,7 @@ public fun SynType.Paren.hash(): Int =
     hashToInt { hash(it) }
 
 public fun SynType.Path.hash(state: SynHasher) {
+    state.write(attrs)
     state.write(qself)
     state.write(path)
 }
@@ -1712,7 +1882,7 @@ public fun SynType.Path.hash(): Int =
     hashToInt { hash(it) }
 
 public fun SynType.Ptr.hash(state: SynHasher) {
-    state.write(constToken)
+    state.write(attrs)
     state.write(mutability)
     state.write(elem)
 }
@@ -1721,6 +1891,7 @@ public fun SynType.Ptr.hash(): Int =
     hashToInt { hash(it) }
 
 public fun SynType.Reference.hash(state: SynHasher) {
+    state.write(attrs)
     state.write(lifetime)
     state.write(mutability)
     state.write(elem)
@@ -1730,6 +1901,7 @@ public fun SynType.Reference.hash(): Int =
     hashToInt { hash(it) }
 
 public fun SynType.Slice.hash(state: SynHasher) {
+    state.write(attrs)
     state.write(elem)
 }
 
@@ -1737,6 +1909,7 @@ public fun SynType.Slice.hash(): Int =
     hashToInt { hash(it) }
 
 public fun SynType.TraitObject.hash(state: SynHasher) {
+    state.write(attrs)
     state.write(dynToken)
     state.write(bounds)
 }
@@ -1745,14 +1918,21 @@ public fun SynType.TraitObject.hash(): Int =
     hashToInt { hash(it) }
 
 public fun SynType.Tuple.hash(state: SynHasher) {
+    state.write(attrs)
     state.write(elems)
 }
 
 public fun SynType.Tuple.hash(): Int =
     hashToInt { hash(it) }
 
+public fun TraitBoundModifiers.hash(state: SynHasher) = Unit
+
+public fun TraitBoundModifiers.hash(): Int =
+    hashToInt { hash(it) }
+
 public fun TraitItem.Const.hash(state: SynHasher) {
     state.write(attrs)
+    state.write(modifiers)
     state.write(ident)
     state.write(generics)
     state.write(ty)
@@ -1764,6 +1944,7 @@ public fun TraitItem.Const.hash(): Int =
 
 public fun TraitItem.Fn.hash(state: SynHasher) {
     state.write(attrs)
+    state.write(modifiers)
     state.write(sig)
     state.write(default)
     state.write(semiToken)
@@ -1783,6 +1964,7 @@ public fun TraitItem.Macro.hash(): Int =
 
 public fun TraitItem.AssocType.hash(state: SynHasher) {
     state.write(attrs)
+    state.write(modifiers)
     state.write(ident)
     state.write(generics)
     state.write(colonToken)
@@ -1791,6 +1973,20 @@ public fun TraitItem.AssocType.hash(state: SynHasher) {
 }
 
 public fun TraitItem.AssocType.hash(): Int =
+    hashToInt { hash(it) }
+
+public fun TraitModifiers.hash(state: SynHasher) {
+    state.write(autoToken)
+}
+
+public fun TraitModifiers.hash(): Int =
+    hashToInt { hash(it) }
+
+public fun TypeModifiers.hash(state: SynHasher) {
+    state.write(defaultness)
+}
+
+public fun TypeModifiers.hash(): Int =
     hashToInt { hash(it) }
 
 public fun TypeParamBound.PreciseCapture.hash(state: SynHasher) {
@@ -1802,8 +1998,9 @@ public fun TypeParamBound.PreciseCapture.hash(): Int =
 
 public fun TypeParamBound.Trait.hash(state: SynHasher) {
     state.write(parenToken)
-    state.write(modifier)
     state.write(lifetimes)
+    state.write(modifiers)
+    state.write(maybe)
     state.write(path)
 }
 
@@ -1873,7 +2070,18 @@ public fun WhereClause.hash(state: SynHasher) {
 public fun WhereClause.hash(): Int =
     hashToInt { hash(it) }
 
+public fun WhereClausePlacement.hash(state: SynHasher) {
+    when (this) {
+        WhereClausePlacement.Early -> state.writeU8(0)
+        WhereClausePlacement.Late -> state.writeU8(1)
+    }
+}
+
+public fun WhereClausePlacement.hash(): Int =
+    hashToInt { hash(it) }
+
 public fun WherePredicate.LifetimePredicate.hash(state: SynHasher) {
+    state.write(attrs)
     state.write(lifetime)
     state.write(bounds)
 }
@@ -1882,6 +2090,7 @@ public fun WherePredicate.LifetimePredicate.hash(): Int =
     hashToInt { hash(it) }
 
 public fun WherePredicate.TypePredicate.hash(state: SynHasher) {
+    state.write(attrs)
     state.write(lifetimes)
     state.write(boundedTy)
     state.write(bounds)
@@ -2292,16 +2501,6 @@ public fun Expr.hash(state: SynHasher) {
     }
 }
 
-public fun FieldMutability.hash(state: SynHasher) {
-    when (this) {
-        FieldMutability.None -> state.writeU8(0)
-        is FieldMutability.Mut -> state.writeU8(1)
-    }
-}
-
-public fun FieldMutability.hash(): Int =
-    hashToInt { hash(it) }
-
 public fun Fields.hash(state: SynHasher) {
     when (this) {
         is Fields.Named -> {
@@ -2468,11 +2667,6 @@ public fun ImplItem.hash(state: SynHasher) {
 }
 
 public fun ImplItem.hash(): Int =
-    hashToInt { hash(it) }
-
-public fun ImplRestriction.hash(state: SynHasher) = Unit
-
-public fun ImplRestriction.hash(): Int =
     hashToInt { hash(it) }
 
 public fun Item.hash(state: SynHasher) {
@@ -2694,83 +2888,88 @@ public fun Pat.hash(state: SynHasher) {
             this.hash(state)
         }
 
-        is Pat.Ident -> {
+        is Pat.Guard -> {
             state.writeU8(1)
             this.hash(state)
         }
 
-        is Pat.Lit -> {
+        is Pat.Ident -> {
             state.writeU8(2)
             this.hash(state)
         }
 
-        is Pat.Macro -> {
+        is Pat.Lit -> {
             state.writeU8(3)
             this.hash(state)
         }
 
-        is Pat.Or -> {
+        is Pat.Macro -> {
             state.writeU8(4)
             this.hash(state)
         }
 
-        is Pat.PatParen -> {
+        is Pat.Or -> {
             state.writeU8(5)
             this.hash(state)
         }
 
-        is Pat.Path -> {
+        is Pat.PatParen -> {
             state.writeU8(6)
             this.hash(state)
         }
 
-        is Pat.Range -> {
+        is Pat.Path -> {
             state.writeU8(7)
             this.hash(state)
         }
 
-        is Pat.Reference -> {
+        is Pat.Range -> {
             state.writeU8(8)
             this.hash(state)
         }
 
-        is Pat.Rest -> {
+        is Pat.Reference -> {
             state.writeU8(9)
             this.hash(state)
         }
 
-        is Pat.Slice -> {
+        is Pat.Rest -> {
             state.writeU8(10)
             this.hash(state)
         }
 
-        is Pat.Struct -> {
+        is Pat.Slice -> {
             state.writeU8(11)
             this.hash(state)
         }
 
-        is Pat.Tuple -> {
+        is Pat.Struct -> {
             state.writeU8(12)
             this.hash(state)
         }
 
-        is Pat.TupleStruct -> {
+        is Pat.Tuple -> {
             state.writeU8(13)
             this.hash(state)
         }
 
-        is Pat.TypeAscription -> {
+        is Pat.TupleStruct -> {
             state.writeU8(14)
             this.hash(state)
         }
 
-        is Pat.Wild -> {
+        is Pat.TypeAscription -> {
             state.writeU8(15)
             this.hash(state)
         }
 
-        is Pat.Verbatim -> {
+        is Pat.Wild -> {
             state.writeU8(16)
+            this.hash(state)
+        }
+
+        is Pat.Verbatim -> {
+            state.writeU8(17)
             this.hash(state)
         }
     }
@@ -2895,7 +3094,7 @@ public fun SynType.hash(state: SynHasher) {
             this.hash(state)
         }
 
-        is SynType.BareFn -> {
+        is SynType.FnPtr -> {
             state.writeU8(1)
             this.hash(state)
         }
@@ -2968,16 +3167,6 @@ public fun SynType.hash(state: SynHasher) {
 }
 
 public fun SynType.hash(): Int =
-    hashToInt { hash(it) }
-
-public fun TraitBoundModifier.hash(state: SynHasher) {
-    when (this) {
-        TraitBoundModifier.None -> state.writeU8(0)
-        is TraitBoundModifier.Maybe -> state.writeU8(1)
-    }
-}
-
-public fun TraitBoundModifier.hash(): Int =
     hashToInt { hash(it) }
 
 public fun TraitItem.hash(state: SynHasher) {

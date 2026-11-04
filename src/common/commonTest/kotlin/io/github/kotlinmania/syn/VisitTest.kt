@@ -418,8 +418,12 @@ class VisitTest {
             super.visitUnOp(op)
         }
 
-        override fun visitPointerMutability(mutability: io.github.kotlinmania.syn.token.Mut?) {
-            events += if (mutability == null) "pointer:const" else "pointer:mut"
+        override fun visitPointerMutability(mutability: PointerMutability) {
+            events +=
+                when (mutability) {
+                    is PointerMutability.Const -> "pointer:const"
+                    is PointerMutability.Mut -> "pointer:mut"
+                }
             super.visitPointerMutability(mutability)
         }
 
@@ -474,5 +478,71 @@ class VisitTest {
         val expr = parseStr(ExprParse::parse, "alpha + beta * gamma").getOrThrow()
         visitExpr(visitor, expr)
         assertEquals(listOf("alpha", "beta", "gamma"), seen)
+    }
+
+    @Test
+    fun syn3AstHooksDispatchThroughVisit() {
+        val seen = mutableListOf<String>()
+        val visitor =
+            object : Visit() {
+                override fun visitTypeFnPtr(t: SynType.FnPtr) {
+                    seen += "fnPtr"
+                    super.visitTypeFnPtr(t)
+                }
+
+                override fun visitNamedArg(a: NamedArg) {
+                    seen += "namedArg"
+                    super.visitNamedArg(a)
+                }
+
+                override fun visitFnPtrVariadic(v: FnPtrVariadic) {
+                    seen += "fnPtrVariadic"
+                    super.visitFnPtrVariadic(v)
+                }
+
+                override fun visitPatGuard(p: Pat.Guard) {
+                    seen += "patGuard"
+                    super.visitPatGuard(p)
+                }
+
+                override fun visitReceiverKind(r: ReceiverKind) {
+                    seen += "receiverKind"
+                    super.visitReceiverKind(r)
+                }
+
+                override fun visitSafety(s: Safety) {
+                    seen += "safety"
+                    super.visitSafety(s)
+                }
+
+                override fun visitFrontmatter(f: Frontmatter) {
+                    seen += "frontmatter"
+                    super.visitFrontmatter(f)
+                }
+
+                override fun visitWhereClausePlacement(w: WhereClausePlacement) {
+                    seen += "wherePlacement:$w"
+                    super.visitWhereClausePlacement(w)
+                }
+            }
+
+        val file =
+            parseFile(
+                """
+                type Callback = unsafe extern "C" fn(x: i32, ap: ...) where Self: Sized;
+                trait T {
+                    unsafe fn check(&self, v: i32) {
+                        match v {
+                            x if x > 0 => {}
+                            _ => {}
+                        }
+                    }
+                }
+                """.trimIndent(),
+            ).getOrThrow()
+        file.frontmatter = Frontmatter()
+
+        visitor.visitFile(file)
+        assertTrue(seen.containsAll(listOf("fnPtr", "namedArg", "fnPtrVariadic", "patGuard", "receiverKind", "safety", "frontmatter", "wherePlacement:Late")), seen.toString())
     }
 }

@@ -145,8 +145,8 @@ class PunctuatedTest {
                 listOf(pair, Punctuated.Pair.End(3)),
             )
         assertEquals(listOf(null, 3), extended.toList())
-        assertTrue(extended.pop() is Punctuated.Pair.End<*, *>)
-        assertTrue(extended.pop() is Punctuated.Pair.Punctuated<*, *>)
+        assertTrue(extended.popPair() is Punctuated.Pair.End<*, *>)
+        assertTrue(extended.popPair() is Punctuated.Pair.Punctuated<*, *>)
         assertTrue(extended.isEmpty())
     }
 

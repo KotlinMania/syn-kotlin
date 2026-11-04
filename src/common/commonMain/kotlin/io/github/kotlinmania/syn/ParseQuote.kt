@@ -55,24 +55,45 @@ public fun parseQuoteField(tokenStream: TokenStream): Field {
 }
 
 private fun parseQuoteField(input: ParseStream): SynResult<Field> {
-    val ahead = input.fork()
-    parseOuterAttributes(ahead).getOrElse { return SynResult.failure(it) }
-    VisibilityParse.parse(ahead).getOrElse { return SynResult.failure(it) }
+    val attrs = parseOuterAttributes(input).getOrElse { return SynResult.failure(it) }
+    val vis = VisibilityParse.parse(input).getOrElse { return SynResult.failure(it) }
     val isNamed =
-        (ahead.peek(IdentPeek) || ahead.peek(UnderscorePeek)) &&
-            ahead.peek2(ColonPeek) &&
-            !ahead.peek2(PathSepPeek)
-    return if (isNamed) {
-        Field.parseNamed(input)
+        input.peek(IdentPeek) &&
+            input.peek2(ColonPeek) &&
+            !input.peek2(PathSepPeek)
+    val ident: io.github.kotlinmania.procmacro2.Ident?
+    val colonToken: io.github.kotlinmania.syn.token.Colon?
+    if (isNamed) {
+        ident = IdentParse.parse(input).getOrElse { return SynResult.failure(it) }
+        colonToken = ColonParse.parse(input).getOrElse { return SynResult.failure(it) }
     } else {
-        Field.parseUnnamed(input)
+        ident = null
+        colonToken = null
     }
+    val ty = parseTypeFull(input).getOrElse { return SynResult.failure(it) }
+    val default =
+        if (isNamed && input.peek(EqPeek)) {
+            val eqToken = EqParse.parse(input).getOrElse { return SynResult.failure(it) }
+            val expr = parseExprFull(input).getOrElse { return SynResult.failure(it) }
+            EqExpr(eqToken, expr)
+        } else {
+            null
+        }
+    return SynResult.success(Field(attrs, vis, FieldModifiers(), ident, colonToken, ty, default))
 }
 
 public fun parseQuotePat(tokenStream: TokenStream): Pat {
-    val result: SynResult<Pat> = parse2(::parsePatMultiWithLeadingVert, tokenStream)
+    val result: SynResult<Pat> = parse2(::parsePatMultiWithLeadingVertAndGuard, tokenStream)
     return result.fold(
         onSuccess = { pat: Pat -> pat },
+        onFailure = { err: SynError -> err.raise() },
+    )
+}
+
+public fun parseQuoteSafety(tokenStream: TokenStream): Safety {
+    val result: SynResult<Safety> = parse2(Safety::parseSafeOrUnsafe, tokenStream)
+    return result.fold(
+        onSuccess = { safety: Safety -> safety },
         onFailure = { err: SynError -> err.raise() },
     )
 }

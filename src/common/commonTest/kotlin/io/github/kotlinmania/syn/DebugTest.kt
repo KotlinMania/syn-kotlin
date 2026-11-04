@@ -24,7 +24,7 @@ class DebugTest {
 
     @Test
     fun tokenFieldsIncludedWhereGeneratedDebugIncludesThem() {
-        assertEquals("Abi { extern_token: Extern, name: None }", Abi(Extern.default(), null).debug())
+        assertEquals("Abi { extern_token: Token![extern], name: None }", Abi(Extern.default(), null).debug())
 
         val arguments = PathArguments.AngleBracketed(null, Lt.default(), GenericArgumentList(), Gt.default())
         val rendered = arguments.debug()
@@ -32,15 +32,15 @@ class DebugTest {
         assertTrue(rendered.startsWith("AngleBracketedGenericArguments { "))
         assertInOrder(rendered, "colon2_token:", "lt_token:", "args:", "gt_token:")
         assertTrue(rendered.contains("colon2_token: None"))
-        assertTrue(rendered.contains("lt_token: Lt"))
-        assertTrue(rendered.contains("gt_token: Gt"))
+        assertTrue(rendered.contains("lt_token: Token![<]"))
+        assertTrue(rendered.contains("gt_token: Token![>]"))
     }
 
     @Test
     fun enumDebugUsesRustVariantPrefixes() {
         assertEquals("AttrStyle::Outer", AttrStyle.Outer.debug())
-        assertEquals("AttrStyle::Inner(Not)", AttrStyle.Inner(Not.default()).debug())
-        assertEquals("BinOp::Add(Plus)", BinOp.Add(Plus.default()).debug())
+        assertEquals("AttrStyle::Inner(Token![!])", AttrStyle.Inner(Not.default()).debug())
+        assertEquals("BinOp::Add(Token![+])", BinOp.Add(Plus.default()).debug())
 
         val data = parseStr(DeriveInputParse::parse, "struct S;").getOrThrow().data
         assertTrue(data.debug().startsWith("Data::Struct { "))

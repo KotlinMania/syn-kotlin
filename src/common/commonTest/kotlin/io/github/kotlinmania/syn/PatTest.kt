@@ -199,6 +199,34 @@ class PatTest {
         assertTrue(twoTrailingPrinted.elems.trailingPunct())
     }
 
+    @Test
+    fun testPatGuardInMatchArms() {
+        val matchExpr =
+            assertIs<Expr.Match>(
+                parseStr(
+                    ExprParse::parse,
+                    "match value { (A | B) if ready => 1, X if flag => 2, _ => 0 }",
+                ).getOrThrow(),
+            )
+        assertEquals(3, matchExpr.arms.size)
+
+        val firstGuard = assertIs<Pat.Guard>(matchExpr.arms[0].pat)
+        val parenPat = assertIs<Pat.PatParen>(firstGuard.pat)
+        val orPat = assertIs<Pat.Or>(parenPat.pat)
+        assertEquals(2, orPat.cases.len())
+        assertPathExpr(firstGuard.guard, "ready")
+
+        val secondGuard = assertIs<Pat.Guard>(matchExpr.arms[1].pat)
+        assertEquals("X", assertIs<Pat.Ident>(secondGuard.pat).ident.toString())
+        assertPathExpr(secondGuard.guard, "flag")
+
+        val tokens = TokenStream.new()
+        matchExpr.toTokens(tokens)
+        val reparsed = assertIs<Expr.Match>(parse2(ExprParse::parse, tokens).getOrThrow())
+        assertIs<Pat.Guard>(reparsed.arms[0].pat)
+        assertIs<Pat.Guard>(reparsed.arms[1].pat)
+    }
+
     private fun parsePat(source: String): Pat =
         parseStr(Pat::parse, source).getOrThrow()
 

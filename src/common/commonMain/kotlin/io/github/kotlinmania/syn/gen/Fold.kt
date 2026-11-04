@@ -10,8 +10,6 @@ import io.github.kotlinmania.syn.AssocConst
 import io.github.kotlinmania.syn.AssocType
 import io.github.kotlinmania.syn.AttrStyle
 import io.github.kotlinmania.syn.Attribute
-import io.github.kotlinmania.syn.BareFnArg
-import io.github.kotlinmania.syn.BareVariadic
 import io.github.kotlinmania.syn.BinOp
 import io.github.kotlinmania.syn.Block
 import io.github.kotlinmania.syn.BoundLifetimes
@@ -25,7 +23,6 @@ import io.github.kotlinmania.syn.DeriveInput
 import io.github.kotlinmania.syn.ElseExpr
 import io.github.kotlinmania.syn.Expr
 import io.github.kotlinmania.syn.Field
-import io.github.kotlinmania.syn.FieldMutability
 import io.github.kotlinmania.syn.FieldPat
 import io.github.kotlinmania.syn.FieldValue
 import io.github.kotlinmania.syn.Fields
@@ -33,12 +30,13 @@ import io.github.kotlinmania.syn.FieldsNamed
 import io.github.kotlinmania.syn.FieldsUnnamed
 import io.github.kotlinmania.syn.File
 import io.github.kotlinmania.syn.FnArg
+import io.github.kotlinmania.syn.FnPtrVariadic
 import io.github.kotlinmania.syn.ForeignItem
+import io.github.kotlinmania.syn.Frontmatter
 import io.github.kotlinmania.syn.GenericArgument
 import io.github.kotlinmania.syn.GenericParam
 import io.github.kotlinmania.syn.Generics
 import io.github.kotlinmania.syn.ImplItem
-import io.github.kotlinmania.syn.ImplRestriction
 import io.github.kotlinmania.syn.Index
 import io.github.kotlinmania.syn.Item
 import io.github.kotlinmania.syn.Label
@@ -58,22 +56,23 @@ import io.github.kotlinmania.syn.MacroDelimiter
 import io.github.kotlinmania.syn.Member
 import io.github.kotlinmania.syn.Meta
 import io.github.kotlinmania.syn.ModContent
+import io.github.kotlinmania.syn.NamedArg
 import io.github.kotlinmania.syn.Pat
 import io.github.kotlinmania.syn.PatRest
 import io.github.kotlinmania.syn.PatType
 import io.github.kotlinmania.syn.Path
 import io.github.kotlinmania.syn.PathArguments
 import io.github.kotlinmania.syn.PathSegment
-import io.github.kotlinmania.syn.PathTrait
 import io.github.kotlinmania.syn.PointerMutability
 import io.github.kotlinmania.syn.QSelf
 import io.github.kotlinmania.syn.RangeLimits
+import io.github.kotlinmania.syn.ReceiverKind
 import io.github.kotlinmania.syn.ReturnType
+import io.github.kotlinmania.syn.Safety
 import io.github.kotlinmania.syn.Signature
 import io.github.kotlinmania.syn.StaticMutability
 import io.github.kotlinmania.syn.Stmt
 import io.github.kotlinmania.syn.SynType
-import io.github.kotlinmania.syn.TraitBoundModifier
 import io.github.kotlinmania.syn.TraitItem
 import io.github.kotlinmania.syn.TypeParamBound
 import io.github.kotlinmania.syn.UnOp
@@ -82,6 +81,7 @@ import io.github.kotlinmania.syn.Variadic
 import io.github.kotlinmania.syn.Variant
 import io.github.kotlinmania.syn.Visibility
 import io.github.kotlinmania.syn.WhereClause
+import io.github.kotlinmania.syn.WhereClausePlacement
 import io.github.kotlinmania.syn.WherePredicate
 
 /**
@@ -187,8 +187,14 @@ public open class Fold {
     public open fun foldFile(file: File): File =
         foldFile(this, file)
 
+    public open fun foldFrontmatter(frontmatter: Frontmatter): Frontmatter =
+        foldFrontmatter(this, frontmatter)
+
     public open fun foldSignature(sig: Signature): Signature =
         foldSignature(this, sig)
+
+    public open fun foldSafety(safety: Safety): Safety =
+        foldSafety(this, safety)
 
     public open fun foldAbi(a: Abi): Abi =
         foldAbi(this, a)
@@ -202,8 +208,14 @@ public open class Fold {
     public open fun foldReceiver(receiver: FnArg.Receiver): FnArg.Receiver =
         foldReceiver(this, receiver)
 
+    public open fun foldReceiverKind(kind: ReceiverKind): ReceiverKind =
+        foldReceiverKind(this, kind)
+
     public open fun foldPatType(patType: PatType): PatType =
         foldPatType(this, patType)
+
+    public open fun foldPatGuard(pat: Pat.Guard): Pat.Guard =
+        foldPatGuard(this, pat)
 
     public open fun foldPatIdent(patIdent: Pat.Ident): Pat.Ident =
         foldPatIdent(this, patIdent)
@@ -280,14 +292,14 @@ public open class Fold {
     public open fun foldPointerMutability(mutability: PointerMutability): PointerMutability =
         foldPointerMutability(this, mutability)
 
-    public open fun foldTypeBareFn(ty: SynType.BareFn): SynType.BareFn =
-        foldTypeBareFn(this, ty)
+    public open fun foldTypeFnPtr(ty: SynType.FnPtr): SynType.FnPtr =
+        foldTypeFnPtr(this, ty)
 
-    public open fun foldBareFnArg(arg: BareFnArg): BareFnArg =
-        foldBareFnArg(this, arg)
+    public open fun foldNamedArg(arg: NamedArg): NamedArg =
+        foldNamedArg(this, arg)
 
-    public open fun foldBareVariadic(variadic: BareVariadic): BareVariadic =
-        foldBareVariadic(this, variadic)
+    public open fun foldFnPtrVariadic(variadic: FnPtrVariadic): FnPtrVariadic =
+        foldFnPtrVariadic(this, variadic)
 
     public open fun foldTypeParen(ty: SynType.Paren): SynType.Paren =
         foldTypeParen(this, ty)
@@ -454,9 +466,6 @@ public open class Fold {
     public open fun foldTraitBound(bound: TypeParamBound.Trait): TypeParamBound.Trait =
         foldTraitBound(this, bound)
 
-    public open fun foldTraitBoundModifier(modifier: TraitBoundModifier): TraitBoundModifier =
-        foldTraitBoundModifier(this, modifier)
-
     public open fun foldBoundLifetimes(boundLifetimes: BoundLifetimes): BoundLifetimes =
         foldBoundLifetimes(this, boundLifetimes)
 
@@ -495,9 +504,6 @@ public open class Fold {
 
     public open fun foldField(field: Field): Field =
         foldField(this, field)
-
-    public open fun foldFieldMutability(fieldMutability: FieldMutability): FieldMutability =
-        foldFieldMutability(this, fieldMutability)
 
     public open fun foldFields(fields: Fields): Fields =
         foldFields(this, fields)
@@ -586,9 +592,6 @@ public open class Fold {
     public open fun foldStaticMutability(mutability: StaticMutability): StaticMutability =
         foldStaticMutability(this, mutability)
 
-    public open fun foldImplRestriction(restriction: ImplRestriction): ImplRestriction =
-        foldImplRestriction(this, restriction)
-
     public open fun foldModContent(modContent: ModContent): ModContent =
         foldModContent(this, modContent)
 
@@ -612,9 +615,6 @@ public open class Fold {
 
     public open fun foldQSelf(qself: QSelf): QSelf =
         foldQSelf(this, qself)
-
-    public open fun foldPathTrait(pathTrait: PathTrait): PathTrait =
-        foldPathTrait(this, pathTrait)
 
     public open fun foldTraitItem(item: TraitItem): TraitItem =
         foldTraitItem(this, item)
@@ -663,6 +663,9 @@ public open class Fold {
 
     public open fun foldWhereClause(whereClause: WhereClause): WhereClause =
         foldWhereClause(this, whereClause)
+
+    public open fun foldWhereClausePlacement(placement: WhereClausePlacement): WhereClausePlacement =
+        foldWhereClausePlacement(this, placement)
 
     public open fun foldWherePredicate(wherePredicate: WherePredicate): WherePredicate =
         foldWherePredicate(this, wherePredicate)
@@ -730,8 +733,8 @@ public fun foldType(f: Fold, t: SynType): SynType =
             f.foldTypeArray(t)
         }
 
-        is SynType.BareFn -> {
-            f.foldTypeBareFn(t)
+        is SynType.FnPtr -> {
+            f.foldTypeFnPtr(t)
         }
 
         is SynType.Group -> {
@@ -783,8 +786,7 @@ public fun foldType(f: Fold, t: SynType): SynType =
         }
 
         is SynType.Verbatim -> {
-            f.foldTokenStream(t.tokens)
-            t
+            t.copy(tokens = f.foldTokenStream(t.tokens))
         }
     }
 
@@ -798,6 +800,10 @@ public fun foldPat(f: Fold, p: Pat): Pat =
     when (p) {
         is Pat.Const -> {
             p.copy(attrs = f.foldAttributes(p.attrs), block = f.foldBlock(p.block))
+        }
+
+        is Pat.Guard -> {
+            f.foldPatGuard(p)
         }
 
         is Pat.Ident -> {
@@ -861,8 +867,7 @@ public fun foldPat(f: Fold, p: Pat): Pat =
         }
 
         is Pat.Verbatim -> {
-            f.foldTokenStream(p.tokens)
-            p
+            p.copy(tokens = f.foldTokenStream(p.tokens))
         }
     }
 
@@ -929,8 +934,7 @@ public fun foldItem(f: Fold, i: Item): Item =
         }
 
         is Item.Verbatim -> {
-            f.foldTokenStream(i.tokens)
-            i
+            i.copy(tokens = f.foldTokenStream(i.tokens))
         }
     }
 
@@ -1054,21 +1058,32 @@ public fun foldAttributes(f: Fold, attrs: List<Attribute>): List<Attribute> =
     attrs.mapTo(mutableListOf()) { f.foldAttribute(it) }
 
 public fun foldFile(f: Fold, file: File): File =
-    file.copy(attrs = f.foldAttributes(file.attrs), items = file.items.mapTo(mutableListOf()) { f.foldItem(it) })
+    file.copy(
+        frontmatter = file.frontmatter?.let { f.foldFrontmatter(it) },
+        attrs = f.foldAttributes(file.attrs),
+        items = file.items.mapTo(mutableListOf()) { f.foldItem(it) },
+    )
 
-public fun foldSignature(f: Fold, sig: Signature): Signature {
-    var result = sig
-    result =
-        result.copy(
-            abi = result.abi?.let { f.foldAbi(it) },
-            ident = f.foldIdent(result.ident),
-            generics = f.foldGenerics(result.generics),
-            inputs = result.inputs.copy({ f.foldFnArg(it) }, { it }),
-            variadic = result.variadic?.let { f.foldVariadic(it) },
-            output = f.foldReturnType(result.output),
-        )
-    return result
-}
+public fun foldFrontmatter(f: Fold, frontmatter: Frontmatter): Frontmatter =
+    frontmatter
+
+public fun foldSignature(f: Fold, sig: Signature): Signature =
+    sig.copy(
+        safety = f.foldSafety(sig.safety),
+        abi = sig.abi?.let { f.foldAbi(it) },
+        ident = f.foldIdent(sig.ident),
+        generics = f.foldGenerics(sig.generics),
+        inputs = sig.inputs.copy({ f.foldFnArg(it) }, { it }),
+        variadic = sig.variadic?.let { f.foldVariadic(it) },
+        output = f.foldReturnType(sig.output),
+    )
+
+public fun foldSafety(f: Fold, safety: Safety): Safety =
+    when (safety) {
+        is Safety.Safe -> safety
+        is Safety.Unsafe -> safety
+        Safety.Default -> safety
+    }
 
 public fun foldAbi(f: Fold, a: Abi): Abi =
     a.copy(name = a.name?.let { f.foldLitStr(it) })
@@ -1085,17 +1100,32 @@ public fun foldFnArg(f: Fold, arg: FnArg): FnArg =
         is FnArg.Typed -> arg.copy(patType = f.foldPatType(arg.patType))
     }
 
-public fun foldReceiver(f: Fold, receiver: FnArg.Receiver): FnArg.Receiver {
-    val reference = receiver.reference
-    return receiver.copy(
+public fun foldReceiver(f: Fold, receiver: FnArg.Receiver): FnArg.Receiver =
+    receiver.copy(
         attrs = f.foldAttributes(receiver.attrs),
-        reference = reference?.copy(lifetime = reference.lifetime?.let { f.foldLifetime(it) }),
-        `type` = f.foldType(receiver.type),
+        kind = f.foldReceiverKind(receiver.kind),
     )
-}
+
+public fun foldReceiverKind(f: Fold, kind: ReceiverKind): ReceiverKind =
+    when (kind) {
+        ReceiverKind.Value -> kind
+        is ReceiverKind.Reference -> kind.copy(lifetime = kind.lifetime?.let { f.foldLifetime(it) })
+        is ReceiverKind.Typed -> kind.copy(ty = f.foldType(kind.ty))
+    }
 
 public fun foldPatType(f: Fold, patType: PatType): PatType =
-    patType.copy(pat = f.foldPat(patType.pat), ty = f.foldType(patType.ty))
+    patType.copy(
+        attrs = f.foldAttributes(patType.attrs),
+        pat = f.foldPat(patType.pat),
+        ty = f.foldType(patType.ty),
+    )
+
+public fun foldPatGuard(f: Fold, pat: Pat.Guard): Pat.Guard =
+    pat.copy(
+        attrs = f.foldAttributes(pat.attrs),
+        pat = f.foldPat(pat.pat),
+        guard = f.foldExpr(pat.guard),
+    )
 
 public fun foldPatIdent(f: Fold, patIdent: Pat.Ident): Pat.Ident =
     patIdent.copy(
@@ -1154,40 +1184,74 @@ public fun foldPatWild(f: Fold, pat: Pat.Wild): Pat.Wild =
     pat.copy(attrs = f.foldAttributes(pat.attrs))
 
 public fun foldTypePath(f: Fold, typePath: SynType.Path): SynType.Path =
-    typePath.copy(qself = typePath.qself?.let { f.foldQself(it) }, path = f.foldPath(typePath.path))
+    typePath.copy(
+        attrs = f.foldAttributes(typePath.attrs),
+        qself = typePath.qself?.let { f.foldQself(it) },
+        path = f.foldPath(typePath.path),
+    )
 
 public fun foldTypeArray(f: Fold, ty: SynType.Array): SynType.Array =
-    ty.copy(elem = f.foldType(ty.elem), len = f.foldExpr(ty.len))
+    ty.copy(
+        attrs = f.foldAttributes(ty.attrs),
+        elem = f.foldType(ty.elem),
+        len = f.foldExpr(ty.len),
+    )
 
 public fun foldTypeGroup(f: Fold, ty: SynType.Group): SynType.Group =
-    ty.copy(elem = f.foldType(ty.elem))
+    ty.copy(
+        attrs = f.foldAttributes(ty.attrs),
+        elem = f.foldType(ty.elem),
+    )
 
 public fun foldTypeReference(f: Fold, ty: SynType.Reference): SynType.Reference =
-    ty.copy(lifetime = ty.lifetime?.let { f.foldLifetime(it) }, elem = f.foldType(ty.elem))
+    ty.copy(
+        attrs = f.foldAttributes(ty.attrs),
+        lifetime = ty.lifetime?.let { f.foldLifetime(it) },
+        elem = f.foldType(ty.elem),
+    )
 
 public fun foldTypeImplTrait(f: Fold, ty: SynType.ImplTrait): SynType.ImplTrait =
-    ty.copy(bounds = ty.bounds.copy({ f.foldTypeParamBound(it) }, { it }))
+    ty.copy(
+        attrs = f.foldAttributes(ty.attrs),
+        bounds = ty.bounds.copy({ f.foldTypeParamBound(it) }, { it }),
+    )
 
 public fun foldTypeInfer(f: Fold, ty: SynType.Infer): SynType.Infer =
-    ty
+    ty.copy(attrs = f.foldAttributes(ty.attrs))
 
 public fun foldTypeMacro(f: Fold, ty: SynType.Macro): SynType.Macro =
-    ty.copy(mac = f.foldMacro(ty.mac))
+    ty.copy(
+        attrs = f.foldAttributes(ty.attrs),
+        mac = f.foldMacro(ty.mac),
+    )
 
 public fun foldTypeNever(f: Fold, ty: SynType.Never): SynType.Never =
-    ty
+    ty.copy(attrs = f.foldAttributes(ty.attrs))
 
 public fun foldTypePtr(f: Fold, ty: SynType.Ptr): SynType.Ptr =
-    ty.copy(elem = f.foldType(ty.elem))
+    ty.copy(
+        attrs = f.foldAttributes(ty.attrs),
+        mutability = f.foldPointerMutability(ty.mutability),
+        elem = f.foldType(ty.elem),
+    )
 
 public fun foldTypeSlice(f: Fold, ty: SynType.Slice): SynType.Slice =
-    ty.copy(elem = f.foldType(ty.elem))
+    ty.copy(
+        attrs = f.foldAttributes(ty.attrs),
+        elem = f.foldType(ty.elem),
+    )
 
 public fun foldTypeTraitObject(f: Fold, ty: SynType.TraitObject): SynType.TraitObject =
-    ty.copy(bounds = ty.bounds.copy({ f.foldTypeParamBound(it) }, { it }))
+    ty.copy(
+        attrs = f.foldAttributes(ty.attrs),
+        bounds = ty.bounds.copy({ f.foldTypeParamBound(it) }, { it }),
+    )
 
 public fun foldTypeTuple(f: Fold, ty: SynType.Tuple): SynType.Tuple =
-    ty.copy(elems = ty.elems.copy({ f.foldType(it) }, { it }))
+    ty.copy(
+        attrs = f.foldAttributes(ty.attrs),
+        elems = ty.elems.copy({ f.foldType(it) }, { it }),
+    )
 
 public fun foldPointerMutability(f: Fold, mutability: PointerMutability): PointerMutability =
     when (mutability) {
@@ -1195,16 +1259,17 @@ public fun foldPointerMutability(f: Fold, mutability: PointerMutability): Pointe
         is PointerMutability.Mut -> mutability
     }
 
-public fun foldTypeBareFn(f: Fold, ty: SynType.BareFn): SynType.BareFn =
+public fun foldTypeFnPtr(f: Fold, ty: SynType.FnPtr): SynType.FnPtr =
     ty.copy(
+        attrs = f.foldAttributes(ty.attrs),
         lifetimes = ty.lifetimes?.let { f.foldBoundLifetimes(it) },
         abi = ty.abi?.let { f.foldAbi(it) },
-        inputs = ty.inputs.copy({ f.foldBareFnArg(it) }, { it }),
-        variadic = ty.variadic?.let { f.foldBareVariadic(it) },
+        inputs = ty.inputs.copy({ f.foldNamedArg(it) }, { it }),
+        variadic = ty.variadic?.let { f.foldFnPtrVariadic(it) },
         output = f.foldReturnType(ty.output),
     )
 
-public fun foldBareFnArg(f: Fold, arg: BareFnArg): BareFnArg {
+public fun foldNamedArg(f: Fold, arg: NamedArg): NamedArg {
     val name = arg.name
     return arg.copy(
         attrs = f.foldAttributes(arg.attrs),
@@ -1213,7 +1278,7 @@ public fun foldBareFnArg(f: Fold, arg: BareFnArg): BareFnArg {
     )
 }
 
-public fun foldBareVariadic(f: Fold, variadic: BareVariadic): BareVariadic {
+public fun foldFnPtrVariadic(f: Fold, variadic: FnPtrVariadic): FnPtrVariadic {
     val name = variadic.name
     return variadic.copy(
         attrs = f.foldAttributes(variadic.attrs),
@@ -1222,7 +1287,10 @@ public fun foldBareVariadic(f: Fold, variadic: BareVariadic): BareVariadic {
 }
 
 public fun foldTypeParen(f: Fold, ty: SynType.Paren): SynType.Paren =
-    ty.copy(elem = f.foldType(ty.elem))
+    ty.copy(
+        attrs = f.foldAttributes(ty.attrs),
+        elem = f.foldType(ty.elem),
+    )
 
 public fun foldExprArray(f: Fold, expr: Expr.Array): Expr.Array =
     expr.copy(
@@ -1555,7 +1623,7 @@ public fun foldAngleBracketedGenericArguments(f: Fold, pathArgs: PathArguments.A
 
 public fun foldParenthesizedGenericArguments(f: Fold, pathArgs: PathArguments.Parenthesized): PathArguments.Parenthesized =
     pathArgs.copy(
-        inputs = pathArgs.inputs.copy({ f.foldType(it) }, { it }),
+        inputs = pathArgs.inputs.copy({ f.foldNamedArg(it) }, { it }),
         output = f.foldReturnType(pathArgs.output),
     )
 
@@ -1605,20 +1673,15 @@ public fun foldTypeParamBound(f: Fold, bound: TypeParamBound): TypeParamBound =
         }
 
         is TypeParamBound.Verbatim -> {
-            f.foldTokenStream(bound.tokens)
-            bound
+            bound.copy(tokens = f.foldTokenStream(bound.tokens))
         }
     }
 
 public fun foldTraitBound(f: Fold, bound: TypeParamBound.Trait): TypeParamBound.Trait =
     bound.copy(
-        modifier = f.foldTraitBoundModifier(bound.modifier),
         lifetimes = bound.lifetimes?.let { f.foldBoundLifetimes(it) },
         path = f.foldPath(bound.path),
     )
-
-public fun foldTraitBoundModifier(f: Fold, modifier: TraitBoundModifier): TraitBoundModifier =
-    modifier
 
 public fun foldBoundLifetimes(f: Fold, boundLifetimes: BoundLifetimes): BoundLifetimes =
     boundLifetimes.copy(lifetimes = boundLifetimes.lifetimes.copy({ f.foldGenericParam(it) }, { it }))
@@ -1635,15 +1698,12 @@ public fun foldPreciseCapture(f: Fold, preciseCapture: TypeParamBound.PreciseCap
 public fun foldPathSegment(f: Fold, segment: PathSegment): PathSegment =
     segment.copy(ident = f.foldIdent(segment.ident), arguments = f.foldPathArguments(segment.arguments))
 
-public fun foldArm(f: Fold, arm: Arm): Arm {
-    val guard = arm.guard
-    return arm.copy(
+public fun foldArm(f: Fold, arm: Arm): Arm =
+    arm.copy(
         attrs = f.foldAttributes(arm.attrs),
         pat = f.foldPat(arm.pat),
-        guard = guard?.copy(expr = f.foldExpr(guard.expr)),
         body = f.foldExpr(arm.body),
     )
-}
 
 public fun foldElseExpr(f: Fold, elseExpr: ElseExpr): ElseExpr =
     elseExpr.copy(expr = f.foldExpr(elseExpr.expr))
@@ -1674,7 +1734,7 @@ public fun foldConstParam(f: Fold, param: GenericParam.ConstParam): GenericParam
         attrs = f.foldAttributes(param.attrs),
         ident = f.foldIdent(param.ident),
         ty = f.foldType(param.ty),
-        default = param.default?.let { f.foldExpr(it) },
+        default = param.default?.let { it.copy(expr = f.foldExpr(it.expr)) },
     )
 
 public fun foldLifetimeParam(f: Fold, param: GenericParam.LifetimeParam): GenericParam.LifetimeParam =
@@ -1689,20 +1749,17 @@ public fun foldTypeParam(f: Fold, param: GenericParam.TypeParam): GenericParam.T
         attrs = f.foldAttributes(param.attrs),
         ident = f.foldIdent(param.ident),
         bounds = param.bounds.copy({ f.foldTypeParamBound(it) }, { it }),
-        default = param.default?.let { f.foldType(it) },
+        default = param.default?.let { it.copy(type = f.foldType(it.type)) },
     )
 
 public fun foldField(f: Fold, field: Field): Field =
     field.copy(
         attrs = f.foldAttributes(field.attrs),
         vis = f.foldVisibility(field.vis),
-        mutability = f.foldFieldMutability(field.mutability),
         ident = field.ident?.let { f.foldIdent(it) },
         ty = f.foldType(field.ty),
+        default = field.default?.let { it.copy(expr = f.foldExpr(it.expr)) },
     )
-
-public fun foldFieldMutability(f: Fold, fieldMutability: FieldMutability): FieldMutability =
-    fieldMutability
 
 public fun foldFields(f: Fold, fields: Fields): Fields =
     when (fields) {
@@ -1736,8 +1793,7 @@ public fun foldImplItem(f: Fold, item: ImplItem): ImplItem =
         }
 
         is ImplItem.Verbatim -> {
-            f.foldTokenStream(item.tokens)
-            item
+            item.copy(tokens = f.foldTokenStream(item.tokens))
         }
     }
 
@@ -1764,6 +1820,7 @@ public fun foldForeignItemStatic(f: Fold, item: ForeignItem.Static): ForeignItem
     item.copy(
         attrs = f.foldAttributes(item.attrs),
         vis = f.foldVisibility(item.vis),
+        safety = f.foldSafety(item.safety),
         mutability = f.foldStaticMutability(item.mutability),
         ident = f.foldIdent(item.ident),
         ty = f.foldType(item.ty),
@@ -1812,8 +1869,9 @@ public fun foldItemConst(f: Fold, item: Item.Const): Item.Const =
         attrs = f.foldAttributes(item.attrs),
         vis = f.foldVisibility(item.vis),
         ident = f.foldIdent(item.ident),
+        generics = f.foldGenerics(item.generics),
         ty = f.foldType(item.ty),
-        expr = item.expr?.let { f.foldExpr(it) },
+        expr = f.foldExpr(item.expr),
     )
 
 public fun foldItemEnum(f: Fold, item: Item.Enum): Item.Enum =
@@ -1838,7 +1896,7 @@ public fun foldItemFn(f: Fold, item: Item.Fn): Item.Fn =
         attrs = f.foldAttributes(item.attrs),
         vis = f.foldVisibility(item.vis),
         sig = f.foldSignature(item.sig),
-        block = item.block?.let { f.foldBlock(it) },
+        block = f.foldBlock(item.block),
     )
 
 public fun foldItemForeignMod(f: Fold, item: Item.ForeignMod): Item.ForeignMod =
@@ -1852,7 +1910,7 @@ public fun foldItemImpl(f: Fold, item: Item.Impl): Item.Impl =
     item.copy(
         attrs = f.foldAttributes(item.attrs),
         generics = f.foldGenerics(item.generics),
-        traitPath = item.traitPath?.let { f.foldPathTrait(it) },
+        traitPath = item.traitPath?.let { it.copy(path = f.foldPath(it.path)) },
         selfType = f.foldType(item.selfType),
         items = item.items.mapTo(mutableListOf()) { f.foldImplItem(it) },
     )
@@ -1897,7 +1955,6 @@ public fun foldItemTrait(f: Fold, item: Item.Trait): Item.Trait =
         vis = f.foldVisibility(item.vis),
         ident = f.foldIdent(item.ident),
         generics = f.foldGenerics(item.generics),
-        restriction = item.restriction?.let { f.foldImplRestriction(it) },
         supertraits = item.supertraits.copy({ f.foldTypeParamBound(it) }, { it }),
         items = item.items.mapTo(mutableListOf()) { f.foldTraitItem(it) },
     )
@@ -1918,6 +1975,7 @@ public fun foldItemType(f: Fold, item: Item.ItemType): Item.ItemType =
         ident = f.foldIdent(item.ident),
         generics = f.foldGenerics(item.generics),
         ty = f.foldType(item.ty),
+        whereClausePlacement = f.foldWhereClausePlacement(item.whereClausePlacement),
     )
 
 public fun foldItemUnion(f: Fold, item: Item.Union): Item.Union =
@@ -1938,9 +1996,6 @@ public fun foldItemUse(f: Fold, item: Item.Use): Item.Use =
 
 public fun foldStaticMutability(f: Fold, mutability: StaticMutability): StaticMutability =
     mutability
-
-public fun foldImplRestriction(f: Fold, restriction: ImplRestriction): ImplRestriction =
-    restriction
 
 public fun foldModContent(f: Fold, modContent: ModContent): ModContent =
     when (modContent) {
@@ -1979,9 +2034,6 @@ public fun foldQself(f: Fold, qself: QSelf): QSelf =
 public fun foldQSelf(f: Fold, qself: QSelf): QSelf =
     qself.copy(ty = f.foldType(qself.ty))
 
-public fun foldPathTrait(f: Fold, pathTrait: PathTrait): PathTrait =
-    pathTrait.copy(path = f.foldPath(pathTrait.path))
-
 public fun foldTraitItem(f: Fold, item: TraitItem): TraitItem =
     when (item) {
         is TraitItem.Const -> {
@@ -2001,8 +2053,7 @@ public fun foldTraitItem(f: Fold, item: TraitItem): TraitItem =
         }
 
         is TraitItem.Verbatim -> {
-            f.foldTokenStream(item.tokens)
-            item
+            item.copy(tokens = f.foldTokenStream(item.tokens))
         }
     }
 
@@ -2115,6 +2166,12 @@ public fun foldVisRestricted(f: Fold, visibility: Visibility.Restricted): Visibi
 public fun foldWhereClause(f: Fold, whereClause: WhereClause): WhereClause =
     whereClause.copy(predicates = whereClause.predicates.copy({ f.foldWherePredicate(it) }, { it }))
 
+public fun foldWhereClausePlacement(f: Fold, placement: WhereClausePlacement): WhereClausePlacement =
+    when (placement) {
+        WhereClausePlacement.Early -> placement
+        WhereClausePlacement.Late -> placement
+    }
+
 public fun foldWherePredicate(f: Fold, wherePredicate: WherePredicate): WherePredicate =
     when (wherePredicate) {
         is WherePredicate.LifetimePredicate -> f.foldPredicateLifetime(wherePredicate)
@@ -2123,12 +2180,14 @@ public fun foldWherePredicate(f: Fold, wherePredicate: WherePredicate): WherePre
 
 public fun foldPredicateLifetime(f: Fold, predicate: WherePredicate.LifetimePredicate): WherePredicate.LifetimePredicate =
     predicate.copy(
+        attrs = f.foldAttributes(predicate.attrs),
         lifetime = f.foldLifetime(predicate.lifetime),
         bounds = predicate.bounds.copy({ f.foldLifetime(it) }, { it }),
     )
 
 public fun foldPredicateType(f: Fold, predicate: WherePredicate.TypePredicate): WherePredicate.TypePredicate =
     predicate.copy(
+        attrs = f.foldAttributes(predicate.attrs),
         lifetimes = predicate.lifetimes?.let { f.foldBoundLifetimes(it) },
         boundedTy = f.foldType(predicate.boundedTy),
         bounds = predicate.bounds.copy({ f.foldTypeParamBound(it) }, { it }),

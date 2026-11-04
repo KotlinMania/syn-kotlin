@@ -4,6 +4,8 @@ package io.github.kotlinmania.syn
 import io.github.kotlinmania.procmacro2.Delimiter
 import io.github.kotlinmania.procmacro2.Group
 import io.github.kotlinmania.procmacro2.Ident
+import io.github.kotlinmania.procmacro2.Punct
+import io.github.kotlinmania.procmacro2.Spacing
 import io.github.kotlinmania.procmacro2.Span
 import io.github.kotlinmania.procmacro2.TokenStream
 import io.github.kotlinmania.procmacro2.TokenTree
@@ -118,9 +120,7 @@ class StmtTest {
         assertTrue(fn.sig.asyncness != null)
         assertEquals("f", fn.sig.ident.toString())
         assertEquals(ReturnType.Default, fn.sig.output)
-        val block = fn.block
-        assertTrue(block != null)
-        assertEquals(0, block.stmts.size)
+        assertEquals(0, fn.block.stmts.size)
     }
 
     @Test
@@ -187,7 +187,6 @@ class StmtTest {
         val fn = assertIs<Item.Fn>(itemStmt.item)
         assertEquals("main", fn.sig.ident.toString())
         val block = fn.block
-        assertTrue(block != null)
         assertEquals(4, block.stmts.size)
 
         val macroRulesStmt = assertIs<Stmt.ItemStmt>(block.stmts[0])
@@ -255,5 +254,39 @@ class StmtTest {
         val loopStmt = assertIs<Stmt.ExprStmt>(parseStr(StmtParse::parse, "loop {}").getOrThrow())
         assertIs<Expr.Loop>(loopStmt.expr)
         assertNull(loopStmt.semiToken)
+    }
+
+    @Test
+    fun testInterpolatedLifetimeAtStatementStart() {
+        val tokens =
+            TokenStream.fromTokenTrees(
+                listOf(
+                    TokenTree.Group(
+                        Group(
+                            Delimiter.None,
+                            TokenStream.fromTokenTrees(
+                                listOf(
+                                    TokenTree.Punct(Punct('\'', Spacing.Joint, Span.callSite())),
+                                    TokenTree.Ident(Ident.new("a", Span.callSite())),
+                                ),
+                            ),
+                        ),
+                    ),
+                    TokenTree.Punct(Punct(':', Spacing.Joint, Span.callSite())),
+                    TokenTree.Ident(Ident.new("loop", Span.callSite())),
+                    TokenTree.Group(Group(Delimiter.Brace, TokenStream.new())),
+                ),
+            )
+        val stmt = assertIs<Stmt.ExprStmt>(parse2(StmtParse::parse, tokens).getOrThrow())
+        assertNull(stmt.semiToken)
+        val loopExpr = assertIs<Expr.Loop>(stmt.expr)
+        assertEquals(
+            "a",
+            loopExpr.label
+                ?.name
+                ?.ident
+                ?.toString(),
+        )
+        assertTrue(loopExpr.body.stmts.isEmpty())
     }
 }

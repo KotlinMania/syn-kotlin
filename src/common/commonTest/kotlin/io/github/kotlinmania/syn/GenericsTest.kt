@@ -46,8 +46,8 @@ class GenericsTest {
         assertEquals("T", t.ident.toString())
         assertNotNull(t.colonToken)
         assertEquals("'a", assertIs<TypeParamBound.LifetimeBound>(t.bounds.toList().single()).lifetime.toString())
-        assertNotNull(t.eqToken)
-        assertIs<SynType.Tuple>(t.default)
+        val tDefault = assertNotNull(t.default)
+        assertIs<SynType.Tuple>(tDefault.type)
 
         val whereClause = assertNotNull(generics.whereClause)
         val predicate = assertIs<WherePredicate.TypePredicate>(whereClause.predicates.toList().single())
@@ -62,7 +62,6 @@ class GenericsTest {
         val implType = assertIs<GenericParam.TypeParam>(implParams[2])
         assertEquals("T", implType.ident.toString())
         assertNotNull(implType.colonToken)
-        assertNull(implType.eqToken)
         assertNull(implType.default)
 
         val typeParams = split.typeGenerics.params.toList()
@@ -92,11 +91,11 @@ class GenericsTest {
         assertEquals("'_", inferred.lifetime.toString())
 
         val debug = assertIs<TypeParamBound.Trait>(parseStr(TypeParamBoundParse::parse, "Debug").getOrThrow())
-        assertIs<TraitBoundModifier.None>(debug.modifier)
+        assertNull(debug.maybe)
         assertEquals("Debug", debug.path.toString())
 
         val sized = assertIs<TypeParamBound.Trait>(parseStr(TypeParamBoundParse::parse, "?Sized").getOrThrow())
-        assertIs<TraitBoundModifier.Maybe>(sized.modifier)
+        assertNotNull(sized.maybe)
         assertEquals("Sized", sized.path.toString())
 
         val bounded = assertIs<TypeParamBound.Trait>(parseStr(TypeParamBoundParse::parse, "for<'a> Trait").getOrThrow())

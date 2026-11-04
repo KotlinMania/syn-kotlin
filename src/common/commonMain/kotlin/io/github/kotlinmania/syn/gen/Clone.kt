@@ -9,12 +9,11 @@ import io.github.kotlinmania.syn.AssocConst
 import io.github.kotlinmania.syn.AssocType
 import io.github.kotlinmania.syn.AttrStyle
 import io.github.kotlinmania.syn.Attribute
-import io.github.kotlinmania.syn.BareFnArg
-import io.github.kotlinmania.syn.BareVariadic
 import io.github.kotlinmania.syn.BinOp
 import io.github.kotlinmania.syn.Block
 import io.github.kotlinmania.syn.BoundLifetimes
 import io.github.kotlinmania.syn.CapturedParam
+import io.github.kotlinmania.syn.ConstModifiers
 import io.github.kotlinmania.syn.Constraint
 import io.github.kotlinmania.syn.Data
 import io.github.kotlinmania.syn.DataEnum
@@ -26,7 +25,6 @@ import io.github.kotlinmania.syn.EqExpr
 import io.github.kotlinmania.syn.EqSynType
 import io.github.kotlinmania.syn.Expr
 import io.github.kotlinmania.syn.Field
-import io.github.kotlinmania.syn.FieldMutability
 import io.github.kotlinmania.syn.FieldPat
 import io.github.kotlinmania.syn.FieldValue
 import io.github.kotlinmania.syn.Fields
@@ -34,6 +32,8 @@ import io.github.kotlinmania.syn.FieldsNamed
 import io.github.kotlinmania.syn.FieldsUnnamed
 import io.github.kotlinmania.syn.File
 import io.github.kotlinmania.syn.FnArg
+import io.github.kotlinmania.syn.FnModifiers
+import io.github.kotlinmania.syn.FnPtrVariadic
 import io.github.kotlinmania.syn.ForeignItem
 import io.github.kotlinmania.syn.GenericArgument
 import io.github.kotlinmania.syn.GenericParam
@@ -41,7 +41,7 @@ import io.github.kotlinmania.syn.Generics
 import io.github.kotlinmania.syn.IdentColon
 import io.github.kotlinmania.syn.IfExpr
 import io.github.kotlinmania.syn.ImplItem
-import io.github.kotlinmania.syn.ImplRestriction
+import io.github.kotlinmania.syn.ImplModifiers
 import io.github.kotlinmania.syn.Index
 import io.github.kotlinmania.syn.Item
 import io.github.kotlinmania.syn.Label
@@ -52,24 +52,28 @@ import io.github.kotlinmania.syn.MacroDelimiter
 import io.github.kotlinmania.syn.Member
 import io.github.kotlinmania.syn.Meta
 import io.github.kotlinmania.syn.ModContent
+import io.github.kotlinmania.syn.NamedArg
 import io.github.kotlinmania.syn.Pat
 import io.github.kotlinmania.syn.PatColon
 import io.github.kotlinmania.syn.PatRest
 import io.github.kotlinmania.syn.PatType
 import io.github.kotlinmania.syn.Path
 import io.github.kotlinmania.syn.PathArguments
+import io.github.kotlinmania.syn.PathForPair
 import io.github.kotlinmania.syn.PathSegment
-import io.github.kotlinmania.syn.PathTrait
 import io.github.kotlinmania.syn.PointerMutability
 import io.github.kotlinmania.syn.QSelf
 import io.github.kotlinmania.syn.RangeLimits
+import io.github.kotlinmania.syn.ReceiverKind
 import io.github.kotlinmania.syn.ReturnType
+import io.github.kotlinmania.syn.Safety
 import io.github.kotlinmania.syn.Signature
 import io.github.kotlinmania.syn.StaticMutability
 import io.github.kotlinmania.syn.Stmt
 import io.github.kotlinmania.syn.SynType
-import io.github.kotlinmania.syn.TraitBoundModifier
 import io.github.kotlinmania.syn.TraitItem
+import io.github.kotlinmania.syn.TraitModifiers
+import io.github.kotlinmania.syn.TypeModifiers
 import io.github.kotlinmania.syn.TypeParamBound
 import io.github.kotlinmania.syn.UnOp
 import io.github.kotlinmania.syn.UseTree
@@ -77,6 +81,7 @@ import io.github.kotlinmania.syn.Variadic
 import io.github.kotlinmania.syn.Variant
 import io.github.kotlinmania.syn.Visibility
 import io.github.kotlinmania.syn.WhereClause
+import io.github.kotlinmania.syn.WhereClausePlacement
 import io.github.kotlinmania.syn.WherePredicate
 import io.github.kotlinmania.syn.cloneLiteral
 import io.github.kotlinmania.syn.copy
@@ -91,7 +96,7 @@ public fun PathArguments.AngleBracketed.clone(): PathArguments.AngleBracketed =
     PathArguments.AngleBracketed(colon2Token, ltToken, args.copy({ it.clone() }, { it }), gtToken)
 
 public fun Arm.clone(): Arm =
-    Arm(attrs.cloneAttrs(), pat.clone(), guard?.let { it.clone() }, fatArrowToken, body.clone(), comma)
+    Arm(attrs.cloneAttrs(), pat.clone(), fatArrowToken, body.clone(), comma)
 
 public fun AssocConst.clone(): AssocConst =
     AssocConst(ident.copy(), generics?.let { it.clone() }, eqToken, value.clone())
@@ -104,8 +109,8 @@ public fun AttrStyle.clone(): AttrStyle = this
 public fun Attribute.clone(): Attribute =
     Attribute(poundToken, style.clone(), bracketToken, meta.clone())
 
-public fun BareFnArg.clone(): BareFnArg =
-    BareFnArg(attrs.cloneAttrs(), name?.clone(), ty.clone())
+public fun NamedArg.clone(): NamedArg =
+    NamedArg(attrs.cloneAttrs(), name?.clone(), ty.clone())
 
 public fun BinOp.clone(): BinOp =
     when (this) {
@@ -150,6 +155,9 @@ public fun CapturedParam.clone(): CapturedParam =
         is CapturedParam.Lifetime -> CapturedParam.Lifetime(lifetime.clone())
         is CapturedParam.Ident -> CapturedParam.Ident(ident.copy())
     }
+
+public fun ConstModifiers.clone(): ConstModifiers =
+    ConstModifiers(defaultness)
 
 public fun Constraint.clone(): Constraint =
     Constraint(ident.copy(), generics?.let { it.clone() }, colonToken, bounds.copy({ it.clone() }, { it }))
@@ -224,7 +232,7 @@ public fun Expr.Assign.clone(): Expr.Assign =
     Expr.Assign(attrs.cloneAttrs(), left.clone(), eqToken, right.clone())
 
 public fun Expr.Async.clone(): Expr.Async =
-    Expr.Async(attrs.cloneAttrs(), asyncToken, capture, block.clone())
+    Expr.Async(attrs.cloneAttrs(), asyncToken, capture, modifiers.clone(), block.clone())
 
 public fun Expr.Await.clone(): Expr.Await =
     Expr.Await(attrs.cloneAttrs(), base.clone(), dotToken, awaitToken)
@@ -245,10 +253,22 @@ public fun Expr.Cast.clone(): Expr.Cast =
     Expr.Cast(attrs.cloneAttrs(), expr.clone(), asToken, ty.clone())
 
 public fun Expr.Closure.clone(): Expr.Closure =
-    Expr.Closure(attrs.cloneAttrs(), lifetimes?.clone(), constness, movability, asyncness, capture, or1Token, inputs.copy({ it.clone() }, { it }), or2Token, output.clone(), body.clone())
+    Expr.Closure(
+        attrs.cloneAttrs(),
+        lifetimes?.clone(),
+        modifiers.clone(),
+        constness,
+        asyncness,
+        capture,
+        inputsBegin,
+        inputs.copy({ it.clone() }, { it }),
+        inputsEnd,
+        output.clone(),
+        body.clone(),
+    )
 
 public fun Expr.Const.clone(): Expr.Const =
-    Expr.Const(attrs.cloneAttrs(), constToken, block.clone())
+    Expr.Const(attrs.cloneAttrs(), constToken, modifiers.clone(), block.clone())
 
 public fun Expr.Continue.clone(): Expr.Continue =
     Expr.Continue(attrs.cloneAttrs(), continueToken, label?.clone())
@@ -317,7 +337,7 @@ public fun Expr.Try.clone(): Expr.Try =
     Expr.Try(attrs.cloneAttrs(), expr.clone(), questionToken)
 
 public fun Expr.TryBlock.clone(): Expr.TryBlock =
-    Expr.TryBlock(attrs.cloneAttrs(), tryToken, block.clone())
+    Expr.TryBlock(attrs.cloneAttrs(), tryToken, modifiers.clone(), block.clone())
 
 public fun Expr.Tuple.clone(): Expr.Tuple =
     Expr.Tuple(attrs.cloneAttrs(), parenToken, elems.copy({ it.clone() }, { it }))
@@ -338,9 +358,7 @@ public fun Expr.Yield.clone(): Expr.Yield =
     Expr.Yield(attrs.cloneAttrs(), yieldToken, expr?.clone())
 
 public fun Field.clone(): Field =
-    Field(attrs.cloneAttrs(), vis.clone(), mutability.clone(), ident?.let { it.copy() }, colonToken, ty.clone())
-
-public fun FieldMutability.clone(): FieldMutability = this
+    Field(attrs.cloneAttrs(), vis.clone(), modifiers.clone(), ident?.let { it.copy() }, colonToken, ty.clone(), default?.clone())
 
 public fun FieldPat.clone(): FieldPat =
     FieldPat(member.clone(), colonToken, pat.clone(), attrs.cloneAttrs())
@@ -362,7 +380,7 @@ public fun FieldsUnnamed.clone(): FieldsUnnamed =
     FieldsUnnamed(parenToken, unnamed.copy({ it.clone() }, { it }))
 
 public fun File.clone(): File =
-    File(shebang, attrs.cloneAttrs(), items.cloneItems())
+    File(shebang, frontmatter?.clone(), attrs.cloneAttrs(), items.cloneItems())
 
 public fun FnArg.clone(): FnArg =
     when (this) {
@@ -372,6 +390,12 @@ public fun FnArg.clone(): FnArg =
 
 public fun FnArg.Typed.clone(): FnArg.Typed =
     FnArg.Typed(patType.clone())
+
+public fun FnModifiers.clone(): FnModifiers =
+    FnModifiers(defaultness)
+
+public fun FnPtrVariadic.clone(): FnPtrVariadic =
+    FnPtrVariadic(attrs.cloneAttrs(), name?.clone(), dots, comma)
 
 public fun ForeignItem.clone(): ForeignItem =
     when (this) {
@@ -383,16 +407,16 @@ public fun ForeignItem.clone(): ForeignItem =
     }
 
 public fun ForeignItem.Fn.clone(): ForeignItem.Fn =
-    ForeignItem.Fn(attrs.cloneAttrs(), vis.clone(), sig.clone(), semiToken)
+    ForeignItem.Fn(attrs.cloneAttrs(), vis.clone(), modifiers.clone(), sig.clone(), semiToken)
 
 public fun ForeignItem.Macro.clone(): ForeignItem.Macro =
     ForeignItem.Macro(attrs.cloneAttrs(), mac.clone(), semiToken)
 
 public fun ForeignItem.Static.clone(): ForeignItem.Static =
-    ForeignItem.Static(attrs.cloneAttrs(), vis.clone(), staticToken, mutability, ident.copy(), colonToken, ty.clone(), semiToken)
+    ForeignItem.Static(attrs.cloneAttrs(), vis.clone(), safety.clone(), staticToken, mutability.clone(), ident.copy(), colonToken, ty.clone(), semiToken)
 
 public fun ForeignItem.ItemType.clone(): ForeignItem.ItemType =
-    ForeignItem.ItemType(attrs.cloneAttrs(), vis.clone(), typeToken, ident.copy(), generics.clone(), semiToken)
+    ForeignItem.ItemType(attrs.cloneAttrs(), vis.clone(), modifiers.clone(), typeToken, ident.copy(), generics.clone(), semiToken)
 
 public fun ForeignItem.Verbatim.clone(): ForeignItem.Verbatim =
     ForeignItem.Verbatim(tokens.clone())
@@ -415,7 +439,7 @@ public fun GenericParam.clone(): GenericParam =
     }
 
 public fun GenericParam.ConstParam.clone(): GenericParam.ConstParam =
-    GenericParam.ConstParam(attrs.cloneAttrs(), constToken, ident.copy(), colonToken, ty.clone(), eqToken, default?.clone())
+    GenericParam.ConstParam(attrs.cloneAttrs(), constToken, ident.copy(), colonToken, ty.clone(), default?.clone())
 
 public fun Generics.clone(): Generics =
     Generics(ltToken, params.copy({ it.clone() }, { it }), gtToken, whereClause?.clone())
@@ -430,21 +454,22 @@ public fun ImplItem.clone(): ImplItem =
     }
 
 public fun ImplItem.Const.clone(): ImplItem.Const =
-    ImplItem.Const(attrs.cloneAttrs(), vis.clone(), defaultness, constToken, ident.copy(), generics.clone(), colonToken, ty.clone(), eqToken, expr.clone(), semiToken)
+    ImplItem.Const(attrs.cloneAttrs(), vis.clone(), modifiers.clone(), constToken, ident.copy(), generics.clone(), colonToken, ty.clone(), eqToken, expr.clone(), semiToken)
 
 public fun ImplItem.Fn.clone(): ImplItem.Fn =
-    ImplItem.Fn(attrs.cloneAttrs(), vis.clone(), defaultness, sig.clone(), block.clone())
+    ImplItem.Fn(attrs.cloneAttrs(), vis.clone(), modifiers.clone(), sig.clone(), block.clone())
 
 public fun ImplItem.Macro.clone(): ImplItem.Macro =
     ImplItem.Macro(attrs.cloneAttrs(), mac.clone(), semiToken)
 
 public fun ImplItem.AssocType.clone(): ImplItem.AssocType =
-    ImplItem.AssocType(attrs.cloneAttrs(), vis.clone(), defaultness, typeToken, ident.copy(), generics.clone(), eqToken, ty.clone(), semiToken)
+    ImplItem.AssocType(attrs.cloneAttrs(), vis.clone(), modifiers.clone(), typeToken, ident.copy(), generics.clone(), eqToken, ty.clone(), semiToken)
 
 public fun ImplItem.Verbatim.clone(): ImplItem.Verbatim =
     ImplItem.Verbatim(tokens.clone())
 
-public fun ImplRestriction.clone(): ImplRestriction = this
+public fun ImplModifiers.clone(): ImplModifiers =
+    ImplModifiers(defaultness, polarity)
 
 public fun Index.clone(): Index =
     Index(index, span)
@@ -470,7 +495,7 @@ public fun Item.clone(): Item =
     }
 
 public fun Item.Const.clone(): Item.Const =
-    Item.Const(attrs.cloneAttrs(), vis.clone(), constToken, ident.copy(), colonToken, ty.clone(), eqToken, expr?.clone(), semiToken)
+    Item.Const(attrs.cloneAttrs(), vis.clone(), modifiers.clone(), constToken, ident.copy(), generics.clone(), colonToken, ty.clone(), eqToken, expr.clone(), semiToken)
 
 public fun Item.Enum.clone(): Item.Enum =
     Item.Enum(attrs.cloneAttrs(), vis.clone(), enumToken, ident.copy(), generics.clone(), braceToken, variants.copy({ it.clone() }, { it }))
@@ -479,13 +504,13 @@ public fun Item.ExternCrate.clone(): Item.ExternCrate =
     Item.ExternCrate(attrs.cloneAttrs(), vis.clone(), externToken, crateToken, ident.copy(), rename?.clone(), semiToken)
 
 public fun Item.Fn.clone(): Item.Fn =
-    Item.Fn(attrs.cloneAttrs(), vis.clone(), sig.clone(), block?.clone())
+    Item.Fn(attrs.cloneAttrs(), vis.clone(), modifiers.clone(), sig.clone(), block.clone())
 
 public fun Item.ForeignMod.clone(): Item.ForeignMod =
     Item.ForeignMod(attrs.cloneAttrs(), unsafety, abi.clone(), braceToken, items.cloneForeignItems())
 
 public fun Item.Impl.clone(): Item.Impl =
-    Item.Impl(attrs.cloneAttrs(), defaultness, unsafety, implToken, generics.clone(), traitPath?.clone(), selfType.clone(), braceToken, items.cloneImplItems())
+    Item.Impl(attrs.cloneAttrs(), modifiers.clone(), unsafety, implToken, generics.clone(), traitPath?.clone(), selfType.clone(), braceToken, items.cloneImplItems())
 
 public fun Item.Macro.clone(): Item.Macro =
     Item.Macro(attrs.cloneAttrs(), ident?.let { it.copy() }, mac.clone(), semiToken)
@@ -500,13 +525,13 @@ public fun Item.Struct.clone(): Item.Struct =
     Item.Struct(attrs.cloneAttrs(), vis.clone(), structToken, ident.copy(), generics.clone(), fields.clone(), semiToken)
 
 public fun Item.Trait.clone(): Item.Trait =
-    Item.Trait(attrs.cloneAttrs(), vis.clone(), unsafety, autoToken, restriction, traitToken, ident.copy(), generics.clone(), colonToken, supertraits.copy({ it.clone() }, { it }), braceToken, items.cloneTraitItems())
+    Item.Trait(attrs.cloneAttrs(), vis.clone(), modifiers.clone(), unsafety, traitToken, ident.copy(), generics.clone(), colonToken, supertraits.copy({ it.clone() }, { it }), braceToken, items.cloneTraitItems())
 
 public fun Item.TraitAlias.clone(): Item.TraitAlias =
     Item.TraitAlias(attrs.cloneAttrs(), vis.clone(), traitToken, ident.copy(), generics.clone(), eqToken, bounds.copy({ it.clone() }, { it }), semiToken)
 
 public fun Item.ItemType.clone(): Item.ItemType =
-    Item.ItemType(attrs.cloneAttrs(), vis.clone(), typeToken, ident.copy(), generics.clone(), eqToken, ty.clone(), semiToken)
+    Item.ItemType(attrs.cloneAttrs(), vis.clone(), modifiers.clone(), typeToken, ident.copy(), generics.clone(), eqToken, ty.clone(), semiToken, whereClausePlacement)
 
 public fun Item.Union.clone(): Item.Union =
     Item.Union(attrs.cloneAttrs(), vis.clone(), unionToken, ident.copy(), generics.clone(), fields.clone())
@@ -570,6 +595,7 @@ public fun Meta.NameValue.clone(): Meta.NameValue =
 
 public fun Pat.clone(): Pat =
     when (this) {
+        is Pat.Guard -> this.clone()
         is Pat.Ident -> this.clone()
         is Pat.Tuple -> this.clone()
         is Pat.Or -> this.clone()
@@ -589,8 +615,11 @@ public fun Pat.clone(): Pat =
         is Pat.Verbatim -> this.clone()
     }
 
+public fun Pat.Guard.clone(): Pat.Guard =
+    Pat.Guard(attrs.cloneAttrs(), pat.clone(), ifToken, guard.clone())
+
 public fun Pat.Ident.clone(): Pat.Ident =
-    Pat.Ident(attrs.cloneAttrs(), byRef, mutability.clone(), ident.copy(), atToken, subpat?.clone())
+    Pat.Ident(attrs.cloneAttrs(), byRef, mutability, ident.copy(), atToken, subpat?.clone())
 
 public fun Pat.Tuple.clone(): Pat.Tuple =
     Pat.Tuple(parenToken, elems.copy({ it.clone() }, { it }), attrs.cloneAttrs())
@@ -675,7 +704,14 @@ public fun RangeLimits.clone(): RangeLimits =
     }
 
 public fun FnArg.Receiver.clone(): FnArg.Receiver =
-    FnArg.Receiver(attrs.cloneAttrs(), reference?.clone(), mutability, selfToken, colonToken, type.clone())
+    FnArg.Receiver(attrs.cloneAttrs(), mutability, selfToken, kind.clone())
+
+public fun ReceiverKind.clone(): ReceiverKind =
+    when (this) {
+        ReceiverKind.Value -> ReceiverKind.Value
+        is ReceiverKind.Reference -> ReceiverKind.Reference(andToken, lifetime?.clone(), mutability)
+        is ReceiverKind.Typed -> ReceiverKind.Typed(colonToken, ty.clone())
+    }
 
 public fun ReturnType.clone(): ReturnType =
     when (this) {
@@ -683,8 +719,15 @@ public fun ReturnType.clone(): ReturnType =
         is ReturnType.TypeReturn -> ReturnType.TypeReturn(arrowToken, ty.clone())
     }
 
+public fun Safety.clone(): Safety =
+    when (this) {
+        is Safety.Safe -> Safety.Safe(token)
+        is Safety.Unsafe -> Safety.Unsafe(token)
+        Safety.Default -> Safety.Default
+    }
+
 public fun Signature.clone(): Signature =
-    Signature(constness, asyncness, unsafety, abi?.clone(), fnToken, ident.copy(), generics.clone(), parenToken, inputs.copy({ it.clone() }, { it }), variadic?.clone(), output.clone())
+    Signature(constness, asyncness, safety.clone(), abi?.clone(), fnToken, ident.copy(), generics.clone(), parenToken, inputs.copy({ it.clone() }, { it }), variadic?.clone(), output.clone())
 
 public fun Stmt.clone(): Stmt =
     when (this) {
@@ -695,7 +738,7 @@ public fun Stmt.clone(): Stmt =
     }
 
 public fun Stmt.Local.clone(): Stmt.Local =
-    Stmt.Local(attrs.cloneAttrs(), letToken, pat.clone(), init?.clone(), semiToken)
+    Stmt.Local(attrs.cloneAttrs(), letToken, modifiers.clone(), pat.clone(), init?.clone(), semiToken)
 
 public fun Stmt.ItemStmt.clone(): Stmt.ItemStmt =
     Stmt.ItemStmt(item.clone())
@@ -716,13 +759,13 @@ public fun TraitItem.clone(): TraitItem =
     }
 
 public fun TraitItem.Const.clone(): TraitItem.Const =
-    TraitItem.Const(attrs.cloneAttrs(), constToken, ident.copy(), generics.clone(), colonToken, ty.clone(), default?.clone(), semiToken)
+    TraitItem.Const(attrs.cloneAttrs(), modifiers.clone(), constToken, ident.copy(), generics.clone(), colonToken, ty.clone(), default?.clone(), semiToken)
 
 public fun TraitItem.Fn.clone(): TraitItem.Fn =
-    TraitItem.Fn(attrs.cloneAttrs(), sig.clone(), default?.clone(), semiToken)
+    TraitItem.Fn(attrs.cloneAttrs(), modifiers.clone(), sig.clone(), default?.clone(), semiToken)
 
 public fun TraitItem.AssocType.clone(): TraitItem.AssocType =
-    TraitItem.AssocType(attrs.cloneAttrs(), typeToken, ident.copy(), generics.clone(), colonToken, bounds.copy({ it.clone() }, { it }), default?.clone(), semiToken)
+    TraitItem.AssocType(attrs.cloneAttrs(), modifiers.clone(), typeToken, ident.copy(), generics.clone(), colonToken, bounds.copy({ it.clone() }, { it }), default?.clone(), semiToken)
 
 public fun TraitItem.Macro.clone(): TraitItem.Macro =
     TraitItem.Macro(attrs.cloneAttrs(), mac.clone(), semiToken)
@@ -730,10 +773,13 @@ public fun TraitItem.Macro.clone(): TraitItem.Macro =
 public fun TraitItem.Verbatim.clone(): TraitItem.Verbatim =
     TraitItem.Verbatim(tokens.clone())
 
+public fun TraitModifiers.clone(): TraitModifiers =
+    TraitModifiers(autoToken)
+
 public fun SynType.clone(): SynType =
     when (this) {
         is SynType.Array -> this.clone()
-        is SynType.BareFn -> this.clone()
+        is SynType.FnPtr -> this.clone()
         is SynType.Group -> this.clone()
         is SynType.ImplTrait -> this.clone()
         is SynType.Infer -> this.clone()
@@ -757,58 +803,61 @@ public fun SynType.Array.clone(): SynType.Array =
             .from(bracketToken.span),
         io.github.kotlinmania.syn.token.Semi
             .from(semiToken.span),
+        attrs.cloneAttrs(),
     )
 
-public fun SynType.BareFn.clone(): SynType.BareFn =
-    SynType.BareFn(lifetimes?.clone(), unsafety, abi?.clone(), fnToken, parenToken, inputs.copy({ it.clone() }, { it }), variadic?.clone(), output.clone())
+public fun SynType.FnPtr.clone(): SynType.FnPtr =
+    SynType.FnPtr(lifetimes?.clone(), unsafety, abi?.clone(), fnToken, parenToken, inputs.copy({ it.clone() }, { it }), variadic?.clone(), output.clone(), attrs.cloneAttrs())
 
 public fun SynType.Group.clone(): SynType.Group =
-    SynType.Group(groupToken, elem.clone())
+    SynType.Group(groupToken, elem.clone(), attrs.cloneAttrs())
 
 public fun SynType.ImplTrait.clone(): SynType.ImplTrait =
-    SynType.ImplTrait(implToken, bounds.copy({ it.clone() }, { it }))
+    SynType.ImplTrait(implToken, bounds.copy({ it.clone() }, { it }), attrs.cloneAttrs())
 
 public fun SynType.Infer.clone(): SynType.Infer =
-    SynType.Infer(underscoreToken)
+    SynType.Infer(underscoreToken, attrs.cloneAttrs())
 
 public fun SynType.Macro.clone(): SynType.Macro =
-    SynType.Macro(mac.clone())
+    SynType.Macro(mac.clone(), attrs.cloneAttrs())
 
 public fun SynType.Never.clone(): SynType.Never =
-    SynType.Never(bangToken)
+    SynType.Never(bangToken, attrs.cloneAttrs())
 
 public fun SynType.Paren.clone(): SynType.Paren =
-    SynType.Paren(parenToken, elem.clone())
+    SynType.Paren(parenToken, elem.clone(), attrs.cloneAttrs())
 
 public fun SynType.Path.clone(): SynType.Path =
-    SynType.Path(qself?.clone(), path.clone())
+    SynType.Path(qself?.clone(), path.clone(), attrs.cloneAttrs())
 
 public fun SynType.Ptr.clone(): SynType.Ptr =
-    SynType.Ptr(starToken, constToken, mutability, elem.clone())
+    SynType.Ptr(starToken, mutability.clone(), elem.clone(), attrs.cloneAttrs())
 
 public fun SynType.Reference.clone(): SynType.Reference =
-    SynType.Reference(andToken, lifetime?.clone(), mutability, elem.clone())
+    SynType.Reference(andToken, lifetime?.clone(), mutability, elem.clone(), attrs.cloneAttrs())
 
 public fun SynType.Slice.clone(): SynType.Slice =
-    SynType.Slice(elem.clone())
+    SynType.Slice(
+        elem.clone(),
+        io.github.kotlinmania.syn.token.Bracket
+            .from(bracketToken.span),
+        attrs.cloneAttrs(),
+    )
 
 public fun SynType.TraitObject.clone(): SynType.TraitObject =
-    SynType.TraitObject(dynToken, bounds.copy({ it.clone() }, { it }))
+    SynType.TraitObject(dynToken, bounds.copy({ it.clone() }, { it }), attrs.cloneAttrs())
 
 public fun SynType.Tuple.clone(): SynType.Tuple =
-    SynType.Tuple(parenToken, elems.copy({ it.clone() }, { it }))
+    SynType.Tuple(parenToken, elems.copy({ it.clone() }, { it }), attrs.cloneAttrs())
 
 public fun SynType.Verbatim.clone(): SynType.Verbatim =
     SynType.Verbatim(tokens.clone())
 
-public fun GenericParam.TypeParam.clone(): GenericParam.TypeParam =
-    GenericParam.TypeParam(attrs.cloneAttrs(), ident.copy(), colonToken, bounds.copy({ it.clone() }, { it }), eqToken, default?.clone())
+public fun TypeModifiers.clone(): TypeModifiers =
+    TypeModifiers(defaultness)
 
-public fun TraitBoundModifier.clone(): TraitBoundModifier =
-    when (this) {
-        TraitBoundModifier.None -> TraitBoundModifier.None
-        is TraitBoundModifier.Maybe -> TraitBoundModifier.Maybe(token)
-    }
+public fun GenericParam.TypeParam.clone(): GenericParam.TypeParam =
+    GenericParam.TypeParam(attrs.cloneAttrs(), ident.copy(), colonToken, bounds.copy({ it.clone() }, { it }), default?.clone())
 
 public fun TypeParamBound.clone(): TypeParamBound =
     when (this) {
@@ -819,7 +868,7 @@ public fun TypeParamBound.clone(): TypeParamBound =
     }
 
 public fun TypeParamBound.Trait.clone(): TypeParamBound.Trait =
-    TypeParamBound.Trait(parenToken, modifier.clone(), lifetimes?.clone(), path.clone())
+    TypeParamBound.Trait(parenToken, lifetimes?.clone(), modifiers.clone(), maybe, path.clone())
 
 public fun TypeParamBound.LifetimeBound.clone(): TypeParamBound.LifetimeBound =
     TypeParamBound.LifetimeBound(lifetime.clone())
@@ -853,6 +902,8 @@ public fun Visibility.Restricted.clone(): Visibility.Restricted =
 public fun WhereClause.clone(): WhereClause =
     WhereClause(whereToken, predicates.copy({ it.clone() }, { it }))
 
+public fun WhereClausePlacement.clone(): WhereClausePlacement = this
+
 public fun WherePredicate.clone(): WherePredicate =
     when (this) {
         is WherePredicate.TypePredicate -> this.clone()
@@ -860,10 +911,10 @@ public fun WherePredicate.clone(): WherePredicate =
     }
 
 public fun WherePredicate.TypePredicate.clone(): WherePredicate.TypePredicate =
-    WherePredicate.TypePredicate(lifetimes?.clone(), boundedTy.clone(), colonToken, bounds.copy({ it.clone() }, { it }))
+    WherePredicate.TypePredicate(lifetimes?.clone(), boundedTy.clone(), colonToken, bounds.copy({ it.clone() }, { it }), attrs.cloneAttrs())
 
 public fun WherePredicate.LifetimePredicate.clone(): WherePredicate.LifetimePredicate =
-    WherePredicate.LifetimePredicate(lifetime.clone(), colonToken, bounds.copy({ it.clone() }, { it }))
+    WherePredicate.LifetimePredicate(lifetime.clone(), colonToken, bounds.copy({ it.clone() }, { it }), attrs.cloneAttrs())
 
 public fun EqExpr.clone(): EqExpr = EqExpr(eqToken, expr.clone())
 
@@ -904,8 +955,8 @@ internal fun List<ImplItem>.cloneImplItems(): MutableList<ImplItem> =
 internal fun List<TraitItem>.cloneTraitItems(): MutableList<TraitItem> =
     mapTo(mutableListOf()) { it.clone() }
 
-public fun PathTrait.clone(): PathTrait =
-    PathTrait(polarity, path.clone(), forToken)
+public fun PathForPair.clone(): PathForPair =
+    PathForPair(path.clone(), forToken)
 
 public fun ModContent.clone(): ModContent =
     when (this) {
@@ -938,9 +989,6 @@ public fun StaticMutability.clone(): StaticMutability =
         is StaticMutability.Mut -> this
         is StaticMutability.None -> StaticMutability.None
     }
-
-public fun BareVariadic.clone(): BareVariadic =
-    BareVariadic(attrs.cloneAttrs(), name?.clone(), dots, comma)
 
 public fun Variadic.clone(): Variadic =
     Variadic(attrs.cloneAttrs(), pat?.clone(), dots, comma)

@@ -5,22 +5,21 @@ import io.github.kotlinmania.procmacro2.Delimiter
 import io.github.kotlinmania.procmacro2.TokenStream
 
 internal fun between(
-    begin: ParseStream,
-    end: ParseStream,
+    begin: Cursor,
+    end: Cursor,
 ): TokenStream {
-    val endCursor = end.cursor()
-    var cursor = begin.cursor()
-    check(sameBuffer(endCursor, cursor)) {
+    var cursor = begin
+    check(sameBuffer(end, cursor)) {
         "assertion failed: sameBuffer(end, cursor)"
     }
 
     val tokens = TokenStream.new()
-    while (cursor != endCursor) {
+    while (cursor != end) {
         val (tt, next) =
             cursor.tokenTree()
                 ?: error("called unwrap on a null value")
 
-        if (cmpAssumingSameBuffer(endCursor, next) < 0) {
+        if (cmpAssumingSameBuffer(end, next) < 0) {
             // A syntax node can cross the boundary of a None-delimited group
             // due to such groups being transparent to the parser in most cases.
             // Any time this occurs the group is known to be semantically
