@@ -111,3 +111,7 @@ gradle.beforeProject {
 }
 
 rootProject.name = providers.gradleProperty("project.name").get()
+
+// The Kotlin lexical entry point uses the source-owned compiler-token adapter.
+// Declare this edge here too so KMP JS/npm resolves the composite dependency.
+includeBuild("../proc-macro-kotlin")

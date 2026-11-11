@@ -5,7 +5,7 @@ import io.github.kotlinmania.procmacro2.DelimSpan
 import io.github.kotlinmania.procmacro2.Span
 import io.github.kotlinmania.procmacro2.TokenStream
 import io.github.kotlinmania.quote.ToTokens
-import io.github.kotlinmania.quote.__span
+import io.github.kotlinmania.quote.span as quoteSpan
 
 // A trait that can provide the `Span` of the complete contents of a syntax
 // tree node.
@@ -86,13 +86,8 @@ public sealed interface Spanned {
     public fun span(): Span
 }
 
-public fun ToTokens.span(): Span =
-    object : ToTokens {
-        override fun toTokens(tokens: TokenStream) {
-            this@span.toTokens(tokens)
-        }
-    }.__span().clone()
+public fun ToTokens.span(): Span = quoteSpan()
 
-public fun Span.span(): Span = __span().clone()
+public fun Span.span(): Span = quoteSpan()
 
-public fun DelimSpan.span(): Span = __span().clone()
+public fun DelimSpan.span(): Span = quoteSpan()
