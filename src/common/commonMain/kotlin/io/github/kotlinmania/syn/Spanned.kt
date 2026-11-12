@@ -86,8 +86,13 @@ public sealed interface Spanned {
     public fun span(): Span
 }
 
-public fun ToTokens.span(): Span = quoteSpan()
+public fun ToTokens.span(): Span =
+    object : ToTokens {
+        override fun toTokens(tokens: TokenStream) {
+            this@span.toTokens(tokens)
+        }
+    }.quoteSpan().clone()
 
-public fun Span.span(): Span = quoteSpan()
+public fun Span.span(): Span = quoteSpan().clone()
 
-public fun DelimSpan.span(): Span = quoteSpan()
+public fun DelimSpan.span(): Span = quoteSpan().clone()

@@ -30,8 +30,21 @@ class KotlinSourceTokensTest {
     fun kotlinKeywordsAssociateWithSynWithoutRewritingTheirSpelling() {
         val tokens = parseKotlinTokenStream("fun if else return while for break continue when ordinary").getOrThrow().toList()
         val associated = tokens.map { kotlinKeywordRustToken(it)?.toString() }
-        assertEquals(listOf("Token![fn]", "Token![if]", "Token![else]", "Token![return]",
-            "Token![while]", "Token![for]", "Token![break]", "Token![continue]", "Token![match]", null), associated)
+        assertEquals(
+            listOf(
+                "Token![fn]",
+                "Token![if]",
+                "Token![else]",
+                "Token![return]",
+                "Token![while]",
+                "Token![for]",
+                "Token![break]",
+                "Token![continue]",
+                "Token![match]",
+                null,
+            ),
+            associated,
+        )
         assertEquals("fun", tokens.first().toString())
         assertNull(kotlinKeywordRustToken(parseKotlinTokenStream("\"fun when\"").getOrThrow().single()))
     }
