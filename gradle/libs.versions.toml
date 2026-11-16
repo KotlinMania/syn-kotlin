@@ -14,7 +14,7 @@ procMacro = "0.1.5"
 procMacro2 = "0.1.8"
 quote = "0.3.1"
 unicodeIdent = "0.1.1"
-anyhow = "0.2.0"
+anyhow = "0.2.1"
 
 [plugins]
 android-kotlin-multiplatform-library = { id = "com.android.kotlin.multiplatform.library", version.ref = "androidKmp" }
