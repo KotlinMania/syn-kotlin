@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="macosArm64Test.io.github.kotlinmania.syn.GeneratedIdentTest" tests="2" skipped="0" failures="0" errors="0" timestamp="2026-10-26T02:58:01.766Z" hostname="EmberHarmony.local" time="0.001">
+  <properties/>
+  <testcase name="productionMatchesCompleteRustIdent[macosArm64]" classname="macosArm64Test.io.github.kotlinmania.syn.GeneratedIdentTest" time="0.0"/>
+  <testcase name="conversionAliasesMatchRustIdent[macosArm64]" classname="macosArm64Test.io.github.kotlinmania.syn.GeneratedIdentTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

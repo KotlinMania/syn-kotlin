@@ -14,8 +14,7 @@ potential-bugs:
   EqualsWithHashCodeExist: { active: false }
   ExplicitGarbageCollectionCall: { active: true }
   LateinitUsage: { active: true }
-  NullCheckOnMutableProperty: { active: false }
-  DoubleMutabilityForCollection: { active: false }
+  NullCheckOnMutableProperty: { active: true }
   UnreachableCode: { active: true }
   WrongEqualsTypeParameter: { active: false }
   UnsafeCallOnNullableType: { active: false }
@@ -49,10 +48,7 @@ style:
   UnusedPrivateProperty: { active: false }
   RedundantVisibilityModifier: { active: false }
   AbstractClassCanBeInterface: { active: false }
-  UnusedPrivateFunction: { active: false }
-  UnusedVariable: { active: false }
-  UseRequireNotNull: { active: false }
-  VarCouldBeVal: { active: false }
+  AbstractClassCanBeConcreteClass: { active: false }
 
 complexity:
   active: true
@@ -92,7 +88,6 @@ naming:
   MatchingDeclarationName: { active: false }
   ObjectPropertyNaming: { active: false }
   MemberNameEqualsClassName: { active: false }
-  NoNameShadowing: { active: false }
 
 exceptions:
   active: true

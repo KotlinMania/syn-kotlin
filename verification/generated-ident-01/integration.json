@@ -1,0 +1,29 @@
+{
+  "generator_commit": "f8ad32c8f0cbc0f47c3773864526fcd152e9d883",
+  "source": "/Volumes/stuff/Projects/kotlinmania/syn-kotlin/tmp/syn/src/ident.rs",
+  "source_sha256": "4e50859365382708c2c09abfb88eac4b0d35c9b3f884e58cc22392d91be2a0e1",
+  "raw_artifact": "/Volumes/stuff/Projects/kotlinmania/rust-kotlin/verification/foundation-batch-04/replacement-five-01/ident-bindings-01/syn-retry-10/syn_ident/generated.kt",
+  "raw_sha256": "50988c439349dc9378aff04dc378addea7bd3cd4a4518879453324f423a7b7ac",
+  "raw_validation": "/Volumes/stuff/Projects/kotlinmania/rust-kotlin/verification/foundation-batch-04/ident-01/check-03/validation.json",
+  "destination": "/Volumes/stuff/Projects/kotlinmania/syn-kotlin/src/commonMain/kotlin/io/github/kotlinmania/syn/generated/ident/Ident.kt",
+  "body_unchanged": true,
+  "adapter": "/Volumes/stuff/Projects/kotlinmania/syn-kotlin/src/commonMain/kotlin/io/github/kotlinmania/syn/Ident.kt",
+  "native_regressions": "passed",
+  "production_rust_observations": 1741,
+  "raw_rust_observations": 1741,
+  "production_files": {
+    "src/commonMain/kotlin/io/github/kotlinmania/syn/Ident.kt": "a83af92f48f1710e538ae341ef9f01d4258918a725b7ed0bffc23861ba70d0b3",
+    "src/commonMain/kotlin/io/github/kotlinmania/syn/generated/ident/Ident.kt": "7e34aa3ab7a806ccc62d85b82b8fcf7002969f82e13f332c767b3f2d027315a6",
+    "src/commonTest/kotlin/io/github/kotlinmania/syn/GeneratedIdentTest.kt": "b538fb6b3cbd13234799fb6728e6c9b8c1163174ffd9447c7d92fd8c71006645"
+  },
+  "validated_utc": "2026-10-26T02:59:29.102757+00:00",
+  "native_tests": {
+    "tests": 439,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "production_alias_observations": 12,
+  "command": "./gradlew --offline --no-daemon -Pproject.repositories.mavenLocal=true -Dmaven.repo.local=/Users/sydney/.m2/repository macosArm64Test",
+  "scope": "macOS ARM64 Native only, checked usize64 source profile; no allocation, Drop, other-target runtime or Swift ABI equivalence claim"
+}

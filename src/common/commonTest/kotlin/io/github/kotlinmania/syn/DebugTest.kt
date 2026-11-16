@@ -1,0 +1,76 @@
+package io.github.kotlinmania.syn
+
+import io.github.kotlinmania.syn.gen.debug
+import io.github.kotlinmania.syn.token.Extern
+import io.github.kotlinmania.syn.token.Gt
+import io.github.kotlinmania.syn.token.Lt
+import io.github.kotlinmania.syn.token.Not
+import io.github.kotlinmania.syn.token.Plus
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
+
+class DebugTest {
+    @Test
+    fun deriveInputDebugMatchesGeneratedFieldOrder() {
+        val item = parseStr(DeriveInputParse::parse, "#[repr(C)] pub struct S<T> where T: Copy { field: T }").getOrThrow()
+        val rendered = item.debug()
+
+        assertTrue(rendered.startsWith("DeriveInput { "))
+        assertInOrder(rendered, "attrs:", "vis:", "ident:", "generics:", "data:")
+        assertTrue(rendered.contains("Attribute { pound_token:"))
+        assertTrue(rendered.contains("data: Data::Struct { struct_token:"))
+    }
+
+    @Test
+    fun tokenFieldsIncludedWhereGeneratedDebugIncludesThem() {
+        assertEquals("Abi { extern_token: Token![extern], name: None }", Abi(Extern.default(), null).debug())
+
+        val arguments = PathArguments.AngleBracketed(null, Lt.default(), GenericArgumentList(), Gt.default())
+        val rendered = arguments.debug()
+
+        assertTrue(rendered.startsWith("AngleBracketedGenericArguments { "))
+        assertInOrder(rendered, "colon2_token:", "lt_token:", "args:", "gt_token:")
+        assertTrue(rendered.contains("colon2_token: None"))
+        assertTrue(rendered.contains("lt_token: Token![<]"))
+        assertTrue(rendered.contains("gt_token: Token![>]"))
+    }
+
+    @Test
+    fun enumDebugUsesRustVariantPrefixes() {
+        assertEquals("AttrStyle::Outer", AttrStyle.Outer.debug())
+        assertEquals("AttrStyle::Inner(Token![!])", AttrStyle.Inner(Not.default()).debug())
+        assertEquals("BinOp::Add(Token![+])", BinOp.Add(Plus.default()).debug())
+
+        val data = parseStr(DeriveInputParse::parse, "struct S;").getOrThrow().data
+        assertTrue(data.debug().startsWith("Data::Struct { "))
+    }
+
+    @Test
+    fun exprItemPatAndTypeDebugRenderRustVariantShapes() {
+        val expr = parseStr(ExprParse::parse, "a + 1").getOrThrow()
+        assertTrue(expr.debug().startsWith("Expr::Binary { "))
+
+        val item = parseStr(ItemParse::parse, "type Alias = u32;").getOrThrow()
+        assertTrue(item.debug().startsWith("Item::Type { "))
+
+        val pat = parseStr(Pat::parseSingle, "Some(x)").getOrThrow()
+        assertTrue(pat.debug().startsWith("Pat::TupleStruct { "))
+
+        val ty = parseStr(SynTypeParseExpr::parse, "&'a mut [u8]").getOrThrow()
+        assertTrue(ty.debug().startsWith("Type::Reference { "))
+    }
+
+    private fun assertInOrder(
+        text: String,
+        vararg fragments: String,
+    ) {
+        var previous = -1
+        for (fragment in fragments) {
+            val index = text.indexOf(fragment, previous + 1)
+            assertTrue(index >= 0, "missing fragment: $fragment in $text")
+            assertTrue(index > previous, "fragment out of order: $fragment in $text")
+            previous = index
+        }
+    }
+}

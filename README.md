@@ -10,6 +10,20 @@ This is a Kotlin Multiplatform line-by-line transliteration port of [`dtolnay/sy
 
 ### Porting status
 
+[Generated classifier adoption](docs/generated-classifiers-2026-10-24.md) records
+the completed classify.rs replacement. [Generated precedence adoption](docs/generated-precedence-2026-10-24.md)
+adds the complete full/printing configuration of precedence.rs, fixes attributed
+continue precedence, and migrates six production calls. Its raw output matches
+88 Rust observations; 408 JVM and 406 macOS tests pass after integration.
+
+[Generated BigInt adoption](docs/generated-bigint-2026-10-24.md) replaces the complete
+decimal accumulator and migrates three literal-parser calls. Both Rust overflow
+profiles match raw output; 411 JVM and 409 macOS tests pass after adoption.
+
+[Generated Print adoption](docs/generated-print-2026-10-26.md) replaces the complete
+optional-token printer and connects six production calls. Its unchanged raw body
+and production adapter each match 90 Rust observations; 437 Native tests pass.
+
 This is an **in-progress port**. The goal is feature parity with the upstream Rust crate while providing a native Kotlin Multiplatform API. Every Kotlin file carries a `// port-lint: source <path>` header naming its upstream Rust counterpart so the AST-distance tool can track provenance.
 
 ---
@@ -309,7 +323,7 @@ be dual licensed as above, without any additional terms or conditions.
 
 ```kotlin
 dependencies {
-    implementation("io.github.kotlinmania:syn-kotlin:0.4.0")
+    implementation("io.github.kotlinmania:syn-kotlin:0.4.1")
 }
 ```
 
@@ -355,7 +369,7 @@ changed `parseFile` return signature.
 ./gradlew test
 ```
 
-This project depends on `io.github.kotlinmania:proc-macro2-kotlin:0.1.7` and
+This project depends on `io.github.kotlinmania:proc-macro2-kotlin:0.1.8` and
 `io.github.kotlinmania:quote-kotlin:0.2.5`. Builds resolve Kotlinmania
 dependencies from published Maven repositories, not Gradle composite builds or
 developer-machine repositories.

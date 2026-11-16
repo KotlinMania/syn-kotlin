@@ -1,0 +1,855 @@
+// port-lint: source pat.rs
+package io.github.kotlinmania.syn
+
+import io.github.kotlinmania.procmacro2.TokenStream
+import io.github.kotlinmania.quote.ToTokens
+import io.github.kotlinmania.quote.toTokens
+import io.github.kotlinmania.syn.token.Colon
+import io.github.kotlinmania.syn.token.Underscore
+
+/**
+ * A pattern in a local binding, function signature, branching arm, or
+ * destructuring position.
+ */
+public sealed class Pat : ToTokens {
+    public abstract fun deepCopy(): Pat
+
+    public companion object {
+        fun parse(input: ParseStream): SynResult<Pat> =
+            parseSingle(input)
+
+        /**
+         * Parse a pattern that does not involve `|` at the top level.
+         *
+         * Top-level or-patterns are disallowed in function and closure
+         * parameter lists unless wrapped in parentheses.
+         */
+        fun parseSingle(input: ParseStream): SynResult<Pat> {
+            val begin = input.cursor()
+            val lookahead = input.lookahead1()
+            if (
+                (
+                    lookahead.peek(IdentPeek) &&
+                        (
+                            input.peek2(PathSepPeek) ||
+                                input.peek2(NotPeek) ||
+                                input.peek2(BracePeek) ||
+                                input.peek2(ParenPeek) ||
+                                input.peek2(DotDotPeek)
+                        )
+                ) ||
+                (input.peek(SelfValuePeek) && input.peek2(PathSepPeek)) ||
+                lookahead.peek(PathSepPeek) ||
+                lookahead.peek(LtPeek) ||
+                input.peek(SelfTypePeek) ||
+                input.peek(SuperPeek) ||
+                input.peek(CratePeek)
+            ) {
+                return patPathOrMacroOrStructOrRange(input)
+            } else if (lookahead.peek(UnderscorePeek)) {
+                return patWild(input).map { it }
+            } else if (input.peek(BoxPeek)) {
+                return patBox(begin, input)
+            } else if (input.peek(MinusPeek) || lookahead.peek(LitPeek) || lookahead.peek(ConstPeek)) {
+                return patLitOrRange(input)
+            } else if (
+                lookahead.peek(RefPeek) ||
+                lookahead.peek(MutPeek) ||
+                input.peek(SelfValuePeek) ||
+                input.peek(IdentPeek)
+            ) {
+                return patIdent(input).map { it }
+            } else if (lookahead.peek(AndPeek)) {
+                return patReference(input).map { it }
+            } else if (lookahead.peek(ParenPeek)) {
+                return patParenOrTuple(input)
+            } else if (lookahead.peek(BracketPeek)) {
+                return patSlice(input).map { it }
+            } else if (lookahead.peek(DotDotPeek) && !input.peek(DotDotDotPeek)) {
+                return patRangeHalfOpen(input)
+            } else if (lookahead.peek(ConstPeek)) {
+                return patConst(input).map(::Verbatim)
+            }
+            return SynResult.failure(lookahead.error())
+        }
+
+        /** Parse a pattern, possibly involving `|`, but not a leading `|`. */
+        public fun parseMulti(input: ParseStream): SynResult<Pat> =
+            multiPatImpl(input, leadingVert = null, allowGuard = false)
+
+        /**
+         * Parse a pattern, possibly involving `|`, including an optional
+         * leading `|`.
+         *
+         * Use [Pat.parseMulti] instead if a leading `|` should be rejected.
+         */
+        public fun parseMultiWithLeadingVert(input: ParseStream): SynResult<Pat> {
+            val leadingVert =
+                if (input.peek(OrPeek) && !input.peek(OrOrPeek) && !input.peek(OrEqPeek)) {
+                    OrParse.parse(input).getOrElse { return SynResult.failure(it) }
+                } else {
+                    null
+                }
+            return multiPatImpl(input, leadingVert, allowGuard = false)
+        }
+
+        internal fun parseMultiWithLeadingVertAndGuard(input: ParseStream): SynResult<Pat> {
+            val leadingVert =
+                if (input.peek(OrPeek) && !input.peek(OrOrPeek) && !input.peek(OrEqPeek)) {
+                    OrParse.parse(input).getOrElse { return SynResult.failure(it) }
+                } else {
+                    null
+                }
+            return multiPatImpl(input, leadingVert, allowGuard = true)
+        }
+    }
+
+    /** A pattern with guard predicate: `Some(x) if x > 0`. */
+    public data class Guard(
+        public var attrs: List<Attribute>,
+        public var pat: Pat,
+        public var ifToken: io.github.kotlinmania.syn.token.If,
+        public var guard: Expr,
+    ) : Pat() {
+        override fun deepCopy(): Pat =
+            copy(
+                attrs = attrs.mapTo(mutableListOf()) { it.deepCopy() },
+                pat = pat.deepCopy(),
+                guard = guard.deepCopy(),
+            )
+
+        override fun toTokens(tokens: TokenStream) {
+            outerAttrsToTokens(attrs, tokens)
+            pat.toTokens(tokens)
+            ifToken.toTokens(tokens)
+            guard.toTokens(tokens)
+        }
+    }
+
+    /** A pattern that binds a new variable, optionally with a reference, mutability, and sub-pattern. */
+    public data class Ident(
+        public var attrs: List<Attribute>,
+        public var byRef: io.github.kotlinmania.syn.token.Ref?,
+        public var mutability: io.github.kotlinmania.syn.token.Mut?,
+        public var ident: io.github.kotlinmania.procmacro2.Ident,
+        public var atToken: io.github.kotlinmania.syn.token.At?,
+        public var subpat: Pat?,
+    ) : Pat() {
+        override fun deepCopy(): Pat =
+            copy(
+                attrs = attrs.mapTo(mutableListOf()) { it.deepCopy() },
+                ident = ident.copy(),
+                subpat = subpat?.deepCopy(),
+            )
+
+        override fun toTokens(tokens: TokenStream) {
+            outerAttrsToTokens(attrs, tokens)
+            byRef?.toTokens(tokens)
+            mutability?.toTokens(tokens)
+            ident.toTokens(tokens)
+            atToken?.toTokens(tokens)
+            subpat?.toTokens(tokens)
+        }
+    }
+
+    /** A tuple pattern: `(A, B, C)`. */
+    public data class Tuple(
+        public var parenToken: io.github.kotlinmania.syn.token.Paren,
+        public var elems: PatList,
+        public var attrs: List<Attribute> = mutableListOf(),
+    ) : Pat() {
+        override fun deepCopy(): Pat =
+            copy(attrs = attrs.mapTo(mutableListOf()) { it.deepCopy() }, elems = elems.copy({ it.deepCopy() }, { it }))
+
+        override fun toTokens(tokens: TokenStream) {
+            outerAttrsToTokens(attrs, tokens)
+            parenToken.surround(tokens) { inner ->
+                elems.toTokens(inner)
+                if (elems.len() == 1 && !elems.trailingPunct() && elems.first() !is Rest) {
+                    io.github.kotlinmania.syn.token.Comma
+                        .default()
+                        .toTokens(inner)
+                }
+            }
+        }
+    }
+
+    /** A pattern that matches any one of a set of cases. */
+    public data class Or(
+        public var leadingVert: io.github.kotlinmania.syn.token.Or?,
+        public var cases: PatList,
+        public var attrs: List<Attribute> = mutableListOf(),
+    ) : Pat() {
+        override fun deepCopy(): Pat =
+            copy(attrs = attrs.mapTo(mutableListOf()) { it.deepCopy() }, cases = cases.copy({ it.deepCopy() }, { it }))
+
+        override fun toTokens(tokens: TokenStream) {
+            outerAttrsToTokens(attrs, tokens)
+            leadingVert?.toTokens(tokens)
+            for ((case, vert) in cases.pairsList()) {
+                case.toTokens(tokens)
+                vert?.toTokens(tokens)
+            }
+        }
+    }
+
+    /** A parenthesized pattern: `(A | B)`. */
+    public data class PatParen(
+        public var parenToken: io.github.kotlinmania.syn.token.Paren,
+        public var pat: Pat,
+        public var attrs: List<Attribute> = mutableListOf(),
+    ) : Pat() {
+        override fun deepCopy(): Pat =
+            copy(attrs = attrs.mapTo(mutableListOf()) { it.deepCopy() }, pat = pat.deepCopy())
+
+        override fun toTokens(tokens: TokenStream) {
+            outerAttrsToTokens(attrs, tokens)
+            parenToken.surround(tokens) { inner -> pat.toTokens(inner) }
+        }
+    }
+
+    /** A reference pattern: `&mut var`. */
+    public data class Reference(
+        public var andToken: io.github.kotlinmania.syn.token.And,
+        public var mutability: io.github.kotlinmania.syn.token.Mut?,
+        public var pat: Pat,
+        public var attrs: List<Attribute> = mutableListOf(),
+    ) : Pat() {
+        override fun deepCopy(): Pat =
+            copy(attrs = attrs.mapTo(mutableListOf()) { it.deepCopy() }, andToken = andToken, mutability = mutability, pat = pat.deepCopy())
+
+        override fun toTokens(tokens: TokenStream) {
+            outerAttrsToTokens(attrs, tokens)
+            andToken.toTokens(tokens)
+            mutability?.toTokens(tokens)
+            pat.toTokens(tokens)
+        }
+    }
+
+    /** A data-object pattern. */
+    public data class Struct(
+        public var qself: QSelf?,
+        public var path: io.github.kotlinmania.syn.Path,
+        public var braceToken: io.github.kotlinmania.syn.token.Brace,
+        public var fields: FieldPatList,
+        public var rest: PatRest?,
+        public var dot2Token: io.github.kotlinmania.syn.token.DotDot?,
+        public var attrs: List<Attribute> = mutableListOf(),
+    ) : Pat() {
+        override fun deepCopy(): Pat =
+            copy(
+                attrs = attrs.mapTo(mutableListOf()) { it.deepCopy() },
+                qself = qself?.deepCopy(),
+                path = path.deepCopy(),
+                fields = fields.copy({ it.deepCopy() }, { it }),
+                rest = rest?.deepCopy(),
+                dot2Token = dot2Token,
+            )
+
+        override fun toTokens(tokens: TokenStream) {
+            outerAttrsToTokens(attrs, tokens)
+            printQpath(tokens, qself, path, PathStyle.Expr)
+            braceToken.surround(tokens) { inner ->
+                fields.toTokens(inner)
+                if (!fields.emptyOrTrailing() && rest != null) {
+                    io.github.kotlinmania.syn.token.Comma
+                        .default()
+                        .toTokens(inner)
+                }
+                rest?.toTokens(inner)
+                dot2Token?.toTokens(inner)
+            }
+        }
+    }
+
+    /** A slice pattern: `[a, b.., c]`. */
+    public data class Slice(
+        public var bracketToken: io.github.kotlinmania.syn.token.Bracket,
+        public var elems: PatList,
+        public var attrs: List<Attribute> = mutableListOf(),
+    ) : Pat() {
+        override fun deepCopy(): Pat =
+            copy(attrs = attrs.mapTo(mutableListOf()) { it.deepCopy() }, elems = elems.copy({ it.deepCopy() }, { it }))
+
+        override fun toTokens(tokens: TokenStream) {
+            outerAttrsToTokens(attrs, tokens)
+            bracketToken.surround(tokens) { inner ->
+                elems.toTokens(inner)
+            }
+        }
+    }
+
+    /** A type ascription pattern. */
+    public data class TypeAscription(
+        public var attrs: List<Attribute>,
+        public var pat: Pat,
+        public var colonToken: Colon,
+        public var ty: SynType,
+    ) : Pat() {
+        override fun deepCopy(): Pat = copy(attrs = attrs.mapTo(mutableListOf()) { it.deepCopy() }, pat = pat.deepCopy(), ty = ty.deepCopy())
+
+        override fun toTokens(tokens: TokenStream) {
+            outerAttrsToTokens(attrs, tokens)
+            pat.toTokens(tokens)
+            colonToken.toTokens(tokens)
+            ty.toTokens(tokens)
+        }
+    }
+
+    /** A const block pattern: `const { ... }`. */
+    public data class Const(
+        public var attrs: List<Attribute>,
+        public var constToken: io.github.kotlinmania.syn.token.Const,
+        public var block: Block,
+    ) : Pat() {
+        override fun deepCopy(): Pat = copy(attrs = attrs.mapTo(mutableListOf()) { it.deepCopy() }, block = block.deepCopy())
+
+        override fun toTokens(tokens: TokenStream) {
+            outerAttrsToTokens(attrs, tokens)
+            constToken.toTokens(tokens)
+            block.braceToken.surround(tokens) { inner ->
+                innerAttrsToTokens(attrs, inner)
+                for (stmt in block.stmts) stmt.toTokens(inner)
+            }
+        }
+    }
+
+    /** A literal pattern: `0`. */
+    public data class Lit(
+        public var attrs: List<Attribute>,
+        public var lit: io.github.kotlinmania.syn.Lit,
+    ) : Pat() {
+        override fun deepCopy(): Pat = copy(attrs = attrs.mapTo(mutableListOf()) { it.deepCopy() }, lit = lit)
+
+        override fun toTokens(tokens: TokenStream) {
+            outerAttrsToTokens(attrs, tokens)
+            lit.toTokens(tokens)
+        }
+    }
+
+    /** A macro invocation in pattern position. */
+    public data class Macro(
+        public var attrs: List<Attribute>,
+        public var mac: io.github.kotlinmania.syn.Macro,
+    ) : Pat() {
+        override fun deepCopy(): Pat = copy(attrs = attrs.mapTo(mutableListOf()) { it.deepCopy() }, mac = mac.deepCopy())
+
+        override fun toTokens(tokens: TokenStream) {
+            outerAttrsToTokens(attrs, tokens)
+            mac.toTokens(tokens)
+        }
+    }
+
+    /** A path pattern, optionally qualified with a self-type. */
+    public data class Path(
+        public var attrs: List<Attribute>,
+        public var qself: QSelf?,
+        public var path: io.github.kotlinmania.syn.Path,
+    ) : Pat() {
+        override fun deepCopy(): Pat = copy(attrs = attrs.mapTo(mutableListOf()) { it.deepCopy() }, qself = qself?.deepCopy(), path = path.deepCopy())
+
+        override fun toTokens(tokens: TokenStream) {
+            outerAttrsToTokens(attrs, tokens)
+            printQpath(tokens, qself, path, PathStyle.Expr)
+        }
+    }
+
+    /** A range pattern: `1..=2`. */
+    public data class Range(
+        public var attrs: List<Attribute>,
+        public var start: Expr?,
+        public var limits: RangeLimits,
+        public var end: Expr?,
+    ) : Pat() {
+        override fun deepCopy(): Pat = copy(attrs = attrs.mapTo(mutableListOf()) { it.deepCopy() }, start = start?.deepCopy(), end = end?.deepCopy())
+
+        override fun toTokens(tokens: TokenStream) {
+            outerAttrsToTokens(attrs, tokens)
+            start?.toTokens(tokens)
+            limits.toTokens(tokens)
+            end?.toTokens(tokens)
+        }
+    }
+
+    /** The dots in a tuple or slice pattern: `[0, 1, ..]`. */
+    public data class Rest(
+        public var attrs: List<Attribute>,
+        public var dot2Token: io.github.kotlinmania.syn.token.DotDot,
+    ) : Pat() {
+        override fun deepCopy(): Pat = copy(attrs = attrs.mapTo(mutableListOf()) { it.deepCopy() })
+
+        override fun toTokens(tokens: TokenStream) {
+            outerAttrsToTokens(attrs, tokens)
+            dot2Token.toTokens(tokens)
+        }
+    }
+
+    /** A tuple variant or tuple data-object pattern: `Variant(x, y, .., z)`. */
+    public data class TupleStruct(
+        public var attrs: List<Attribute>,
+        public var qself: QSelf?,
+        public var path: io.github.kotlinmania.syn.Path,
+        public var parenToken: io.github.kotlinmania.syn.token.Paren,
+        public var elems: PatList,
+    ) : Pat() {
+        override fun deepCopy(): Pat = copy(attrs = attrs.mapTo(mutableListOf()) { it.deepCopy() }, qself = qself?.deepCopy(), path = path.deepCopy(), elems = elems.copy({ it.deepCopy() }, { it }))
+
+        override fun toTokens(tokens: TokenStream) {
+            outerAttrsToTokens(attrs, tokens)
+            printQpath(tokens, qself, path, PathStyle.Expr)
+            parenToken.surround(tokens) { inner -> elems.toTokens(inner) }
+        }
+    }
+
+    /** A pattern that matches any value. */
+    public data class Wild(
+        public var attrs: List<Attribute>,
+        public var underscoreToken: Underscore,
+    ) : Pat() {
+        override fun deepCopy(): Pat = copy(attrs = attrs.mapTo(mutableListOf()) { it.deepCopy() })
+
+        override fun toTokens(tokens: TokenStream) {
+            outerAttrsToTokens(attrs, tokens)
+            underscoreToken.toTokens(tokens)
+        }
+    }
+
+    /** Tokens forming a pattern not interpreted by Syn. */
+    public data class Verbatim(
+        public var tokens: TokenStream,
+    ) : Pat() {
+        override fun deepCopy(): Pat = copy(tokens = tokens.clone())
+
+        override fun toTokens(tokens: TokenStream) {
+            tokens.extendTokenStreams(listOf(this.tokens))
+        }
+    }
+}
+
+/**
+ * A single field in a data-object pattern.
+ *
+ * Shorthand field patterns like `{ x, ref y, ref mut z }` store [colonToken]
+ * as `null` while binding the corresponding [Pat.Ident].
+ */
+public data class FieldPat(
+    public var member: Member,
+    public var colonToken: Colon?,
+    public var pat: Pat,
+    public var attrs: List<Attribute> = mutableListOf(),
+) : ToTokens {
+    override fun toTokens(tokens: TokenStream) {
+        outerAttrsToTokens(attrs, tokens)
+        colonToken?.let { colon ->
+            member.toTokens(tokens)
+            colon.toTokens(tokens)
+        }
+        pat.toTokens(tokens)
+    }
+
+    public fun deepCopy(): FieldPat =
+        FieldPat(member, colonToken, pat.deepCopy(), attrs.mapTo(mutableListOf()) { it.deepCopy() })
+}
+
+/** The rest pattern in a data-object pattern. */
+public data class PatRest(
+    public var dot2Token: io.github.kotlinmania.syn.token.DotDot?,
+    public var attrs: List<Attribute> = mutableListOf(),
+) : ToTokens {
+    override fun toTokens(tokens: TokenStream) {
+        outerAttrsToTokens(attrs, tokens)
+        dot2Token?.toTokens(tokens)
+    }
+
+    public fun deepCopy(): PatRest =
+        PatRest(dot2Token, attrs.mapTo(mutableListOf()) { it.deepCopy() })
+}
+
+/** A type ascription pattern. */
+public data class PatType(
+    public var attrs: List<Attribute>,
+    public var pat: Pat,
+    public var colonToken: Colon,
+    public var ty: SynType,
+) : ToTokens {
+    public companion object {
+        fun parse(input: ParseStream): SynResult<PatType> {
+            val pat = Pat.parseSingle(input).getOrElse { return SynResult.failure(it) }
+            val colonToken = ColonParse.parse(input).getOrElse { return SynResult.failure(it) }
+            val ty = parseTypeFull(input).getOrElse { return SynResult.failure(it) }
+            return SynResult.success(PatType(mutableListOf(), pat, colonToken, ty))
+        }
+    }
+
+    override fun toTokens(tokens: TokenStream) {
+        outerAttrsToTokens(attrs, tokens)
+        pat.toTokens(tokens)
+        colonToken.toTokens(tokens)
+        ty.toTokens(tokens)
+    }
+
+    public fun deepCopy(): PatType = PatType(attrs.mapTo(mutableListOf()) { it.deepCopy() }, pat.deepCopy(), colonToken, ty.deepCopy())
+}
+
+private fun multiPatImpl(
+    input: ParseStream,
+    leadingVert: io.github.kotlinmania.syn.token.Or?,
+    allowGuard: Boolean,
+): SynResult<Pat> {
+    var pat = Pat.parseSingle(input).getOrElse { return SynResult.failure(it) }
+    if (leadingVert != null || (input.peek(OrPeek) && !input.peek(OrOrPeek) && !input.peek(OrEqPeek))) {
+        val cases = PatList()
+        cases.pushValue(pat)
+        while (input.peek(OrPeek) && !input.peek(OrOrPeek) && !input.peek(OrEqPeek)) {
+            cases.pushPunct(OrParse.parse(input).getOrElse { return SynResult.failure(it) })
+            cases.pushValue(Pat.parseSingle(input).getOrElse { return SynResult.failure(it) })
+        }
+        pat = Pat.Or(leadingVert = leadingVert, cases = cases, attrs = mutableListOf())
+    }
+    if (allowGuard && input.peek(IfPeek)) {
+        val ifToken = IfParse.parse(input).getOrElse { return SynResult.failure(it) }
+        val guard = parseExprFull(input).getOrElse { return SynResult.failure(it) }
+        pat = Pat.Guard(attrs = mutableListOf(), pat = pat, ifToken = ifToken, guard = guard)
+    }
+    return SynResult.success(pat)
+}
+
+private fun patPathOrMacroOrStructOrRange(input: ParseStream): SynResult<Pat> {
+    var (qself, path) = qpath(input, exprStyle = true).getOrElse { return SynResult.failure(it) }
+
+    if (qself == null && input.peek(NotPeek) && !input.peek(NePeek) && path.isModStyle()) {
+        val bangToken = NotParse.parse(input).getOrElse { return SynResult.failure(it) }
+        var (delimiter, tokens) = parseDelimiter(input).getOrElse { return SynResult.failure(it) }
+        return SynResult.success(
+            Pat.Macro(
+                attrs = mutableListOf(),
+                mac = Macro(path, bangToken, delimiter, tokens),
+            ),
+        )
+    }
+
+    if (input.peek(BracePeek)) {
+        return patStruct(input, qself, path).map { it }
+    }
+    if (input.peek(ParenPeek)) {
+        return patTupleStruct(input, qself, path).map { it }
+    }
+    if (input.peek(DotDotPeek) || input.peek(DotDotEqPeek) || input.peek(DotDotDotPeek)) {
+        return patRange(input, qself, path)
+    }
+    return SynResult.success(Pat.Path(mutableListOf(), qself, path))
+}
+
+private fun patWild(input: ParseStream): SynResult<Pat.Wild> =
+    SynResult.success(Pat.Wild(mutableListOf(), UnderscoreParse.parse(input).getOrElse { return SynResult.failure(it) }))
+
+private fun patBox(begin: Cursor, input: ParseStream): SynResult<Pat> {
+    BoxParse.parse(input).getOrElse { return SynResult.failure(it) }
+    Pat.parseSingle(input).getOrElse { return SynResult.failure(it) }
+    return SynResult.success(Pat.Verbatim(between(begin, input.cursor())))
+}
+
+private fun patIdent(input: ParseStream): SynResult<Pat.Ident> {
+    val byRef = RefParse.parse(input).getOrNull()
+    val mutability = MutParse.parse(input).getOrNull()
+    val ident =
+        if (input.peek(SelfValuePeek)) {
+            identFromSelfValue(SelfValueParse.parse(input).getOrElse { return SynResult.failure(it) })
+        } else {
+            IdentParse.parse(input).getOrElse { return SynResult.failure(it) }
+        }
+    val atToken =
+        if (input.peek(AtPeek)) {
+            AtParse.parse(input).getOrElse { return SynResult.failure(it) }
+        } else {
+            null
+        }
+    val subpat =
+        if (atToken != null) {
+            Pat.parseSingle(input).getOrElse { return SynResult.failure(it) }
+        } else {
+            null
+        }
+    return SynResult.success(Pat.Ident(mutableListOf(), byRef, mutability, ident, atToken, subpat))
+}
+
+private fun patTupleStruct(
+    input: ParseStream,
+    qself: QSelf?,
+    path: Path,
+): SynResult<Pat.TupleStruct> {
+    val parens = parenthesized(input).getOrElse { return SynResult.failure(it) }
+    val elems = PatList()
+    while (!parens.content.isEmpty()) {
+        elems.pushValue(Pat.parseMultiWithLeadingVert(parens.content).getOrElse { return SynResult.failure(it) })
+        if (parens.content.isEmpty()) break
+        elems.pushPunct(CommaParse.parse(parens.content).getOrElse { return SynResult.failure(it) })
+    }
+    parens.content.finishChildBuffer()
+    return SynResult.success(Pat.TupleStruct(mutableListOf(), qself, path, parens.token, elems))
+}
+
+private fun patStruct(
+    input: ParseStream,
+    qself: QSelf?,
+    path: Path,
+): SynResult<Pat.Struct> {
+    val braces = braced(input).getOrElse { return SynResult.failure(it) }
+    val fields = FieldPatList()
+    var rest: PatRest? = null
+    while (!braces.content.isEmpty()) {
+        val attrs = parseOuterAttributes(braces.content).getOrElse { return SynResult.failure(it) }
+        if (braces.content.peek(DotDotPeek) && !braces.content.peek(DotDotDotPeek)) {
+            rest =
+                PatRest(
+                    dot2Token = DotDotParse.parse(braces.content).getOrElse { return SynResult.failure(it) },
+                    attrs = attrs,
+                )
+            break
+        }
+        val value = fieldPat(braces.content).getOrElse { return SynResult.failure(it) }
+        fields.pushValue(value.copy(attrs = attrs))
+        if (braces.content.isEmpty()) break
+        fields.pushPunct(CommaParse.parse(braces.content).getOrElse { return SynResult.failure(it) })
+    }
+    braces.content.finishChildBuffer()
+    return SynResult.success(Pat.Struct(qself, path, braces.token, fields, rest, null, mutableListOf()))
+}
+
+private fun fieldPat(input: ParseStream): SynResult<FieldPat> {
+    val begin = input.cursor()
+    val boxed = BoxParse.parse(input).getOrNull()
+    val byRef = RefParse.parse(input).getOrNull()
+    val mutability = MutParse.parse(input).getOrNull()
+
+    val member =
+        if (boxed != null || byRef != null || mutability != null) {
+            Member.Named(IdentParse.parse(input).getOrElse { return SynResult.failure(it) })
+        } else {
+            parseMemberImpl(input).getOrElse { return SynResult.failure(it) }
+        }
+
+    if ((boxed == null && byRef == null && mutability == null && input.peek(ColonPeek)) ||
+        member !is Member.Named
+    ) {
+        val colonToken = ColonParse.parse(input).getOrElse { return SynResult.failure(it) }
+        val pat = Pat.parseMultiWithLeadingVert(input).getOrElse { return SynResult.failure(it) }
+        return SynResult.success(FieldPat(member, colonToken, pat))
+    }
+
+    val ident = member.ident
+    val pat =
+        if (boxed != null) {
+            Pat.Verbatim(between(begin, input.cursor()))
+        } else {
+            Pat.Ident(mutableListOf(), byRef, mutability, ident, null, null)
+        }
+    return SynResult.success(FieldPat(Member.Named(ident), null, pat))
+}
+
+private fun patRange(
+    input: ParseStream,
+    qself: QSelf?,
+    path: Path,
+): SynResult<Pat> {
+    val limits = parsePatRangeLimitsObsolete(input).getOrElse { return SynResult.failure(it) }
+    val end = patRangeBound(input).getOrElse { return SynResult.failure(it) }
+    if (limits is RangeLimits.Closed && end == null) {
+        return SynResult.failure(input.error("expected range upper bound"))
+    }
+    return SynResult.success(
+        Pat.Range(
+            attrs = mutableListOf(),
+            start = Expr.Path(mutableListOf(), qself, path),
+            limits = limits,
+            end = end?.intoExpr(),
+        ),
+    )
+}
+
+private fun patRangeHalfOpen(input: ParseStream): SynResult<Pat> {
+    val limits = RangeLimitsParse.parse(input).getOrElse { return SynResult.failure(it) }
+    val end = patRangeBound(input).getOrElse { return SynResult.failure(it) }
+    if (end != null) {
+        return SynResult.success(Pat.Range(mutableListOf(), null, limits, end.intoExpr()))
+    }
+    return when (limits) {
+        is RangeLimits.HalfOpen -> SynResult.success(Pat.Rest(mutableListOf(), limits.token))
+        is RangeLimits.Closed -> SynResult.failure(input.error("expected range upper bound"))
+    }
+}
+
+private fun patParenOrTuple(input: ParseStream): SynResult<Pat> {
+    val parens = parenthesized(input).getOrElse { return SynResult.failure(it) }
+    val content = parens.content
+    val elems = PatList()
+    while (!content.isEmpty()) {
+        val value = Pat.parseMultiWithLeadingVert(content).getOrElse { return SynResult.failure(it) }
+        if (content.isEmpty()) {
+            if (elems.isEmpty() && value !is Pat.Rest) {
+                content.finishChildBuffer()
+                return SynResult.success(Pat.PatParen(parens.token, value, mutableListOf()))
+            }
+            elems.pushValue(value)
+            break
+        }
+        elems.pushValue(value)
+        elems.pushPunct(CommaParse.parse(content).getOrElse { return SynResult.failure(it) })
+    }
+    content.finishChildBuffer()
+    return SynResult.success(Pat.Tuple(parens.token, elems, mutableListOf()))
+}
+
+private fun patReference(input: ParseStream): SynResult<Pat.Reference> {
+    val andToken = AndParse.parse(input).getOrElse { return SynResult.failure(it) }
+    val mutability = MutParse.parse(input).getOrNull()
+    val pat = Pat.parseSingle(input).getOrElse { return SynResult.failure(it) }
+    return SynResult.success(Pat.Reference(andToken, mutability, pat, mutableListOf()))
+}
+
+private fun patLitOrRange(input: ParseStream): SynResult<Pat> {
+    val start =
+        patRangeBound(input).getOrElse { return SynResult.failure(it) }
+            ?: return SynResult.failure(input.error("expected range bound"))
+    if (input.peek(DotDotPeek) || input.peek(DotDotEqPeek) || input.peek(DotDotDotPeek)) {
+        val limits = parsePatRangeLimitsObsolete(input).getOrElse { return SynResult.failure(it) }
+        val end = patRangeBound(input).getOrElse { return SynResult.failure(it) }
+        if (limits is RangeLimits.Closed && end == null) {
+            return SynResult.failure(input.error("expected range upper bound"))
+        }
+        return SynResult.success(Pat.Range(mutableListOf(), start.intoExpr(), limits, end?.intoExpr()))
+    }
+    return SynResult.success(start.intoPat())
+}
+
+private sealed class PatRangeBound {
+    data class Const(
+        var pat: Expr.Const,
+    ) : PatRangeBound()
+
+    data class Lit(
+        var pat: Expr.Lit,
+    ) : PatRangeBound()
+
+    data class Path(
+        var pat: Expr.Path,
+    ) : PatRangeBound()
+
+    fun intoExpr(): Expr =
+        when (this) {
+            is Const -> pat
+            is Lit -> pat
+            is Path -> pat
+        }
+
+    fun intoPat(): Pat =
+        when (this) {
+            is Const -> Pat.Const(pat.attrs, pat.constToken, pat.block)
+            is Lit -> Pat.Lit(pat.attrs, pat.lit)
+            is Path -> Pat.Path(pat.attrs, pat.qself, pat.path)
+        }
+}
+
+private fun patRangeBound(input: ParseStream): SynResult<PatRangeBound?> {
+    if (
+        input.isEmpty() ||
+        input.peek(OrPeek) ||
+        input.peek(EqPeek) ||
+        (input.peek(ColonPeek) && !input.peek(PathSepPeek)) ||
+        input.peek(CommaPeek) ||
+        input.peek(SemiPeek) ||
+        input.peek(IfPeek)
+    ) {
+        return SynResult.success(null)
+    }
+
+    val lookahead = input.lookahead1()
+    if (lookahead.peek(LitPeek) || input.peek(MinusPeek)) {
+        val lit = LitParse.parse(input).getOrElse { return SynResult.failure(it) }
+        return SynResult.success(PatRangeBound.Lit(Expr.Lit(mutableListOf(), lit)))
+    }
+    if (
+        lookahead.peek(IdentPeek) ||
+        lookahead.peek(PathSepPeek) ||
+        lookahead.peek(LtPeek) ||
+        lookahead.peek(SelfValuePeek) ||
+        lookahead.peek(SelfTypePeek) ||
+        lookahead.peek(SuperPeek) ||
+        lookahead.peek(CratePeek)
+    ) {
+        var (qself, path) = qpath(input, exprStyle = true).getOrElse { return SynResult.failure(it) }
+        return SynResult.success(PatRangeBound.Path(Expr.Path(mutableListOf(), qself, path)))
+    }
+    if (lookahead.peek(ConstPeek)) {
+        return parsePatConstExpr(input).map { PatRangeBound.Const(it) }
+    }
+    return SynResult.failure(lookahead.error())
+}
+
+private fun patSlice(input: ParseStream): SynResult<Pat.Slice> {
+    val brackets = bracketed(input).getOrElse { return SynResult.failure(it) }
+    val elems = PatList()
+    while (!brackets.content.isEmpty()) {
+        val value = Pat.parseMultiWithLeadingVert(brackets.content).getOrElse { return SynResult.failure(it) }
+        if (value is Pat.Range && (value.start == null || value.end == null)) {
+            val (start, end) =
+                when (val limits = value.limits) {
+                    is RangeLimits.HalfOpen -> limits.token.spans[0] to limits.token.spans[1]
+                    is RangeLimits.Closed -> limits.token.spans[0] to limits.token.spans[2]
+                }
+            return SynResult.failure(
+                SynError.new2(start, end, "range pattern is not allowed unparenthesized inside slice pattern"),
+            )
+        }
+        elems.pushValue(value)
+        if (brackets.content.isEmpty()) break
+        elems.pushPunct(CommaParse.parse(brackets.content).getOrElse { return SynResult.failure(it) })
+    }
+    brackets.content.finishChildBuffer()
+    return SynResult.success(Pat.Slice(brackets.token, elems, mutableListOf()))
+}
+
+private fun patConst(input: ParseStream): SynResult<TokenStream> {
+    val begin = input.cursor()
+    ConstParse.parse(input).getOrElse { return SynResult.failure(it) }
+    val braces = braced(input).getOrElse { return SynResult.failure(it) }
+    parseInnerAttributes(braces.content).getOrElse { return SynResult.failure(it) }
+    parseWithin(braces.content).getOrElse { return SynResult.failure(it) }
+    braces.content.finishChildBuffer()
+    return SynResult.success(between(begin, input.cursor()))
+}
+
+private fun parsePatConstExpr(input: ParseStream): SynResult<Expr.Const> {
+    val constToken = ConstParse.parse(input).getOrElse { return SynResult.failure(it) }
+    val braces = braced(input).getOrElse { return SynResult.failure(it) }
+    val attrs = parseInnerAttributes(braces.content).getOrElse { return SynResult.failure(it) }
+    val stmts = parseWithin(braces.content).getOrElse { return SynResult.failure(it) }
+    braces.content.finishChildBuffer()
+    return SynResult.success(Expr.Const(attrs.toMutableList(), constToken, BlockModifiers(), Block(braces.token, stmts.toMutableList())))
+}
+
+private fun parsePatRangeLimitsObsolete(input: ParseStream): SynResult<RangeLimits> {
+    if (input.peek(DotDotDotPeek)) {
+        val dots = DotDotDotParse.parse(input).getOrElse { return SynResult.failure(it) }
+        return SynResult.success(
+            RangeLimits.Closed(
+                io.github.kotlinmania.syn.token.DotDotEq
+                    .from(dots.spans),
+            ),
+        )
+    }
+    return RangeLimitsParse.parse(input)
+}
+
+internal fun parsePatFull(input: ParseStream): SynResult<Pat> = PatParseImpl.parse(input)
+
+internal object PatParseImpl {
+    fun parse(input: ParseStream): SynResult<Pat> = parsePatSingle(input)
+}
+
+internal fun parsePatSingle(input: ParseStream): SynResult<Pat> = Pat.parseSingle(input)
+
+internal fun parsePatMultiWithLeadingVert(input: ParseStream): SynResult<Pat> = Pat.parseMultiWithLeadingVert(input)
+
+internal fun parsePatMultiWithLeadingVertAndGuard(input: ParseStream): SynResult<Pat> =
+    Pat.parseMultiWithLeadingVertAndGuard(input)
