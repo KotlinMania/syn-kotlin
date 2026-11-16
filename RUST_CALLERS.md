@@ -16,145 +16,160 @@ For every Rust crate this repo owns (under `tmp/`), this file lists every **cros
 
 | package | module | inbound use sites | distinct caller crates | distinct caller repos | codex sites |
 |---|---|---:|---:|---:|---:|
-| `syn` | `syn` | 613 | 14 | 8 | 11 |
+| `syn` | `syn` | 904 | 24 | 13 | 11 |
+| `syn-field-value-oracle` | `syn_field_value_oracle` | 0 | 0 | 0 | 0 |
 
 ## `syn`
 
-### Inbound symbols (97 distinct, 613 total `use` sites)
+### Inbound symbols (104 distinct, 904 total `use` sites)
 
 Sorted by codex demand, then total demand. The first symbols are the priority queue for porting `syn`.
 
-#### `syn::DeriveInput` — 44 site(s) (1 codex, 43 other, 11 caller crates)
+#### `syn::DeriveInput` — 56 site(s) (1 codex, 55 other, 17 caller crates)
 
 - ✅ `codex-kotlin/codex-experimental-api-macros` `src/lib.rs:8` — `use syn::DeriveInput`
+- `gazebo-kotlin/dupe_derive` `src/clone.rs:4` — `use syn::DeriveInput`
+- `gazebo-kotlin/dupe_derive` `src/copy.rs:4` — `use syn::DeriveInput`
+- `gazebo-kotlin/dupe_derive` `src/dupe.rs:5` — `use syn::DeriveInput`
+- `gazebo-kotlin/gazebo_derive` `src/default.rs:8` — `use syn::DeriveInput`
+- `gazebo-kotlin/gazebo_derive` `src/lib.rs:8` — `use syn::DeriveInput`
+- `gazebo-kotlin/gazebo_derive` `src/variant.rs:6` — `use syn::DeriveInput`
+- `gazebo-kotlin/strong_hash_derive` `src/lib.rs:5` — `use syn::DeriveInput`
+- `pyo3-kotlin/pyo3-macros-backend` `src/frompyobject.rs:8` — `use syn::DeriveInput`
+- `pyo3-kotlin/pyo3-macros-backend` `src/intopyobject.rs:10` — `use syn::DeriveInput`
 - `serde-kotlin/serde_derive` `src/internals/receiver.rs:5` — `use syn::DeriveInput`
 - `serde-kotlin/serde_derive` `src/lib.rs:81` — `use syn::DeriveInput`
-- `serde-kotlin/serde_derive_internals` `src/receiver.rs:5` — `use syn::DeriveInput`
-- `starlark-kotlin/allocative_derive` `src/derive_allocative.rs:12` — `use syn::DeriveInput`
-- `starlark-kotlin/dupe_derive` `src/clone.rs:4` — `use syn::DeriveInput`
-- `starlark-kotlin/dupe_derive` `src/copy.rs:4` — `use syn::DeriveInput`
-- `starlark-kotlin/dupe_derive` `src/dupe.rs:5` — `use syn::DeriveInput`
-- `starlark-kotlin/gazebo_derive` `src/default.rs:8` — `use syn::DeriveInput`
-- `starlark-kotlin/gazebo_derive` `src/lib.rs:8` — `use syn::DeriveInput`
-- `starlark-kotlin/gazebo_derive` `src/variant.rs:6` — `use syn::DeriveInput`
-- `starlark-kotlin/pagable_derive` `src/derive_pagable.rs:11` — `use syn::DeriveInput`
-- _… and 32 more site(s)._
+- _… and 44 more site(s)._
 
-#### `syn::Ident` — 32 site(s) (1 codex, 31 other, 12 caller crates)
+#### `syn::Ident` — 52 site(s) (1 codex, 51 other, 19 caller crates)
 
 - ✅ `codex-kotlin/codex-experimental-api-macros` `src/lib.rs:11` — `use syn::Ident`
 - `async-trait-kotlin/async-trait` `src/expand.rs:12` — `use syn::Ident`
 - `async-trait-kotlin/async-trait` `src/receiver.rs:3` — `use syn::Ident`
 - `futures-kotlin/futures-macro` `src/join.rs:7` — `use syn::Ident`
 - `futures-kotlin/futures-macro` `src/select.rs:7` — `use syn::Ident`
+- `gazebo-kotlin/dupe_derive` `src/dupe.rs:6` — `use syn::Ident`
+- `gazebo-kotlin/dupe_derive` `src/util.rs:13` — `use syn::Ident`
+- `gazebo-kotlin/gazebo_derive` `src/variant.rs:8` — `use syn::Ident`
+- `gazebo-kotlin/strong_hash_derive` `src/lib.rs:7` — `use syn::Ident`
 - `logos-kotlin/logos-codegen` `src/generator/mod.rs:7` — `use syn::Ident`
 - `logos-kotlin/logos-codegen` `src/leaf.rs:6` — `use syn::Ident`
 - `logos-kotlin/logos-codegen` `src/parser/error_type.rs:3` — `use syn::Ident`
-- `logos-kotlin/logos-codegen` `src/parser/mod.rs:5` — `use syn::Ident`
-- `logos-kotlin/logos-codegen` `src/parser/subpattern.rs:6` — `use syn::Ident`
-- `logos-kotlin/logos-codegen` `src/util.rs:3` — `use syn::Ident`
-- `serde-kotlin/serde_derive` `src/de.rs:13` — `use syn::Ident`
-- _… and 20 more site(s)._
+- _… and 40 more site(s)._
 
-#### `syn::Data` — 27 site(s) (1 codex, 26 other, 10 caller crates)
-
-- ✅ `codex-kotlin/codex-experimental-api-macros` `src/lib.rs:5` — `use syn::Data`
-- `serde-kotlin/serde_derive` `src/internals/receiver.rs:5` — `use syn::Data`
-- `serde-kotlin/serde_derive_internals` `src/receiver.rs:5` — `use syn::Data`
-- `starlark-kotlin/allocative_derive` `src/derive_allocative.rs:9` — `use syn::Data`
-- `starlark-kotlin/dupe_derive` `src/util.rs:7` — `use syn::Data`
-- `starlark-kotlin/gazebo_derive` `src/default.rs:6` — `use syn::Data`
-- `starlark-kotlin/gazebo_derive` `src/variant.rs:5` — `use syn::Data`
-- `starlark-kotlin/pagable_derive` `src/derive_pagable.rs:8` — `use syn::Data`
-- `starlark-kotlin/starlark_derive` `src/attrs.rs:7` — `use syn::Data`
-- `starlark-kotlin/starlark_derive` `src/coerce.rs:9` — `use syn::Data`
-- `starlark-kotlin/starlark_derive` `src/util.rs:9` — `use syn::Data`
-- `strum-macros-kotlin/strum_macros` `src/macros/enum_count.rs:3` — `use syn::Data`
-- _… and 15 more site(s)._
-
-#### `syn::Type` — 27 site(s) (1 codex, 26 other, 10 caller crates)
+#### `syn::Type` — 37 site(s) (1 codex, 36 other, 14 caller crates)
 
 - ✅ `codex-kotlin/codex-experimental-api-macros` `src/lib.rs:13` — `use syn::Type`
 - `async-trait-kotlin/async-trait` `src/expand.rs:12` — `use syn::Type`
 - `async-trait-kotlin/async-trait` `src/lifetime.rs:4` — `use syn::Type`
+- `gazebo-kotlin/dupe_derive` `src/dupe.rs:7` — `use syn::Type`
+- `gazebo-kotlin/dupe_derive` `src/util.rs:15` — `use syn::Type`
 - `logos-kotlin/logos-codegen` `src/parser/mod.rs:5` — `use syn::Type`
 - `logos-kotlin/logos-codegen` `src/parser/type_params.rs:4` — `use syn::Type`
+- `pyo3-kotlin/pyo3-macros-backend` `src/introspection.rs:24` — `use syn::Type`
+- `pyo3-kotlin/pyo3-macros-backend` `src/py_expr.rs:8` — `use syn::Type`
 - `serde-kotlin/serde_derive` `src/internals/check.rs:4` — `use syn::Type`
 - `serde-kotlin/serde_derive` `src/internals/mod.rs:11` — `use syn::Type`
 - `serde-kotlin/serde_derive` `src/internals/receiver.rs:5` — `use syn::Type`
-- `serde-kotlin/serde_derive_internals` `src/check.rs:4` — `use syn::Type`
-- `serde-kotlin/serde_derive_internals` `src/mod.rs:11` — `use syn::Type`
-- `serde-kotlin/serde_derive_internals` `src/receiver.rs:5` — `use syn::Type`
-- `starlark-kotlin/dupe_derive` `src/dupe.rs:7` — `use syn::Type`
-- _… and 15 more site(s)._
+- _… and 25 more site(s)._
 
-#### `syn::Fields` — 24 site(s) (1 codex, 23 other, 10 caller crates)
+#### `syn::Data` — 32 site(s) (1 codex, 31 other, 14 caller crates)
+
+- ✅ `codex-kotlin/codex-experimental-api-macros` `src/lib.rs:5` — `use syn::Data`
+- `gazebo-kotlin/dupe_derive` `src/util.rs:7` — `use syn::Data`
+- `gazebo-kotlin/gazebo_derive` `src/default.rs:6` — `use syn::Data`
+- `gazebo-kotlin/gazebo_derive` `src/variant.rs:5` — `use syn::Data`
+- `serde-kotlin/serde_derive` `src/internals/receiver.rs:5` — `use syn::Data`
+- `serde-kotlin/serde_derive_internals` `src/receiver.rs:5` — `use syn::Data`
+- `serderive-kotlin/serde_derive` `src/internals/receiver.rs:5` — `use syn::Data`
+- `serderive-kotlin/serde_derive_internals` `src/receiver.rs:5` — `use syn::Data`
+- `starlark-kotlin/allocative_derive` `src/derive_allocative.rs:9` — `use syn::Data`
+- `starlark-kotlin/dupe_derive` `src/util.rs:7` — `use syn::Data`
+- `starlark-kotlin/gazebo_derive` `src/default.rs:6` — `use syn::Data`
+- `starlark-kotlin/gazebo_derive` `src/variant.rs:5` — `use syn::Data`
+- _… and 20 more site(s)._
+
+#### `syn::Fields` — 32 site(s) (1 codex, 31 other, 14 caller crates)
 
 - ✅ `codex-kotlin/codex-experimental-api-macros` `src/lib.rs:10` — `use syn::Fields`
+- `gazebo-kotlin/dupe_derive` `src/util.rs:10` — `use syn::Fields`
+- `gazebo-kotlin/gazebo_derive` `src/default.rs:9` — `use syn::Fields`
+- `gazebo-kotlin/gazebo_derive` `src/variant.rs:7` — `use syn::Fields`
+- `gazebo-kotlin/strong_hash_derive` `src/lib.rs:6` — `use syn::Fields`
 - `logos-kotlin/logos-codegen` `src/lib.rs:40` — `use syn::Fields`
+- `pyo3-kotlin/pyo3-macros-backend` `src/frompyobject.rs:8` — `use syn::Fields`
+- `pyo3-kotlin/pyo3-macros-backend` `src/intopyobject.rs:10` — `use syn::Fields`
+- `pyo3-kotlin/pyo3-macros-backend` `src/pyclass.rs:621` — `use syn::Fields`
+- `pyo3-kotlin/pyo3-macros-backend` `src/pyclass.rs:682` — `use syn::Fields`
 - `starlark-kotlin/allocative_derive` `src/derive_allocative.rs:14` — `use syn::Fields`
 - `starlark-kotlin/dupe_derive` `src/util.rs:10` — `use syn::Fields`
-- `starlark-kotlin/gazebo_derive` `src/default.rs:9` — `use syn::Fields`
-- `starlark-kotlin/gazebo_derive` `src/variant.rs:7` — `use syn::Fields`
-- `starlark-kotlin/pagable_derive` `src/derive_pagable.rs:12` — `use syn::Fields`
-- `starlark-kotlin/starlark_derive` `src/alloc_value.rs:5` — `use syn::Fields`
-- `starlark-kotlin/starlark_derive` `src/bc.rs:10` — `use syn::Fields`
-- `starlark-kotlin/starlark_derive` `src/util.rs:14` — `use syn::Fields`
-- `starlark-kotlin/strong_hash_derive` `src/lib.rs:6` — `use syn::Fields`
-- `strum-macros-kotlin/strum_macros` `src/macros/enum_discriminants.rs:4` — `use syn::Fields`
-- _… and 12 more site(s)._
+- _… and 20 more site(s)._
 
-#### `syn::parse_macro_input` — 18 site(s) (1 codex, 17 other, 8 caller crates)
+#### `syn::parse_macro_input` — 25 site(s) (1 codex, 24 other, 13 caller crates)
 
 - ✅ `codex-kotlin/codex-experimental-api-macros` `src/lib.rs:14` — `use syn::parse_macro_input`
 - `async-trait-kotlin/async-trait` `src/lib.rs:249` — `use syn::parse_macro_input`
+- `gazebo-kotlin/dupe_derive` `src/clone.rs:5` — `use syn::parse_macro_input`
+- `gazebo-kotlin/dupe_derive` `src/copy.rs:5` — `use syn::parse_macro_input`
+- `gazebo-kotlin/dupe_derive` `src/dupe.rs:9` — `use syn::parse_macro_input`
+- `gazebo-kotlin/gazebo_derive` `src/lib.rs:10` — `use syn::parse_macro_input`
+- `gazebo-kotlin/strong_hash_derive` `src/lib.rs:8` — `use syn::parse_macro_input`
+- `pyo3-kotlin/pyo3-macros` `src/lib.rs:13` — `use syn::parse_macro_input`
 - `serde-kotlin/serde_derive` `src/lib.rs:80` — `use syn::parse_macro_input`
+- `serderive-kotlin/serde_derive` `src/lib.rs:80` — `use syn::parse_macro_input`
 - `starlark-kotlin/dupe_derive` `src/clone.rs:5` — `use syn::parse_macro_input`
 - `starlark-kotlin/dupe_derive` `src/copy.rs:5` — `use syn::parse_macro_input`
-- `starlark-kotlin/dupe_derive` `src/dupe.rs:9` — `use syn::parse_macro_input`
-- `starlark-kotlin/gazebo_derive` `src/lib.rs:10` — `use syn::parse_macro_input`
-- `starlark-kotlin/starlark_derive` `src/attrs.rs:13` — `use syn::parse_macro_input`
-- `starlark-kotlin/starlark_derive` `src/bc.rs:13` — `use syn::parse_macro_input`
-- `starlark-kotlin/starlark_derive` `src/coerce.rs:21` — `use syn::parse_macro_input`
-- `starlark-kotlin/starlark_derive` `src/freeze.rs:14` — `use syn::parse_macro_input`
-- `starlark-kotlin/starlark_derive` `src/module.rs:12` — `use syn::parse_macro_input`
-- _… and 6 more site(s)._
+- _… and 13 more site(s)._
 
-#### `syn::LitStr` — 17 site(s) (1 codex, 16 other, 9 caller crates)
+#### `syn::LitStr` — 22 site(s) (1 codex, 21 other, 12 caller crates)
 
 - ✅ `codex-kotlin/codex-experimental-api-macros` `src/lib.rs:12` — `use syn::LitStr`
 - `logos-kotlin/logos-codegen` `src/parser/definition.rs:4` — `use syn::LitStr`
+- `pyo3-kotlin/pyo3-macros-backend` `src/attributes.rs:4` — `use syn::LitStr`
+- `pyo3-kotlin/pyo3-macros-backend` `src/derive_attributes.rs:8` — `use syn::LitStr`
+- `pyo3-kotlin/pyo3-macros-backend` `src/pyfunction.rs:28` — `use syn::LitStr`
 - `serde-kotlin/serde_derive` `src/internals/name.rs:7` — `use syn::LitStr`
 - `serde-kotlin/serde_derive_internals` `src/name.rs:7` — `use syn::LitStr`
+- `serderive-kotlin/serde_derive` `src/internals/name.rs:7` — `use syn::LitStr`
+- `serderive-kotlin/serde_derive_internals` `src/name.rs:7` — `use syn::LitStr`
 - `starlark-kotlin/allocative_derive` `src/derive_allocative.rs:19` — `use syn::LitStr`
 - `starlark-kotlin/pagable_derive` `src/derive_pagable.rs:15` — `use syn::LitStr`
 - `starlark-kotlin/starlark_derive` `src/freeze.rs:10` — `use syn::LitStr`
-- `strum-macros-kotlin/strum_macros` `src/helpers/case_style.rs:6` — `use syn::LitStr`
-- `strum-macros-kotlin/strum_macros` `src/helpers/inner_variant_props.rs:3` — `use syn::LitStr`
-- `strum-macros-kotlin/strum_macros` `src/helpers/metadata.rs:1` — `use syn::LitStr`
-- `strum-macros-kotlin/strum_macros` `src/helpers/type_props.rs:3` — `use syn::LitStr`
-- `strum-macros-kotlin/strum_macros` `src/helpers/variant_props.rs:2` — `use syn::LitStr`
-- _… and 5 more site(s)._
+- _… and 10 more site(s)._
 
-#### `syn::Attribute` — 15 site(s) (1 codex, 14 other, 8 caller crates)
+#### `syn::Attribute` — 18 site(s) (1 codex, 17 other, 9 caller crates)
 
 - ✅ `codex-kotlin/codex-experimental-api-macros` `src/lib.rs:4` — `use syn::Attribute`
 - `async-trait-kotlin/async-trait` `src/expand.rs:12` — `use syn::Attribute`
 - `async-trait-kotlin/async-trait` `src/parse.rs:3` — `use syn::Attribute`
 - `async-trait-kotlin/async-trait` `src/verbatim.rs:4` — `use syn::Attribute`
 - `logos-kotlin/logos-codegen` `src/parser/mod.rs:5` — `use syn::Attribute`
+- `pyo3-kotlin/pyo3-macros-backend` `src/attributes.rs:4` — `use syn::Attribute`
+- `pyo3-kotlin/pyo3-macros-backend` `src/derive_attributes.rs:8` — `use syn::Attribute`
+- `pyo3-kotlin/pyo3-macros-backend` `src/introspection.rs:24` — `use syn::Attribute`
 - `starlark-kotlin/allocative_derive` `src/derive_allocative.rs:8` — `use syn::Attribute`
 - `starlark-kotlin/pagable_derive` `src/derive_pagable.rs:7` — `use syn::Attribute`
 - `starlark-kotlin/starlark_derive` `src/attrs.rs:6` — `use syn::Attribute`
 - `starlark-kotlin/starlark_derive` `src/freeze.rs:7` — `use syn::Attribute`
-- `starlark-kotlin/starlark_derive` `src/module/parse.rs:6` — `use syn::Attribute`
-- `starlark-kotlin/starlark_derive` `src/module/parse/fun.rs:5` — `use syn::Attribute`
-- `starlark-kotlin/starlark_derive` `src/module/typ.rs:6` — `use syn::Attribute`
-- _… and 3 more site(s)._
+- _… and 6 more site(s)._
 
-#### `syn::DataStruct` — 7 site(s) (1 codex, 6 other, 7 caller crates)
+#### `syn::DataEnum` — 9 site(s) (1 codex, 8 other, 8 caller crates)
+
+- ✅ `codex-kotlin/codex-experimental-api-macros` `src/lib.rs:6` — `use syn::DataEnum`
+- `gazebo-kotlin/dupe_derive` `src/util.rs:8` — `use syn::DataEnum`
+- `pyo3-kotlin/pyo3-macros-backend` `src/frompyobject.rs:8` — `use syn::DataEnum`
+- `pyo3-kotlin/pyo3-macros-backend` `src/intopyobject.rs:10` — `use syn::DataEnum`
+- `starlark-kotlin/allocative_derive` `src/derive_allocative.rs:10` — `use syn::DataEnum`
+- `starlark-kotlin/dupe_derive` `src/util.rs:8` — `use syn::DataEnum`
+- `starlark-kotlin/pagable_derive` `src/derive_pagable.rs:9` — `use syn::DataEnum`
+- `starlark-kotlin/starlark_derive` `src/util.rs:10` — `use syn::DataEnum`
+- `thiserror-kotlin/thiserror-impl` `src/ast.rs:6` — `use syn::DataEnum`
+
+#### `syn::DataStruct` — 9 site(s) (1 codex, 8 other, 9 caller crates)
 
 - ✅ `codex-kotlin/codex-experimental-api-macros` `src/lib.rs:7` — `use syn::DataStruct`
+- `gazebo-kotlin/dupe_derive` `src/util.rs:9` — `use syn::DataStruct`
+- `gazebo-kotlin/gazebo_derive` `src/default.rs:7` — `use syn::DataStruct`
 - `starlark-kotlin/allocative_derive` `src/derive_allocative.rs:11` — `use syn::DataStruct`
 - `starlark-kotlin/dupe_derive` `src/util.rs:9` — `use syn::DataStruct`
 - `starlark-kotlin/gazebo_derive` `src/default.rs:7` — `use syn::DataStruct`
@@ -162,41 +177,33 @@ Sorted by codex demand, then total demand. The first symbols are the priority qu
 - `starlark-kotlin/starlark_derive` `src/util.rs:11` — `use syn::DataStruct`
 - `thiserror-kotlin/thiserror-impl` `src/ast.rs:6` — `use syn::DataStruct`
 
-#### `syn::DataEnum` — 6 site(s) (1 codex, 5 other, 6 caller crates)
-
-- ✅ `codex-kotlin/codex-experimental-api-macros` `src/lib.rs:6` — `use syn::DataEnum`
-- `starlark-kotlin/allocative_derive` `src/derive_allocative.rs:10` — `use syn::DataEnum`
-- `starlark-kotlin/dupe_derive` `src/util.rs:8` — `use syn::DataEnum`
-- `starlark-kotlin/pagable_derive` `src/derive_pagable.rs:9` — `use syn::DataEnum`
-- `starlark-kotlin/starlark_derive` `src/util.rs:10` — `use syn::DataEnum`
-- `thiserror-kotlin/thiserror-impl` `src/ast.rs:6` — `use syn::DataEnum`
-
-#### `syn::Field` — 6 site(s) (1 codex, 5 other, 4 caller crates)
+#### `syn::Field` — 7 site(s) (1 codex, 6 other, 5 caller crates)
 
 - ✅ `codex-kotlin/codex-experimental-api-macros` `src/lib.rs:9` — `use syn::Field`
+- `pyo3-kotlin/pyo3-macros-backend` `src/pymethod.rs:22` — `use syn::Field`
 - `starlark-kotlin/allocative_derive` `src/derive_allocative.rs:13` — `use syn::Field`
 - `starlark-kotlin/starlark_derive` `src/coerce.rs:12` — `use syn::Field`
 - `starlark-kotlin/starlark_derive` `src/util.rs:13` — `use syn::Field`
 - `strum-macros-kotlin/strum_macros` `src/helpers/inner_variant_props.rs:3` — `use syn::Field`
 - `strum-macros-kotlin/strum_macros` `src/helpers/metadata.rs:1` — `use syn::Field`
 
-#### `syn::spanned::Spanned` — 39 site(s) (0 codex, 39 other, 10 caller crates)
+#### `syn::spanned::Spanned` — 67 site(s) (0 codex, 67 other, 17 caller crates)
 
+- `gazebo-kotlin/dupe_derive` `src/util.rs:18` — `use syn::spanned::Spanned`
+- `gazebo-kotlin/gazebo_derive` `src/default.rs:10` — `use syn::spanned::Spanned`
+- `gazebo-kotlin/gazebo_derive` `src/variant.rs:9` — `use syn::spanned::Spanned`
+- `gazebo-kotlin/strong_hash_derive` `src/lib.rs:9` — `use syn::spanned::Spanned`
 - `logos-kotlin/logos-codegen` `src/leaf.rs:6` — `use syn::spanned::Spanned`
 - `logos-kotlin/logos-codegen` `src/lib.rs:38` — `use syn::spanned::Spanned`
 - `logos-kotlin/logos-codegen` `src/parser/definition.rs:4` — `use syn::spanned::Spanned`
 - `logos-kotlin/logos-codegen` `src/parser/error_type.rs:2` — `use syn::spanned::Spanned`
 - `logos-kotlin/logos-codegen` `src/parser/mod.rs:4` — `use syn::spanned::Spanned`
 - `logos-kotlin/logos-codegen` `src/parser/type_params.rs:3` — `use syn::spanned::Spanned`
-- `serde-kotlin/serde_derive` `src/de.rs:12` — `use syn::spanned::Spanned`
-- `serde-kotlin/serde_derive` `src/de/enum_adjacently.rs:16` — `use syn::spanned::Spanned`
-- `serde-kotlin/serde_derive` `src/de/enum_externally.rs:20` — `use syn::spanned::Spanned`
-- `serde-kotlin/serde_derive` `src/de/enum_untagged.rs:19` — `use syn::spanned::Spanned`
-- `serde-kotlin/serde_derive` `src/de/struct_.rs:14` — `use syn::spanned::Spanned`
-- `serde-kotlin/serde_derive` `src/de/tuple.rs:10` — `use syn::spanned::Spanned`
-- _… and 27 more site(s)._
+- `pyo3-kotlin/pyo3-macros-backend` `src/attributes.rs:4` — `use syn::spanned::Spanned`
+- `pyo3-kotlin/pyo3-macros-backend` `src/derive_attributes.rs:7` — `use syn::spanned::Spanned`
+- _… and 55 more site(s)._
 
-#### `syn::Token` — 32 site(s) (0 codex, 32 other, 9 caller crates)
+#### `syn::Token` — 48 site(s) (0 codex, 48 other, 13 caller crates)
 
 - `async-trait-kotlin/async-trait` `src/args.rs:3` — `use syn::Token`
 - `async-trait-kotlin/async-trait` `src/bound.rs:4` — `use syn::Token`
@@ -208,190 +215,310 @@ Sorted by codex demand, then total demand. The first symbols are the priority qu
 - `futures-kotlin/futures-macro` `src/join.rs:7` — `use syn::Token`
 - `futures-kotlin/futures-macro` `src/select.rs:7` — `use syn::Token`
 - `futures-kotlin/futures-macro` `src/stream_select.rs:3` — `use syn::Token`
-- `serde-kotlin/serde_derive` `src/bound.rs:6` — `use syn::Token`
-- `serde-kotlin/serde_derive` `src/fragment.rs:3` — `use syn::Token`
-- _… and 20 more site(s)._
+- `pyo3-kotlin/pyo3-macros-backend` `src/attributes.rs:4` — `use syn::Token`
+- `pyo3-kotlin/pyo3-macros-backend` `src/derive_attributes.rs:8` — `use syn::Token`
+- _… and 36 more site(s)._
 
-#### `syn::parse::ParseStream` — 21 site(s) (0 codex, 21 other, 9 caller crates)
+#### `syn::parse::ParseStream` — 34 site(s) (0 codex, 34 other, 13 caller crates)
 
 - `async-trait-kotlin/async-trait` `src/args.rs:2` — `use syn::parse::ParseStream`
 - `async-trait-kotlin/async-trait` `src/parse.rs:2` — `use syn::parse::ParseStream`
 - `async-trait-kotlin/async-trait` `src/verbatim.rs:3` — `use syn::parse::ParseStream`
 - `futures-kotlin/futures-macro` `src/join.rs:6` — `use syn::parse::ParseStream`
 - `futures-kotlin/futures-macro` `src/select.rs:6` — `use syn::parse::ParseStream`
-- `serde-kotlin/serde_derive` `src/internals/attr.rs:9` — `use syn::parse::ParseStream`
-- `serde-kotlin/serde_derive_internals` `src/attr.rs:9` — `use syn::parse::ParseStream`
-- `starlark-kotlin/allocative_derive` `src/derive_allocative.rs:23` — `use syn::parse::ParseStream`
-- `starlark-kotlin/pagable_derive` `src/derive_pagable.rs:19` — `use syn::parse::ParseStream`
-- `starlark-kotlin/starlark_derive` `src/coerce.rs:20` — `use syn::parse::ParseStream`
-- `starlark-kotlin/starlark_derive` `src/freeze.rs:13` — `use syn::parse::ParseStream`
-- `starlark-kotlin/starlark_derive` `src/module/parse/fun.rs:16` — `use syn::parse::ParseStream`
-- _… and 9 more site(s)._
+- `prometheus-kotlin/prometheus-static-metric` `src/auto_flush_from.rs:5` — `use syn::parse::ParseStream`
+- `prometheus-kotlin/prometheus-static-metric` `src/parser.rs:6` — `use syn::parse::ParseStream`
+- `prometheus-kotlin/prometheus-static-metric` `src/register_macro.rs:4` — `use syn::parse::ParseStream`
+- `pyo3-kotlin/pyo3-macros-backend` `src/attributes.rs:4` — `use syn::parse::ParseStream`
+- `pyo3-kotlin/pyo3-macros-backend` `src/derive_attributes.rs:6` — `use syn::parse::ParseStream`
+- `pyo3-kotlin/pyo3-macros-backend` `src/konst.rs:9` — `use syn::parse::ParseStream`
+- `pyo3-kotlin/pyo3-macros-backend` `src/module.rs:26` — `use syn::parse::ParseStream`
+- _… and 22 more site(s)._
 
-#### `syn::punctuated::Punctuated` — 15 site(s) (0 codex, 15 other, 7 caller crates)
+#### `syn::punctuated::Punctuated` — 29 site(s) (0 codex, 29 other, 11 caller crates)
 
 - `async-trait-kotlin/async-trait` `src/bound.rs:3` — `use syn::punctuated::Punctuated`
 - `async-trait-kotlin/async-trait` `src/expand.rs:10` — `use syn::punctuated::Punctuated`
 - `futures-kotlin/futures-macro` `src/stream_select.rs:3` — `use syn::punctuated::Punctuated`
+- `prometheus-kotlin/prometheus-static-metric` `src/parser.rs:7` — `use syn::punctuated::Punctuated`
+- `prometheus-kotlin/prometheus-static-metric` `src/register_macro.rs:5` — `use syn::punctuated::Punctuated`
+- `pyo3-kotlin/pyo3-macros-backend` `src/attributes.rs:4` — `use syn::punctuated::Punctuated`
+- `pyo3-kotlin/pyo3-macros-backend` `src/frompyobject.rs:8` — `use syn::punctuated::Punctuated`
+- `pyo3-kotlin/pyo3-macros-backend` `src/module.rs:26` — `use syn::punctuated::Punctuated`
+- `pyo3-kotlin/pyo3-macros-backend` `src/pyclass.rs:8` — `use syn::punctuated::Punctuated`
+- `pyo3-kotlin/pyo3-macros-backend` `src/pyfunction.rs:27` — `use syn::punctuated::Punctuated`
+- `pyo3-kotlin/pyo3-macros-backend` `src/pyfunction/signature.rs:10` — `use syn::punctuated::Punctuated`
 - `serde-kotlin/serde_derive` `src/bound.rs:5` — `use syn::punctuated::Punctuated`
-- `serde-kotlin/serde_derive` `src/de.rs:11` — `use syn::punctuated::Punctuated`
-- `serde-kotlin/serde_derive` `src/internals/ast.rs:5` — `use syn::punctuated::Punctuated`
-- `serde-kotlin/serde_derive` `src/internals/attr.rs:10` — `use syn::punctuated::Punctuated`
-- `serde-kotlin/serde_derive_internals` `src/ast.rs:5` — `use syn::punctuated::Punctuated`
-- `serde-kotlin/serde_derive_internals` `src/attr.rs:10` — `use syn::punctuated::Punctuated`
-- `starlark-kotlin/starlark_derive` `src/any_lifetime.rs:6` — `use syn::punctuated::Punctuated`
-- `starlark-kotlin/starlark_derive` `src/attrs.rs:14` — `use syn::punctuated::Punctuated`
-- `starlark-kotlin/starlark_derive` `src/trace.rs:23` — `use syn::punctuated::Punctuated`
-- _… and 3 more site(s)._
+- _… and 17 more site(s)._
 
-#### `syn::Expr` — 14 site(s) (0 codex, 14 other, 7 caller crates)
+#### `syn::parse_quote` — 24 site(s) (0 codex, 24 other, 13 caller crates)
+
+- `async-trait-kotlin/async-trait` `src/expand.rs:12` — `use syn::parse_quote`
+- `futures-kotlin/futures-macro` `src/select.rs:7` — `use syn::parse_quote`
+- `gazebo-kotlin/dupe_derive` `src/dupe.rs:10` — `use syn::parse_quote`
+- `logos-kotlin/logos-codegen` `src/lib.rs:39` — `use syn::parse_quote`
+- `pyo3-kotlin/pyo3-macros-backend` `src/frompyobject.rs:8` — `use syn::parse_quote`
+- `pyo3-kotlin/pyo3-macros-backend` `src/intopyobject.rs:10` — `use syn::parse_quote`
+- `pyo3-kotlin/pyo3-macros-backend` `src/module.rs:26` — `use syn::parse_quote`
+- `pyo3-kotlin/pyo3-macros-backend` `src/pyclass.rs:9` — `use syn::parse_quote`
+- `pyo3-kotlin/pyo3-macros-backend` `src/pyfunction/signature.rs:10` — `use syn::parse_quote`
+- `pyo3-kotlin/pyo3-macros-backend` `src/pyimpl.rs:24` — `use syn::parse_quote`
+- `serde-kotlin/serde_derive` `src/de.rs:13` — `use syn::parse_quote`
+- `serde-kotlin/serde_derive` `src/internals/receiver.rs:5` — `use syn::parse_quote`
+- _… and 12 more site(s)._
+
+#### `syn::Expr` — 20 site(s) (0 codex, 20 other, 10 caller crates)
 
 - `async-trait-kotlin/async-trait` `src/lifetime.rs:4` — `use syn::Expr`
 - `futures-kotlin/futures-macro` `src/join.rs:7` — `use syn::Expr`
 - `futures-kotlin/futures-macro` `src/select.rs:7` — `use syn::Expr`
 - `futures-kotlin/futures-macro` `src/stream_select.rs:3` — `use syn::Expr`
+- `pyo3-kotlin/pyo3-macros-backend` `src/attributes.rs:4` — `use syn::Expr`
+- `pyo3-kotlin/pyo3-macros-backend` `src/py_expr.rs:8` — `use syn::Expr`
+- `pyo3-kotlin/pyo3-macros-backend` `src/pyfunction/signature.rs:10` — `use syn::Expr`
+- `pyo3-kotlin/pyo3-macros-backend` `src/utils.rs:7` — `use syn::Expr`
 - `serde-kotlin/serde_derive` `src/internals/receiver.rs:5` — `use syn::Expr`
 - `serde-kotlin/serde_derive_internals` `src/receiver.rs:5` — `use syn::Expr`
-- `starlark-kotlin/starlark_derive` `src/coerce.rs:11` — `use syn::Expr`
-- `starlark-kotlin/starlark_derive` `src/module/parse.rs:7` — `use syn::Expr`
-- `starlark-kotlin/starlark_derive` `src/module/parse/fun.rs:6` — `use syn::Expr`
-- `starlark-kotlin/starlark_derive` `src/module/render/fun.rs:7` — `use syn::Expr`
-- `starlark-kotlin/starlark_derive` `src/module/typ.rs:8` — `use syn::Expr`
-- `strum-macros-kotlin/strum_macros` `src/helpers/metadata.rs:1` — `use syn::Expr`
-- _… and 2 more site(s)._
+- `serderive-kotlin/serde_derive` `src/internals/receiver.rs:5` — `use syn::Expr`
+- `serderive-kotlin/serde_derive_internals` `src/receiver.rs:5` — `use syn::Expr`
+- _… and 8 more site(s)._
 
-#### `syn::parse_quote` — 13 site(s) (0 codex, 13 other, 9 caller crates)
-
-- `async-trait-kotlin/async-trait` `src/expand.rs:12` — `use syn::parse_quote`
-- `futures-kotlin/futures-macro` `src/select.rs:7` — `use syn::parse_quote`
-- `logos-kotlin/logos-codegen` `src/lib.rs:39` — `use syn::parse_quote`
-- `serde-kotlin/serde_derive` `src/de.rs:13` — `use syn::parse_quote`
-- `serde-kotlin/serde_derive` `src/internals/receiver.rs:5` — `use syn::parse_quote`
-- `serde-kotlin/serde_derive` `src/ser.rs:11` — `use syn::parse_quote`
-- `serde-kotlin/serde_derive_internals` `src/receiver.rs:5` — `use syn::parse_quote`
-- `starlark-kotlin/dupe_derive` `src/dupe.rs:10` — `use syn::parse_quote`
-- `starlark-kotlin/starlark_derive` `src/trace.rs:22` — `use syn::parse_quote`
-- `strum-macros-kotlin/strum_macros` `src/helpers/type_props.rs:3` — `use syn::parse_quote`
-- `strum-macros-kotlin/strum_macros` `src/macros/enum_discriminants.rs:3` — `use syn::parse_quote`
-- `strum-macros-kotlin/strum_macros` `src/macros/strings/as_ref_str.rs:3` — `use syn::parse_quote`
-- _… and 1 more site(s)._
-
-#### `syn::GenericArgument` — 11 site(s) (0 codex, 11 other, 6 caller crates)
-
-- `async-trait-kotlin/async-trait` `src/expand.rs:12` — `use syn::GenericArgument`
-- `async-trait-kotlin/async-trait` `src/lifetime.rs:4` — `use syn::GenericArgument`
-- `logos-kotlin/logos-codegen` `src/parser/type_params.rs:235` — `use syn::GenericArgument`
-- `serde-kotlin/serde_derive` `src/internals/receiver.rs:5` — `use syn::GenericArgument`
-- `serde-kotlin/serde_derive_internals` `src/receiver.rs:5` — `use syn::GenericArgument`
-- `starlark-kotlin/starlark_derive` `src/coerce.rs:13` — `use syn::GenericArgument`
-- `starlark-kotlin/starlark_derive` `src/module/parse/fun.rs:8` — `use syn::GenericArgument`
-- `starlark-kotlin/starlark_derive` `src/trace.rs:10` — `use syn::GenericArgument`
-- `thiserror-kotlin/thiserror-impl` `src/expand.rs:10` — `use syn::GenericArgument`
-- `thiserror-kotlin/thiserror-impl` `src/generics.rs:6` — `use syn::GenericArgument`
-- `thiserror-kotlin/thiserror-impl` `src/valid.rs:3` — `use syn::GenericArgument`
-
-#### `syn::Path` — 11 site(s) (0 codex, 11 other, 7 caller crates)
-
-- `async-trait-kotlin/async-trait` `src/receiver.rs:3` — `use syn::Path`
-- `logos-kotlin/logos-codegen` `src/parser/type_params.rs:4` — `use syn::Path`
-- `serde-kotlin/serde_derive` `src/internals/receiver.rs:5` — `use syn::Path`
-- `serde-kotlin/serde_derive` `src/internals/symbol.rs:2` — `use syn::Path`
-- `serde-kotlin/serde_derive` `src/this.rs:2` — `use syn::Path`
-- `serde-kotlin/serde_derive_internals` `src/receiver.rs:5` — `use syn::Path`
-- `serde-kotlin/serde_derive_internals` `src/symbol.rs:2` — `use syn::Path`
-- `starlark-kotlin/allocative_derive` `src/derive_allocative.rs:20` — `use syn::Path`
-- `starlark-kotlin/starlark_derive` `src/coerce.rs:15` — `use syn::Path`
-- `strum-macros-kotlin/strum_macros` `src/helpers/metadata.rs:1` — `use syn::Path`
-- `strum-macros-kotlin/strum_macros` `src/helpers/type_props.rs:3` — `use syn::Path`
-
-#### `syn::PathArguments` — 11 site(s) (0 codex, 11 other, 6 caller crates)
-
-- `async-trait-kotlin/async-trait` `src/expand.rs:12` — `use syn::PathArguments`
-- `logos-kotlin/logos-codegen` `src/parser/type_params.rs:235` — `use syn::PathArguments`
-- `serde-kotlin/serde_derive` `src/internals/receiver.rs:5` — `use syn::PathArguments`
-- `serde-kotlin/serde_derive` `src/this.rs:2` — `use syn::PathArguments`
-- `serde-kotlin/serde_derive_internals` `src/receiver.rs:5` — `use syn::PathArguments`
-- `starlark-kotlin/starlark_derive` `src/coerce.rs:16` — `use syn::PathArguments`
-- `starlark-kotlin/starlark_derive` `src/module/parse/fun.rs:12` — `use syn::PathArguments`
-- `starlark-kotlin/starlark_derive` `src/trace.rs:15` — `use syn::PathArguments`
-- `thiserror-kotlin/thiserror-impl` `src/expand.rs:10` — `use syn::PathArguments`
-- `thiserror-kotlin/thiserror-impl` `src/generics.rs:6` — `use syn::PathArguments`
-- `thiserror-kotlin/thiserror-impl` `src/valid.rs:3` — `use syn::PathArguments`
-
-#### `syn::GenericParam` — 10 site(s) (0 codex, 10 other, 8 caller crates)
-
-- `async-trait-kotlin/async-trait` `src/expand.rs:12` — `use syn::GenericParam`
-- `logos-kotlin/logos-codegen` `src/parser/mod.rs:5` — `use syn::GenericParam`
-- `serde-kotlin/serde_derive` `src/internals/receiver.rs:5` — `use syn::GenericParam`
-- `serde-kotlin/serde_derive_internals` `src/receiver.rs:5` — `use syn::GenericParam`
-- `starlark-kotlin/allocative_derive` `src/derive_allocative.rs:17` — `use syn::GenericParam`
-- `starlark-kotlin/dupe_derive` `src/util.rs:11` — `use syn::GenericParam`
-- `starlark-kotlin/pagable_derive` `src/derive_pagable.rs:13` — `use syn::GenericParam`
-- `starlark-kotlin/starlark_derive` `src/freeze.rs:9` — `use syn::GenericParam`
-- `starlark-kotlin/starlark_derive` `src/serde.rs:6` — `use syn::GenericParam`
-- `starlark-kotlin/starlark_derive` `src/trace.rs:11` — `use syn::GenericParam`
-
-#### `syn::Generics` — 10 site(s) (0 codex, 10 other, 8 caller crates)
-
-- `async-trait-kotlin/async-trait` `src/expand.rs:12` — `use syn::Generics`
-- `serde-kotlin/serde_derive` `src/internals/receiver.rs:5` — `use syn::Generics`
-- `serde-kotlin/serde_derive_internals` `src/receiver.rs:5` — `use syn::Generics`
-- `starlark-kotlin/allocative_derive` `src/derive_allocative.rs:18` — `use syn::Generics`
-- `starlark-kotlin/dupe_derive` `src/util.rs:12` — `use syn::Generics`
-- `starlark-kotlin/pagable_derive` `src/derive_pagable.rs:14` — `use syn::Generics`
-- `starlark-kotlin/starlark_derive` `src/module/parse/fun.rs:9` — `use syn::Generics`
-- `starlark-kotlin/starlark_derive` `src/trace.rs:12` — `use syn::Generics`
-- `thiserror-kotlin/thiserror-impl` `src/ast.rs:6` — `use syn::Generics`
-- `thiserror-kotlin/thiserror-impl` `src/generics.rs:6` — `use syn::Generics`
-
-#### `syn::Lifetime` — 9 site(s) (0 codex, 9 other, 6 caller crates)
-
-- `async-trait-kotlin/async-trait` `src/expand.rs:12` — `use syn::Lifetime`
-- `async-trait-kotlin/async-trait` `src/lifetime.rs:4` — `use syn::Lifetime`
-- `logos-kotlin/logos-codegen` `src/parser/type_params.rs:4` — `use syn::Lifetime`
-- `serde-kotlin/serde_derive` `src/internals/attr.rs:12` — `use syn::Lifetime`
-- `serde-kotlin/serde_derive_internals` `src/attr.rs:12` — `use syn::Lifetime`
-- `starlark-kotlin/starlark_derive` `src/module/parse/fun.rs:11` — `use syn::Lifetime`
-- `starlark-kotlin/starlark_derive` `src/serde.rs:7` — `use syn::Lifetime`
-- `starlark-kotlin/starlark_derive` `src/trace.rs:13` — `use syn::Lifetime`
-- `thiserror-kotlin/thiserror-impl` `src/scan_expr.rs:4` — `use syn::Lifetime`
-
-#### `syn::parse::Parse` — 9 site(s) (0 codex, 9 other, 5 caller crates)
+#### `syn::parse::Parse` — 20 site(s) (0 codex, 20 other, 7 caller crates)
 
 - `async-trait-kotlin/async-trait` `src/args.rs:2` — `use syn::parse::Parse`
 - `async-trait-kotlin/async-trait` `src/parse.rs:2` — `use syn::parse::Parse`
 - `async-trait-kotlin/async-trait` `src/verbatim.rs:3` — `use syn::parse::Parse`
 - `futures-kotlin/futures-macro` `src/join.rs:6` — `use syn::parse::Parse`
 - `futures-kotlin/futures-macro` `src/select.rs:6` — `use syn::parse::Parse`
-- `starlark-kotlin/starlark_derive` `src/module/simple_param.rs:6` — `use syn::parse::Parse`
-- `strum-macros-kotlin/strum_macros` `src/helpers/case_style.rs:6` — `use syn::parse::Parse`
-- `strum-macros-kotlin/strum_macros` `src/helpers/metadata.rs:1` — `use syn::parse::Parse`
-- `thiserror-kotlin/thiserror-impl` `src/unraw.rs:7` — `use syn::parse::Parse`
+- `prometheus-kotlin/prometheus-static-metric` `src/auto_flush_from.rs:5` — `use syn::parse::Parse`
+- `prometheus-kotlin/prometheus-static-metric` `src/parser.rs:6` — `use syn::parse::Parse`
+- `prometheus-kotlin/prometheus-static-metric` `src/register_macro.rs:4` — `use syn::parse::Parse`
+- `pyo3-kotlin/pyo3-macros-backend` `src/attributes.rs:4` — `use syn::parse::Parse`
+- `pyo3-kotlin/pyo3-macros-backend` `src/derive_attributes.rs:6` — `use syn::parse::Parse`
+- `pyo3-kotlin/pyo3-macros-backend` `src/konst.rs:9` — `use syn::parse::Parse`
+- `pyo3-kotlin/pyo3-macros-backend` `src/module.rs:26` — `use syn::parse::Parse`
+- _… and 8 more site(s)._
 
-#### `syn::Index` — 8 site(s) (0 codex, 8 other, 4 caller crates)
+#### `syn::Path` — 19 site(s) (0 codex, 19 other, 10 caller crates)
+
+- `async-trait-kotlin/async-trait` `src/receiver.rs:3` — `use syn::Path`
+- `logos-kotlin/logos-codegen` `src/parser/type_params.rs:4` — `use syn::Path`
+- `pyo3-kotlin/pyo3-macros-backend` `src/attributes.rs:4` — `use syn::Path`
+- `pyo3-kotlin/pyo3-macros-backend` `src/module.rs:26` — `use syn::Path`
+- `pyo3-kotlin/pyo3-macros-backend` `src/pyfunction.rs:28` — `use syn::Path`
+- `serde-kotlin/serde_derive` `src/internals/receiver.rs:5` — `use syn::Path`
+- `serde-kotlin/serde_derive` `src/internals/symbol.rs:2` — `use syn::Path`
+- `serde-kotlin/serde_derive` `src/this.rs:2` — `use syn::Path`
+- `serde-kotlin/serde_derive_internals` `src/receiver.rs:5` — `use syn::Path`
+- `serde-kotlin/serde_derive_internals` `src/symbol.rs:2` — `use syn::Path`
+- `serderive-kotlin/serde_derive` `src/internals/receiver.rs:5` — `use syn::Path`
+- `serderive-kotlin/serde_derive` `src/internals/symbol.rs:2` — `use syn::Path`
+- _… and 7 more site(s)._
+
+#### `syn::Result` — 16 site(s) (0 codex, 16 other, 3 caller crates)
+
+- `pyo3-kotlin/pyo3-macros-backend` `src/attributes.rs:4` — `use syn::Result`
+- `pyo3-kotlin/pyo3-macros-backend` `src/derive_attributes.rs:8` — `use syn::Result`
+- `pyo3-kotlin/pyo3-macros-backend` `src/frompyobject.rs:8` — `use syn::Result`
+- `pyo3-kotlin/pyo3-macros-backend` `src/intopyobject.rs:10` — `use syn::Result`
+- `pyo3-kotlin/pyo3-macros-backend` `src/konst.rs:9` — `use syn::Result`
+- `pyo3-kotlin/pyo3-macros-backend` `src/method.rs:7` — `use syn::Result`
+- `pyo3-kotlin/pyo3-macros-backend` `src/module.rs:26` — `use syn::Result`
+- `pyo3-kotlin/pyo3-macros-backend` `src/pyclass.rs:9` — `use syn::Result`
+- `pyo3-kotlin/pyo3-macros-backend` `src/pyfunction.rs:28` — `use syn::Result`
+- `pyo3-kotlin/pyo3-macros-backend` `src/pyimpl.rs:25` — `use syn::Result`
+- `pyo3-kotlin/pyo3-macros-backend` `src/pymethod.rs:22` — `use syn::Result`
+- `starlark-kotlin/starlark_derive` `src/attrs.rs:10` — `use syn::Result`
+- _… and 4 more site(s)._
+
+#### `syn::ext::IdentExt` — 15 site(s) (0 codex, 15 other, 5 caller crates)
+
+- `pyo3-kotlin/pyo3-macros-backend` `src/attributes.rs:4` — `use syn::ext::IdentExt`
+- `pyo3-kotlin/pyo3-macros-backend` `src/frompyobject.rs:8` — `use syn::ext::IdentExt`
+- `pyo3-kotlin/pyo3-macros-backend` `src/intopyobject.rs:8` — `use syn::ext::IdentExt`
+- `pyo3-kotlin/pyo3-macros-backend` `src/konst.rs:9` — `use syn::ext::IdentExt`
+- `pyo3-kotlin/pyo3-macros-backend` `src/method.rs:7` — `use syn::ext::IdentExt`
+- `pyo3-kotlin/pyo3-macros-backend` `src/module.rs:26` — `use syn::ext::IdentExt`
+- `pyo3-kotlin/pyo3-macros-backend` `src/pyclass.rs:6` — `use syn::ext::IdentExt`
+- `pyo3-kotlin/pyo3-macros-backend` `src/pyfunction.rs:28` — `use syn::ext::IdentExt`
+- `pyo3-kotlin/pyo3-macros-backend` `src/pyfunction/signature.rs:10` — `use syn::ext::IdentExt`
+- `pyo3-kotlin/pyo3-macros-backend` `src/pymethod.rs:22` — `use syn::ext::IdentExt`
+- `rust-lang-kotlin/assert-instr-macro` `src/lib.rs:200` — `use syn::ext::IdentExt`
+- `rust-lang-kotlin/stdarch-verify` `src/lib.rs:9` — `use syn::ext::IdentExt`
+- _… and 3 more site(s)._
+
+#### `syn::PathArguments` — 14 site(s) (0 codex, 14 other, 8 caller crates)
+
+- `async-trait-kotlin/async-trait` `src/expand.rs:12` — `use syn::PathArguments`
+- `logos-kotlin/logos-codegen` `src/parser/type_params.rs:235` — `use syn::PathArguments`
+- `serde-kotlin/serde_derive` `src/internals/receiver.rs:5` — `use syn::PathArguments`
+- `serde-kotlin/serde_derive` `src/this.rs:2` — `use syn::PathArguments`
+- `serde-kotlin/serde_derive_internals` `src/receiver.rs:5` — `use syn::PathArguments`
+- `serderive-kotlin/serde_derive` `src/internals/receiver.rs:5` — `use syn::PathArguments`
+- `serderive-kotlin/serde_derive` `src/this.rs:2` — `use syn::PathArguments`
+- `serderive-kotlin/serde_derive_internals` `src/receiver.rs:5` — `use syn::PathArguments`
+- `starlark-kotlin/starlark_derive` `src/coerce.rs:16` — `use syn::PathArguments`
+- `starlark-kotlin/starlark_derive` `src/module/parse/fun.rs:12` — `use syn::PathArguments`
+- `starlark-kotlin/starlark_derive` `src/trace.rs:15` — `use syn::PathArguments`
+- `thiserror-kotlin/thiserror-impl` `src/expand.rs:10` — `use syn::PathArguments`
+- _… and 2 more site(s)._
+
+#### `syn::GenericArgument` — 13 site(s) (0 codex, 13 other, 8 caller crates)
+
+- `async-trait-kotlin/async-trait` `src/expand.rs:12` — `use syn::GenericArgument`
+- `async-trait-kotlin/async-trait` `src/lifetime.rs:4` — `use syn::GenericArgument`
+- `logos-kotlin/logos-codegen` `src/parser/type_params.rs:235` — `use syn::GenericArgument`
+- `serde-kotlin/serde_derive` `src/internals/receiver.rs:5` — `use syn::GenericArgument`
+- `serde-kotlin/serde_derive_internals` `src/receiver.rs:5` — `use syn::GenericArgument`
+- `serderive-kotlin/serde_derive` `src/internals/receiver.rs:5` — `use syn::GenericArgument`
+- `serderive-kotlin/serde_derive_internals` `src/receiver.rs:5` — `use syn::GenericArgument`
+- `starlark-kotlin/starlark_derive` `src/coerce.rs:13` — `use syn::GenericArgument`
+- `starlark-kotlin/starlark_derive` `src/module/parse/fun.rs:8` — `use syn::GenericArgument`
+- `starlark-kotlin/starlark_derive` `src/trace.rs:10` — `use syn::GenericArgument`
+- `thiserror-kotlin/thiserror-impl` `src/expand.rs:10` — `use syn::GenericArgument`
+- `thiserror-kotlin/thiserror-impl` `src/generics.rs:6` — `use syn::GenericArgument`
+- _… and 1 more site(s)._
+
+#### `syn::GenericParam` — 13 site(s) (0 codex, 13 other, 11 caller crates)
+
+- `async-trait-kotlin/async-trait` `src/expand.rs:12` — `use syn::GenericParam`
+- `gazebo-kotlin/dupe_derive` `src/util.rs:11` — `use syn::GenericParam`
+- `logos-kotlin/logos-codegen` `src/parser/mod.rs:5` — `use syn::GenericParam`
+- `serde-kotlin/serde_derive` `src/internals/receiver.rs:5` — `use syn::GenericParam`
+- `serde-kotlin/serde_derive_internals` `src/receiver.rs:5` — `use syn::GenericParam`
+- `serderive-kotlin/serde_derive` `src/internals/receiver.rs:5` — `use syn::GenericParam`
+- `serderive-kotlin/serde_derive_internals` `src/receiver.rs:5` — `use syn::GenericParam`
+- `starlark-kotlin/allocative_derive` `src/derive_allocative.rs:17` — `use syn::GenericParam`
+- `starlark-kotlin/dupe_derive` `src/util.rs:11` — `use syn::GenericParam`
+- `starlark-kotlin/pagable_derive` `src/derive_pagable.rs:13` — `use syn::GenericParam`
+- `starlark-kotlin/starlark_derive` `src/freeze.rs:9` — `use syn::GenericParam`
+- `starlark-kotlin/starlark_derive` `src/serde.rs:6` — `use syn::GenericParam`
+- _… and 1 more site(s)._
+
+#### `syn::Generics` — 13 site(s) (0 codex, 13 other, 11 caller crates)
+
+- `async-trait-kotlin/async-trait` `src/expand.rs:12` — `use syn::Generics`
+- `gazebo-kotlin/dupe_derive` `src/util.rs:12` — `use syn::Generics`
+- `serde-kotlin/serde_derive` `src/internals/receiver.rs:5` — `use syn::Generics`
+- `serde-kotlin/serde_derive_internals` `src/receiver.rs:5` — `use syn::Generics`
+- `serderive-kotlin/serde_derive` `src/internals/receiver.rs:5` — `use syn::Generics`
+- `serderive-kotlin/serde_derive_internals` `src/receiver.rs:5` — `use syn::Generics`
+- `starlark-kotlin/allocative_derive` `src/derive_allocative.rs:18` — `use syn::Generics`
+- `starlark-kotlin/dupe_derive` `src/util.rs:12` — `use syn::Generics`
+- `starlark-kotlin/pagable_derive` `src/derive_pagable.rs:14` — `use syn::Generics`
+- `starlark-kotlin/starlark_derive` `src/module/parse/fun.rs:9` — `use syn::Generics`
+- `starlark-kotlin/starlark_derive` `src/trace.rs:12` — `use syn::Generics`
+- `thiserror-kotlin/thiserror-impl` `src/ast.rs:6` — `use syn::Generics`
+- _… and 1 more site(s)._
+
+#### `syn::Index` — 13 site(s) (0 codex, 13 other, 7 caller crates)
 
 - `futures-kotlin/futures-macro` `src/stream_select.rs:3` — `use syn::Index`
+- `gazebo-kotlin/dupe_derive` `src/util.rs:14` — `use syn::Index`
+- `pyo3-kotlin/pyo3-macros-backend` `src/attributes.rs:4` — `use syn::Index`
+- `pyo3-kotlin/pyo3-macros-backend` `src/intopyobject.rs:10` — `use syn::Index`
 - `serde-kotlin/serde_derive` `src/de.rs:13` — `use syn::Index`
 - `serde-kotlin/serde_derive` `src/ser.rs:11` — `use syn::Index`
+- `serderive-kotlin/serde_derive` `src/de.rs:13` — `use syn::Index`
+- `serderive-kotlin/serde_derive` `src/ser.rs:11` — `use syn::Index`
 - `starlark-kotlin/dupe_derive` `src/util.rs:14` — `use syn::Index`
 - `thiserror-kotlin/thiserror-impl` `src/ast.rs:6` — `use syn::Index`
 - `thiserror-kotlin/thiserror-impl` `src/attr.rs:6` — `use syn::Index`
 - `thiserror-kotlin/thiserror-impl` `src/fmt.rs:13` — `use syn::Index`
-- `thiserror-kotlin/thiserror-impl` `src/unraw.rs:8` — `use syn::Index`
+- _… and 1 more site(s)._
 
-#### `syn::ReturnType` — 8 site(s) (0 codex, 8 other, 4 caller crates)
+#### `syn::ReturnType` — 12 site(s) (0 codex, 12 other, 7 caller crates)
 
 - `async-trait-kotlin/async-trait` `src/expand.rs:12` — `use syn::ReturnType`
 - `async-trait-kotlin/async-trait` `src/lifetime.rs:4` — `use syn::ReturnType`
+- `pyo3-kotlin/pyo3-macros-backend` `src/pyfunction.rs:25` — `use syn::ReturnType`
+- `pyo3-kotlin/pyo3-macros-backend` `src/pyimpl.rs:24` — `use syn::ReturnType`
 - `serde-kotlin/serde_derive` `src/internals/receiver.rs:5` — `use syn::ReturnType`
 - `serde-kotlin/serde_derive_internals` `src/receiver.rs:5` — `use syn::ReturnType`
+- `serderive-kotlin/serde_derive` `src/internals/receiver.rs:5` — `use syn::ReturnType`
+- `serderive-kotlin/serde_derive_internals` `src/receiver.rs:5` — `use syn::ReturnType`
 - `starlark-kotlin/starlark_derive` `src/coerce.rs:17` — `use syn::ReturnType`
 - `starlark-kotlin/starlark_derive` `src/module/parse/fun.rs:13` — `use syn::ReturnType`
 - `starlark-kotlin/starlark_derive` `src/trace.rs:16` — `use syn::ReturnType`
 - `starlark-kotlin/starlark_derive` `src/vtable.rs:11` — `use syn::ReturnType`
 
-#### `syn::Variant` — 7 site(s) (0 codex, 7 other, 5 caller crates)
+#### `syn::Lifetime` — 11 site(s) (0 codex, 11 other, 8 caller crates)
 
+- `async-trait-kotlin/async-trait` `src/expand.rs:12` — `use syn::Lifetime`
+- `async-trait-kotlin/async-trait` `src/lifetime.rs:4` — `use syn::Lifetime`
+- `logos-kotlin/logos-codegen` `src/parser/type_params.rs:4` — `use syn::Lifetime`
+- `serde-kotlin/serde_derive` `src/internals/attr.rs:12` — `use syn::Lifetime`
+- `serde-kotlin/serde_derive_internals` `src/attr.rs:12` — `use syn::Lifetime`
+- `serderive-kotlin/serde_derive` `src/internals/attr.rs:12` — `use syn::Lifetime`
+- `serderive-kotlin/serde_derive_internals` `src/attr.rs:12` — `use syn::Lifetime`
+- `starlark-kotlin/starlark_derive` `src/module/parse/fun.rs:11` — `use syn::Lifetime`
+- `starlark-kotlin/starlark_derive` `src/serde.rs:7` — `use syn::Lifetime`
+- `starlark-kotlin/starlark_derive` `src/trace.rs:13` — `use syn::Lifetime`
+- `thiserror-kotlin/thiserror-impl` `src/scan_expr.rs:4` — `use syn::Lifetime`
+
+#### `syn::TypeParamBound` — 10 site(s) (0 codex, 10 other, 8 caller crates)
+
+- `async-trait-kotlin/async-trait` `src/bound.rs:4` — `use syn::TypeParamBound`
+- `gazebo-kotlin/dupe_derive` `src/dupe.rs:8` — `use syn::TypeParamBound`
+- `gazebo-kotlin/dupe_derive` `src/util.rs:16` — `use syn::TypeParamBound`
+- `serde-kotlin/serde_derive` `src/internals/receiver.rs:5` — `use syn::TypeParamBound`
+- `serde-kotlin/serde_derive_internals` `src/receiver.rs:5` — `use syn::TypeParamBound`
+- `serderive-kotlin/serde_derive` `src/internals/receiver.rs:5` — `use syn::TypeParamBound`
+- `serderive-kotlin/serde_derive_internals` `src/receiver.rs:5` — `use syn::TypeParamBound`
+- `starlark-kotlin/dupe_derive` `src/dupe.rs:8` — `use syn::TypeParamBound`
+- `starlark-kotlin/dupe_derive` `src/util.rs:16` — `use syn::TypeParamBound`
+- `starlark-kotlin/starlark_derive` `src/trace.rs:19` — `use syn::TypeParamBound`
+
+#### `syn::ExprPath` — 9 site(s) (0 codex, 9 other, 7 caller crates)
+
+- `async-trait-kotlin/async-trait` `src/receiver.rs:3` — `use syn::ExprPath`
+- `pyo3-kotlin/pyo3-macros-backend` `src/attributes.rs:4` — `use syn::ExprPath`
+- `pyo3-kotlin/pyo3-macros-backend` `src/py_expr.rs:8` — `use syn::ExprPath`
+- `serde-kotlin/serde_derive` `src/internals/receiver.rs:5` — `use syn::ExprPath`
+- `serde-kotlin/serde_derive_internals` `src/receiver.rs:5` — `use syn::ExprPath`
+- `serderive-kotlin/serde_derive` `src/internals/receiver.rs:5` — `use syn::ExprPath`
+- `serderive-kotlin/serde_derive_internals` `src/receiver.rs:5` — `use syn::ExprPath`
+- `thiserror-kotlin/thiserror-impl` `src/attr.rs:6` — `use syn::ExprPath`
+- `thiserror-kotlin/thiserror-impl` `src/scan_expr.rs:4` — `use syn::ExprPath`
+
+#### `syn::Member` — 9 site(s) (0 codex, 9 other, 5 caller crates)
+
+- `pyo3-kotlin/pyo3-macros-backend` `src/attributes.rs:4` — `use syn::Member`
+- `serde-kotlin/serde_derive` `src/de.rs:13` — `use syn::Member`
+- `serde-kotlin/serde_derive` `src/internals/check.rs:4` — `use syn::Member`
+- `serde-kotlin/serde_derive` `src/ser.rs:11` — `use syn::Member`
+- `serde-kotlin/serde_derive_internals` `src/check.rs:4` — `use syn::Member`
+- `serderive-kotlin/serde_derive` `src/de.rs:13` — `use syn::Member`
+- `serderive-kotlin/serde_derive` `src/internals/check.rs:4` — `use syn::Member`
+- `serderive-kotlin/serde_derive` `src/ser.rs:11` — `use syn::Member`
+- `serderive-kotlin/serde_derive_internals` `src/check.rs:4` — `use syn::Member`
+
+#### `syn::token` — 9 site(s) (0 codex, 9 other, 7 caller crates)
+
+- `async-trait-kotlin/async-trait` `src/lifetime.rs:4` — `use syn::token`
+- `serde-kotlin/serde_derive` `src/fragment.rs:3` — `use syn::token`
+- `serde-kotlin/serde_derive` `src/internals/attr.rs:12` — `use syn::token`
+- `serde-kotlin/serde_derive_internals` `src/attr.rs:12` — `use syn::token`
+- `serderive-kotlin/serde_derive` `src/fragment.rs:3` — `use syn::token`
+- `serderive-kotlin/serde_derive` `src/internals/attr.rs:12` — `use syn::token`
+- `serderive-kotlin/serde_derive_internals` `src/attr.rs:12` — `use syn::token`
+- `starlark-kotlin/starlark_derive` `src/coerce.rs:22` — `use syn::token`
+- `thiserror-kotlin/thiserror-impl` `src/attr.rs:6` — `use syn::token`
+
+#### `syn::Lit` — 8 site(s) (0 codex, 8 other, 5 caller crates)
+
+- `logos-kotlin/logos-codegen` `src/parser/mod.rs:5` — `use syn::Lit`
+- `pyo3-kotlin/pyo3-macros-backend` `src/py_expr.rs:8` — `use syn::Lit`
+- `pyo3-kotlin/pyo3-macros-backend` `src/utils.rs:7` — `use syn::Lit`
+- `starlark-kotlin/starlark_derive` `src/module/render/fun.rs:9` — `use syn::Lit`
+- `strum-macros-kotlin/strum_macros` `src/helpers/metadata.rs:1` — `use syn::Lit`
+- `strum-macros-kotlin/strum_macros` `src/helpers/variant_props.rs:2` — `use syn::Lit`
+- `strum-macros-kotlin/strum_macros` `src/macros/enum_properties.rs:5` — `use syn::Lit`
+- `thiserror-kotlin/thiserror-impl` `src/scan_expr.rs:4` — `use syn::Lit`
+
+#### `syn::Variant` — 8 site(s) (0 codex, 8 other, 6 caller crates)
+
+- `gazebo-kotlin/dupe_derive` `src/util.rs:17` — `use syn::Variant`
 - `starlark-kotlin/allocative_derive` `src/derive_allocative.rs:22` — `use syn::Variant`
 - `starlark-kotlin/dupe_derive` `src/util.rs:17` — `use syn::Variant`
 - `starlark-kotlin/pagable_derive` `src/derive_pagable.rs:18` — `use syn::Variant`
@@ -400,23 +527,42 @@ Sorted by codex demand, then total demand. The first symbols are the priority qu
 - `strum-macros-kotlin/strum_macros` `src/helpers/variant_props.rs:2` — `use syn::Variant`
 - `strum-macros-kotlin/strum_macros` `src/macros/strings/mod.rs:3` — `use syn::Variant`
 
-#### `syn::Lit` — 6 site(s) (0 codex, 6 other, 4 caller crates)
+#### `syn::TypePath` — 7 site(s) (0 codex, 7 other, 6 caller crates)
 
-- `logos-kotlin/logos-codegen` `src/parser/mod.rs:5` — `use syn::Lit`
-- `starlark-kotlin/starlark_derive` `src/module/render/fun.rs:9` — `use syn::Lit`
-- `strum-macros-kotlin/strum_macros` `src/helpers/metadata.rs:1` — `use syn::Lit`
-- `strum-macros-kotlin/strum_macros` `src/helpers/variant_props.rs:2` — `use syn::Lit`
-- `strum-macros-kotlin/strum_macros` `src/macros/enum_properties.rs:5` — `use syn::Lit`
-- `thiserror-kotlin/thiserror-impl` `src/scan_expr.rs:4` — `use syn::Lit`
+- `async-trait-kotlin/async-trait` `src/expand.rs:12` — `use syn::TypePath`
+- `async-trait-kotlin/async-trait` `src/receiver.rs:3` — `use syn::TypePath`
+- `pyo3-kotlin/pyo3-macros-backend` `src/introspection.rs:24` — `use syn::TypePath`
+- `serde-kotlin/serde_derive` `src/internals/receiver.rs:5` — `use syn::TypePath`
+- `serde-kotlin/serde_derive_internals` `src/receiver.rs:5` — `use syn::TypePath`
+- `serderive-kotlin/serde_derive` `src/internals/receiver.rs:5` — `use syn::TypePath`
+- `serderive-kotlin/serde_derive_internals` `src/receiver.rs:5` — `use syn::TypePath`
 
-#### `syn::TypeParamBound` — 6 site(s) (0 codex, 6 other, 5 caller crates)
+#### `syn::LitCStr` — 6 site(s) (0 codex, 6 other, 1 caller crates)
 
-- `async-trait-kotlin/async-trait` `src/bound.rs:4` — `use syn::TypeParamBound`
-- `serde-kotlin/serde_derive` `src/internals/receiver.rs:5` — `use syn::TypeParamBound`
-- `serde-kotlin/serde_derive_internals` `src/receiver.rs:5` — `use syn::TypeParamBound`
-- `starlark-kotlin/dupe_derive` `src/dupe.rs:8` — `use syn::TypeParamBound`
-- `starlark-kotlin/dupe_derive` `src/util.rs:16` — `use syn::TypeParamBound`
-- `starlark-kotlin/starlark_derive` `src/trace.rs:19` — `use syn::TypeParamBound`
+- `pyo3-kotlin/pyo3-macros-backend` `src/konst.rs:8` — `use syn::LitCStr`
+- `pyo3-kotlin/pyo3-macros-backend` `src/method.rs:8` — `use syn::LitCStr`
+- `pyo3-kotlin/pyo3-macros-backend` `src/module.rs:25` — `use syn::LitCStr`
+- `pyo3-kotlin/pyo3-macros-backend` `src/pyfunction.rs:28` — `use syn::LitCStr`
+- `pyo3-kotlin/pyo3-macros-backend` `src/pymethod.rs:21` — `use syn::LitCStr`
+- `pyo3-kotlin/pyo3-macros-backend` `src/utils.rs:7` — `use syn::LitCStr`
+
+#### `syn::Meta` — 6 site(s) (0 codex, 6 other, 5 caller crates)
+
+- `logos-kotlin/logos-codegen` `src/parser/mod.rs:5` — `use syn::Meta`
+- `pyo3-kotlin/pyo3-macros-backend` `src/module.rs:26` — `use syn::Meta`
+- `starlark-kotlin/starlark_derive` `src/module/parse.rs:13` — `use syn::Meta`
+- `strum-macros-kotlin/strum_macros` `src/helpers/metadata.rs:1` — `use syn::Meta`
+- `strum-macros-kotlin/strum_macros` `src/helpers/type_props.rs:3` — `use syn::Meta`
+- `thiserror-kotlin/thiserror-impl` `src/attr.rs:6` — `use syn::Meta`
+
+#### `syn::Visibility` — 6 site(s) (0 codex, 6 other, 4 caller crates)
+
+- `async-trait-kotlin/async-trait` `src/verbatim.rs:4` — `use syn::Visibility`
+- `prometheus-kotlin/prometheus-static-metric` `src/auto_flush_builder.rs:8` — `use syn::Visibility`
+- `prometheus-kotlin/prometheus-static-metric` `src/builder.rs:8` — `use syn::Visibility`
+- `starlark-kotlin/starlark_derive` `src/module/parse.rs:19` — `use syn::Visibility`
+- `strum-macros-kotlin/strum_macros` `src/helpers/metadata.rs:1` — `use syn::Visibility`
+- `strum-macros-kotlin/strum_macros` `src/helpers/type_props.rs:3` — `use syn::Visibility`
 
 #### `syn::parse::Result` — 6 site(s) (0 codex, 6 other, 2 caller crates)
 
@@ -427,38 +573,44 @@ Sorted by codex demand, then total demand. The first symbols are the priority qu
 - `thiserror-kotlin/thiserror-impl` `src/scan_expr.rs:3` — `use syn::parse::Result`
 - `thiserror-kotlin/thiserror-impl` `src/unraw.rs:7` — `use syn::parse::Result`
 
-#### `syn::token` — 6 site(s) (0 codex, 6 other, 5 caller crates)
+#### `syn::ExprLit` — 5 site(s) (0 codex, 5 other, 3 caller crates)
 
-- `async-trait-kotlin/async-trait` `src/lifetime.rs:4` — `use syn::token`
-- `serde-kotlin/serde_derive` `src/fragment.rs:3` — `use syn::token`
-- `serde-kotlin/serde_derive` `src/internals/attr.rs:12` — `use syn::token`
-- `serde-kotlin/serde_derive_internals` `src/attr.rs:12` — `use syn::token`
-- `starlark-kotlin/starlark_derive` `src/coerce.rs:22` — `use syn::token`
-- `thiserror-kotlin/thiserror-impl` `src/attr.rs:6` — `use syn::token`
+- `pyo3-kotlin/pyo3-macros-backend` `src/py_expr.rs:8` — `use syn::ExprLit`
+- `pyo3-kotlin/pyo3-macros-backend` `src/utils.rs:7` — `use syn::ExprLit`
+- `starlark-kotlin/starlark_derive` `src/module/parse.rs:8` — `use syn::ExprLit`
+- `starlark-kotlin/starlark_derive` `src/module/render/fun.rs:8` — `use syn::ExprLit`
+- `strum-macros-kotlin/strum_macros` `src/helpers/metadata.rs:1` — `use syn::ExprLit`
 
-#### `syn::ExprPath` — 5 site(s) (0 codex, 5 other, 4 caller crates)
+#### `syn::Macro` — 5 site(s) (0 codex, 5 other, 5 caller crates)
 
-- `async-trait-kotlin/async-trait` `src/receiver.rs:3` — `use syn::ExprPath`
-- `serde-kotlin/serde_derive` `src/internals/receiver.rs:5` — `use syn::ExprPath`
-- `serde-kotlin/serde_derive_internals` `src/receiver.rs:5` — `use syn::ExprPath`
-- `thiserror-kotlin/thiserror-impl` `src/attr.rs:6` — `use syn::ExprPath`
-- `thiserror-kotlin/thiserror-impl` `src/scan_expr.rs:4` — `use syn::ExprPath`
+- `async-trait-kotlin/async-trait` `src/receiver.rs:3` — `use syn::Macro`
+- `serde-kotlin/serde_derive` `src/internals/receiver.rs:5` — `use syn::Macro`
+- `serde-kotlin/serde_derive_internals` `src/receiver.rs:5` — `use syn::Macro`
+- `serderive-kotlin/serde_derive` `src/internals/receiver.rs:5` — `use syn::Macro`
+- `serderive-kotlin/serde_derive_internals` `src/receiver.rs:5` — `use syn::Macro`
 
-#### `syn::Meta` — 5 site(s) (0 codex, 5 other, 4 caller crates)
+#### `syn::WherePredicate` — 5 site(s) (0 codex, 5 other, 5 caller crates)
 
-- `logos-kotlin/logos-codegen` `src/parser/mod.rs:5` — `use syn::Meta`
-- `starlark-kotlin/starlark_derive` `src/module/parse.rs:13` — `use syn::Meta`
-- `strum-macros-kotlin/strum_macros` `src/helpers/metadata.rs:1` — `use syn::Meta`
-- `strum-macros-kotlin/strum_macros` `src/helpers/type_props.rs:3` — `use syn::Meta`
-- `thiserror-kotlin/thiserror-impl` `src/attr.rs:6` — `use syn::Meta`
+- `serde-kotlin/serde_derive` `src/internals/receiver.rs:5` — `use syn::WherePredicate`
+- `serde-kotlin/serde_derive_internals` `src/receiver.rs:5` — `use syn::WherePredicate`
+- `serderive-kotlin/serde_derive` `src/internals/receiver.rs:5` — `use syn::WherePredicate`
+- `serderive-kotlin/serde_derive_internals` `src/receiver.rs:5` — `use syn::WherePredicate`
+- `starlark-kotlin/starlark_derive` `src/freeze.rs:12` — `use syn::WherePredicate`
 
-#### `syn::Result` — 5 site(s) (0 codex, 5 other, 2 caller crates)
+#### `syn::visit_mut::VisitMut` — 5 site(s) (0 codex, 5 other, 3 caller crates)
 
-- `starlark-kotlin/starlark_derive` `src/attrs.rs:10` — `use syn::Result`
-- `thiserror-kotlin/thiserror-impl` `src/ast.rs:6` — `use syn::Result`
-- `thiserror-kotlin/thiserror-impl` `src/attr.rs:6` — `use syn::Result`
-- `thiserror-kotlin/thiserror-impl` `src/expand.rs:10` — `use syn::Result`
-- `thiserror-kotlin/thiserror-impl` `src/valid.rs:3` — `use syn::Result`
+- `async-trait-kotlin/async-trait` `src/expand.rs:11` — `use syn::visit_mut::VisitMut`
+- `async-trait-kotlin/async-trait` `src/lifetime.rs:3` — `use syn::visit_mut::VisitMut`
+- `async-trait-kotlin/async-trait` `src/receiver.rs:2` — `use syn::visit_mut::VisitMut`
+- `pyo3-kotlin/pyo3-macros-backend` `src/py_expr.rs:7` — `use syn::visit_mut::VisitMut`
+- `starlark-kotlin/starlark_derive` `src/vtable.rs:17` — `use syn::visit_mut::VisitMut`
+
+#### `syn::*` — 4 site(s) (0 codex, 4 other, 2 caller crates)
+
+- `prometheus-kotlin/prometheus-static-metric` `src/auto_flush_from.rs:7` — `use syn::*`
+- `prometheus-kotlin/prometheus-static-metric` `src/parser.rs:9` — `use syn::*`
+- `prometheus-kotlin/prometheus-static-metric` `src/register_macro.rs:6` — `use syn::*`
+- `starlark-kotlin/starlark_derive` `src/module/util.rs:1` — `use syn::*`
 
 #### `syn::Error` — 4 site(s) (0 codex, 4 other, 2 caller crates)
 
@@ -474,6 +626,13 @@ Sorted by codex demand, then total demand. The first symbols are the priority qu
 - `starlark-kotlin/starlark_derive` `src/module/parse/fun.rs:7` — `use syn::FnArg`
 - `starlark-kotlin/starlark_derive` `src/vtable.rs:8` — `use syn::FnArg`
 
+#### `syn::Item` — 4 site(s) (0 codex, 4 other, 4 caller crates)
+
+- `async-trait-kotlin/async-trait` `src/receiver.rs:3` — `use syn::Item`
+- `pyo3-kotlin/pyo3-macros` `src/lib.rs:13` — `use syn::Item`
+- `pyo3-kotlin/pyo3-macros-backend` `src/module.rs:26` — `use syn::Item`
+- `starlark-kotlin/starlark_derive` `src/module/parse.rs:10` — `use syn::Item`
+
 #### `syn::LifetimeParam` — 4 site(s) (0 codex, 4 other, 3 caller crates)
 
 - `async-trait-kotlin/async-trait` `src/expand.rs:12` — `use syn::LifetimeParam`
@@ -481,12 +640,12 @@ Sorted by codex demand, then total demand. The first symbols are the priority qu
 - `starlark-kotlin/starlark_derive` `src/serde.rs:8` — `use syn::LifetimeParam`
 - `starlark-kotlin/starlark_derive` `src/trace.rs:14` — `use syn::LifetimeParam`
 
-#### `syn::Member` — 4 site(s) (0 codex, 4 other, 2 caller crates)
+#### `syn::LitBool` — 4 site(s) (0 codex, 4 other, 3 caller crates)
 
-- `serde-kotlin/serde_derive` `src/de.rs:13` — `use syn::Member`
-- `serde-kotlin/serde_derive` `src/internals/check.rs:4` — `use syn::Member`
-- `serde-kotlin/serde_derive` `src/ser.rs:11` — `use syn::Member`
-- `serde-kotlin/serde_derive_internals` `src/check.rs:4` — `use syn::Member`
+- `logos-kotlin/logos-codegen` `src/lib.rs:39` — `use syn::LitBool`
+- `logos-kotlin/logos-codegen` `src/parser/mod.rs:5` — `use syn::LitBool`
+- `pyo3-kotlin/pyo3-macros-backend` `src/attributes.rs:4` — `use syn::LitBool`
+- `strum-macros-kotlin/strum_macros` `src/helpers/metadata.rs:1` — `use syn::LitBool`
 
 #### `syn::Pat` — 4 site(s) (0 codex, 4 other, 3 caller crates)
 
@@ -495,26 +654,33 @@ Sorted by codex demand, then total demand. The first symbols are the priority qu
 - `futures-kotlin/futures-macro` `src/select.rs:7` — `use syn::Pat`
 - `starlark-kotlin/starlark_derive` `src/vtable.rs:10` — `use syn::Pat`
 
-#### `syn::TypePath` — 4 site(s) (0 codex, 4 other, 3 caller crates)
+#### `syn::QSelf` — 4 site(s) (0 codex, 4 other, 4 caller crates)
 
-- `async-trait-kotlin/async-trait` `src/expand.rs:12` — `use syn::TypePath`
-- `async-trait-kotlin/async-trait` `src/receiver.rs:3` — `use syn::TypePath`
-- `serde-kotlin/serde_derive` `src/internals/receiver.rs:5` — `use syn::TypePath`
-- `serde-kotlin/serde_derive_internals` `src/receiver.rs:5` — `use syn::TypePath`
+- `serde-kotlin/serde_derive` `src/internals/receiver.rs:5` — `use syn::QSelf`
+- `serde-kotlin/serde_derive_internals` `src/receiver.rs:5` — `use syn::QSelf`
+- `serderive-kotlin/serde_derive` `src/internals/receiver.rs:5` — `use syn::QSelf`
+- `serderive-kotlin/serde_derive_internals` `src/receiver.rs:5` — `use syn::QSelf`
 
-#### `syn::Visibility` — 4 site(s) (0 codex, 4 other, 3 caller crates)
+#### `syn::meta::ParseNestedMeta` — 4 site(s) (0 codex, 4 other, 4 caller crates)
 
-- `async-trait-kotlin/async-trait` `src/verbatim.rs:4` — `use syn::Visibility`
-- `starlark-kotlin/starlark_derive` `src/module/parse.rs:19` — `use syn::Visibility`
-- `strum-macros-kotlin/strum_macros` `src/helpers/metadata.rs:1` — `use syn::Visibility`
-- `strum-macros-kotlin/strum_macros` `src/helpers/type_props.rs:3` — `use syn::Visibility`
+- `serde-kotlin/serde_derive` `src/internals/attr.rs:8` — `use syn::meta::ParseNestedMeta`
+- `serde-kotlin/serde_derive_internals` `src/attr.rs:8` — `use syn::meta::ParseNestedMeta`
+- `serderive-kotlin/serde_derive` `src/internals/attr.rs:8` — `use syn::meta::ParseNestedMeta`
+- `serderive-kotlin/serde_derive_internals` `src/attr.rs:8` — `use syn::meta::ParseNestedMeta`
 
-#### `syn::visit_mut::VisitMut` — 4 site(s) (0 codex, 4 other, 2 caller crates)
+#### `syn::parse::Parser` — 4 site(s) (0 codex, 4 other, 4 caller crates)
 
-- `async-trait-kotlin/async-trait` `src/expand.rs:11` — `use syn::visit_mut::VisitMut`
-- `async-trait-kotlin/async-trait` `src/lifetime.rs:3` — `use syn::visit_mut::VisitMut`
-- `async-trait-kotlin/async-trait` `src/receiver.rs:2` — `use syn::visit_mut::VisitMut`
-- `starlark-kotlin/starlark_derive` `src/vtable.rs:17` — `use syn::visit_mut::VisitMut`
+- `futures-kotlin/futures-macro` `src/stream_select.rs:3` — `use syn::parse::Parser`
+- `pyo3-kotlin/pyo3-macros-backend` `src/attributes.rs:3` — `use syn::parse::Parser`
+- `rust-lang-kotlin/stdarch-verify` `src/lib.rs:10` — `use syn::parse::Parser as _`
+- `thiserror-kotlin/thiserror-impl` `src/fmt.rs:12` — `use syn::parse::Parser`
+
+#### `syn::parse_quote_spanned` — 4 site(s) (0 codex, 4 other, 2 caller crates)
+
+- `async-trait-kotlin/async-trait` `src/expand.rs:12` — `use syn::parse_quote_spanned`
+- `async-trait-kotlin/async-trait` `src/lifetime.rs:4` — `use syn::parse_quote_spanned`
+- `pyo3-kotlin/pyo3-macros-backend` `src/module.rs:26` — `use syn::parse_quote_spanned`
+- `pyo3-kotlin/pyo3-macros-backend` `src/pyclass.rs:9` — `use syn::parse_quote_spanned`
 
 #### `syn::Block` — 3 site(s) (0 codex, 3 other, 2 caller crates)
 
@@ -522,29 +688,11 @@ Sorted by codex demand, then total demand. The first symbols are the priority qu
 - `async-trait-kotlin/async-trait` `src/receiver.rs:3` — `use syn::Block`
 - `starlark-kotlin/starlark_derive` `src/module/typ.rs:7` — `use syn::Block`
 
-#### `syn::ExprLit` — 3 site(s) (0 codex, 3 other, 2 caller crates)
-
-- `starlark-kotlin/starlark_derive` `src/module/parse.rs:8` — `use syn::ExprLit`
-- `starlark-kotlin/starlark_derive` `src/module/render/fun.rs:8` — `use syn::ExprLit`
-- `strum-macros-kotlin/strum_macros` `src/helpers/metadata.rs:1` — `use syn::ExprLit`
-
 #### `syn::ItemFn` — 3 site(s) (0 codex, 3 other, 1 caller crates)
 
 - `starlark-kotlin/starlark_derive` `src/module.rs:11` — `use syn::ItemFn`
 - `starlark-kotlin/starlark_derive` `src/module/parse.rs:12` — `use syn::ItemFn`
 - `starlark-kotlin/starlark_derive` `src/module/parse/fun.rs:10` — `use syn::ItemFn`
-
-#### `syn::LitBool` — 3 site(s) (0 codex, 3 other, 2 caller crates)
-
-- `logos-kotlin/logos-codegen` `src/lib.rs:39` — `use syn::LitBool`
-- `logos-kotlin/logos-codegen` `src/parser/mod.rs:5` — `use syn::LitBool`
-- `strum-macros-kotlin/strum_macros` `src/helpers/metadata.rs:1` — `use syn::LitBool`
-
-#### `syn::Macro` — 3 site(s) (0 codex, 3 other, 3 caller crates)
-
-- `async-trait-kotlin/async-trait` `src/receiver.rs:3` — `use syn::Macro`
-- `serde-kotlin/serde_derive` `src/internals/receiver.rs:5` — `use syn::Macro`
-- `serde-kotlin/serde_derive_internals` `src/receiver.rs:5` — `use syn::Macro`
 
 #### `syn::Receiver` — 3 site(s) (0 codex, 3 other, 1 caller crates)
 
@@ -558,17 +706,11 @@ Sorted by codex demand, then total demand. The first symbols are the priority qu
 - `async-trait-kotlin/async-trait` `src/receiver.rs:3` — `use syn::Signature`
 - `async-trait-kotlin/async-trait` `src/verbatim.rs:4` — `use syn::Signature`
 
-#### `syn::WherePredicate` — 3 site(s) (0 codex, 3 other, 3 caller crates)
+#### `syn::parenthesized` — 3 site(s) (0 codex, 3 other, 3 caller crates)
 
-- `serde-kotlin/serde_derive` `src/internals/receiver.rs:5` — `use syn::WherePredicate`
-- `serde-kotlin/serde_derive_internals` `src/receiver.rs:5` — `use syn::WherePredicate`
-- `starlark-kotlin/starlark_derive` `src/freeze.rs:12` — `use syn::WherePredicate`
-
-#### `syn::ext::IdentExt` — 3 site(s) (0 codex, 3 other, 2 caller crates)
-
-- `strum-macros-kotlin/strum_macros` `src/helpers/metadata.rs:281` — `use syn::ext::IdentExt`
-- `thiserror-kotlin/thiserror-impl` `src/fmt.rs:10` — `use syn::ext::IdentExt`
-- `thiserror-kotlin/thiserror-impl` `src/unraw.rs:6` — `use syn::ext::IdentExt as _`
+- `pyo3-kotlin/pyo3-macros-backend` `src/derive_attributes.rs:8` — `use syn::parenthesized`
+- `strum-macros-kotlin/strum_macros` `src/helpers/metadata.rs:1` — `use syn::parenthesized`
+- `thiserror-kotlin/thiserror-impl` `src/attr.rs:6` — `use syn::parenthesized`
 
 #### `syn::parse::Error` — 3 site(s) (0 codex, 3 other, 2 caller crates)
 
@@ -582,10 +724,10 @@ Sorted by codex demand, then total demand. The first symbols are the priority qu
 - `async-trait-kotlin/async-trait` `src/lifetime.rs:3` — `use syn::visit_mut`
 - `async-trait-kotlin/async-trait` `src/receiver.rs:2` — `use syn::visit_mut`
 
-#### `syn::Item` — 2 site(s) (0 codex, 2 other, 2 caller crates)
+#### `syn::ImplItemFn` — 2 site(s) (0 codex, 2 other, 1 caller crates)
 
-- `async-trait-kotlin/async-trait` `src/receiver.rs:3` — `use syn::Item`
-- `starlark-kotlin/starlark_derive` `src/module/parse.rs:10` — `use syn::Item`
+- `pyo3-kotlin/pyo3-macros-backend` `src/pyclass.rs:9` — `use syn::ImplItemFn`
+- `pyo3-kotlin/pyo3-macros-backend` `src/pyimpl.rs:25` — `use syn::ImplItemFn`
 
 #### `syn::ItemEnum` — 2 site(s) (0 codex, 2 other, 2 caller crates)
 
@@ -607,11 +749,6 @@ Sorted by codex demand, then total demand. The first symbols are the priority qu
 - `async-trait-kotlin/async-trait` `src/expand.rs:12` — `use syn::PatIdent`
 - `async-trait-kotlin/async-trait` `src/receiver.rs:3` — `use syn::PatIdent`
 
-#### `syn::QSelf` — 2 site(s) (0 codex, 2 other, 2 caller crates)
-
-- `serde-kotlin/serde_derive` `src/internals/receiver.rs:5` — `use syn::QSelf`
-- `serde-kotlin/serde_derive_internals` `src/receiver.rs:5` — `use syn::QSelf`
-
 #### `syn::TraitItem` — 2 site(s) (0 codex, 2 other, 2 caller crates)
 
 - `async-trait-kotlin/async-trait` `src/expand.rs:12` — `use syn::TraitItem`
@@ -627,34 +764,25 @@ Sorted by codex demand, then total demand. The first symbols are the priority qu
 - `async-trait-kotlin/async-trait` `src/expand.rs:12` — `use syn::WhereClause`
 - `thiserror-kotlin/thiserror-impl` `src/generics.rs:6` — `use syn::WhereClause`
 
-#### `syn::meta::ParseNestedMeta` — 2 site(s) (0 codex, 2 other, 2 caller crates)
-
-- `serde-kotlin/serde_derive` `src/internals/attr.rs:8` — `use syn::meta::ParseNestedMeta`
-- `serde-kotlin/serde_derive_internals` `src/attr.rs:8` — `use syn::meta::ParseNestedMeta`
-
-#### `syn::parenthesized` — 2 site(s) (0 codex, 2 other, 2 caller crates)
-
-- `strum-macros-kotlin/strum_macros` `src/helpers/metadata.rs:1` — `use syn::parenthesized`
-- `thiserror-kotlin/thiserror-impl` `src/attr.rs:6` — `use syn::parenthesized`
-
-#### `syn::parse::Parser` — 2 site(s) (0 codex, 2 other, 2 caller crates)
-
-- `futures-kotlin/futures-macro` `src/stream_select.rs:3` — `use syn::parse::Parser`
-- `thiserror-kotlin/thiserror-impl` `src/fmt.rs:12` — `use syn::parse::Parser`
-
 #### `syn::parse::discouraged::Speculative` — 2 site(s) (0 codex, 2 other, 1 caller crates)
 
 - `thiserror-kotlin/thiserror-impl` `src/attr.rs:4` — `use syn::parse::discouraged::Speculative`
 - `thiserror-kotlin/thiserror-impl` `src/fmt.rs:11` — `use syn::parse::discouraged::Speculative`
 
-#### `syn::parse_quote_spanned` — 2 site(s) (0 codex, 2 other, 1 caller crates)
+#### `syn::punctuated::Pair` — 2 site(s) (0 codex, 2 other, 2 caller crates)
 
-- `async-trait-kotlin/async-trait` `src/expand.rs:12` — `use syn::parse_quote_spanned`
-- `async-trait-kotlin/async-trait` `src/lifetime.rs:4` — `use syn::parse_quote_spanned`
+- `serde-kotlin/serde_derive` `src/bound.rs:5` — `use syn::punctuated::Pair`
+- `serderive-kotlin/serde_derive` `src/bound.rs:5` — `use syn::punctuated::Pair`
 
-#### `syn::*` — 1 site(s) (0 codex, 1 other, 1 caller crates)
+#### `syn::token::*` — 2 site(s) (0 codex, 2 other, 1 caller crates)
 
-- `starlark-kotlin/starlark_derive` `src/module/util.rs:1` — `use syn::*`
+- `prometheus-kotlin/prometheus-static-metric` `src/auto_flush_from.rs:6` — `use syn::token::*`
+- `prometheus-kotlin/prometheus-static-metric` `src/parser.rs:8` — `use syn::token::*`
+
+#### `syn::token::Comma` — 2 site(s) (0 codex, 2 other, 1 caller crates)
+
+- `pyo3-kotlin/pyo3-macros-backend` `src/attributes.rs:4` — `use syn::token::Comma`
+- `pyo3-kotlin/pyo3-macros-backend` `src/module.rs:26` — `use syn::token::Comma`
 
 #### `syn::AngleBracketedGenericArguments` — 1 site(s) (0 codex, 1 other, 1 caller crates)
 
@@ -700,6 +828,10 @@ Sorted by codex demand, then total demand. The first symbols are the priority qu
 
 - `starlark-kotlin/starlark_derive` `src/module/parse.rs:15` — `use syn::PatType`
 
+#### `syn::ReceiverKind` — 1 site(s) (0 codex, 1 other, 1 caller crates)
+
+- `pyo3-kotlin/pyo3-macros-backend` `src/method.rs:8` — `use syn::ReceiverKind`
+
 #### `syn::Stmt` — 1 site(s) (0 codex, 1 other, 1 caller crates)
 
 - `starlark-kotlin/starlark_derive` `src/module/parse.rs:16` — `use syn::Stmt`
@@ -711,6 +843,10 @@ Sorted by codex demand, then total demand. The first symbols are the priority qu
 #### `syn::TraitItemFn` — 1 site(s) (0 codex, 1 other, 1 caller crates)
 
 - `starlark-kotlin/starlark_derive` `src/vtable.rs:13` — `use syn::TraitItemFn`
+
+#### `syn::Type::*` — 1 site(s) (0 codex, 1 other, 1 caller crates)
+
+- `rust-lang-kotlin/assert-instr-macro` `src/lib.rs:263` — `use syn::Type::*`
 
 #### `syn::TypeBareFn` — 1 site(s) (0 codex, 1 other, 1 caller crates)
 
@@ -760,10 +896,6 @@ Sorted by codex demand, then total demand. The first symbols are the priority qu
 
 - `strum-macros-kotlin/strum_macros` `src/helpers/metadata.rs:1` — `use syn::parse_str`
 
-#### `syn::punctuated::Pair` — 1 site(s) (0 codex, 1 other, 1 caller crates)
-
-- `serde-kotlin/serde_derive` `src/bound.rs:5` — `use syn::punctuated::Pair`
-
 #### `syn::token::Crate` — 1 site(s) (0 codex, 1 other, 1 caller crates)
 
 - `strum-macros-kotlin/strum_macros` `src/helpers/metadata.rs:14` — `pub_use syn::token::Crate`
@@ -771,3 +903,11 @@ Sorted by codex demand, then total demand. The first symbols are the priority qu
 #### `syn::visit::Visit` — 1 site(s) (0 codex, 1 other, 1 caller crates)
 
 - `starlark-kotlin/starlark_derive` `src/module/parse/fun.rs:18` — `use syn::visit::Visit`
+
+#### `syn::visit_mut::visit_type_mut` — 1 site(s) (0 codex, 1 other, 1 caller crates)
+
+- `pyo3-kotlin/pyo3-macros-backend` `src/py_expr.rs:7` — `use syn::visit_mut::visit_type_mut`
+
+## `syn-field-value-oracle`
+
+_No cross-repo callers in the workspace._
